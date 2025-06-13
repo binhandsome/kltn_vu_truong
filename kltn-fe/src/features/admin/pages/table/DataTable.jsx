@@ -27,7 +27,7 @@ const DataTable = () => (
                                 <h4>Default Datatable</h4>
                             </div>
                             <div className="card-body">
-                               <table id="example" className="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+                               <table id="example" className="table table-striped table-bordered dt-responsive nowrap" style={{ width: '100%' }}>
 									<thead>
 										<tr>
 											<th>First name</th>
