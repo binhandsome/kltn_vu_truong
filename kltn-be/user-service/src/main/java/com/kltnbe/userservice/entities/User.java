@@ -1,0 +1,54 @@
+package com.kltnbe.userservice.entities;
+
+import com.kltnbe.userservice.enums.Gender;
+import jakarta.persistence.*;
+import lombok.Data;
+import java.util.Date;
+
+@Entity
+@Table(name = "users")
+@Data
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Long userId;
+
+    @Column(name = "auth_id", nullable = false, unique = true)
+    private Long authId;
+
+    @Column(name = "first_name", length = 50)
+    private String firstName;
+
+    @Column(name = "last_name", length = 50)
+    private String lastName;
+
+    @Temporal(TemporalType.DATE) // Chỉ định kiểu date để khớp với database
+    @Column(name = "date_of_birth")
+    private Date dateOfBirth;
+
+    @Column(name = "user_address", length = 255)
+    private String userAddress;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 10)
+    private Gender gender;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
+    @Column(name = "email", length = 100)
+    private String email;
+
+    @Column(name = "profile_picture", length = 255)
+    private String profilePicture;
+
+    @Column(name = "created_at", nullable = false)
+    private Date createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Date updatedAt;
+
+    @Column(name = "user_preferences", length = 255)
+    private String userPreferences;
+}

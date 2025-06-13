@@ -79,41 +79,41 @@ function UserHeader() {
                                     </div>
                                 </li>
                                 <li className="has-mega-menu sub-menu-down">
-                                    <Link to="/user/shop/shopWithCategory"><span>Shop</span><i className="fas fa-chevron-down tabindex" ></i></Link>
+                                    <a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}><span>Shop</span><i className="fas fa-chevron-down tabindex" ></i></a>
                                     <div className="mega-menu shop-menu">
                                         <ul>
                                             <li className="side-left">
                                                 <ul>
-                                                    <li><Link to="/user/shop/shopWithCategory" className="menu-title">Shop Structure</Link>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop</a>
                                                         <ul>
-                                                            <li><Link to="/">Shop Standard</Link></li>
-                                                            <li><Link to="/">Shop List</Link></li>
-                                                            <li><Link to="/user/shop/shopWithCategory">Shop With Category</Link></li>
-                                                            <li><Link to="/">Shop Filters Top Bar</Link></li>
-                                                            <li><Link to="/">Shop Sidebar</Link></li>
-                                                            <li><Link to="/">Shop Style 1</Link></li>
-                                                            <li><Link to="/">Shop Style 2</Link></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Standard</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop List</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Filters Top Bar</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Sidebar</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Style 1</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Style 2</a></li>
                                                         </ul>
                                                     </li>
-                                                    <li><Link to="/user/productstructure/productDetail" className="menu-title">Product Structure</Link>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'} className="menu-title">Product Structure</a>
                                                         <ul>
-                                                            <li><Link to="/">Default</Link></li>
-                                                            <li><Link to="/user/productstructure/productDetail">Thumbnail</Link></li>
-                                                            <li><Link to="/">Grid Media</Link></li>
-                                                            <li><Link to="/">Carousel</Link></li>
-                                                            <li><Link to="/">Full Width</Link></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Default</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Thumbnail</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Grid Media</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Carousel</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Full Width</a></li>
                                                         </ul>
                                                     </li>
-                                                    <li><Link to="/" className="menu-title">Shop Pages</Link>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/shoppages/wishList'} className="menu-title">Shop Pages</a>
                                                         <ul>
-                                                            <li><Link to="/user/shoppages/wishList">Wishlist</Link></li>
-                                                            <li><Link to="/user/shoppages/cart">Cart</Link></li>
-                                                            <li><Link to="/user/shoppages/checkout">Checkout</Link></li>
-                                                            <li><Link to="/user/shoppages/compare">Compare</Link></li>
-                                                            <li><Link to="/user/shoppages/orderTracking">Order Tracking</Link></li>
-                                                            <li><Link to="/user/auth/login">Login</Link></li>
-                                                            <li><Link to="/user/auth/registration">Registration</Link></li>
-                                                            <li><Link to="/user/auth/forgetPassword">Forget Password <div className="badge badge-sm rounded badge-animated">New</div></Link></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/wishList'}>Wishlist</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/cart'}>Cart</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/checkout'}>Checkout</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/compare'}>Compare</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/orderTracking'}>Order Tracking</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/login'}>Login</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/registration'}>Registration</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/forgetPassword'}>Forget Password <div className="badge badge-sm rounded badge-animated">New</div></a></li>
                                                         </ul>
                                                     </li>
                                                     <li className="month-deal">
@@ -153,55 +153,55 @@ function UserHeader() {
                                     </div>
                                 </li>
                                 <li className="has-mega-menu sub-menu-down auto-width">
-                                    <Link to="/user/blog/blogdetails/postStandard"><span>Blog</span><i className="fas fa-chevron-down tabindex"></i></Link>
+                                    <a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}><span>Blog</span><i className="fas fa-chevron-down tabindex"></i></a>
                                     <div className="mega-menu">
                                         <ul>
                                             <li>
-                                                <Link to="/" className="menu-title">Blog Dark Style</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'} className="menu-title">Blog Dark Style</a>
                                                 <ul>
-                                                    <li><Link to="/">Blog 2 Column</Link></li>
-                                                    <li><Link to="/">Blog 2 Column Sidebar</Link></li>
-                                                    <li><Link to="/">Blog 3 Column</Link></li>
-                                                    <li><Link to="/">Blog Half Image</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog 2 Column</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog 2 Column Sidebar</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog 3 Column</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Half Image</a></li>
                                                 </ul>
-                                                <Link to="/" className="menu-title">Blog Light Style</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'} className="menu-title">Blog Light Style</a>
                                                 <ul>
-                                                    <li><Link to="/">Blog 2 Column</Link></li>
-                                                    <li><Link to="/">Blog 2 Column Sidebar</Link></li>
-                                                    <li><Link to="/">Blog Half Image</Link></li>
-                                                    <li><Link to="/">Blog Exclusive</Link></li>
-                                                </ul>
-                                            </li>
-                                            <li>
-                                                <Link to="/" className="menu-title">Blog Sidebar</Link>
-                                                <ul>
-                                                    <li><Link to="/">Blog left Sidebar</Link></li>
-                                                    <li><Link to="/">Blog Right Sidebar</Link></li>
-                                                    <li><Link to="/">Blog Both Sidebar</Link></li>
-                                                    <li><Link to="/">Blog Wide Sidebar</Link></li>
-                                                </ul>
-                                                <Link to="/" className="menu-title">Blog Page</Link>
-                                                <ul>
-                                                    <li><Link to="/">Blog Archive</Link></li>
-                                                    <li><Link to="/">Author</Link></li>
-                                                    <li><Link to="/">Blog Category</Link></li>
-                                                    <li><Link to="/">Blog Tag</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog 2 Column</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog 2 Column Sidebar</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Half Image</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Exclusive</a></li>
                                                 </ul>
                                             </li>
                                             <li>
-                                                <Link to="/user/blog/blogdetails/postStandard" className="menu-title">Blog Details</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'} className="menu-title">Blog Sidebar</a>
                                                 <ul>
-                                                    <li><Link to="/user/blog/blogdetails/postStandard">Post Standard</Link></li>
-                                                    <li><Link to="/">Post Left Sidebar</Link></li>
-                                                    <li><Link to="/">Post Header Image</Link></li>
-                                                    <li><Link to="/">Post Slide Show</Link></li>
-                                                    <li><Link to="/">Post Side Image</Link></li>
-                                                    <li><Link to="/">Post Gallery</Link></li>
-                                                    <li><Link to="/">Post Gallery Alternative</Link></li>
-                                                    <li><Link to="/">Post Open Gutenberg</Link></li>
-                                                    <li><Link to="/">Post Link</Link></li>
-                                                    <li><Link to="/">Post Audio</Link></li>
-                                                    <li><Link to="/">Post Video</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog left Sidebar</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Right Sidebar</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Both Sidebar</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Wide Sidebar</a></li>
+                                                </ul>
+                                                <a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'} className="menu-title">Blog Page</a>
+                                                <ul>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Archive</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Author</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Category</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Blog Tag</a></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'} className="menu-title">Blog Details</a>
+                                                <ul>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Standard</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Left Sidebar</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Header Image</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Slide Show</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Side Image</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Gallery</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Gallery Alternative</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Open Gutenberg</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Link</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Audio</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}>Post Video</a></li>
                                                 </ul>
                                             </li>
                                             <li className="post-menu">
@@ -251,16 +251,16 @@ function UserHeader() {
                                     </div>
                                 </li>
                                 <li className="has-mega-menu sub-menu-down">
-                                    <Link to="/user/portfolio/portfolioTiles"><span>Portfolio</span><i className="fas fa-chevron-down tabindex"></i></Link>
+                                    <a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioTiles'}><span>Portfolio</span><i className="fas fa-chevron-down tabindex"></i></a>
                                     <div className="mega-menu portfolio-menu">
                                         <ul>
                                             <li className="side-left">
                                                 <ul className="portfolio-nav-link">
                                                     <li>
-                                                        <Link to="/user/portfolio/portfolioTiles">
+                                                        <a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioTiles'}>
                                                             <img src="../assets/user/images/portfolio/icons/portfolio-tiles.svg" alt="/" />
                                                             <span>Portfolio Tiles</span>
-                                                        </Link>
+                                                        </a>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
@@ -319,122 +319,122 @@ function UserHeader() {
                                                 </ul>
                                             </li>
                                             <li className="side-right line-left">
-                                                <Link to="/user/portfolio/portfolioDetails/portfolioDetails1" className="menu-title">Portfolio Details</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails1'} className="menu-title">Portfolio Details</a>
                                                 <ul>
-                                                    <li><Link to="/user/portfolio/portfolioDetails/portfolioDetails1">Portfolio Details 1</Link></li>
-                                                    <li><Link to="/">Portfolio Details 2</Link></li>
-                                                    <li><Link to="/">Portfolio Details 3</Link></li>
-                                                    <li><Link to="/">Portfolio Details 4</Link></li>
-                                                    <li><Link to="/">Portfolio Details 5</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails1'}>Portfolio Details 1</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails2'}>Portfolio Details 2</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails3'}>Portfolio Details 3</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails4'}>Portfolio Details 4</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails5'}>Portfolio Details 5</a></li>
                                                 </ul>
                                             </li>
                                         </ul>
                                     </div>
                                 </li>
                                 <li className="has-mega-menu sub-menu-down wide-width">
-                                    <Link to="/"><span>Pages</span><i className="fas fa-chevron-down tabindex"></i></Link>
+                                    <a href="#" onClick={() => window.location.href = '/user/pages/aboutUs'}><span>Pages</span><i className="fas fa-chevron-down tabindex"></i></a>
                                     <div className="mega-menu">
                                         <ul>
                                             <li>
-                                                <Link to="/" className="menu-title">Pages</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/pages/aboutUs'} className="menu-title">Pages</a>
                                                 <ul>
-                                                    <li><Link to="/">About Us</Link></li>
-                                                    <li><Link to="/">About Me</Link></li>
-                                                    <li><Link to="/">Pricing Table</Link></li>
-                                                    <li><Link to="/">Our Gift Vouchers</Link></li>
-                                                    <li><Link to="/">What We Do</Link></li>
-                                                    <li><Link to="/">Faqs 1</Link></li>
-                                                    <li><Link to="/">Faqs 2</Link></li>
-                                                    <li><Link to="/">Our Team</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/aboutUs'}>About Us</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/aboutMe'}>About Me</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/pricingTable'}>Pricing Table</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/ourGiftVouchers'}>Our Gift Vouchers</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/whatWeDo'}>What We Do</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/faqs1'}>Faqs 1</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/faqs2'}>Faqs 2</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/ourTeam'}>Our Team</a></li>
                                                 </ul>
                                             </li>
                                             <li>
-                                                <Link to="/" className="menu-title">Contact Us</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/pages/contactUs'} className="menu-title">Contact Us</a>
                                                 <ul>
-                                                    <li><Link to="/">Contact Us 1</Link></li>
-                                                    <li><Link to="/">Contact Us 2</Link></li>
-                                                    <li><Link to="/">Contact Us 3</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/contactUs1'}>Contact Us 1</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/contactUs2'}>Contact Us 2</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/contactUs3'}>Contact Us 3</a></li>
                                                 </ul>
-                                                <Link to="/" className="menu-title">Web Pages</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/pages/webPages'} className="menu-title">Web Pages</a>
                                                 <ul>
-                                                    <li><Link to="/">Error 404 1</Link></li>
-                                                    <li><Link to="/">Error 404 2</Link></li>
-                                                    <li><Link to="/">Coming Soon</Link></li>
-                                                    <li><Link to="/">Under Construction</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/error4041'}>Error 404 1</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/error4042'}>Error 404 2</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/comingSoon'}>Coming Soon</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/underConstruction'}>Under Construction</a></li>
                                                 </ul>
                                             </li>
                                             <li>
-                                                <Link to="/" className="menu-title">Banner Style</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/pages/bannerStyle'} className="menu-title">Banner Style</a>
                                                 <ul>
-                                                    <li><Link to="/">Banner with BG Color</Link></li>
-                                                    <li><Link to="/">Banner with Image</Link></li>
-                                                    <li><Link to="/">Banner with Video</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerWithBgColor'}>Banner with BG Color</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerWithImage'}>Banner with Image</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerWithVideo'}>Banner with Video</a></li>
                                                     <li><Link to="/">Banner with Kanbern</Link></li>
-                                                    <li><Link to="/">Banner Small</Link></li>
-                                                    <li><Link to="/">Banner Medium</Link></li>
-                                                    <li><Link to="/">Banner Large</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerSmall'}>Banner Small</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerMedium'}>Banner Medium</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerLarge'}>Banner Large</a></li>
                                                 </ul>
                                             </li>
                                             <li>
-                                                <Link to="/" className="menu-title">Header Style</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/pages/headerStyle'} className="menu-title">Header Style</a>
                                                 <ul>
-                                                    <li><Link to="/">Header Style 1</Link></li>
-                                                    <li><Link to="/">Header Style 2</Link></li>
-                                                    <li><Link to="/">Header Style 3</Link></li>
-                                                    <li><Link to="/">Header Style 4</Link></li>
-                                                    <li><Link to="/">Header Style 5</Link></li>
-                                                    <li><Link to="/">Header Style 6</Link></li>
-                                                    <li><Link to="/">Header Style 7</Link></li>
-                                                    <li className="w3menulink"><Link to="/">Menu Styles</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle1'}>Header Style 1</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle2'}>Header Style 2</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle3'}>Header Style 3</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle4'}>Header Style 4</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle5'}>Header Style 5</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle6'}>Header Style 6</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle7'}>Header Style 7</a></li>
+                                                    <li className="w3menulink"><a href="#" onClick={() => window.location.href = '/user/pages/menuStyles'}>Menu Styles</a></li>
                                                 </ul>
                                             </li>
                                             <li>
-                                                <Link to="/" className="menu-title">Footer Style</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/pages/footerStyle'} className="menu-title">Footer Style</a>
                                                 <ul>
-                                                    <li><Link to="/">Footer Style 1</Link></li>
-                                                    <li><Link to="/">Footer Style 2</Link></li>
-                                                    <li><Link to="/">Footer Style 3</Link></li>
-                                                    <li><Link to="/">Footer Style 4</Link></li>
-                                                    <li><Link to="/">Footer Style 5</Link></li>
-                                                    <li><Link to="/">Footer Style 6</Link></li>
-                                                    <li><Link to="/">Footer Style 7</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle1'}>Footer Style 1</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle2'}>Footer Style 2</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle3'}>Footer Style 3</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle4'}>Footer Style 4</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle5'}>Footer Style 5</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle6'}>Footer Style 6</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle7'}>Footer Style 7</a></li>
                                                 </ul>
                                             </li>
                                             <li>
-                                                <Link to="/user/myaccount/dashboard" className="menu-title">Dashboard</Link>
+                                                <a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'} className="menu-title">Dashboard</a>
                                                 <ul>
-                                                    <li><Link to="/user/myaccount/dashboard">Dashboard</Link></li>
-                                                    <li><Link to="/user/myaccount/orders">Orders</Link></li>
-                                                    <li><Link to="/user/myaccount/ordersDetails">Orders Details</Link></li>
-                                                    <li><Link to="/user/myaccount/ordersConfimation">Orders Confirmation</Link></li>
-                                                    <li><Link to="/user/myaccount/download">Downloads</Link></li>
-                                                    <li><Link to="/user/myaccount/returnRequest">Return Request</Link></li>
-                                                    <li><Link to="/user/myaccount/returnRequestDetail">Return Request Detail</Link></li>
-                                                    <li><Link to="/user/myaccount/returnRequestConfirmed">Return Request Confirmed</Link></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}>Dashboard</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/orders'}>Orders</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersDetails'}>Orders Details</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersConfimation'}>Orders Confirmation</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/download'}>Downloads</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequest'}>Return Request</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestDetail'}>Return Request Detail</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestConfirmed'}>Return Request Confirmed</a></li>
                                                 </ul>
                                             </li>
                                         </ul>
                                     </div>
                                 </li>
                                 <li className="sub-menu-down">
-                                    <Link to="/"><span>My Account</span> <div className="badge badge-sm rounded badge-animated">New</div><i className="fas fa-chevron-down tabindex"></i></Link>
+                                    <a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}><span>My Account</span> <div className="badge badge-sm rounded badge-animated">New</div><i className="fas fa-chevron-down tabindex"></i></a>
                                     <ul className="sub-menu">
-                                        <li><Link to="/user/myaccount/dashboard">Dashboard</Link></li>
-                                        <li><Link to="/user/myaccount/orders">Orders</Link></li>
-                                        <li><Link to="/user/myaccount/ordersDetails">Orders Details</Link></li>
-                                        <li><Link to="/user/myaccount/ordersConfimation">Orders Confirmation</Link></li>
-                                        <li><Link to="/user/myaccount/download">Downloads</Link></li>
-                                        <li><Link to="/user/myaccount/returnRequest">Return Request</Link></li>
-                                        <li><Link to="/user/myaccount/returnRequestDetail">Return Request Detail</Link></li>
-                                        <li><Link to="/user/myaccount/returnRequestConfirmed">Return Request Confirmed</Link></li>
-                                        <li><Link to="/user/myaccount/profile">Profile</Link></li>
-                                        <li><Link to="/user/myaccount/address">Address</Link></li>
-                                        <li><Link to="/user/myaccount/shippingMethods">Shipping methods</Link></li>
-                                        <li><Link to="/user/myaccount/paymentMethods">Payment Methods</Link></li>
-                                        <li><Link to="/user/myaccount/review">Review</Link></li>
-                                        <li><Link to="/user/myaccount/billingAddress">Billing address</Link></li>
-                                        <li><Link to="/user/myaccount/shippingAddress">Shipping address</Link></li>
-                                        <li><Link to="/user/myaccount/cancellationRequests">Cancellation Requests</Link></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}>Dashboard</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/orders'}>Orders</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersDetails'}>Orders Details</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersConfimation'}>Orders Confirmation</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/download'}>Downloads</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequest'}>Return Request</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestDetail'}>Return Request Detail</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestConfirmed'}>Return Request Confirmed</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/profile'}>Profile</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/address'}>Address</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/shippingMethods'}>Shipping methods</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/paymentMethods'}>Payment Methods</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/review'}>Review</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/billingAddress'}>Billing address</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/shippingAddress'}>Shipping address</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/cancellationRequests'}>Cancellation Requests</a></li>
                                     </ul>
                                 </li>
                             </ul>
