@@ -61,7 +61,7 @@ const Invoice = () => (
 									<table className="table table-styled mb-0">
 										<thead>
 											<tr>
-												<th style="width: 70px;">No.</th>
+												<th style={{ width: '70px' }}>No.</th>
 												<th>Item</th>
 												<th className="text-end">Price</th>
 											</tr>

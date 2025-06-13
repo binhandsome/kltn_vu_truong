@@ -68,49 +68,49 @@ const Alert = () => (
 							  <div className="alert alert-success">
 								<strong>Success!</strong> This alert box could indicate a successful or positive action.
 								<button type="button" className="close" data-bs-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true" style="font-size:20px">×</span>
+									<span aria-hidden="true" style={{ fontSize: '20px' }}>×</span>
 								</button>
 							  </div>
 							  <div className="alert alert-info">
 								<strong>Info!</strong> This alert box could indicate a neutral informative change or action.
 								<button type="button" className="close" data-bs-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true" style="font-size:20px">×</span>
+									<span aria-hidden="true" style={{ fontSize: '20px' }}>×</span>
 								</button>
 							  </div>
 							  <div className="alert alert-warning">
 								<strong>Warning!</strong> This alert box could indicate a warning that might need attention.
 								<button type="button" className="close" data-bs-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true" style="font-size:20px">×</span>
+									<span aria-hidden="true" style={{ fontSize: '20px' }}>×</span>
 								</button>
 							  </div>
 							  <div className="alert alert-danger">
 								<strong>Danger!</strong> This alert box could indicate a dangerous or potentially negative action.
 								<button type="button" className="close" data-bs-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true" style="font-size:20px">×</span>
+									<span aria-hidden="true" style={{ fontSize: '20px' }}>×</span>
 								</button>
 							  </div>
 							  <div className="alert alert-primary">
 								<strong>Primary!</strong> Indicates an important action.
 								<button type="button" className="close" data-bs-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true" style="font-size:20px">×</span>
+									<span aria-hidden="true" style={{ fontSize: '20px' }}>×</span>
 								</button>
 							  </div>
 							  <div className="alert alert-secondary">
 								<strong>Secondary!</strong> Indicates a slightly less important action.
 								<button type="button" className="close" data-bs-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true" style="font-size:20px">×</span>
+									<span aria-hidden="true" style={{ fontSize: '20px' }}>×</span>
 								</button>
 							  </div>
 							  <div className="alert alert-dark">
 								<strong>Dark!</strong> Dark grey alert.
 								<button type="button" className="close" data-bs-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true" style="font-size:20px">×</span>
+									<span aria-hidden="true" style={{ fontSize: '20px' }}>×</span>
 								</button>
 							  </div>
 							  <div className="alert alert-light">
 								<strong>Light!</strong> Light grey alert.
 								<button type="button" className="close" data-bs-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true" style="font-size:20px">×</span>
+									<span aria-hidden="true" style={{ fontSize: '20px' }}>×</span>
 								</button>
 							  </div>
                             </div>
