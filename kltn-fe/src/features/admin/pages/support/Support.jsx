@@ -160,7 +160,7 @@ const Support = () => (
 									</div>
 								</div>
 							</div>
-                               <table id="example" className="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+                               <table id="example" className="table table-striped table-bordered dt-responsive nowrap" style={{ width: '100%' }}>
 									<thead>
 										<tr>
 											<th>ID</th>

@@ -809,15 +809,15 @@ const Buttons = () => (
                                     <div className="dd-flex align-items-center">
                                         <div className="btn-group mt-2 mr-2" role="group">
                                             <button className="lg-btn btn btn-primary dropdown-toggle" id="btn1" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-original-title="" title="">Dropdown</button>
-                                            <div className="dropdown-menu" aria-labelledby="btn1" style=""><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a></div>
+                                            <div className="dropdown-menu" aria-labelledby="btn1" ><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a></div>
                                         </div>
                                         <div className="btn-group mt-2 mr-2" role="group">
                                             <button className="btn btn-primary dropdown-toggle" id="btn2" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-original-title="" title="">Dropdown</button>
-                                            <div className="dropdown-menu" aria-labelledby="btn2" style=""><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a></div>
+                                            <div className="dropdown-menu" aria-labelledby="btn2"><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a></div>
                                         </div>
                                         <div className="btn-group mt-2 mr-2" role="group">
                                             <button className="sm-btn btn btn-primary dropdown-toggle" id="btn3" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-original-title="" title="">Dropdown</button>
-                                            <div className="dropdown-menu" aria-labelledby="btn3" style=""><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a></div>
+                                            <div className="dropdown-menu" aria-labelledby="btn3" ><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a><a className="dropdown-item" href="javascript:;" data-original-title="" title="">Dropdown link</a></div>
                                         </div>
                                     </div>
                                 </div>

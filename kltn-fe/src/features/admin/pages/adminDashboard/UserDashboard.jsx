@@ -21,7 +21,7 @@ const UserDashboard = () => (
                             </div>
                         </li>
                         <li>
-                            <div className="add-group">
+                            <div className="add-group" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <a className="ad-btn">Add User</a>
                             </div>
                         </li>

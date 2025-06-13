@@ -21,7 +21,7 @@ const MyProfile = () => (
                 {/* <!-- Products view Start --> */}
 				<div className="row">
                 <div className="col-xl-4">
-                  <div className="card"><grammarly-extension data-grammarly-shadow-root="true" style="position: absolute; top: 0px; left: 0px; pointer-events: none;" className="cGcvT"></grammarly-extension>
+                  <div className="card"><grammarly-extension data-grammarly-shadow-root="true" style={{ position: 'absolute', top: '0px', left: '0px', pointerEvents: 'none' }} className="cGcvT"></grammarly-extension>
                     <div className="card-header">
                       <h4 className="card-title mb-0">My Profile</h4>
                       <div className="card-options"><a className="card-options-collapse" href="javascript:;" data-bs-toggle="card-collapse" data-bs-original-title="" title=""><i className="fe fe-chevron-up"></i></a><a className="card-options-remove" href="javascript:;" data-bs-toggle="card-remove" data-bs-original-title="" title=""><i className="fe fe-x"></i></a></div>
