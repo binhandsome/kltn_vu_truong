@@ -1,0 +1,30 @@
+server:
+  port: 8081
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/kltn_fashion_shop?useSSL=false&serverTimezone=UTC
+    username: root
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  application:
+    name: user-service
+  cloud:
+    compatibility-verifier:
+      enabled: false # Vô hiệu hóa kiểm tra tương thích
+jwt:
+  secret: aGtHd1hnM3NlcEh5U3lmaDhoUWVrZ0dZN0RZbGZxVXpKbFlGbFZKZ2JPRzFqcmMybWhVZFN5N0RoT0JreEdhVg==
+  expiration: 3600000
+  refresh:
+    expiration: 604800000
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
