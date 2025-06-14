@@ -1,34 +1,17 @@
 // src/pages/common/HomePage.js
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet'; 
 import QuickViewModal from '../components/home/QuickViewModal'; 
 import ScrollTopButton from '../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
 
 function HomePage() {
-	const [hasBgClass, setHasBgClass] = useState(true); 
-  
 	useEffect(() => {
-	  if (hasBgClass) {
-		document.body.classList.add('bg');
-	  } else {
-		document.body.classList.remove('bg');
-	  }
-  
-	  return () => {
-		// Dọn dẹp: Xóa class khi component bị unmount
-		document.body.classList.remove('bg');
-	  };
-	}, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-	useEffect(() => { // New useEffect for WOW.js
 		const wow = new WOW.WOW();
 		wow.init();
+	}, []);
+
 	
-		return () => { // Optional cleanup function
-			//wow.sync(); // sync and remove the DOM
-		};
-	  }, []);
 
   return (
     <>
@@ -132,7 +115,7 @@ function HomePage() {
 							<div className="slick-slide">
 								<div className="banner-media" data-name="Summer">
 									<div className="img-preview">
-										 <img src="/banner/banner-media2.png" alt="banner-media2" />
+										 <img src="../assets/user/images/banner/banner-media2.png" alt="banner-media2" />
 									</div>
 								</div>
 							</div>

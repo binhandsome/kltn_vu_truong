@@ -1,6 +1,16 @@
+
+@font-face {
+  font-family: "feather";
+  src: url('../fonts/feather.eot%3Ft=1525787366991'); /* IE9*/
+  src: url('../fonts/feather.eot%3Ft=1525787366991') format('embedded-opentype'), /* IE6-IE8 */
+  url('../fonts/feather.woff%3Ft=1525787366991') format('woff'), /* chrome, firefox */
+  url('../fonts/feather.ttf%3Ft=1525787366991') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+  url('../fonts/feather.svg%3Ft=1525787366991') format('svg'); /* iOS 4.1- */
+}
+
 .feather {
   /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: sans-serif !important; /* Thay đổi dòng này */
+  font-family: 'feather' !important;
   speak: none;
   font-style: normal;
   font-weight: normal;

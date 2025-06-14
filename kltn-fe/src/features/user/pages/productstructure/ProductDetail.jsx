@@ -1,9 +1,7 @@
 // src/pages/common/HomePage.js
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet'; 
 import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
 
 function ProductDetail() {
