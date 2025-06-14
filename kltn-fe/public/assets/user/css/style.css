@@ -40276,8 +40276,7 @@ a {
     color: var(--primary); }
 
 footer {
-   /* Remove this line: background-image: url(); */
- }
+  background-image: url(); }
   @media only screen and (max-width: 767px) {
     footer .row {
       --bs-gutter-x: 10px; } }

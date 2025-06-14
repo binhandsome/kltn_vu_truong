@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from '../../../assets/user/images/logo.svg';
@@ -59,19 +59,19 @@ function UserHeader() {
                                         <ul className="demo-menu mb-0">
                                             <li>
                                                 <Link to="/">
-                                                    <img src="../assets/user/images/demo/demo-1.png" alt="/" />
+                                                    <img src="/assets/user/images/demo/demo-1.png" alt="/" />
                                                     <span className="menu-title">01 Home Page</span>
                                                 </Link>
                                             </li>
                                             <li>
                                                 <Link to="/index-2">
-                                                    <img src="../assets/user/images/demo/demo-2.png" alt="/" />
+                                                    <img src="/assets/user/images/demo/demo-2.png" alt="/" />
                                                     <span className="menu-title">02 Home Page</span>
                                                 </Link>
                                             </li>
                                             <li>
                                                 <Link to="/index-3">
-                                                    <img src="../assets/user/images/demo/demo-3.png" alt="/" />
+                                                    <img src="/assets/user/images/demo/demo-3.png" alt="/" />
                                                     <span className="menu-title">03 Home Page</span>
                                                 </Link>
                                             </li>
@@ -146,7 +146,7 @@ function UserHeader() {
                                             </li>
                                             <li className="side-right">
                                                 <div className="adv-media">
-                                                    <img src="../assets/user/images/adv-1.png" alt="/" />
+                                                    <img src="/assets/user/images/adv-1.png" alt="/" />
                                                 </div>
                                             </li>
                                         </ul>
@@ -210,7 +210,7 @@ function UserHeader() {
                                                     <ul>
                                                         <li>
                                                             <div className="dz-media">
-                                                                <img src="../assets/user/images/shop/product/small/1.png" alt="" />
+                                                                <img src="/assets/user/images/shop/product/small/1.png" alt="" />
                                                             </div>
                                                             <div className="dz-content">
                                                                 <h6 className="name"><Link to="/">Cozy Knit Cardigan Sweater</Link></h6>
@@ -219,7 +219,7 @@ function UserHeader() {
                                                         </li>
                                                         <li>
                                                             <div className="dz-media">
-                                                                <img src="../assets/user/images/shop/product/small/2.png" alt="" />
+                                                                <img src="/assets/user/images/shop/product/small/2.png" alt="" />
                                                             </div>
                                                             <div className="dz-content">
                                                                 <h6 className="name"><Link to="/">Sophisticated Swagger Suit</Link></h6>
@@ -228,7 +228,7 @@ function UserHeader() {
                                                         </li>
                                                         <li>
                                                             <div className="dz-media">
-                                                                <img src="../assets/user/images/shop/product/small/3.png" alt="" />
+                                                                <img src="/assets/user/images/shop/product/small/3.png" alt="" />
                                                             </div>
                                                             <div className="dz-content">
                                                                 <h6 className="name"><Link to="/">Athletic Mesh Sports Leggings</Link></h6>
@@ -237,7 +237,7 @@ function UserHeader() {
                                                         </li>
                                                         <li>
                                                             <div className="dz-media">
-                                                                <img src="../assets/user/images/shop/product/small/4.png" alt="" />
+                                                                <img src="/assets/user/images/shop/product/small/4.png" alt="" />
                                                             </div>
                                                             <div className="dz-content">
                                                                 <h6 className="name"><Link to="/">Satin Wrap Party Blouse</Link></h6>
@@ -258,61 +258,61 @@ function UserHeader() {
                                                 <ul className="portfolio-nav-link">
                                                     <li>
                                                         <a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioTiles'}>
-                                                            <img src="../assets/user/images/portfolio/icons/portfolio-tiles.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/portfolio-tiles.svg" alt="/" />
                                                             <span>Portfolio Tiles</span>
                                                         </a>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/collage-style-1.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/collage-style-1.svg" alt="/" />
                                                             <span>Collage Style 1</span>
                                                         </Link>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/collage-style-2.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/collage-style-2.svg" alt="/" />
                                                             <span>Collage Style 2</span>
                                                         </Link>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/masonry-grid.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/masonry-grid.svg" alt="/" />
                                                             <span>Masonry Grid</span>
                                                         </Link>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/cobble-style-1.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/cobble-style-1.svg" alt="/" />
                                                             <span>Cobble Style 1</span>
                                                         </Link>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/cobble-style-2.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/cobble-style-2.svg" alt="/" />
                                                             <span>Cobble Style 2</span>
                                                         </Link>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/portfolio-thumbs-slider.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/portfolio-thumbs-slider.svg" alt="/" />
                                                             <span>Portfolio Thumbs Slider</span>
                                                         </Link>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/portfolio-film-strip.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/portfolio-film-strip.svg" alt="/" />
                                                             <span>Portfolio Film Strip</span>
                                                         </Link>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/carousel-showcase.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/carousel-showcase.svg" alt="/" />
                                                             <span>Carousel Showcase</span>
                                                         </Link>
                                                     </li>
                                                     <li>
                                                         <Link to="/">
-                                                            <img src="../assets/user/images/portfolio/icons/portfolio-split-slider.svg" alt="/" />
+                                                            <img src="/assets/user/images/portfolio/icons/portfolio-split-slider.svg" alt="/" />
                                                             <span>Portfolio Split Slider</span>
                                                         </Link>
                                                     </li>
@@ -332,13 +332,13 @@ function UserHeader() {
                                     </div>
                                 </li>
                                 <li className="has-mega-menu sub-menu-down wide-width">
-                                    <a href="#" onClick={() => window.location.href = '/user/pages/aboutUs'}><span>Pages</span><i className="fas fa-chevron-down tabindex"></i></a>
+                                    <a href="#" onClick={() => window.location.href = '/user/about/aboutUs'}><span>Pages</span><i className="fas fa-chevron-down tabindex"></i></a>
                                     <div className="mega-menu">
                                         <ul>
                                             <li>
-                                                <a href="#" onClick={() => window.location.href = '/user/pages/aboutUs'} className="menu-title">Pages</a>
+                                                <a href="#" onClick={() => window.location.href = '/user/about/aboutUs'} className="menu-title">Pages</a>
                                                 <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/aboutUs'}>About Us</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/about/aboutUs'}>About Us</a></li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/aboutMe'}>About Me</a></li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/pricingTable'}>Pricing Table</a></li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/ourGiftVouchers'}>Our Gift Vouchers</a></li>
@@ -534,7 +534,7 @@ function UserHeader() {
                                     <div className="swiper-slide">
                                         <div className="shop-card">
                                             <div className="dz-media ">
-                                                <img src="../assets/user/images/shop/product/1.png" alt="product1" />
+                                                <img src="/assets/user/images/shop/product/1.png" alt="product1" />
                                             </div>
                                             <div className="dz-content">
                                                 <h6 className="title"><Link to="/">SilkBliss Dress</Link></h6>
@@ -545,7 +545,7 @@ function UserHeader() {
                                     <div className="swiper-slide">
                                         <div className="shop-card">
                                             <div className="dz-media ">
-                                                <img src="../assets/user/images/shop/product/3.png" alt="product3" />
+                                                <img src="/assets/user/images/shop/product/3.png" alt="product3" />
                                             </div>
                                             <div className="dz-content">
                                                 <h6 className="title"><Link to="/">GlamPants</Link></h6>
@@ -556,7 +556,7 @@ function UserHeader() {
                                     <div className="swiper-slide">
                                         <div className="shop-card">
                                             <div className="dz-media ">
-                                                <img src="../assets/user/images/shop/product/4.png" alt="product4" />
+                                                <img src="/assets/user/images/shop/product/4.png" alt="product4" />
                                             </div>
                                             <div className="dz-content">
                                                 <h6 className="title"><Link to="/">ComfyLeggings</Link></h6>
@@ -567,7 +567,7 @@ function UserHeader() {
                                     <div className="swiper-slide">
                                         <div className="shop-card">
                                             <div className="dz-media ">
-                                                <img src="../assets/user/images/shop/product/2.png" alt="product2" />
+                                                <img src="/assets/user/images/shop/product/2.png" alt="product2" />
                                             </div>
                                             <div className="dz-content">
                                                 <h6 className="title"><Link to="/">ClassicCapri</Link></h6>
@@ -578,7 +578,7 @@ function UserHeader() {
                                     <div className="swiper-slide">
                                         <div className="shop-card">
                                             <div className="dz-media ">
-                                                <img src="../assets/user/images/shop/product/5.png" alt="product5" />
+                                                <img src="/assets/user/images/shop/product/5.png" alt="product5" />
                                             </div>
                                             <div className="dz-content">
                                                 <h6 className="title"><Link to="/">DapperCoat</Link></h6>
@@ -589,7 +589,7 @@ function UserHeader() {
                                     <div className="swiper-slide">
                                         <div className="shop-card">
                                             <div className="dz-media ">
-                                                <img src="../assets/user/images/shop/product/6.png" alt="product6" />
+                                                <img src="/assets/user/images/shop/product/6.png" alt="product6" />
                                             </div>
                                             <div className="dz-content">
                                                 <h6 className="title"><Link to="/">ComfyLeggings</Link></h6>
@@ -600,7 +600,7 @@ function UserHeader() {
                                     <div className="swiper-slide">
                                         <div className="shop-card">
                                             <div className="dz-media ">
-                                                <img src="../assets/user/images/shop/product/7.png" alt="product7" />
+                                                <img src="/assets/user/images/shop/product/7.png" alt="product7" />
                                             </div>
                                             <div className="dz-content">
                                                 <h6 className="title"><Link to="/">DenimDream Jeans</Link></h6>
@@ -611,7 +611,7 @@ function UserHeader() {
                                     <div className="swiper-slide">
                                         <div className="shop-card">
                                             <div className="dz-media ">
-                                                <img src="../assets/user/images/shop/product/4.png" alt="image4" />
+                                                <img src="/assets/user/images/shop/product/4.png" alt="image4" />
                                             </div>
                                             <div className="dz-content">
                                                 <h6 className="title"><Link to="/">SilkBliss Dress</Link></h6>
@@ -654,7 +654,7 @@ function UserHeader() {
                                             <li>
                                                 <div className="cart-widget">
                                                     <div className="dz-media me-3">
-                                                        <img src="../assets/user/images/shop/shop-cart/pic1.jpg" alt="" />
+                                                        <img src="/assets/user/images/shop/shop-cart/pic1.jpg" alt="" />
                                                     </div>
                                                     <div className="cart-content">
                                                         <h6 className="title"><Link to="/">Sophisticated Swagger Suit</Link></h6>
@@ -673,7 +673,7 @@ function UserHeader() {
                                             <li>
                                                 <div className="cart-widget">
                                                     <div className="dz-media me-3">
-                                                        <img src="../assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
+                                                        <img src="/assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
                                                     </div>
                                                     <div className="cart-content">
                                                         <h6 className="title"><Link to="/">Cozy Knit Cardigan Sweater</Link></h6>
@@ -692,7 +692,7 @@ function UserHeader() {
                                             <li>
                                                 <div className="cart-widget">
                                                     <div className="dz-media me-3">
-                                                        <img src="../assets/user/images/shop/shop-cart/pic3.jpg" alt="" />
+                                                        <img src="/assets/user/images/shop/shop-cart/pic3.jpg" alt="" />
                                                     </div>
                                                     <div className="cart-content">
                                                         <h6 className="title"><Link to="/">Athletic Mesh Sports Leggings</Link></h6>
@@ -738,7 +738,7 @@ function UserHeader() {
                                             <li>
                                                 <div className="cart-widget">
                                                     <div className="dz-media me-3">
-                                                        <img src="../assets/user/images/shop/shop-cart/pic1.jpg" alt="" />
+                                                        <img src="/assets/user/images/shop/shop-cart/pic1.jpg" alt="" />
                                                     </div>
                                                     <div className="cart-content">
                                                         <h6 className="title"><Link to="/">Sophisticated Swagger Suit</Link></h6>
@@ -754,7 +754,7 @@ function UserHeader() {
                                             <li>
                                                 <div className="cart-widget">
                                                     <div className="dz-media me-3">
-                                                        <img src="../assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
+                                                        <img src="/assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
                                                     </div>
                                                     <div className="cart-content">
                                                         <h6 className="title"><Link to="/">Cozy Knit Cardigan Sweater</Link></h6>
@@ -770,7 +770,7 @@ function UserHeader() {
                                             <li>
                                                 <div className="cart-widget">
                                                     <div className="dz-media me-3">
-                                                        <img src="../assets/user/images/shop/shop-cart/pic3.jpg" alt="" />
+                                                        <img src="/assets/user/images/shop/shop-cart/pic3.jpg" alt="" />
                                                     </div>
                                                     <div className="cart-content">
                                                         <h6 className="title"><Link to="/">Athletic Mesh Sports Leggings</Link></h6>

@@ -1,9 +1,22 @@
+@font-face {
+    font-family: "flaticon_pixio";
+    src:url("flaticon_pixio.woff%3F49dfca1679f8ebe110d21a07d523c078") format("woff"),
+    url("flaticon_pixio.woff2%3F49dfca1679f8ebe110d21a07d523c078") format("woff2"),
+    url("flaticon_pixio.eot%3F49dfca1679f8ebe110d21a07d523c078") format("embedded-opentype"),
+    url("flaticon_pixio.svg%3F49dfca1679f8ebe110d21a07d523c078") format("svg");
+}
 
-[class^="flaticon-"]::before, [class*=" flaticon-"]::before {
-    font-family: sans-serif !important; /* Thay đổi dòng này */
+i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
+    font-family: flaticon_pixio !important;
     font-style: normal;
-    font-weight: normal;
-  }
+	display: block;			 
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
 .flaticon-cart:before {
     content: "\f101";

@@ -37,7 +37,7 @@ function OrdersDetails() {
         {/* Header (đã được xử lý trong App.js) */}
 
         <div className="page-content bg-light">
-		<div className="dz-bnr-inr bg-secondary overlay-black-light" style={{ backgroundImage: `url('../assets/user/images/background/bg1.jpg')` }}>
+		<div className="dz-bnr-inr bg-light" style={{ backgroundImage: `url('../assets/user/images/background/bg1.jpg')` }}>
 			<div className="container">
 				<div className="dz-bnr-inr-entry">
 					<h1>Order Details</h1>
