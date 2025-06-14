@@ -32,6 +32,7 @@ import PortfolioDetails1 from '../pages/portfolio/PortfolioDetails1';
 import Login from '../pages/auth/Login';
 import Registration from '../pages/auth/Registration';
 import ForgetPassword from '../pages/auth/ForgetPassword';
+import AboutUs from '../pages/about/AboutUs';
 
 const UserRoutes = () => {
   return (
@@ -67,6 +68,7 @@ const UserRoutes = () => {
         <Route path="blog/blogdetails/postStandard" element={<PostStandard />} />
         <Route path="portfolio/portfolioDetails/portfolioDetails1" element={<PortfolioDetails1 />} />
         <Route path="portfolio/portfolioTiles" element={<PortfolioTiles />} />
+        <Route path="about/aboutUs" element={<AboutUs />} />
       </Route>
     </Routes>
   );
