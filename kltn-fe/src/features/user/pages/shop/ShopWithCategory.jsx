@@ -1,34 +1,14 @@
-// src/pages/common/HomePage.js
-import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet'; 
-import QuickViewModal from '../../components/home/QuickViewModal'; 
+import React, { useEffect } from 'react';
+import WOW from 'wowjs';
+import QuickViewModal from '../../components/home/QuickViewModal';
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import { Link } from 'react-router-dom'; 
-import WOW from 'wowjs'; // Import WOW.js
 
 function ShopWithCategory() {
-    const [hasBgClass, setHasBgClass] = useState(true); 
-  
-    useEffect(() => {
-      if (hasBgClass) {
-        document.body.classList.add('bg');
-      } else {
-        document.body.classList.remove('bg');
-      }
-  
-      return () => {
-        // Dọn dẹp: Xóa class khi component bị unmount
-        document.body.classList.remove('bg');
-      };
-    }, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-    useEffect(() => { // New useEffect for WOW.js
-        const wow = new WOW.WOW();
-        wow.init();
-    
-        return () => { // Optional cleanup function
-            //wow.sync(); // sync and remove the DOM
-        };
-      }, []);
+  useEffect(() => {
+    const wow = new WOW.WOW();
+    wow.init();
+    // Nếu sau này load thêm nội dung động thì gọi wow.sync();
+  }, []);
 
   return (
     <>
@@ -38,7 +18,7 @@ function ShopWithCategory() {
 
         <div class="page-content bg-light">
 		{/* <!--Banner Start--> */}
-		<div class="dz-bnr-inr bg-secondary overlay-black-light" style={{ 
+		<div class="dz-bnr-inr bg-light" style={{ 
   backgroundImage: "url(images/background/bg1.jpg)"
 }}>
 			<div class="container">
