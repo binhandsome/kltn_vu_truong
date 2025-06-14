@@ -10,7 +10,6 @@ import RecoverPassword from '../pages/authentication/RecoverPassword';
 import Register from '../pages/authentication/Register';
 import Buttons from '../pages/buttons/Buttons';
 import Calendar from '../pages/calendar/Calendar';
-import Chart from '../pages/chart/Chart';
 import Customer from '../pages/customer/Customer';
 import Documentation from '../pages/documentation/Documentation';
 import Chat from '../pages/email/Chat';
@@ -59,7 +58,6 @@ const AdminRoutes = () => {
         <Route path="authentication/recoverPassword" element={<RecoverPassword />} />
         <Route path="buttons/buttons" element={<Buttons />} />
         <Route path="calendar/calendar" element={<Calendar />} />
-        <Route path="chart/chart" element={<Chart />} />
         <Route path="customer/customer" element={<Customer />} />
         <Route path="documentation/documentation" element={<Documentation />} />
         <Route path="email/chat" element={<Chat/>} />

@@ -28,11 +28,17 @@ import OrderTracking from '../pages/shoppages/OrderTracking';
 import WishList from '../pages/shoppages/WishList';
 import PostStandard from '../pages/blog/blogdetails/PostStandard';
 import PortfolioTiles from '../pages/portfolio/PortfolioTiles';
-import PortfolioDetails1 from '../pages/portfolio/PortfolioDetails1';
+import PortfolioDetails from '../pages/portfolio/PortfolioDetails';
 import Login from '../pages/auth/Login';
 import Registration from '../pages/auth/Registration';
 import ForgetPassword from '../pages/auth/ForgetPassword';
 import AboutUs from '../pages/about/AboutUs';
+import ShopFiltersTopBar from '../pages/shop/ShopFiltersTopBar';
+import ShopList from '../pages/shop/ShopList';
+import ShopSideBar from '../pages/shop/ShopSideBar';
+import ShopStyle1 from '../pages/shop/ShopStyle1';
+import ShopStyle2 from '../pages/shop/ShopStyle2';
+import ShopStandard from '../pages/shop/ShopStandard';
 
 const UserRoutes = () => {
   return (
@@ -66,9 +72,15 @@ const UserRoutes = () => {
         <Route path="shoppages/orderTracking" element={<OrderTracking />} />
         <Route path="shoppages/wishList" element={<WishList />} />
         <Route path="blog/blogdetails/postStandard" element={<PostStandard />} />
-        <Route path="portfolio/portfolioDetails/portfolioDetails1" element={<PortfolioDetails1 />} />
+        <Route path="portfolio/portfolioDetails" element={<PortfolioDetails />} />
         <Route path="portfolio/portfolioTiles" element={<PortfolioTiles />} />
         <Route path="about/aboutUs" element={<AboutUs />} />
+        <Route path="shop/shopFiltersTopBar" element={<ShopFiltersTopBar />} />
+        <Route path="shop/shopList" element={<ShopList />} />
+        <Route path="shop/shopSidebar" element={<ShopSideBar />} />
+        <Route path="shop/shopStyle1" element={<ShopStyle1/>} />
+        <Route path="shop/shopStyle2" element={<ShopStyle2 />} />
+        <Route path="shop/shopStandard" element={<ShopStandard />} />
       </Route>
     </Routes>
   );

@@ -163,6 +163,7 @@ Assigned to: Theme Forest
                 e.stopPropagation();
                 $("body").toggleClass('mini-sidebar');
                 $(this).toggleClass('checked');
+                $('.hidden-text').toggleClass('hide');
 
             });
             $('.sidebar-wrapper').on('click', function(event) {
@@ -175,44 +176,96 @@ Assigned to: Theme Forest
         -----------------------------------------------------*/
 
         sideMenu: function() {
-            $('.side-menu-wrap ul li').has('.sub-menu').addClass('has-sub-menu');
-            $.sidebarMenu = function(menu) {
-                var animationSpeed = 300,
-                    subMenuSelector = '.sub-menu';
-                $(menu).on('click', 'li a', function(e) {
-                    var $this = $(this);
-                    var checkElement = $this.next();
-                    if (checkElement.is(subMenuSelector) && checkElement.is(':visible')) {
-                        checkElement.slideUp(animationSpeed, function() {
-                            checkElement.removeClass('menu-show');
-                        });
-                        checkElement.parent("li").removeClass("active");
-                    } else if ((checkElement.is(subMenuSelector)) && (!checkElement.is(':visible'))) {
-                        var parent = $this.parents('ul').first();
-                        var ul = parent.find('ul:visible').slideUp(animationSpeed);
-                        ul.removeClass('menu-show');
-                        var parent_li = $this.parent("li");
-                        checkElement.slideDown(animationSpeed, function() {
-                            checkElement.addClass('menu-show');
-                            parent.find('li.active').removeClass('active');
-                            parent_li.addClass('active');
-                        });
-                    }
-                    if (checkElement.is(subMenuSelector)) {
-                        e.preventDefault();
-                    }
-                });
-            }
-            $.sidebarMenu($('.main-menu'));
-            $(function() {
-                for (var a = window.location, counting = $(".main-menu a").filter(function() {
-                        return this.href == a;
-                    }).addClass("active").parent().addClass("active");;) {
-                    if (!counting.is("li")) break;
-                    counting = counting.parent().addClass("in").parent().addClass("active");
+    // Add 'has-sub-menu' class to <li> with sub-menus
+    const menuItems = document.querySelectorAll('.side-menu-wrap ul li');
+    menuItems.forEach(item => {
+        if (item.querySelector('.sub-menu')) {
+            item.classList.add('has-sub-menu');
+        }
+    });
+
+    // Sidebar menu logic
+    const sidebarMenu = (menu) => {
+        const animationSpeed = 300;
+        const subMenuSelector = '.sub-menu';
+
+        menu.addEventListener('click', (e) => {
+            const target = e.target.closest('li a');
+            if (!target) return;
+
+            const checkElement = target.nextElementSibling;
+            if (checkElement && checkElement.matches(subMenuSelector)) {
+                e.preventDefault(); // Prevent default link behavior for parent links
+
+                // If sub-menu is visible, hide it
+                if (checkElement.classList.contains('menu-show')) {
+                    checkElement.classList.remove('menu-show');
+                    checkElement.style.height = `${checkElement.scrollHeight}px`;
+                    setTimeout(() => {
+                        checkElement.style.height = '0';
+                    }, 10);
+                    setTimeout(() => {
+                        checkElement.classList.remove('menu-show');
+                        checkElement.style.height = '';
+                    }, animationSpeed);
+                    checkElement.parentElement.classList.remove('active');
+                } else {
+                    // Hide other visible sub-menus
+                    const parent = target.closest('ul');
+                    const visibleSubMenus = parent.querySelectorAll('.sub-menu.menu-show');
+                    visibleSubMenus.forEach(subMenu => {
+                        subMenu.classList.remove('menu-show');
+                        subMenu.style.height = `${subMenu.scrollHeight}px`;
+                        setTimeout(() => {
+                            subMenu.style.height = '0';
+                        }, 10);
+                        setTimeout(() => {
+                            subMenu.style.height = '';
+                        }, animationSpeed);
+                        subMenu.parentElement.classList.remove('active');
+                    });
+
+                    // Show the clicked sub-menu
+                    checkElement.classList.add('menu-show');
+                    checkElement.style.height = '0';
+                    setTimeout(() => {
+                        checkElement.style.height = `${checkElement.scrollHeight}px`;
+                    }, 10);
+                    setTimeout(() => {
+                        checkElement.style.height = '';
+                    }, animationSpeed);
+                    parent.querySelectorAll('li.active').forEach(li => li.classList.remove('active'));
+                    checkElement.parentElement.classList.add('active');
                 }
-            });
-        },
+            }
+        });
+    };
+
+    // Initialize sidebar menu
+    const mainMenu = document.querySelector('.main-menu');
+    if (mainMenu) {
+        sidebarMenu(mainMenu);
+    }
+
+    // Highlight active menu item based on current URL
+    const currentUrl = window.location.href;
+    const menuLinks = document.querySelectorAll('.main-menu a');
+    menuLinks.forEach(link => {
+        if (link.href === currentUrl) {
+            link.classList.add('active');
+            let parentLi = link.closest('li');
+            while (parentLi) {
+                parentLi.classList.add('active');
+                const parentSubMenu = parentLi.querySelector('.sub-menu');
+                if (parentSubMenu) {
+                    parentSubMenu.classList.add('menu-show');
+                    parentSubMenu.style.height = 'auto';
+                }
+                parentLi = parentLi.parentElement.closest('li');
+            }
+        }
+    });
+},
 
         /*-----------------------------------------------------
             Fix Sidebar Hover

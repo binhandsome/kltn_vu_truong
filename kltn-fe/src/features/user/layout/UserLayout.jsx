@@ -5,7 +5,14 @@ import UserHeader from './UserHeader';
 import UserFooter from './UserFooter';
 
 const cssFiles = [
+  // 🔷 Icon fonts
+  '/assets/user/icons/feather/css/iconfont.css',
+  '/assets/user/icons/fontawesome/css/all.min.css',
   '/assets/user/icons/iconly/index.min.css',
+  '/assets/user/icons/themify/themify-icons.css',
+  '/assets/user/icons/flaticon/flaticon_pixio.css',
+
+  // 🔶 UI & Plugin styles
   '/assets/user/vendor/magnific-popup/magnific-popup.min.css',
   '/assets/user/vendor/bootstrap-select/dist/css/bootstrap-select.min.css',
   '/assets/user/vendor/swiper/swiper-bundle.min.css',
@@ -15,17 +22,21 @@ const cssFiles = [
   '/assets/user/vendor/lightgallery/dist/css/lg-thumbnail.css',
   '/assets/user/vendor/lightgallery/dist/css/lg-zoom.css',
   '/assets/user/vendor/slick/slick.css',
+  'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css',
+
+  // 🔸 App custom styles
   '/assets/user/css/style.css',
   '/assets/user/css/skin/skin-1.css',
   '/assets/user/css/custom-fix.css',
 ];
 
+
 const jsFiles = [
   '/assets/user/js/jquery.min.js',
+  '/assets/user/vendor/wow/wow.min.js',
   '/assets/user/vendor/bootstrap/dist/js/bootstrap.bundle.min.js',
   '/assets/user/vendor/bootstrap-select/dist/js/bootstrap-select.min.js',
   '/assets/user/vendor/bootstrap-touchspin/bootstrap-touchspin.js',
-  '/assets/user/vendor/wow/wow.min.js',
   '/assets/user/vendor/swiper/swiper-bundle.min.js',
   '/assets/user/vendor/magnific-popup/magnific-popup.js',
   '/assets/user/vendor/imagesloaded/imagesloaded.js',
@@ -40,10 +51,16 @@ const jsFiles = [
   '/assets/user/vendor/lightgallery/dist/lightgallery.min.js',
   '/assets/user/vendor/lightgallery/dist/plugins/thumbnail/lg-thumbnail.min.js',
   '/assets/user/vendor/lightgallery/dist/plugins/zoom/lg-zoom.min.js',
+
+  // 🟢 THÊM APEXCHARTS TRƯỚC DASHBOARD
+  'https://cdn.jsdelivr.net/npm/apexcharts', // 👉 Dùng CDN luôn
   '/assets/user/js/dz.carousel.js',
   '/assets/user/js/dz.ajax.js',
-  '/assets/user/js/custom.js',
+  '/assets/user/js/custom.min.js',
+  '/assets/user/js/dashbord-account.js',
+  'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js'
 ];
+
 
 const UserLayout = () => {
   useEffect(() => {
@@ -74,15 +91,47 @@ const UserLayout = () => {
         await loadScript(src);
       }
 
-      // Init WOW
-      if (window.WOW) {
-        const wow = new window.WOW();
-        wow.init();
-        setTimeout(() => wow.sync(), 300);
-      }
+      // // Init WOW
+      // if (window.WOW) {
+      //   const wow = new window.WOW();
+      //   wow.init();
+      //   setTimeout(() => wow.sync(), 800);
+      // }
     };
 
     loadScriptsInOrder();
+setTimeout(() => {
+  if (window.Swiper) {
+    new window.Swiper('.category-swiper', {
+      slidesPerView: 4,
+      spaceBetween: 30,
+      loop: true,
+      autoplay: {
+        delay: 2000,
+        disableOnInteraction: false,
+      },
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      breakpoints: {
+        576: { slidesPerView: 2 },
+        768: { slidesPerView: 3 },
+        992: { slidesPerView: 4 },
+        1200: { slidesPerView: 5 },
+        1500: { slidesPerView: 6 },
+        2000: { slidesPerView: 7 },
+      },
+    });
+  } else {
+    console.warn("Swiper not found in window");
+  }
+}, 1000);
+
 
     return () => {
       cssFiles.forEach(href => {

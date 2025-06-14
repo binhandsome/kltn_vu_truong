@@ -1502,7 +1502,18 @@ body.mini-sidebar .header-wrapper {
     align-items: center;
     justify-content: space-between;
 }
-
+.hidden-text.hide {
+    display: none !important; /* High specificity to override other rules */
+}
+.hidden-text {
+    display: inline; /* Ensure text is visible when not hidden */
+}
+.mini-sidebar .hidden-text {
+    display: none; /* Fallback for mini-sidebar state */
+}
+.mini-sidebar .hidden-text.hide {
+    display: none !important; /* Reinforce hiding in mini-sidebar */
+}
 .logo-wrapper {
     width: 280px;
     height: 80px;

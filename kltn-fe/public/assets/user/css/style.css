@@ -3,7 +3,7 @@
     =========================
 	Template Name 	 : Pixio
 	Author			 : DexignZone
-	Version			 : 1.5
+	Version			 : 1.6
 	Author Portfolio : https://themeforest.net/user/dexignzone
 	=========================
 	
@@ -1549,7 +1549,7 @@ progress {
     vertical-align: bottom; }
 
 .table-group-divider {
-  border-top: calc($table-border-width * 2) solid currentcolor; }
+  border-top: calc(table-border-width * 2) solid currentcolor; }
 
 .caption-top {
   caption-side: top; }
@@ -2036,7 +2036,7 @@ progress {
     padding-left: 0; }
 
 .form-control-sm {
-  min-height: calc(1.6em + 0.5rem + calc($input-border-width * 2));
+  min-height: calc(1.6em + 0.5rem + calc(input-border-width * 2));
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
   border-radius: 0.75rem; }
@@ -2046,7 +2046,7 @@ progress {
     margin-inline-end: 0.5rem; }
 
 .form-control-lg {
-  min-height: calc(1.6em + 1rem + calc($input-border-width * 2));
+  min-height: calc(1.6em + 1rem + calc(input-border-width * 2));
   padding: 0.5rem 1rem;
   font-size: 1.25rem;
   border-radius: 1rem; }
@@ -2061,17 +2061,17 @@ textarea.form-control,
 .checkout.woocommerce-checkout textarea,
 .woocommerce form .form-row textarea.select2-selection,
 .woocommerce form .form-row textarea.select2-choice {
-  min-height: calc(1.6em + 0.75rem + calc($input-border-width * 2)); }
+  min-height: calc(1.6em + 0.75rem + calc(input-border-width * 2)); }
 
 textarea.form-control-sm {
-  min-height: calc(1.6em + 0.5rem + calc($input-border-width * 2)); }
+  min-height: calc(1.6em + 0.5rem + calc(input-border-width * 2)); }
 
 textarea.form-control-lg {
-  min-height: calc(1.6em + 1rem + calc($input-border-width * 2)); }
+  min-height: calc(1.6em + 1rem + calc(input-border-width * 2)); }
 
 .form-control-color {
   width: 3rem;
-  height: calc(1.6em + 0.75rem + calc($input-border-width * 2));
+  height: calc(1.6em + 0.75rem + calc(input-border-width * 2));
   padding: 0.375rem; }
   .form-control-color:not(:disabled):not([readonly]) {
     cursor: pointer; }
@@ -2081,9 +2081,9 @@ textarea.form-control-lg {
   .form-control-color::-webkit-color-swatch {
     border-radius: 0.375rem; }
   .form-control-color.form-control-sm {
-    height: calc(1.6em + 0.5rem + calc($input-border-width * 2)); }
+    height: calc(1.6em + 0.5rem + calc(input-border-width * 2)); }
   .form-control-color.form-control-lg {
-    height: calc(1.6em + 1rem + calc($input-border-width * 2)); }
+    height: calc(1.6em + 1rem + calc(input-border-width * 2)); }
 
 .form-select,
 select {
@@ -2352,7 +2352,7 @@ select {
   .form-floating > .form-control-plaintext,
   .form-floating > .form-select,
   .form-floating > select {
-    height: calc(3.5rem + calc($input-border-width * 2));
+    height: calc(3.5rem + calc(input-border-width * 2));
     line-height: 1.25; }
   .form-floating > label {
     position: absolute;
@@ -2730,7 +2730,7 @@ select {
   border-bottom-right-radius: 0; }
 
 .input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
-  margin-left: calc($input-border-width * -1);
+  margin-left: calc(input-border-width * -1);
   border-top-left-radius: 0;
   border-bottom-left-radius: 0; }
 
@@ -3684,7 +3684,7 @@ select.is-invalid {
   --bs-dropdown-border-color: var(--bs-border-color-translucent);
   --bs-dropdown-border-radius: 0.375rem;
   --bs-dropdown-border-width: var(--bs-border-width);
-  --bs-dropdown-inner-border-radius: calc($dropdown-border-radius - $dropdown-border-width);
+  --bs-dropdown-inner-border-radius: calc(dropdown-border-radius - dropdown-border-width);
   --bs-dropdown-divider-bg: var(--bs-border-color-translucent);
   --bs-dropdown-divider-margin-y: 0.5rem;
   --bs-dropdown-box-shadow: 0 0.5rem 1rem rgba(var(--bs-body-color-rgb), 0.15);
@@ -4106,7 +4106,7 @@ select.is-invalid {
   .woocommerce .btn-group > :not(.btn-check:first-child) + input.button,
   .woocommerce .btn-group > :not(.btn-check:first-child) + #place_order,
   .btn-group > .btn-group:not(:first-child) {
-    margin-left: calc($btn-border-width * -1); }
+    margin-left: calc(btn-border-width * -1); }
   .btn-group > .btn:not(:last-child):not(.dropdown-toggle), .btn-group > .wp-block-button__link:not(:last-child):not(.dropdown-toggle), .woocommerce .widget_shopping_cart .buttons .btn-group > a:not(:last-child):not(.dropdown-toggle),
   .woocommerce.widget_shopping_cart .buttons .btn-group > a:not(:last-child):not(.dropdown-toggle), .woocommerce #review_form #respond .form-submit .btn-group > input:not(:last-child):not(.dropdown-toggle), .woocommerce-cart-form .table tr .btn-group > .button:not(:last-child):not(.dropdown-toggle), .woocommerce-cart .wc-proceed-to-checkout .btn-group > a.checkout-button:not(:last-child):not(.dropdown-toggle), .woocommerce #respond .btn-group > input#submit:not(:last-child):not(.dropdown-toggle),
   .woocommerce .btn-group > a.button:not(:last-child):not(.dropdown-toggle),
@@ -4216,7 +4216,7 @@ select.is-invalid {
   .woocommerce .btn-group-vertical > input.button:not(:first-child),
   .woocommerce .btn-group-vertical > #place_order:not(:first-child),
   .btn-group-vertical > .btn-group:not(:first-child) {
-    margin-top: calc($btn-border-width * -1); }
+    margin-top: calc(btn-border-width * -1); }
   .btn-group-vertical > .btn:not(:last-child):not(.dropdown-toggle), .btn-group-vertical > .wp-block-button__link:not(:last-child):not(.dropdown-toggle), .woocommerce .widget_shopping_cart .buttons .btn-group-vertical > a:not(:last-child):not(.dropdown-toggle),
   .woocommerce.widget_shopping_cart .buttons .btn-group-vertical > a:not(:last-child):not(.dropdown-toggle), .woocommerce #review_form #respond .form-submit .btn-group-vertical > input:not(:last-child):not(.dropdown-toggle), .woocommerce-cart-form .table tr .btn-group-vertical > .button:not(:last-child):not(.dropdown-toggle), .woocommerce-cart .wc-proceed-to-checkout .btn-group-vertical > a.checkout-button:not(:last-child):not(.dropdown-toggle), .woocommerce #respond .btn-group-vertical > input#submit:not(:last-child):not(.dropdown-toggle),
   .woocommerce .btn-group-vertical > a.button:not(:last-child):not(.dropdown-toggle),
@@ -5119,7 +5119,7 @@ select.is-invalid {
     border-color: var(--bs-pagination-disabled-border-color); }
 
 .page-item:not(:first-child) .page-link {
-  margin-left: calc($pagination-border-width * -1); }
+  margin-left: calc(pagination-border-width * -1); }
 
 .page-item:first-child .page-link {
   border-top-left-radius: var(--bs-pagination-border-radius);
@@ -6017,7 +6017,7 @@ select.is-invalid {
   --bs-popover-border-width: var(--bs-border-width);
   --bs-popover-border-color: var(--bs-border-color-translucent);
   --bs-popover-border-radius: var(--bs-border-radius-lg);
-  --bs-popover-inner-border-radius: calc($popover-border-radius - $popover-border-width);
+  --bs-popover-inner-border-radius: calc(popover-border-radius - popover-border-width);
   --bs-popover-box-shadow: 0 0.5rem 1rem rgba(var(--bs-body-color-rgb), 0.15);
   --bs-popover-header-padding-x: 1rem;
   --bs-popover-header-padding-y: 0.5rem;
@@ -11002,22 +11002,7 @@ img::selection {
   100% {
     transform: rotate(0deg); } }
 
-.preloader-wrapper-4 {
-  align-items: center;
-  position: fixed;
-  z-index: 999999;
-  left: 0px;
-  top: 0px;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  transition: all 1s ease 0s;
-  background-position: center center;
-  background-size: 150px;
-  background-repeat: no-repeat;
-  backdrop-filter: blur(10px);
-  background: #fff; }
+
 
 .font-10 {
   font-size: 10px; }
@@ -29517,6 +29502,8 @@ del {
   .blog-single h1, .blog-single .h1 {
     max-width: 625px;
     margin-bottom: 10px; }
+    .blog-single h1.dz-title, .blog-single .dz-title.h1 {
+      max-width: 100%; }
   .blog-single .dz-post-meta {
     margin-bottom: 1.25rem; }
   .blog-single .dz-post-text {
@@ -29542,7 +29529,7 @@ del {
       margin-left: auto;
       text-align: center; }
     .blog-single.style-1 ul {
-      padding: 0 !important; }
+      padding: 0; }
       .blog-single.style-1 ul li:before {
         display: none !important; }
     @media only screen and (max-width: 991px) {
@@ -29733,26 +29720,57 @@ del {
       .post-header .dz-info .dz-meta > ul > li {
         color: #fff; }
 
-.post-link-in {
-  padding: 15px 50px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  font-size: 22px;
-  font-weight: 400;
+.blog-single > .dz-media.post-link img + .post-link-in {
+  background: rgba(255, 255, 255, 0.8);
+  color: #000000;
   position: absolute;
-  bottom: 0;
-  left: 0;
-  -webkit-transition: all 0.5s;
-  -ms-transition: all 0.5s;
-  transition: all 0.5s;
-  border: 0 30px 0 0; }
-  .post-link-in:hover {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80px; }
+  .blog-single > .dz-media.post-link img + .post-link-in:hover {
     background: var(--primary);
     color: #fff; }
-  @media only screen and (max-width: 767px) {
-    .post-link-in {
-      padding: 10px 30px;
-      font-size: 20px; } }
+
+.blog-single > .dz-media.post-link::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px); }
+
+.blog-single > .dz-media.post-link:not(:has(img))::after {
+  content: none; }
+
+.blog-single > .dz-media.post-link:not(:has(img)) > .post-link-in {
+  position: static;
+  transform: none;
+  width: auto;
+  background-color: var(--primary);
+  color: #fff; }
+
+.post-link-in {
+  padding: 15px 50px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 500;
+  position: static;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 120px;
+  transition: all 0.5s;
+  -webkit-transition: all 0.8s;
+  -ms-transition: all 0.8s;
+  transition: all 0.8s;
+  z-index: 1; }
+  .post-link-in .link-ic {
+    margin-right: 15px; }
 
 .side-bar {
   padding-left: 20px;
@@ -29794,7 +29812,7 @@ del {
     float: left; }
   @media only screen and (max-width: 575px) {
     .alignleft.side-img {
-      width: 200px; } }
+      width: 50%; } }
 
 .wp-caption {
   max-width: 100%;
@@ -31619,7 +31637,7 @@ pre {
       margin: 0 var(--gallery-block--gutter-size, 10px) var(--gallery-block--gutter-size, 10px) 0; } }
 
 .post-audio iframe {
-  height: 400px;
+  height: 510px;
   width: 100%; }
   @media only screen and (max-width: 767px) {
     .post-audio iframe {
@@ -34059,6 +34077,22 @@ body .working-location {
         .dz-product-detail .quick-modal-swiper.thumb-sm .swiper-slide.swiper-slide-thumb-active img,
         .dz-product-detail .product-gallery-swiper.thumb-sm .swiper-slide.swiper-slide-thumb-active img {
           border-color: var(--secondary); }
+    .dz-product-detail .quick-modal-swiper.style-1,
+    .dz-product-detail .product-gallery-swiper.style-1 {
+      position: unset;
+      transform: none;
+      margin: 20px auto; }
+      .dz-product-detail .quick-modal-swiper.style-1 .swiper-slide,
+      .dz-product-detail .product-gallery-swiper.style-1 .swiper-slide {
+        height: 205px;
+        width: 205px !important;
+        min-width: 205px !important; }
+        @media only screen and (max-width: 991px) {
+          .dz-product-detail .quick-modal-swiper.style-1 .swiper-slide,
+          .dz-product-detail .product-gallery-swiper.style-1 .swiper-slide {
+            height: auto !important;
+            width: auto !important;
+            min-width: auto !important; } }
     @media only screen and (max-width: 991px) {
       .dz-product-detail .quick-modal-swiper.swiper-vertical,
       .dz-product-detail .product-gallery-swiper.swiper-vertical {
@@ -34067,8 +34101,8 @@ body .working-location {
       .dz-product-detail .quick-modal-swiper.thumb-swiper-lg .swiper-slide,
       .dz-product-detail .product-gallery-swiper.thumb-swiper-lg .swiper-slide {
         height: 50px;
-        width: 50px !important;
-        min-width: 50px !important; } }
+        width: 50px;
+        min-width: 50px; } }
   .dz-product-detail .product-num {
     display: flex;
     align-items: center;
@@ -37243,6 +37277,291 @@ table.wishlist_table {
       .dz-slider1 .banner-content .content-btn .woocommerce #place_order, .woocommerce .dz-slider1 .banner-content .content-btn #place_order {
         font-size: 13px; } }
 
+.quote-text blockquote.wp-block-quote::before {
+  content: "\f16d";
+  font-size: 80px;
+  font-family: flaticon_pixio !important;
+  font-weight: normal !important;
+  opacity: 1;
+  opacity: 0.2;
+  width: auto;
+  height: auto;
+  top: auto;
+  left: auto;
+  right: 0px;
+  bottom: 0px; }
+  @media only screen and (max-width: 991px) {
+    .quote-text blockquote.wp-block-quote::before {
+      font-size: 60px; } }
+  @media only screen and (max-width: 575px) {
+    .quote-text blockquote.wp-block-quote::before {
+      font-size: 40px; } }
+
+.blog-single > .dz-media > img + .quote-text {
+  position: absolute; }
+
+.blog-single > .dz-media:not(:has(img)) > .quote-text {
+  position: static;
+  transform: none;
+  width: auto;
+  background-color: var(--rgba-primary-1); }
+
+.quote-text {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 40px;
+  width: 720px; }
+  @media only screen and (max-width: 1199px) {
+    .quote-text {
+      width: 510px;
+      padding: 20px; } }
+  @media only screen and (max-width: 767px) {
+    .quote-text {
+      width: calc(100% - 20px);
+      padding: 8px; } }
+  .quote-text blockquote.wp-block-quote {
+    margin: 0px;
+    background-color: transparent;
+    border: 0;
+    padding: 1.25rem 2rem 1.25rem 1.875rem;
+    text-align: left; }
+    @media only screen and (max-width: 575px) {
+      .quote-text blockquote.wp-block-quote {
+        padding: 15px; } }
+    .quote-text blockquote.wp-block-quote::before {
+      opacity: 0.5;
+      right: 0px;
+      bottom: 0px;
+      left: auto;
+      top: auto;
+      background-size: contain; }
+      @media only screen and (max-width: 575px) {
+        .quote-text blockquote.wp-block-quote::before {
+          width: 50px;
+          height: 50px; } }
+  @media only screen and (max-width: 1199px) {
+    .quote-text blockquote p {
+      font-size: 18px; } }
+  @media only screen and (max-width: 575px) {
+    .quote-text blockquote p {
+      font-size: 12px; } }
+
+.tutorial {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 30px; }
+  .tutorial .tutorial-border {
+    border-bottom: 1px solid var(--border-color); }
+  .tutorial ul {
+    margin: 0px;
+    padding: 0px 20px !important; }
+    .tutorial ul li {
+      list-style: auto !important;
+      padding: 5px 0px;
+      font-size: 16px;
+      color: var(--primary) !important; }
+      .tutorial ul li a {
+        color: var(--primary); }
+
+.tutorial-data > div {
+  scroll-margin-top: 100px; }
+
+.cateloge {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 20px;
+  display: flex;
+  gap: 20rem;
+  margin-bottom: 15px;
+  margin-top: 25px; }
+  .cateloge table {
+    margin-bottom: 0px; }
+    .cateloge table tr {
+      background-color: transparent !important; }
+      .cateloge table tr td {
+        padding: 4px 0px;
+        color: #000;
+        border: 0; }
+
+.no-sidebar .dz-title {
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center; }
+
+.no-sidebar .dz-meta ul {
+  justify-content: center; }
+
+.corner-media {
+  position: sticky;
+  top: 0; }
+  .corner-media img {
+    height: 100vh;
+    object-fit: cover;
+    width: 100%; }
+
+.dz-post-text hr {
+  height: 4px;
+  border-top: 4px solid;
+  margin: 40px 0; }
+
+.post-status-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 100%;
+  width: 100px;
+  height: 100px;
+  border: 0;
+  background-color: rgba(0, 0, 0, 0.4); }
+  @media only screen and (max-width: 575px) {
+    .post-status-btn {
+      width: 80px;
+      height: 80px; } }
+
+.modal.status-modal {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  overflow-y: hidden; }
+  @media only screen and (max-width: 575px) {
+    .modal.status-modal .modal-dialog-centered {
+      margin: 0; } }
+  .modal.status-modal .btn-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 44px;
+    height: 44px;
+    color: #fff;
+    background-image: url('data:image/svg+xml,<svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 1L1 21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 1L21 21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+    z-index: 9; }
+    @media only screen and (max-width: 575px) {
+      .modal.status-modal .btn-close {
+        top: 20px;
+        right: 20px; } }
+  .modal.status-modal .status-pagination {
+    position: absolute;
+    top: 0;
+    bottom: auto !important;
+    left: 50% !important;
+    height: auto;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    z-index: 9;
+    transform: translate(-50%);
+    padding: 10px 0; }
+    .modal.status-modal .status-pagination .swiper-pagination-bullet {
+      height: 5px;
+      background-color: rgba(255, 255, 255, 0.5);
+      opacity: 1;
+      width: 100%;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden; }
+      .modal.status-modal .status-pagination .swiper-pagination-bullet::after {
+        content: "";
+        height: 100%;
+        width: 0;
+        background: #fff;
+        position: absolute;
+        top: 0;
+        left: 0; }
+      .modal.status-modal .status-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active::after {
+        width: 100%;
+        transition: 3.5s linear; }
+  .modal.status-modal .modal-content {
+    border-radius: 30px; }
+    .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide {
+      height: unset; }
+      .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 30%;
+        background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0.3%, rgba(0, 0, 0, 0.6) 100%); }
+      .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 9;
+        color: #fff;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 30px 20px 0px 20px; }
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .post-date {
+          font-size: 16px;
+          color: #fff;
+          opacity: 0.5; }
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .title {
+          font-size: 24px;
+          color: #ffff;
+          font-family: 'Roboto';
+          font-weight: 800;
+          margin-bottom: 0; }
+          @media only screen and (max-width: 575px) {
+            .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .title {
+              font-size: 17px; } }
+        @media only screen and (max-width: 575px) {
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn {
+            display: flex;
+            flex-direction: column;
+            justify-content: end; } }
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn.btn-sm, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > .btn, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > .wp-block-button__link, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .widget_shopping_cart .buttons .btn-group-sm > a, .woocommerce .widget_shopping_cart .buttons .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > a,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce.widget_shopping_cart .buttons .btn-group-sm > a, .woocommerce.widget_shopping_cart .buttons .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > a, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce #review_form #respond .form-submit .btn-group-sm > input, .woocommerce #review_form #respond .form-submit .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > input, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce-cart-form .table tr .btn-group-sm > .button, .woocommerce-cart-form .table tr .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > .button, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce-cart .wc-proceed-to-checkout .btn-group-sm > a.checkout-button, .woocommerce-cart .wc-proceed-to-checkout .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > a.checkout-button, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce #respond .btn-group-sm > input#submit, .woocommerce #respond .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > input#submit,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-group-sm > a.button, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > a.button,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-group-sm > button.button, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > button.button,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-group-sm > input.button, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > input.button,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-group-sm > #place_order, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > #place_order, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-sm.wp-block-button__link, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .widget_shopping_cart .buttons a.btn-sm, .woocommerce .widget_shopping_cart .buttons .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn a.btn-sm,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce.widget_shopping_cart .buttons a.btn-sm, .woocommerce.widget_shopping_cart .buttons .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn a.btn-sm, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce #review_form #respond .form-submit input.btn-sm, .woocommerce #review_form #respond .form-submit .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn input.btn-sm, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce-cart-form .table tr .btn-sm.button, .woocommerce-cart-form .table tr .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-sm.button, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce-cart .wc-proceed-to-checkout a.btn-sm.checkout-button, .woocommerce-cart .wc-proceed-to-checkout .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn a.btn-sm.checkout-button, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce #respond input.btn-sm#submit, .woocommerce #respond .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn input.btn-sm#submit,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce a.btn-sm.button, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn a.btn-sm.button,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce button.btn-sm.button, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn button.btn-sm.button,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce input.btn-sm.button, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn input.btn-sm.button,
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-sm#place_order, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-sm#place_order {
+          white-space: nowrap;
+          padding: 6px 10px;
+          border-radius: 5px; }
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn.btn-sm:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > .btn:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > .wp-block-button__link:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .widget_shopping_cart .buttons .btn-group-sm > a:hover, .woocommerce .widget_shopping_cart .buttons .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > a:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce.widget_shopping_cart .buttons .btn-group-sm > a:hover, .woocommerce.widget_shopping_cart .buttons .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > a:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce #review_form #respond .form-submit .btn-group-sm > input:hover, .woocommerce #review_form #respond .form-submit .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > input:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce-cart-form .table tr .btn-group-sm > .button:hover, .woocommerce-cart-form .table tr .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > .button:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce-cart .wc-proceed-to-checkout .btn-group-sm > a.checkout-button:hover, .woocommerce-cart .wc-proceed-to-checkout .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > a.checkout-button:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce #respond .btn-group-sm > input#submit:hover, .woocommerce #respond .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > input#submit:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-group-sm > a.button:hover, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > a.button:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-group-sm > button.button:hover, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > button.button:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-group-sm > input.button:hover, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > input.button:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-group-sm > #place_order:hover, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-group-sm > #place_order:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-sm.wp-block-button__link:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .widget_shopping_cart .buttons a.btn-sm:hover, .woocommerce .widget_shopping_cart .buttons .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn a.btn-sm:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce.widget_shopping_cart .buttons a.btn-sm:hover, .woocommerce.widget_shopping_cart .buttons .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn a.btn-sm:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce #review_form #respond .form-submit input.btn-sm:hover, .woocommerce #review_form #respond .form-submit .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn input.btn-sm:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce-cart-form .table tr .btn-sm.button:hover, .woocommerce-cart-form .table tr .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-sm.button:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce-cart .wc-proceed-to-checkout a.btn-sm.checkout-button:hover, .woocommerce-cart .wc-proceed-to-checkout .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn a.btn-sm.checkout-button:hover, .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce #respond input.btn-sm#submit:hover, .woocommerce #respond .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn input.btn-sm#submit:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce a.btn-sm.button:hover, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn a.btn-sm.button:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce button.btn-sm.button:hover, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn button.btn-sm.button:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce input.btn-sm.button:hover, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn input.btn-sm.button:hover,
+          .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .woocommerce .btn-sm#place_order:hover, .woocommerce .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .btn-sm#place_order:hover {
+            background-color: #ebebeb;
+            color: #000; }
+        .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide .status-top-box .status-btn .volume-icon {
+          width: 44px;
+          height: 44px;
+          position: relative;
+          background: rgba(255, 255, 255, 0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          float: right; }
+      .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide img {
+        height: 100vh;
+        width: 100%;
+        object-fit: cover; }
+      .modal.status-modal .modal-content .status-wrapper .status-swiper .swiper-slide video {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        left: 0;
+        top: 0;
+        object-fit: cover;
+        z-index: -1; }
+
 .logo-header {
   display: flex;
   align-items: center;
@@ -38556,6 +38875,13 @@ a {
   100% {
     background-color: #bc8b6b; } }
 
+@media only screen and (min-width: 1200px) {
+  .two-col {
+    display: flex;
+    flex-wrap: wrap; }
+    .two-col li {
+      flex: 0 0 50%; } }
+
 .header-nav.w3menu .nav {
   padding: 0;
   font-size: 0; }
@@ -38643,10 +38969,14 @@ a {
       display: inline-block;
       position: relative;
       line-height: 24px; }
+      @media only screen and (max-width: 1480px) {
+        .header-nav.w3menu .nav > li > a {
+          padding-left: 12px;
+          padding-right: 12px; } }
       @media only screen and (max-width: 1199px) {
         .header-nav.w3menu .nav > li > a {
-          padding-left: 8px;
-          padding-right: 8px; } }
+          padding-left: 5px;
+          padding-right: 5px; } }
       @media only screen and (max-width: 991px) {
         .header-nav.w3menu .nav > li > a {
           padding: 8px 0;
@@ -40932,4 +41262,4 @@ footer {
   .dz-codebox .header-nav .nav > li.has-mega-menu.auto-width .mega-menu > ul > li {
     width: 150px; }
 
-/*# sourceMappingURL=style.min.css/style.css.map */
+/*# sourceMappingURL=style.css.map */
