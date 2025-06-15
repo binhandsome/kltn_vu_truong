@@ -29,13 +29,13 @@ const Carousal = () => (
 						<div id="carouselExampleControls" className="carousel slide" data-bs-ride="carousel">
 						  <div className="carousel-inner">
 							<div className="carousel-item active">
-							  <img className="d-block w-100" src="assets/images/carousal1.jpg" alt="First slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal1.jpg" alt="First slide"/>
 							</div>
 							<div className="carousel-item">
-							  <img className="d-block w-100" src="assets/images/carousal2.jpg" alt="Second slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal2.jpg" alt="Second slide"/>
 							</div>
 							<div className="carousel-item">
-							  <img className="d-block w-100" src="assets/images/carousal3.jpg" alt="Third slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal3.jpg" alt="Third slide"/>
 							</div>
 						  </div>
 						  <a className="carousel-control-prev" href="carousal.html#carouselExampleControls" role="button" data-bs-slide="prev">
@@ -71,13 +71,13 @@ const Carousal = () => (
 						  </div>
 						  <div className="carousel-inner">
 							<div className="carousel-item active">
-							  <img className="d-block w-100" src="assets/images/carousal4.jpg" alt="First slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal4.jpg" alt="First slide"/>
 							</div>
 							<div className="carousel-item">
-							  <img className="d-block w-100" src="assets/images/carousal5.jpg" alt="Second slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal5.jpg" alt="Second slide"/>
 							</div>
 							<div className="carousel-item">
-							  <img className="d-block w-100" src="assets/images/carousal6.jpg" alt="Third slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal6.jpg" alt="Third slide"/>
 							</div>
 						  </div>
 						  <a className="carousel-control-prev" href="carousal.html#carouselExampleIndicators" role="button" data-bs-slide="prev">
@@ -103,13 +103,13 @@ const Carousal = () => (
 						<div id="carouselExampleFade" className="carousel slide carousel-fade" data-bs-ride="carousel">
 						  <div className="carousel-inner">
 							<div className="carousel-item active">
-							  <img className="d-block w-100" src="assets/images/carousal7.jpg" alt="First slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal7.jpg" alt="First slide"/>
 							</div>
 							<div className="carousel-item">
-							  <img className="d-block w-100" src="assets/images/carousal8.jpg" alt="Second slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal8.jpg" alt="Second slide"/>
 							</div>
 							<div className="carousel-item">
-							  <img className="d-block w-100" src="assets/images/carousal9.jpg" alt="Third slide"/>
+							  <img className="d-block w-100" src="../../assets/admin/images/carousal9.jpg" alt="Third slide"/>
 							</div>
 						  </div>
 						  <a className="carousel-control-prev" href="carousal.html#carouselExampleFade" role="button" data-bs-slide="prev">

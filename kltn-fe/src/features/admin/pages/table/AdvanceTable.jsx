@@ -467,7 +467,7 @@ const AdvanceTable = () => (
                                                     </td>
                                                     <td>
                                                         <span className="img-thumb">
-                                                            <img className="squer-img" src="assets/images/table/pro1.jpg" alt=""/>
+                                                            <img className="squer-img" src="../../assets/admin/images/table/pro1.jpg" alt=""/>
                                                             <span className="ml-2">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -491,7 +491,7 @@ const AdvanceTable = () => (
                                                     </td>
                                                     <td>
                                                         <span className="img-thumb ">
-                                                            <img className="squer-img " src="assets/images/table/pro1.jpg" alt=" "/>
+                                                            <img className="squer-img " src="../../assets/admin/images/table/pro1.jpg" alt=" "/>
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -515,7 +515,7 @@ const AdvanceTable = () => (
                                                     </td>
                                                     <td>
                                                         <span className="img-thumb ">
-                                                            <img className="squer-img " src="assets/images/table/pro2.jpg" alt=" "/>
+                                                            <img className="squer-img " src="../../assets/admin/images/table/pro2.jpg" alt=" "/>
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -536,7 +536,7 @@ const AdvanceTable = () => (
                                                     <td>4</td>
                                                     <td>
                                                         <span className="img-thumb ">
-                                                            <img className="squer-img " src="assets/images/table/pro1.jpg" alt=" "/>
+                                                            <img className="squer-img " src="../../assets/admin/images/table/pro1.jpg" alt=" "/>
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -559,7 +559,7 @@ const AdvanceTable = () => (
                                                     <td>5</td>
                                                     <td>
                                                         <span className="img-thumb ">
-                                                            <img className="squer-img " src="assets/images/table/pro2.jpg" alt=" "/>
+                                                            <img className="squer-img " src="../../assets/admin/images/table/pro2.jpg" alt=" "/>
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -580,7 +580,7 @@ const AdvanceTable = () => (
                                                     <td>6</td>
                                                     <td>
                                                         <span className="img-thumb ">
-                                                            <img className="squer-img " src="assets/images/table/pro2.jpg" alt=" "/>
+                                                            <img className="squer-img " src="../../assets/admin/images/table/pro2.jpg" alt=" "/>
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -653,7 +653,7 @@ const AdvanceTable = () => (
                                                         </td>
                                                         <td>
                                                             <span className="img-thumb ">
-                                                            <img className="squer-img " src="assets/images/table/pro1.jpg" alt=" "/>
+                                                            <img className="squer-img " src="../../assets/admin/images/table/pro1.jpg" alt=" "/>
                                                             <span className="ml-2 ">Balance Arishi Sport</span>
                                                             </span>
                                                         </td>
@@ -674,7 +674,7 @@ const AdvanceTable = () => (
                                                     </td>
                                                     <td>
                                                         <span className="img-thumb ">
-                                                            <img className="squer-img " src="assets/images/table/pro3.jpg" alt=" "/>
+                                                            <img className="squer-img " src="../../assets/admin/images/table/pro3.jpg" alt=" "/>
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -695,7 +695,7 @@ const AdvanceTable = () => (
                                                         </td>
                                                         <td>
                                                             <span className="img-thumb ">
-                                                            <img className="squer-img " src="assets/images/table/pro2.jpg" alt=" "/>
+                                                            <img className="squer-img " src="../../assets/admin/images/table/pro2.jpg" alt=" "/>
                                                             <span className="ml-2 ">Arishi Balance Arishi Sport</span>
                                                             </span>
                                                         </td>
