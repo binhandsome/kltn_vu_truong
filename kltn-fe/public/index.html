@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<<<<<<< HEAD
 <head>
   <meta charset="utf-8" />
   <title>React App</title>
@@ -36,86 +35,4 @@
   <div id="root"></div>
 
 </body>
-=======
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
-    <title>React App</title>
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="React application layout for user/admin roles" />
-    
-    <!-- Fallback favicon (có thể bị ghi đè bởi react-helmet trong layout) -->
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    
-    <!-- Loader CSS nếu bạn dùng -->
-    <style>
-      #root {
-        opacity: 0;
-        transition: opacity 0.3s ease-in-out;
-      }
-      #root.visible {
-        opacity: 1;
-      }
-
-      .loader-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        opacity: 1;
-        transition: opacity 0.4s ease;
-      }
-
-      .loader-overlay.fade-out {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .loader-logo {
-        width: 80px;
-        height: 80px;
-        animation: spin 1.5s linear infinite;
-      }
-
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    </style>
-  </head>
-
-  <body>
-    <!-- Optional loader -->
-    <div id="loader" class="loader-overlay">
-      <img src="/assets/user/images/logo.png" alt="Loader" class="loader-logo" />
-    </div>
-
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-
-    <script>
-      window.addEventListener('load', () => {
-        const loader = document.getElementById('loader');
-        const root = document.getElementById('root');
-        if (loader) {
-          loader.classList.add('fade-out');
-          setTimeout(() => {
-            loader.remove();
-            root.classList.add('visible');
-          }, 500);
-        } else {
-          root.classList.add('visible');
-        }
-      });
-    </script>
-  </body>
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 </html>

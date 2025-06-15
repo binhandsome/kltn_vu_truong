@@ -30,10 +30,6 @@ function ProductDetail() {
 
   return (
     <>
-<<<<<<< HEAD
-=======
-      <div className="page-wraper">
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 
         {/* Header (đã được xử lý trong App.js) */}
 
@@ -658,15 +654,9 @@ function ProductDetail() {
 	</div>
 
         {/* Footer (đã được xử lý trong App.js) */}
-<<<<<<< HEAD
 		
          <ScrollTopButton/>
         <QuickViewModal />
-=======
-         <ScrollTopButton/>
-        <QuickViewModal />
-      </div>
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
     </>
   );
 }

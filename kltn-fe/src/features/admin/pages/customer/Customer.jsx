@@ -415,11 +415,7 @@ const Customer = () => (
 									<nav className="d-inline-block">
 										<ul className="pagination mb-0 ">
 										  <li className="page-item disabled ">
-<<<<<<< HEAD
 											<a className="page-link" href="javascript:void(0);" tabIndex="-1"><i className="fas fa-chevron-left"></i></a>
-=======
-											<a className="page-link" href="javascript:void(0);" tabindex="-1"><i className="fas fa-chevron-left"></i></a>
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 										  </li>
 										  <li className="page-item active "><a className="page-link " href="javascript:void(0); ">1</a></li>
 										  <li className="page-item ">

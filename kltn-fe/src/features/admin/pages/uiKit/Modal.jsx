@@ -26,11 +26,7 @@ const Modal = () => (
 						<h5>Static Example</h5>
 					  </div>
 					  <div className="card-body">
-<<<<<<< HEAD
 						<div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block', position: 'unset' }}>
-=======
-						<div className="modal" tabindex="-1" role="dialog" style={{ display: 'block', position: 'unset' }}>
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 						  <div className="modal-dialog" role="document">
 							<div className="modal-content">
 							  <div className="modal-header">

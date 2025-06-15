@@ -1502,7 +1502,6 @@ body.mini-sidebar .header-wrapper {
     align-items: center;
     justify-content: space-between;
 }
-<<<<<<< HEAD
 .hidden-text.hide {
     display: none !important; /* High specificity to override other rules */
 }
@@ -1515,9 +1514,6 @@ body.mini-sidebar .header-wrapper {
 .mini-sidebar .hidden-text.hide {
     display: none !important; /* Reinforce hiding in mini-sidebar */
 }
-=======
-
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 .logo-wrapper {
     width: 280px;
     height: 80px;

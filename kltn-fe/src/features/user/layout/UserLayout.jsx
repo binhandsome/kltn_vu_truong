@@ -5,7 +5,6 @@ import UserHeader from './UserHeader';
 import UserFooter from './UserFooter';
 
 const cssFiles = [
-<<<<<<< HEAD
   // 🔷 Icon fonts
   '/assets/user/icons/feather/css/iconfont.css',
   '/assets/user/icons/fontawesome/css/all.min.css',
@@ -14,9 +13,6 @@ const cssFiles = [
   '/assets/user/icons/flaticon/flaticon_pixio.css',
 
   // 🔶 UI & Plugin styles
-=======
-  '/assets/user/icons/iconly/index.min.css',
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
   '/assets/user/vendor/magnific-popup/magnific-popup.min.css',
   '/assets/user/vendor/bootstrap-select/dist/css/bootstrap-select.min.css',
   '/assets/user/vendor/swiper/swiper-bundle.min.css',
@@ -26,18 +22,14 @@ const cssFiles = [
   '/assets/user/vendor/lightgallery/dist/css/lg-thumbnail.css',
   '/assets/user/vendor/lightgallery/dist/css/lg-zoom.css',
   '/assets/user/vendor/slick/slick.css',
-<<<<<<< HEAD
   'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css',
 
   // 🔸 App custom styles
-=======
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
   '/assets/user/css/style.css',
   '/assets/user/css/skin/skin-1.css',
   '/assets/user/css/custom-fix.css',
 ];
 
-<<<<<<< HEAD
 
 const jsFiles = [
   '/assets/user/js/jquery.min.js',
@@ -45,14 +37,6 @@ const jsFiles = [
   '/assets/user/vendor/bootstrap/dist/js/bootstrap.bundle.min.js',
   '/assets/user/vendor/bootstrap-select/dist/js/bootstrap-select.min.js',
   '/assets/user/vendor/bootstrap-touchspin/bootstrap-touchspin.js',
-=======
-const jsFiles = [
-  '/assets/user/js/jquery.min.js',
-  '/assets/user/vendor/bootstrap/dist/js/bootstrap.bundle.min.js',
-  '/assets/user/vendor/bootstrap-select/dist/js/bootstrap-select.min.js',
-  '/assets/user/vendor/bootstrap-touchspin/bootstrap-touchspin.js',
-  '/assets/user/vendor/wow/wow.min.js',
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
   '/assets/user/vendor/swiper/swiper-bundle.min.js',
   '/assets/user/vendor/magnific-popup/magnific-popup.js',
   '/assets/user/vendor/imagesloaded/imagesloaded.js',
@@ -67,7 +51,6 @@ const jsFiles = [
   '/assets/user/vendor/lightgallery/dist/lightgallery.min.js',
   '/assets/user/vendor/lightgallery/dist/plugins/thumbnail/lg-thumbnail.min.js',
   '/assets/user/vendor/lightgallery/dist/plugins/zoom/lg-zoom.min.js',
-<<<<<<< HEAD
 
   // 🟢 THÊM APEXCHARTS TRƯỚC DASHBOARD
   'https://cdn.jsdelivr.net/npm/apexcharts', // 👉 Dùng CDN luôn
@@ -79,13 +62,6 @@ const jsFiles = [
 ];
 
 
-=======
-  '/assets/user/js/dz.carousel.js',
-  '/assets/user/js/dz.ajax.js',
-  '/assets/user/js/custom.js',
-];
-
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 const UserLayout = () => {
   useEffect(() => {
     // Inject CSS
@@ -115,7 +91,6 @@ const UserLayout = () => {
         await loadScript(src);
       }
 
-<<<<<<< HEAD
       // // Init WOW
       // if (window.WOW) {
       //   const wow = new window.WOW();
@@ -157,17 +132,6 @@ setTimeout(() => {
   }
 }, 1000);
 
-=======
-      // Init WOW
-      if (window.WOW) {
-        const wow = new window.WOW();
-        wow.init();
-        setTimeout(() => wow.sync(), 300);
-      }
-    };
-
-    loadScriptsInOrder();
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 
     return () => {
       cssFiles.forEach(href => {

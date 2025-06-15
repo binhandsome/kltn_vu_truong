@@ -28,24 +28,17 @@ import OrderTracking from '../pages/shoppages/OrderTracking';
 import WishList from '../pages/shoppages/WishList';
 import PostStandard from '../pages/blog/blogdetails/PostStandard';
 import PortfolioTiles from '../pages/portfolio/PortfolioTiles';
-<<<<<<< HEAD
 import PortfolioDetails from '../pages/portfolio/PortfolioDetails';
-=======
-import PortfolioDetails1 from '../pages/portfolio/PortfolioDetails1';
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 import Login from '../pages/auth/Login';
 import Registration from '../pages/auth/Registration';
 import ForgetPassword from '../pages/auth/ForgetPassword';
 import AboutUs from '../pages/about/AboutUs';
-<<<<<<< HEAD
 import ShopFiltersTopBar from '../pages/shop/ShopFiltersTopBar';
 import ShopList from '../pages/shop/ShopList';
 import ShopSideBar from '../pages/shop/ShopSideBar';
 import ShopStyle1 from '../pages/shop/ShopStyle1';
 import ShopStyle2 from '../pages/shop/ShopStyle2';
 import ShopStandard from '../pages/shop/ShopStandard';
-=======
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 
 const UserRoutes = () => {
   return (
@@ -79,7 +72,6 @@ const UserRoutes = () => {
         <Route path="shoppages/orderTracking" element={<OrderTracking />} />
         <Route path="shoppages/wishList" element={<WishList />} />
         <Route path="blog/blogdetails/postStandard" element={<PostStandard />} />
-<<<<<<< HEAD
         <Route path="portfolio/portfolioDetails" element={<PortfolioDetails />} />
         <Route path="portfolio/portfolioTiles" element={<PortfolioTiles />} />
         <Route path="about/aboutUs" element={<AboutUs />} />
@@ -89,11 +81,6 @@ const UserRoutes = () => {
         <Route path="shop/shopStyle1" element={<ShopStyle1/>} />
         <Route path="shop/shopStyle2" element={<ShopStyle2 />} />
         <Route path="shop/shopStandard" element={<ShopStandard />} />
-=======
-        <Route path="portfolio/portfolioDetails/portfolioDetails1" element={<PortfolioDetails1 />} />
-        <Route path="portfolio/portfolioTiles" element={<PortfolioTiles />} />
-        <Route path="about/aboutUs" element={<AboutUs />} />
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
       </Route>
     </Routes>
   );

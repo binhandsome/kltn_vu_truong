@@ -36,7 +36,6 @@ function OrderTracking() {
 
         {/* Header (đã được xử lý trong App.js) */}
 
-<<<<<<< HEAD
 <div className="page-content bg-light">
   <section className="px-3">
     <div className="row align-center-center">
@@ -97,47 +96,6 @@ function OrderTracking() {
     </div>
   </section>
 </div>
-=======
-        <div className="page-content bg-light">
-		<section className="px-3">
-			<div className="row align-center-center">
-				<div className="col-xxl-6 col-xl-6 col-lg-6 start-side-content">
-					<div className="dz-bnr-inr-entry">
-						<h1>Order Tracking</h1>
-						<nav aria-label="breadcrumb text-align-start" className="breadcrumb-row">
-							<ul className="breadcrumb">
-								<li className="breadcrumb-item"><a href="/"> Home</a></li>
-								<li className="breadcrumb-item">Order Tracking</li>
-							</ul>
-						</nav>	
-					</div>
-					<div className="registration-media">
-						<img src="../../assets/user/images/registration/pic2.png" alt="/" />
-					</div>
-				</div>
-				<div className="col-xxl-6 col-xl-6 col-lg-6 end-side-content">
-					<div className="login-area">
-						<h2 className="text-secondary text-center">Track Your Order</h2>
-						<p className="text-center m-b30">welcome please login to your account</p>
-						<form>
-							<div className="m-b30">
-								<label className="label-title">Order ID</label>
-								<input name="dzName" required="" className="form-control" placeholder="Found in your order confirmation email." type="text"/>
-							</div>
-							<div className="m-b30">
-								<label className="label-title">Billing email</label>
-								<input name="dzName" required="" className="form-control" placeholder="Email you used during checkout." type="email"/>
-							</div>
-							<div className="text-center">
-								<button className="btn btn-secondary btnhover text-uppercase">Track</button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</section>
-	</div>
->>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>

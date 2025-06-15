@@ -62,7 +62,7 @@ var Pixio = function () {
 		/* top search in header on click function End*/
 	}
 
-	/* WOW ANIMATION ============ */
+	/* WOW ANIMATION ===== */
 	var wow_animation = function () {
 		if ($('.wow').length > 0) {
 			var wow = new WOW(
@@ -79,7 +79,7 @@ var Pixio = function () {
 		}
 	}
 
-	/* One Page Layout ============ */
+	/* One Page Layout ===== */
 	var onePageLayout = function () {
 		var headerHeight = parseInt($('.onepage').css('height'), 10);
 
@@ -106,7 +106,7 @@ var Pixio = function () {
 		$('body').scrollspy({ target: ".navbar", offset: headerHeight + 2 });
 	}
 
-	/* Load File ============ */
+	/* Load File ===== */
 	var dzTheme = function () {
 		if (screenWidth <= 991) {
 			var menuObj;
@@ -188,7 +188,7 @@ var Pixio = function () {
 		}
 	}
 
-	/* Magnific Popup ============ */
+	/* Magnific Popup ===== */
 	var MagnificPopup = function () {
 		if (jQuery('.mfp-gallery').length > 0) {
 			/* magnificPopup function */
@@ -245,7 +245,7 @@ var Pixio = function () {
 		}
 	}
 
-	/* Scroll To Top ============ */
+	/* Scroll To Top ===== */
 	var scrollTop = function () {
 		var scrollTop = jQuery("button.scroltop");
 		/* page scroll top on click function */
@@ -267,7 +267,7 @@ var Pixio = function () {
 		/* page scroll top on click function end*/
 	}
 
-	/* Header Fixed ============ */
+	/* Header Fixed ===== */
 	var headerFix = function () {
 		/* Main navigation fixed on top  when scroll down function custom */
 		jQuery(window).on('scroll', function () {
@@ -283,7 +283,7 @@ var Pixio = function () {
 		/* Main navigation fixed on top  when scroll down function custom end*/
 	}
 
-	/* Masonry Box ============ */
+	/* Masonry Box ===== */
 	var masonryBox = function () {
 		/* masonry by  = bootstrap-select.min.js */
 		if (jQuery('#masonry, .masonry').length > 0) {
@@ -369,7 +369,7 @@ var Pixio = function () {
 		/* masonry by  = bootstrap-select.min.js end */
 	}
 
-	/* Counter Number ============ */
+	/* Counter Number ===== */
 	var counter = function () {
 		if (jQuery('.counter').length) {
 			jQuery('.counter').counterUp({
@@ -379,7 +379,7 @@ var Pixio = function () {
 		}
 	}
 
-	/* Video Popup ============ */
+	/* Video Popup ===== */
 	var handleVideo = function () {
 		/* Video responsive function */
 		jQuery('iframe[src*="youtube.com"]').wrap('<div class="embed-responsive embed-responsive-16by9"></div>');
@@ -387,7 +387,7 @@ var Pixio = function () {
 		/* Video responsive function end */
 	}
 
-	/* BGEFFECT ============ */
+	/* BGEFFECT ===== */
 	var reposition = function () {
 		var modal = jQuery(this),
 
@@ -412,7 +412,7 @@ var Pixio = function () {
 	WebsiteLaunchDate = WebsiteLaunchDate.getDate() + " " + monthNames[WebsiteLaunchDate.getMonth()] + " " + WebsiteLaunchDate.getFullYear();
 	/* Website Launch Date END */
 
-	/* Countdown ============ */
+	/* Countdown ===== */
 	var handleCountDown = function (WebsiteLaunchDate) {
 		/* Time Countr Down Js */
 		if ($(".countdown").length) {
@@ -455,7 +455,7 @@ var Pixio = function () {
 		})
 	}
 
-	/* Range ============ */
+	/* Range ===== */
 	var priceslider = function () {
 		if ($("#slider-tooltips").length > 0) {
 			var tooltipSlider = document.getElementById('slider-tooltips');
@@ -521,7 +521,7 @@ var Pixio = function () {
 		}
 	}
 
-	/* handle Bootstrap Touch Spin ============ */
+	/* handle Bootstrap Touch Spin ===== */
 	var handleBootstrapTouchSpin = function () {
 		if ($("input[name='demo_vertical2']").length > 0) {
 			jQuery("input[name='demo_vertical2']").TouchSpin({
@@ -645,7 +645,7 @@ var Pixio = function () {
 		})
 	}
 
-	/* Coming Soon Counter ============ */
+	/* Coming Soon Counter ===== */
 	var handleComingSoonCounter = function () {
 
 		var commingSoonDate = new Date(WebsiteLaunchDate).getTime();
@@ -821,7 +821,7 @@ var Pixio = function () {
 		}
 	}
 
-	/* ParallaxScroll============ */
+	/* ParallaxScroll===== */
 	var handleParallaxScroll = function () {
 		if (jQuery('.dz-parallax').length > 0) {
 			$(window).on("load scroll", function () {
@@ -902,7 +902,7 @@ var Pixio = function () {
 		})
 	}
 
-	/* Pointer Effect ============ */
+	/* Pointer Effect ===== */
 	var handlePointerEffect = function () {
 		/* 
 			pointer.js was created by OwL for use on websites, 
@@ -1084,7 +1084,7 @@ var Pixio = function () {
 		}
 	}
 	
-	/* Function ============ */
+	/* Function ===== */
 	return {
 		init: function () {
 			boxHover();
