@@ -48,13 +48,13 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu">
           <li>
-            <a href="index.html">
+            <a href="/admin">
               <span className="icon-dash"></span>
               <span className="menu-text">Admin</span>
             </a>
           </li>
           <li>
-            <a href="user.html">
+            <a href="/admin/dashboard/userDashboard">
               <span className="icon-dash"></span>
               <span className="menu-text">User</span>
             </a>
@@ -62,7 +62,7 @@ const Sidebar = () => {
         </ul>
       </li>
       <li>
-        <a href="all-product.html">
+        <a href="/admin/product/allProduct">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -84,7 +84,7 @@ const Sidebar = () => {
         </a>
       </li>
       <li>
-        <a href="orders.html">
+        <a href="/admin/order/order">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +106,7 @@ const Sidebar = () => {
         </a>
       </li>
       <li>
-        <a href="customers.html">
+        <a href="/admin/customer/customer">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -129,7 +129,7 @@ const Sidebar = () => {
       </li>
    
       <li>
-        <a href="fontawesome.html">
+        <a href="/admin/fontawasome/fontAwasome">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -170,61 +170,61 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu">
           <li>
-            <a href="progress-bars.html">
+            <a href="/admin/uikit/progressBars">
               <span className="icon-dash"></span>
               <span className="menu-text">Progress Bars</span>
             </a>
           </li>
           <li>
-            <a href="alert.html">
+            <a href="/admin/uikit/alert">
               <span className="icon-dash"></span>
               <span className="menu-text">alert</span>
             </a>
           </li>
           <li>
-            <a href="editor.html">
+            <a href="/admin/uikit/editor">
               <span className="icon-dash"></span>
               <span className="menu-text">editor</span>
             </a>
           </li>
           <li>
-            <a href="modal.html">
+            <a href="/admin/uikit/modal">
               <span className="icon-dash"></span>
               <span className="menu-text">Modal</span>
             </a>
           </li>
           <li>
-            <a href="tab.html">
+            <a href="/admin/uikit/tabs">
               <span className="icon-dash"></span>
               <span className="menu-text">Tabs</span>
             </a>
           </li>
           <li>
-            <a href="carousal.html">
+            <a href="/admin/uikit/carousal">
               <span className="icon-dash"></span>
               <span className="menu-text">Carousal</span>
             </a>
           </li>
           <li>
-            <a href="counter.html">
+            <a href="/admin/uikit/counter">
               <span className="icon-dash"></span>
               <span className="menu-text">Counter</span>
             </a>
           </li>
           <li>
-            <a href="accordation.html">
+            <a href="/admin/uikit/accordation">
               <span className="icon-dash"></span>
               <span className="menu-text">Accordation</span>
             </a>
           </li>
           <li>
-            <a href="pagination.html">
+            <a href="/admin/uikit/pagination">
               <span className="icon-dash"></span>
               <span className="menu-text">Pagination</span>
             </a>
           </li>
           <li>
-            <a href="typography.html">
+            <a href="/admin/uikit/typography">
               <span className="icon-dash"></span>
               <span className="menu-text">Typograpgy</span>
             </a>
@@ -252,13 +252,13 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu">
           <li>
-            <a href="form.html">
+            <a href="/admin/form/basicForm">
               <span className="icon-dash"></span>
               <span className="menu-text">Basic Form</span>
             </a>
           </li>
           <li>
-            <a href="tags.html">
+            <a href="/admin/form/tags">
               <span className="icon-dash"></span>
               <span className="menu-text">Tags</span>
             </a>
@@ -286,19 +286,19 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu">
           <li>
-            <a href="basic-table.html">
+            <a href="/admin/table/basicTable">
               <span className="icon-dash"></span>
               <span className="menu-text">Basic Table</span>
             </a>
           </li>
           <li>
-            <a href="advance-table.html">
+            <a href="/admin/table/advanceTable">
               <span className="icon-dash"></span>
               <span className="menu-text">Advance Table</span>
             </a>
           </li>
           <li>
-            <a href="data-table.html">
+            <a href="/admin/table/dataTable">
               <span className="icon-dash"></span>
               <span className="menu-text">Data Table</span>
             </a>
@@ -327,13 +327,13 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu">
           <li>
-            <a href="g-map.html">
+            <a href="/admin/map/googleMap">
               <span className="icon-dash"></span>
               <span className="menu-text">Google Map</span>
             </a>
           </li>
           <li>
-            <a href="v-map.html">
+            <a href="/admin/map/vectorMap">
               <span className="icon-dash"></span>
               <span className="menu-text">vector Map</span>
             </a>
@@ -341,7 +341,7 @@ const Sidebar = () => {
         </ul>
       </li>
       <li>
-        <a href="chart.html">
+        <a href="/admin/chart/chart">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -361,7 +361,7 @@ const Sidebar = () => {
         </a>
       </li>
       <li>
-        <a href="buttons.html">
+        <a href="/admin/buttons/buttons">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -382,7 +382,7 @@ const Sidebar = () => {
         </a>
       </li>
       <li>
-        <a href="invoice.html">
+        <a href="/admin/invoice/invoice">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -423,19 +423,13 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu">
           <li>
-            <a href="inbox.html">
+            <a href="/admin/email/inbox">
               <span className="icon-dash"></span>
               <span className="menu-text">Inbox</span>
             </a>
           </li>
           <li>
-            <a href="email-template.html">
-              <span className="icon-dash"></span>
-              <span className="menu-text">Email Template</span>
-            </a>
-          </li>
-          <li>
-            <a href="chat.html">
+            <a href="/admin/email/chat">
               <span className="icon-dash"></span>
               <span className="menu-text">Chat</span>
             </a>
@@ -464,25 +458,25 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu">
           <li>
-            <a href="login.html">
+            <a href="/admin/authentication/login">
               <span className="icon-dash"></span>
               <span className="menu-text">Login</span>
             </a>
           </li>
           <li>
-            <a href="register.html">
+            <a href="/admin/authentication/register">
               <span className="icon-dash"></span>
               <span className="menu-text">Register</span>
             </a>
           </li>
           <li>
-            <a href="profile.html">
+            <a href="/admin/authentication/myProfile">
               <span className="icon-dash"></span>
               <span className="menu-text">My Profile</span>
             </a>
           </li>
           <li>
-            <a href="forgot-pws.html">
+            <a href="/admin/authentication/recoverPassword">
               <span className="icon-dash"></span>
               <span className="menu-text">Recover Password</span>
             </a>
@@ -511,49 +505,49 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu show-submenu">
           <li>
-            <a href="blank.html">
+            <a href="/admin/general/starter">
               <span className="icon-dash"></span>
               <span className="menu-text">Starter</span>
             </a>
           </li>
           <li>
-            <a href="cards.html">
+            <a href="/admin/general/cards">
               <span className="icon-dash"></span>
               <span className="menu-text">Cards</span>
             </a>
           </li>
           <li>
-            <a href="product-single.html">
+            <a href="/admin/general/productSingle">
               <span className="icon-dash"></span>
               <span className="menu-text">Product Single</span>
             </a>
           </li>
           <li>
-            <a href="wishlist.html">
+            <a href="/admin/general/wishlist">
               <span className="icon-dash"></span>
               <span className="menu-text">Wishlist</span>
             </a>
           </li>
           <li>
-            <a href="cart.html">
+            <a href="/admin/general/cart">
               <span className="icon-dash"></span>
               <span className="menu-text">Cart</span>
             </a>
           </li>
           <li>
-            <a href="checkout.html">
+            <a href="/admin/general/checkout">
               <span className="icon-dash"></span>
               <span className="menu-text">Checkout</span>
             </a>
           </li>
           <li>
-            <a href="faq.html">
+            <a href="/admin/general/faq">
               <span className="icon-dash"></span>
               <span className="menu-text">Faq</span>
             </a>
           </li>
           <li>
-            <a href="error.html">
+            <a href="/admin/general/error404">
               <span className="icon-dash"></span>
               <span className="menu-text">Error 404</span>
             </a>
@@ -561,7 +555,7 @@ const Sidebar = () => {
         </ul>
       </li>
       <li>
-        <a href="support.html">
+        <a href="/admin/support/support">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -582,7 +576,7 @@ const Sidebar = () => {
         </a>
       </li>
       <li>
-        <a href="documentation.html">
+        <a href="/admin/documentation/documentation">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
