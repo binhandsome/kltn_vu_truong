@@ -163,7 +163,10 @@ Assigned to: Theme Forest
                 e.stopPropagation();
                 $("body").toggleClass('mini-sidebar');
                 $(this).toggleClass('checked');
+<<<<<<< HEAD
                 $('.hidden-text').toggleClass('hide');
+=======
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 
             });
             $('.sidebar-wrapper').on('click', function(event) {
@@ -176,6 +179,7 @@ Assigned to: Theme Forest
         -----------------------------------------------------*/
 
         sideMenu: function() {
+<<<<<<< HEAD
     // Add 'has-sub-menu' class to <li> with sub-menus
     const menuItems = document.querySelectorAll('.side-menu-wrap ul li');
     menuItems.forEach(item => {
@@ -266,6 +270,46 @@ Assigned to: Theme Forest
         }
     });
 },
+=======
+            $('.side-menu-wrap ul li').has('.sub-menu').addClass('has-sub-menu');
+            $.sidebarMenu = function(menu) {
+                var animationSpeed = 300,
+                    subMenuSelector = '.sub-menu';
+                $(menu).on('click', 'li a', function(e) {
+                    var $this = $(this);
+                    var checkElement = $this.next();
+                    if (checkElement.is(subMenuSelector) && checkElement.is(':visible')) {
+                        checkElement.slideUp(animationSpeed, function() {
+                            checkElement.removeClass('menu-show');
+                        });
+                        checkElement.parent("li").removeClass("active");
+                    } else if ((checkElement.is(subMenuSelector)) && (!checkElement.is(':visible'))) {
+                        var parent = $this.parents('ul').first();
+                        var ul = parent.find('ul:visible').slideUp(animationSpeed);
+                        ul.removeClass('menu-show');
+                        var parent_li = $this.parent("li");
+                        checkElement.slideDown(animationSpeed, function() {
+                            checkElement.addClass('menu-show');
+                            parent.find('li.active').removeClass('active');
+                            parent_li.addClass('active');
+                        });
+                    }
+                    if (checkElement.is(subMenuSelector)) {
+                        e.preventDefault();
+                    }
+                });
+            }
+            $.sidebarMenu($('.main-menu'));
+            $(function() {
+                for (var a = window.location, counting = $(".main-menu a").filter(function() {
+                        return this.href == a;
+                    }).addClass("active").parent().addClass("active");;) {
+                    if (!counting.is("li")) break;
+                    counting = counting.parent().addClass("in").parent().addClass("active");
+                }
+            });
+        },
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 
         /*-----------------------------------------------------
             Fix Sidebar Hover

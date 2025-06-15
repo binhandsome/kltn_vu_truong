@@ -8,6 +8,7 @@ root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
+<<<<<<< HEAD
 );
 
 setTimeout(() => {
@@ -18,3 +19,6 @@ setTimeout(() => {
     setTimeout(() => loader.remove(), 500); 
   }
 }, 500);
+=======
+);
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913

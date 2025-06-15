@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from 'react';
+=======
+import { useEffect } from 'react';
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 import { Outlet } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
 import Sidebar from '../components/Sidebar';
@@ -12,9 +16,12 @@ const cssFiles = [
   '/assets/admin/css/style.css',
   '/assets/admin/css/auth.css',
   '/assets/admin/css/custom.css',
+<<<<<<< HEAD
   '/assets/admin/css/calender.css',
   '/assets/admin/css/theme.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+=======
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 ];
 
 const jsFiles = [
@@ -26,6 +33,7 @@ const jsFiles = [
   '/assets/admin/js/apexchart/control-chart-apexcharts.js',
   '/assets/admin/js/nice-select.min.js',
   '/assets/admin/js/custom.js',
+<<<<<<< HEAD
   '/assets/admin/js/calendar.min.js',
 
 ];
@@ -36,6 +44,13 @@ const AdminLayout = () => {
   useEffect(() => {
     // Inject CSS
     cssFiles.forEach((href) => {
+=======
+];
+
+const AdminLayout = () => {
+  useEffect(() => {
+    cssFiles.forEach(href => {
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
       if (!document.querySelector(`link[href="${href}"]`)) {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -44,6 +59,7 @@ const AdminLayout = () => {
       }
     });
 
+<<<<<<< HEAD
     // Inject JS tuần tự để đảm bảo jQuery có trước
     const loadScript = (src) =>
       new Promise((resolve) => {
@@ -89,6 +105,23 @@ const AdminLayout = () => {
         if (el) el.remove();
       });
       jsFiles.forEach((src) => {
+=======
+    jsFiles.forEach(src => {
+      if (!document.querySelector(`script[src="${src}"]`)) {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        document.body.appendChild(script);
+      }
+    });
+
+    return () => {
+      cssFiles.forEach(href => {
+        const el = document.querySelector(`link[href="${href}"]`);
+        if (el) el.remove();
+      });
+      jsFiles.forEach(src => {
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
         const el = document.querySelector(`script[src="${src}"]`);
         if (el) el.remove();
       });
@@ -97,10 +130,19 @@ const AdminLayout = () => {
 
   return (
     <div className="page-wrapper">
+<<<<<<< HEAD
       {loading && <Loader />}
       <AdminHeader />
         <Sidebar />
         <Outlet />
+=======
+      <Loader />
+      <AdminHeader />
+      <div className="page-wrapper">
+        <Sidebar />
+        <Outlet />
+      </div>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
     </div>
   );
 };

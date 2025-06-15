@@ -1,4 +1,5 @@
 @font-face {
+<<<<<<< HEAD
   font-family: "flaticon_pixio";
   src: url("flaticon_pixio.woff@49dfca1679f8ebe110d21a07d523c078") format("woff"),
        url("flaticon_pixio.woff2@49dfca1679f8ebe110d21a07d523c078") format("woff2"),
@@ -7,6 +8,15 @@
 }
 
 
+=======
+    font-family: "flaticon_pixio";
+    src:url("flaticon_pixio.woff%3F49dfca1679f8ebe110d21a07d523c078") format("woff"),
+    url("flaticon_pixio.woff2%3F49dfca1679f8ebe110d21a07d523c078") format("woff2"),
+    url("flaticon_pixio.eot%3F49dfca1679f8ebe110d21a07d523c078") format("embedded-opentype"),
+    url("flaticon_pixio.svg%3F49dfca1679f8ebe110d21a07d523c078") format("svg");
+}
+
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
     font-family: flaticon_pixio !important;
     font-style: normal;

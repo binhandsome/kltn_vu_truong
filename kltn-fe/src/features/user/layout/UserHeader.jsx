@@ -1,7 +1,11 @@
 import React, { useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+<<<<<<< HEAD
 import logo from '../../../assets/user/../../assets/user/images/logo.svg';
+=======
+import logo from '../../../assets/user/images/logo.svg';
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 
 //Import WOW.js
 import WOW from 'wowjs';
@@ -29,6 +33,7 @@ function UserHeader() {
       wow.init();
     }, []);
     return (
+<<<<<<< HEAD
         <header className="site-header mo-left header">
   {/* Main Header */}
   <div className="sticky-header main-bar-wraper navbar-expand-lg">
@@ -111,6 +116,72 @@ function UserHeader() {
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopSideBar'}>Shop Sidebar</a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStyle1'}>Shop Style 1</a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStyle2'}>Shop Style 2</a></li>
+=======
+        <header className="site-header mo-left header style-1 header-transparent">
+            {/* Main Header */}
+            <div className="sticky-header main-bar-wraper navbar-expand-lg">
+                <div className="main-bar clearfix">
+                    <div className="container-fluid clearfix d-lg-flex d-block">
+
+                        {/* Website Logo */}
+                        <div className="logo-header logo-dark me-md-5">
+                            <Link to="/"><img src={logo} alt="logo" /></Link>
+                        </div>
+
+                        {/* Nav Toggle Button */}
+                        <button className="navbar-toggler collapsed navicon justify-content-end" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+
+                        {/* Main Nav */}
+                        <div className="header-nav w3menu navbar-collapse collapse justify-content-start" id="navbarNavDropdown">
+                            <div className="logo-header logo-dark">
+                                <Link to="/"><img src="{logo}" alt="" /></Link>
+                            </div>
+                            <ul className="nav navbar-nav">
+                                <li className="has-mega-menu sub-menu-down auto-width menu-left">
+                                    <Link to="/"><span>Home</span><i className="fas fa-chevron-down tabindex" ></i></Link>
+                                    <div className="mega-menu ">
+                                        <ul className="demo-menu mb-0">
+                                            <li>
+                                                <Link to="/">
+                                                    <img src="/assets/user/images/demo/demo-1.png" alt="/" />
+                                                    <span className="menu-title">01 Home Page</span>
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link to="/index-2">
+                                                    <img src="/assets/user/images/demo/demo-2.png" alt="/" />
+                                                    <span className="menu-title">02 Home Page</span>
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link to="/index-3">
+                                                    <img src="/assets/user/images/demo/demo-3.png" alt="/" />
+                                                    <span className="menu-title">03 Home Page</span>
+                                                </Link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li className="has-mega-menu sub-menu-down">
+                                    <a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}><span>Shop</span><i className="fas fa-chevron-down tabindex" ></i></a>
+                                    <div className="mega-menu shop-menu">
+                                        <ul>
+                                            <li className="side-left">
+                                                <ul>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop</a>
+                                                        <ul>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Standard</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop List</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Filters Top Bar</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Sidebar</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Style 1</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop Style 2</a></li>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                         </ul>
                                                     </li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'} className="menu-title">Product Structure</a>
@@ -161,6 +232,7 @@ function UserHeader() {
                                                         </div>
                                                     </li>
                                                 </ul>
+<<<<<<< HEAD
                   </li>
                   <li className="side-right">
                     <div className="adv-media">
@@ -177,6 +249,21 @@ function UserHeader() {
               </a>
               <div className="mega-menu">
               <ul>
+=======
+                                            </li>
+                                            <li className="side-right">
+                                                <div className="adv-media">
+                                                    <img src="/assets/user/images/adv-1.png" alt="/" />
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li className="has-mega-menu sub-menu-down auto-width">
+                                    <a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'}><span>Blog</span><i className="fas fa-chevron-down tabindex"></i></a>
+                                    <div className="mega-menu">
+                                        <ul>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                             <li>
                                                 <a href="#" onClick={() => window.location.href = '/user/blog/blogdetails/postStandard'} className="menu-title">Blog Dark Style</a>
                                                 <ul>
@@ -269,6 +356,7 @@ function UserHeader() {
                                                 </div>
                                             </li>
                                         </ul>
+<<<<<<< HEAD
               </div>
             </li>
             <li className="has-mega-menu sub-menu-down auto-width">
@@ -401,6 +489,14 @@ function UserHeader() {
               </a>
               <div className="mega-menu portfolio-menu">
               <ul>
+=======
+                                    </div>
+                                </li>
+                                <li className="has-mega-menu sub-menu-down">
+                                    <a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioTiles'}><span>Portfolio</span><i className="fas fa-chevron-down tabindex"></i></a>
+                                    <div className="mega-menu portfolio-menu">
+                                        <ul>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                             <li className="side-left">
                                                 <ul className="portfolio-nav-link">
                                                     <li>
@@ -476,6 +572,7 @@ function UserHeader() {
                                                 </ul>
                                             </li>
                                         </ul>
+<<<<<<< HEAD
               </div>
             </li>
             <li className="has-mega-menu sub-menu-down wide-width">
@@ -485,6 +582,14 @@ function UserHeader() {
               </a>
               <div className="mega-menu">
               <ul>
+=======
+                                    </div>
+                                </li>
+                                <li className="has-mega-menu sub-menu-down wide-width">
+                                    <a href="#" onClick={() => window.location.href = '/user/about/aboutUs'}><span>Pages</span><i className="fas fa-chevron-down tabindex"></i></a>
+                                    <div className="mega-menu">
+                                        <ul>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                             <li>
                                                 <a href="#" onClick={() => window.location.href = '/user/about/aboutUs'} className="menu-title">Pages</a>
                                                 <ul>
@@ -564,9 +669,15 @@ function UserHeader() {
                                                 </ul>
                                             </li>
                                         </ul>
+<<<<<<< HEAD
               </div>
             </li>
             <li className="sub-menu-down">
+=======
+                                    </div>
+                                </li>
+                                <li className="sub-menu-down">
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                     <a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}><span>My Account</span> <div className="badge badge-sm rounded badge-animated">New</div><i className="fas fa-chevron-down tabindex"></i></a>
                                     <ul className="sub-menu">
                                         <li><a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}>Dashboard</a></li>
@@ -587,6 +698,7 @@ function UserHeader() {
                                         <li><a href="#" onClick={() => window.location.href = '/user/myaccount/cancellationRequests'}>Cancellation Requests</a></li>
                                     </ul>
                                 </li>
+<<<<<<< HEAD
           </ul>
           <div className="dz-social-icon">
             <ul>
@@ -1443,6 +1555,540 @@ function UserHeader() {
   {/* filter sidebar */}
 </header>
 
+=======
+                            </ul>
+                            <div className="dz-social-icon">
+                                <ul>
+                                    <li><Link className="fab fa-facebook-f" target="_blank" to="https://www.facebook.com/dexignzone"></Link></li>
+                                    <li><Link className="fab fa-twitter" target="_blank" to="https://twitter.com/dexignzones"></Link></li>
+                                    <li><Link className="fab fa-linkedin-in" target="_blank" to="https://www.linkedin.com/showcase/3686700/admin/"></Link></li>
+                                    <li><Link className="fab fa-instagram" target="_blank" to="https://www.instagram.com/dexignzone/"></Link></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* EXTRA NAV */}
+                        <div className="extra-nav">
+                            <div className="extra-cell">
+                                <ul className="header-right">
+                                    <li className="nav-item login-link">
+                                        <Link className="nav-link" to="/user/auth/login">
+                                            Login / Register
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item search-link">
+                                        <Link className="nav-link" to="/" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTop" aria-controls="offcanvasTop">
+                                            <i className="iconly-Light-Search"></i>
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item wishlist-link">
+                                        <Link className="nav-link" to="/user/shoppages/wishList" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+                                            <i className="iconly-Light-Heart2"></i>
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item cart-link">
+                                        <Link to="/user/shoppages/cart" className="nav-link cart-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+                                            <i className="iconly-Broken-Buy"></i>
+                                            <span className="badge badge-circle">5</span>
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item filte-link">
+                                        <Link to="/" className="nav-link filte-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeft" aria-controls="offcanvasLeft">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 13" fill="none">
+                                                <rect y="11" width="30" height="2" fill="black" />
+                                                <rect width="30" height="2" fill="black" />
+                                            </svg>
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {/* Main Header End */}
+
+            {/* SearchBar */}
+            <div className="dz-search-area dz-offcanvas offcanvas offcanvas-top" tabIndex="{-1}" id="offcanvasTop">
+                <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
+                    ×
+                </button>
+                <div className="container">
+                    <form className="header-item-search">
+                        <div className="input-group search-input">
+                            <select className="default-select">
+                                <option>All Categories</option>
+                                <option>Clothes</option>
+                                <option>UrbanSkirt</option>
+                                <option>VelvetGown</option>
+                                <option>LushShorts</option>
+                                <option>Vintage</option>
+                                <option>Wedding</option>
+                                <option>Cotton</option>
+                                <option>Linen</option>
+                                <option>Navy</option>
+                                <option>Urban</option>
+                                <option>Business Meeting</option>
+                                <option>Formal</option>
+                            </select>
+                            <input type="search" className="form-control" placeholder="Search Product" />
+                            <button className="btn" type="button">
+                                <i className="iconly-Light-Search"></i>
+                            </button>
+                        </div>
+                        <ul className="recent-tag">
+                            <li className="pe-0"><span>Quick Search :</span></li>
+                            <li><Link to="/">Clothes</Link></li>
+                            <li><Link to="/">UrbanSkirt</Link></li>
+                            <li><Link to="/">VelvetGown</Link></li>
+                            <li><Link to="/">LushShorts</Link></li>
+                        </ul>
+                    </form>
+                    <div className="row">
+                        <div className="col-xl-12">
+                            <h5 className="mb-3">You May Also Like</h5>
+                            <div className="swiper category-swiper2">
+                                <div className="swiper-wrapper">
+                                    <div className="swiper-slide">
+                                        <div className="shop-card">
+                                            <div className="dz-media ">
+                                                <img src="/assets/user/images/shop/product/1.png" alt="product1" />
+                                            </div>
+                                            <div className="dz-content">
+                                                <h6 className="title"><Link to="/">SilkBliss Dress</Link></h6>
+                                                <h6 className="price">$40.00</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="swiper-slide">
+                                        <div className="shop-card">
+                                            <div className="dz-media ">
+                                                <img src="/assets/user/images/shop/product/3.png" alt="product3" />
+                                            </div>
+                                            <div className="dz-content">
+                                                <h6 className="title"><Link to="/">GlamPants</Link></h6>
+                                                <h6 className="price">$30.00</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="swiper-slide">
+                                        <div className="shop-card">
+                                            <div className="dz-media ">
+                                                <img src="/assets/user/images/shop/product/4.png" alt="product4" />
+                                            </div>
+                                            <div className="dz-content">
+                                                <h6 className="title"><Link to="/">ComfyLeggings</Link></h6>
+                                                <h6 className="price">$35.00</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="swiper-slide">
+                                        <div className="shop-card">
+                                            <div className="dz-media ">
+                                                <img src="/assets/user/images/shop/product/2.png" alt="product2" />
+                                            </div>
+                                            <div className="dz-content">
+                                                <h6 className="title"><Link to="/">ClassicCapri</Link></h6>
+                                                <h6 className="price">$20.00</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="swiper-slide">
+                                        <div className="shop-card">
+                                            <div className="dz-media ">
+                                                <img src="/assets/user/images/shop/product/5.png" alt="product5" />
+                                            </div>
+                                            <div className="dz-content">
+                                                <h6 className="title"><Link to="/">DapperCoat</Link></h6>
+                                                <h6 className="price">$70.00</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="swiper-slide">
+                                        <div className="shop-card">
+                                            <div className="dz-media ">
+                                                <img src="/assets/user/images/shop/product/6.png" alt="product6" />
+                                            </div>
+                                            <div className="dz-content">
+                                                <h6 className="title"><Link to="/">ComfyLeggings</Link></h6>
+                                                <h6 className="price">$45.00</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="swiper-slide">
+                                        <div className="shop-card">
+                                            <div className="dz-media ">
+                                                <img src="/assets/user/images/shop/product/7.png" alt="product7" />
+                                            </div>
+                                            <div className="dz-content">
+                                                <h6 className="title"><Link to="/">DenimDream Jeans</Link></h6>
+                                                <h6 className="price">$40.00</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="swiper-slide">
+                                        <div className="shop-card">
+                                            <div className="dz-media ">
+                                                <img src="/assets/user/images/shop/product/4.png" alt="image4" />
+                                            </div>
+                                            <div className="dz-content">
+                                                <h6 className="title"><Link to="/">SilkBliss Dress</Link></h6>
+                                                <h6 className="price">$60.00</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* SearchBar */}
+
+            {/* Sidebar cart */}
+            <div className="offcanvas dz-offcanvas offcanvas offcanvas-end " tabIndex="{-1}" id="offcanvasRight">
+                <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
+                    ×
+                </button>
+                <div className="offcanvas-body">
+                    <div className="product-description">
+                        <div className="dz-tabs">
+                            <ul className="nav nav-tabs center" id="myTab" role="tablist">
+                                <li className="nav-item" role="presentation">
+                                    <button className="nav-link active" id="shopping-cart" data-bs-toggle="tab" data-bs-target="#shopping-cart-pane" type="button" role="tab" aria-controls="shopping-cart-pane" aria-selected="true">Shopping Cart
+                                        <span className="badge badge-light">5</span>
+                                    </button>
+                                </li>
+                                <li className="nav-item" role="presentation">
+                                    <button className="nav-link" id="wishlist" data-bs-toggle="tab" data-bs-target="#wishlist-pane" type="button" role="tab" aria-controls="wishlist-pane" aria-selected="false">Wishlist
+                                        <span className="badge badge-light">2</span>
+                                    </button>
+                                </li>
+                            </ul>
+                            <div className="tab-content pt-4" id="dz-shopcart-sidebar">
+                                <div className="tab-pane fade show active" id="shopping-cart-pane" role="tabpanel" aria-labelledby="shopping-cart" tabIndex="{0}">
+                                    <div className="shop-sidebar-cart">
+                                        <ul className="sidebar-cart-list">
+                                            <li>
+                                                <div className="cart-widget">
+                                                    <div className="dz-media me-3">
+                                                        <img src="/assets/user/images/shop/shop-cart/pic1.jpg" alt="" />
+                                                    </div>
+                                                    <div className="cart-content">
+                                                        <h6 className="title"><Link to="/">Sophisticated Swagger Suit</Link></h6>
+                                                        <div className="d-flex align-items-center">
+                                                            <div className="btn-quantity light quantity-sm me-3">
+                                                                <input type="text" value="1" name="demo_vertical2" readOnly  />
+                                                            </div>
+                                                            <h6 className="dz-price mb-0">$50.00</h6>
+                                                        </div>
+                                                    </div>
+                                                    <Link to="/" className="dz-close">
+                                                        <i className="ti-close"></i>
+                                                    </Link>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div className="cart-widget">
+                                                    <div className="dz-media me-3">
+                                                        <img src="/assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
+                                                    </div>
+                                                    <div className="cart-content">
+                                                        <h6 className="title"><Link to="/">Cozy Knit Cardigan Sweater</Link></h6>
+                                                        <div className="d-flex align-items-center">
+                                                            <div className="btn-quantity light quantity-sm me-3">
+                                                                <input type="text" value="1" name="demo_vertical2" readOnly  />
+                                                            </div>
+                                                            <h6 className="dz-price mb-0">$40.00</h6>
+                                                        </div>
+                                                    </div>
+                                                    <Link to="/" className="dz-close">
+                                                        <i className="ti-close"></i>
+                                                    </Link>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div className="cart-widget">
+                                                    <div className="dz-media me-3">
+                                                        <img src="/assets/user/images/shop/shop-cart/pic3.jpg" alt="" />
+                                                    </div>
+                                                    <div className="cart-content">
+                                                        <h6 className="title"><Link to="/">Athletic Mesh Sports Leggings</Link></h6>
+                                                        <div className="d-flex align-items-center">
+                                                            <div className="btn-quantity light quantity-sm me-3">
+                                                                <input type="text" value="1" name="demo_vertical2" readOnly  />
+                                                            </div>
+                                                            <h6 className="dz-price  mb-0">$65.00</h6>
+                                                        </div>
+                                                    </div>
+                                                    <Link to="/" className="dz-close">
+                                                        <i className="ti-close"></i>
+                                                    </Link>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        <div className="cart-total">
+                                            <h5 className="mb-0">Subtotal:</h5>
+                                            <h5 className="mb-0">300.00$</h5>
+                                        </div>
+                                        <div className="mt-auto">
+                                            <div className="shipping-time">
+                                                <div className="dz-icon">
+                                                    <i className="flaticon flaticon-ship"></i>
+                                                </div>
+                                                <div className="shipping-content">
+                                                    <h6 className="title pe-4">Congratulations , you've got free shipping!</h6>
+                                                    <div className="progress">
+                                                        <div className="progress-bar progress-animated border-0" style={{ width: "75%" }} role="progressbar">
+                                                            <span className="sr-only">75% Complete</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <Link to="/user/shoppages/cart" className="btn btn-outline-secondary btn-block m-b20">Checkout</Link>
+                                            <Link to="/user/shoppages/checkout" className="btn btn-secondary btn-block">View Cart</Link>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="tab-pane fade" id="wishlist-pane" role="tabpanel" aria-labelledby="wishlist" tabIndex="{0}">
+                                    <div className="shop-sidebar-cart">
+                                        <ul className="sidebar-cart-list">
+                                            <li>
+                                                <div className="cart-widget">
+                                                    <div className="dz-media me-3">
+                                                        <img src="/assets/user/images/shop/shop-cart/pic1.jpg" alt="" />
+                                                    </div>
+                                                    <div className="cart-content">
+                                                        <h6 className="title"><Link to="/">Sophisticated Swagger Suit</Link></h6>
+                                                        <div className="d-flex align-items-center">
+                                                            <h6 className="dz-price  mb-0">$50.00</h6>
+                                                        </div>
+                                                    </div>
+                                                    <Link to="/" className="dz-close">
+                                                        <i className="ti-close"></i>
+                                                    </Link>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div className="cart-widget">
+                                                    <div className="dz-media me-3">
+                                                        <img src="/assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
+                                                    </div>
+                                                    <div className="cart-content">
+                                                        <h6 className="title"><Link to="/">Cozy Knit Cardigan Sweater</Link></h6>
+                                                        <div className="d-flex align-items-center">
+                                                            <h6 className="dz-price  mb-0">$40.00</h6>
+                                                        </div>
+                                                    </div>
+                                                    <Link to="/" className="dz-close">
+                                                        <i className="ti-close"></i>
+                                                    </Link>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div className="cart-widget">
+                                                    <div className="dz-media me-3">
+                                                        <img src="/assets/user/images/shop/shop-cart/pic3.jpg" alt="" />
+                                                    </div>
+                                                    <div className="cart-content">
+                                                        <h6 className="title"><Link to="/">Athletic Mesh Sports Leggings</Link></h6>
+                                                        <div className="d-flex align-items-center">
+                                                            <h6 className="dz-price  mb-0">$65.00</h6>
+                                                        </div>
+                                                    </div>
+                                                    <Link to="/" className="dz-close">
+                                                        <i className="ti-close"></i>
+                                                    </Link>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        <div className="mt-auto">
+                                            <Link to="/user/shoppages/wishList" className="btn btn-secondary btn-block">Check Your Favourite</Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* Sidebar cart */}
+
+            {/* Sidebar finter */}
+            <div className="offcanvas dz-offcanvas offcanvas offcanvas-end " tabIndex="{-1}" id="offcanvasLeft">
+                <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
+                    ×
+                </button>
+                <div className="offcanvas-body">
+                    <div className="product-description">
+                        <div className="widget widget_search">
+                            <div className="form-group">
+                                <div className="input-group">
+                                    <input name="dzSearch" required="required" type="search" className="form-control" placeholder="Search Product" />
+                                    <div className="input-group-addon">
+                                        <button name="submit" value="Submit" type="submit" className="btn">
+                                            <i className="icon feather icon-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="widget">
+                            <h6 className="widget-title">Price</h6>
+                            <div className="price-slide range-slider">
+                                <div className="price">
+                                    <div className="range-slider style-1">
+                                        <div id="slider-tooltips" className="mb-3"></div>
+                                        <span className="example-val" id="slider-margin-value-min"></span>
+                                        <span className="example-val" id="slider-margin-value-max"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="widget">
+                         <h6 className="widget-title">Color</h6>
+                         <div className="d-flex align-items-center flex-wrap color-filter ps-2">
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel1" value="#000000" aria-label="..."
+                                     checked={selectedValue === '#000000'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel2" value="#9BD1FF" aria-label="..."
+                                     checked={selectedValue === '#9BD1FF'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel3" value="#21B290" aria-label="..."
+                                     checked={selectedValue === '#21B290'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel4" value="#FEC4C4" aria-label="..."
+                                     checked={selectedValue === '#FEC4C4'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel5" value="#FF7354" aria-label="..."
+                                     checked={selectedValue === '#FF7354'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel6" value="#51EDC8" aria-label="..."
+                                     checked={selectedValue === '#51EDC8'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel7" value="#B77CF3" aria-label="..."
+                                     checked={selectedValue === '#B77CF3'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel8" value="#FF4A76" aria-label="..."
+                                     checked={selectedValue === '#FF4A76'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel9" value="#3E68FF" aria-label="..."
+                                     checked={selectedValue === '#3E68FF'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                             <div className="form-check">
+                                 <input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabe20" value="#7BEF68" aria-label="..."
+                                     checked={selectedValue === '#7BEF68'}
+                                     onChange={handleRadioChange}
+                                 />
+                                 <span></span>
+                             </div>
+                         </div>
+                     </div>
+
+                        <div className="widget">
+                            <h6 className="widget-title">Size</h6>
+                            <div className="btn-group product-size">
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio11" checked />
+                                <label className="btn" htmlFor="btnradio11">4</label>
+
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio21" />
+                                <label className="btn" htmlFor="btnradio21">6</label>
+
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio31" />
+                                <label className="btn" htmlFor="btnradio31">8</label>
+
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio41" />
+                                <label className="btn" htmlFor="btnradio41">10</label>
+
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio51" />
+                                <label className="btn" htmlFor="btnradio51">12</label>
+
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio61" />
+                                <label className="btn" htmlFor="btnradio61">14</label>
+
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio71" />
+                                <label className="btn" htmlFor="btnradio71">16</label>
+
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio81" />
+                                <label className="btn" htmlFor="btnradio81">18</label>
+
+                                <input type="radio" className="btn-check" name="btnradio1" id="btnradio91" />
+                                <label className="btn" htmlFor="btnradio91">20</label>
+                            </div>
+                        </div>
+                        <div className="widget widget_categories">
+                            <h6 className="widget-title">Category</h6>
+                            <ul>
+                                <li className="cat-item cat-item-26"><Link to="/">Dresses</Link> (10)</li>
+                                <li className="cat-item cat-item-36"><Link to="/">Top & Blouses</Link> (5)</li>
+                                <li className="cat-item cat-item-43"><Link to="/">Boots</Link> (17)</li>
+                                <li className="cat-item cat-item-27"><Link to="/">Jewelry</Link> (13)</li>
+                                <li className="cat-item cat-item-40"><Link to="/">Makeup</Link> (06)</li>
+                                <li className="cat-item cat-item-40"><Link to="/">Fragrances</Link> (17)</li>
+                                <li className="cat-item cat-item-40"><Link to="/">Shaving & Grooming</Link> (13)</li>
+                                <li className="cat-item cat-item-43"><Link to="/">Jacket</Link> (06)</li>
+                                <li className="cat-item cat-item-36"><Link to="/">Coat</Link> (22)</li>
+                            </ul>
+                        </div>
+
+                        <div className="widget widget_tag_cloud">
+                            <h6 className="widget-title">Tags</h6>
+                            <div className="tagcloud">
+                                <Link to="/">Vintage</Link>
+                                <Link to="/">Wedding</Link>
+                                <Link to="/">Cotton</Link>
+                                <Link to="/">Linen</Link>
+                                <Link to="/">Navy</Link>
+                                <Link to="/">Urban</Link>
+                                <Link to="/">Business Meeting</Link>
+                                <Link to="/">Formal</Link>
+                            </div>
+                        </div>
+                        <Link to="/" className="btn btn-sm font-14 btn-secondary btn-sharp">RESET</Link>
+                    </div>
+                </div>
+            </div>
+            {/* filter sidebar */}
+
+        </header>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
     );
 }
 

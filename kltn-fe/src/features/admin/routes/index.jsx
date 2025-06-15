@@ -10,6 +10,10 @@ import RecoverPassword from '../pages/authentication/RecoverPassword';
 import Register from '../pages/authentication/Register';
 import Buttons from '../pages/buttons/Buttons';
 import Calendar from '../pages/calendar/Calendar';
+<<<<<<< HEAD
+=======
+import Chart from '../pages/chart/Chart';
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 import Customer from '../pages/customer/Customer';
 import Documentation from '../pages/documentation/Documentation';
 import Chat from '../pages/email/Chat';
@@ -58,6 +62,10 @@ const AdminRoutes = () => {
         <Route path="authentication/recoverPassword" element={<RecoverPassword />} />
         <Route path="buttons/buttons" element={<Buttons />} />
         <Route path="calendar/calendar" element={<Calendar />} />
+<<<<<<< HEAD
+=======
+        <Route path="chart/chart" element={<Chart />} />
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
         <Route path="customer/customer" element={<Customer />} />
         <Route path="documentation/documentation" element={<Documentation />} />
         <Route path="email/chat" element={<Chat/>} />

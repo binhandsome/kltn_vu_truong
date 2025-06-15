@@ -36,6 +36,7 @@ function WishList() {
 
         {/* Header (đã được xử lý trong App.js) */}
 
+<<<<<<< HEAD
       <div className="page-content bg-light">
   {/*Banner Start*/}
   <div
@@ -162,6 +163,73 @@ function WishList() {
   </div>
 </div>
 
+=======
+        <div className="page-content bg-light">
+		<div className="dz-bnr-inr bg-light" style={{ backgroundImage: `url('../assets/user/images/background/bg1.jpg')` }}>
+			<div className="container">
+				<div className="dz-bnr-inr-entry">
+					<h1>Wishlist</h1>
+					<nav aria-label="breadcrumb" className="breadcrumb-row">
+						<ul className="breadcrumb">
+							<li className="breadcrumb-item"><a href="/"> Home</a></li>
+							<li className="breadcrumb-item">Wishlist</li>
+						</ul>
+					</nav>
+				</div>
+			</div>	
+		</div>
+		<div className="content-inner-1">
+			<div className="container">
+				<div className="row justify-content-center">
+					<div className="col-lg-9">
+						<div className="table-responsive">
+							<table className="table check-tbl style-1">
+								<thead>
+									<tr>
+										
+										<th>Product</th>
+										<th></th>
+										<th>Price</th>
+										<th>Stock</th>
+										<th></th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>										
+										<td className="product-item-img"><img src="../../assets/user/images/shop/shop-cart/pic1.jpg" alt="/" /></td>
+										<td className="product-item-name">Sophisticated Swagger Suit </td>
+										<td className="product-item-price"><span>$45.00</span><strong>$28.00</strong></td>
+										<td className="product-item-stock">In Stock</td>
+										<td className="product-item-totle"><a href="shop-cart.html" className="btn btn-secondary btnhover text-nowrap">Add To Cart</a></td>
+										<td className="product-item-close"><a href="javascript:void(0);"><i className="ti-close"></i></a></td>
+									</tr>
+									<tr>
+										<td className="product-item-img"><img src="../../assets/user/images/shop/shop-cart/pic2.jpg" alt="/"/></td>
+										<td className="product-item-name">Cozy Knit Cardigan Sweater</td>
+										<td className="product-item-price"><span>$95.00</span><strong>$56.00</strong></td>
+										<td className="product-item-stock">In Stock</td>
+										<td className="product-item-totle"><a href="shop-cart.html" className="btn btn-secondary btnhover text-nowrap">Add To Cart</a></td>
+										<td className="product-item-close"><a href="javascript:void(0);"><i className="ti-close"></i></a></td>
+									</tr>
+									<tr>
+										<td className="product-item-img"><img src="../../assets/user/images/shop/shop-cart/pic3.jpg" alt="/"/></td>
+										<td className="product-item-name">Athletic Mesh Sports Leggings</td>
+										<td className="product-item-price"><span>$56.00</span><strong>$20.00</strong></td>
+										<td className="product-item-stock">In Stock</td>
+										<td className="product-item-totle"><a href="shop-cart.html" className="btn btn-secondary btnhover text-nowrap">Add To Cart</a></td>
+										<td className="product-item-close"><a href="javascript:void(0);"><i className="ti-close"></i></a></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>

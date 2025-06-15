@@ -467,7 +467,11 @@ const AdvanceTable = () => (
                                                     </td>
                                                     <td>
                                                         <span className="img-thumb">
+<<<<<<< HEAD
                                                             <img className="squer-img" src="../../assets/admin/images/table/pro1.jpg" alt=""/>
+=======
+                                                            <img className="squer-img" src="assets/images/table/pro1.jpg" alt=""/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -491,7 +495,11 @@ const AdvanceTable = () => (
                                                     </td>
                                                     <td>
                                                         <span className="img-thumb ">
+<<<<<<< HEAD
                                                             <img className="squer-img " src="../../assets/admin/images/table/pro1.jpg" alt=" "/>
+=======
+                                                            <img className="squer-img " src="assets/images/table/pro1.jpg" alt=" "/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -515,7 +523,11 @@ const AdvanceTable = () => (
                                                     </td>
                                                     <td>
                                                         <span className="img-thumb ">
+<<<<<<< HEAD
                                                             <img className="squer-img " src="../../assets/admin/images/table/pro2.jpg" alt=" "/>
+=======
+                                                            <img className="squer-img " src="assets/images/table/pro2.jpg" alt=" "/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -536,7 +548,11 @@ const AdvanceTable = () => (
                                                     <td>4</td>
                                                     <td>
                                                         <span className="img-thumb ">
+<<<<<<< HEAD
                                                             <img className="squer-img " src="../../assets/admin/images/table/pro1.jpg" alt=" "/>
+=======
+                                                            <img className="squer-img " src="assets/images/table/pro1.jpg" alt=" "/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -559,7 +575,11 @@ const AdvanceTable = () => (
                                                     <td>5</td>
                                                     <td>
                                                         <span className="img-thumb ">
+<<<<<<< HEAD
                                                             <img className="squer-img " src="../../assets/admin/images/table/pro2.jpg" alt=" "/>
+=======
+                                                            <img className="squer-img " src="assets/images/table/pro2.jpg" alt=" "/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -580,7 +600,11 @@ const AdvanceTable = () => (
                                                     <td>6</td>
                                                     <td>
                                                         <span className="img-thumb ">
+<<<<<<< HEAD
                                                             <img className="squer-img " src="../../assets/admin/images/table/pro2.jpg" alt=" "/>
+=======
+                                                            <img className="squer-img " src="assets/images/table/pro2.jpg" alt=" "/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -606,7 +630,11 @@ const AdvanceTable = () => (
                                 <nav className="d-inline-block ">
                                     <ul className="pagination mb-0 ">
                                       <li className="page-item disabled ">
+<<<<<<< HEAD
                                         <a className="page-link" href="javascript:void(0);" tabIndex="-1"><i className="fas fa-chevron-left"></i></a>
+=======
+                                        <a className="page-link" href="javascript:void(0);" tabindex="-1"><i className="fas fa-chevron-left"></i></a>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                       </li>
                                       <li className="page-item active "><a className="page-link " href="javascript:void(0); ">1</a></li>
                                       <li className="page-item ">
@@ -653,7 +681,11 @@ const AdvanceTable = () => (
                                                         </td>
                                                         <td>
                                                             <span className="img-thumb ">
+<<<<<<< HEAD
                                                             <img className="squer-img " src="../../assets/admin/images/table/pro1.jpg" alt=" "/>
+=======
+                                                            <img className="squer-img " src="assets/images/table/pro1.jpg" alt=" "/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2 ">Balance Arishi Sport</span>
                                                             </span>
                                                         </td>
@@ -674,7 +706,11 @@ const AdvanceTable = () => (
                                                     </td>
                                                     <td>
                                                         <span className="img-thumb ">
+<<<<<<< HEAD
                                                             <img className="squer-img " src="../../assets/admin/images/table/pro3.jpg" alt=" "/>
+=======
+                                                            <img className="squer-img " src="assets/images/table/pro3.jpg" alt=" "/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2 ">New Balance Arishi Sport</span>
                                                         </span>
                                                     </td>
@@ -695,7 +731,11 @@ const AdvanceTable = () => (
                                                         </td>
                                                         <td>
                                                             <span className="img-thumb ">
+<<<<<<< HEAD
                                                             <img className="squer-img " src="../../assets/admin/images/table/pro2.jpg" alt=" "/>
+=======
+                                                            <img className="squer-img " src="assets/images/table/pro2.jpg" alt=" "/>
+>>>>>>> 16ccae30b55463b9d7cecae760b95c9aae4fe913
                                                             <span className="ml-2 ">Arishi Balance Arishi Sport</span>
                                                             </span>
                                                         </td>
