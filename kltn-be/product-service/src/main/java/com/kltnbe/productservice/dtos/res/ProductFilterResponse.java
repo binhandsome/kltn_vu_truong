@@ -1,18 +1,14 @@
-package com.kltnbe.productservice.dtos;
+package com.kltnbe.productservice.dtos.res;
 
 import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class ProductDTO {
+public class ProductFilterResponse {
     private Long productId;
-    private String asin;
     private String productTitle;
     private BigDecimal productPrice;
     private BigDecimal averageRating;
-    private Integer numberOfRatings;
     private String productThumbnail;
     private String brandName;
-    private Integer stockQuantity;
-    private String productStatus;
 }
