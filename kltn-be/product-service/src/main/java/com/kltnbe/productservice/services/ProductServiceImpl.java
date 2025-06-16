@@ -1,116 +1,90 @@
+// ServiceImpl: ProductServiceImpl.java
 package com.kltnbe.productservice.services;
 
-import com.kltnbe.productservice.dtos.ProductDTO;
-import com.kltnbe.productservice.dtos.ProductVariantDTO;
+import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
+import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
+import com.kltnbe.productservice.dtos.res.ProductSearchResponse;
 import com.kltnbe.productservice.entities.Product;
-import com.kltnbe.productservice.entities.ProductVariant;
 import com.kltnbe.productservice.repositories.ProductRepository;
-import com.kltnbe.productservice.repositories.ProductVariantRepository;
+import com.kltnbe.productservice.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+
     @Autowired
     private ProductRepository productRepository;
-    @Autowired
-    private ProductVariantRepository variantRepository;
 
     @Override
-    public ProductDTO getProductByAsin(String asin) {
-        Optional<Product> product = productRepository.findByAsin(asin);
-        return product.map(this::convertToDto).orElse(null);
+    public Page<ProductSearchResponse> searchProducts(String keyword, Pageable pageable) {
+        return productRepository.searchByKeyword(keyword, pageable).map(product -> {
+            ProductSearchResponse dto = new ProductSearchResponse();
+            dto.setProductId(product.getProductId());
+            dto.setProductTitle(product.getProductTitle());
+            dto.setProductThumbnail(product.getProductThumbnail());
+            dto.setBrandName(product.getBrandName());
+            dto.setAverageRating(product.getAverageRating());
+            dto.setNumberOfRatings(product.getNumberOfRatings());
+
+            BigDecimal originalPrice = product.getProductPrice();
+            dto.setOriginalPrice(originalPrice);
+
+            int discount = 0; // nếu có discount thì tính, hiện tại chưa có bảng riêng nên hardcode 0
+            if (discount > 0) {
+                BigDecimal discountAmount = originalPrice
+                        .multiply(BigDecimal.valueOf(discount))
+                        .divide(BigDecimal.valueOf(100));
+                dto.setProductPrice(originalPrice.subtract(discountAmount));
+                dto.setDiscountPercent(discount);
+            } else {
+                dto.setProductPrice(originalPrice);
+                dto.setDiscountPercent(0);
+            }
+
+            return dto;
+        });
     }
-
     @Override
-    public ProductVariantDTO getVariantById(Long variantId) {
-        Optional<ProductVariant> variant = variantRepository.findById(variantId);
-        return variant.map(this::convertToVariantDto).orElse(null);
-    }
+    public Page<ProductFilterResponse> filterProducts(ProductFilterRequest req) {
+        Specification<Product> spec = (root, query, cb) -> cb.conjunction();
 
-    @Override
-    public List<ProductDTO> searchProducts(String keyword) {
-        List<Product> products = productRepository.findAll();
-        return products.stream()
-                .filter(p -> p.getProductTitle().toLowerCase().contains(keyword.toLowerCase()))
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ProductDTO> filterProducts(String category, String brand) {
-        List<Product> products = productRepository.findAll();
-        return products.stream()
-                .filter(p -> (category == null || (p.getBrandName() != null && p.getBrandName().equalsIgnoreCase(category))) &&
-                        (brand == null || (p.getBrandName() != null && p.getBrandName().equalsIgnoreCase(brand))))
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public ProductVariantDTO createVariant(ProductVariantDTO variantDTO) {
-        ProductVariant variant = convertToEntity(variantDTO);
-        variant = variantRepository.save(variant);
-        return convertToVariantDto(variant);
-    }
-
-    @Override
-    public ProductVariantDTO updateVariant(Long variantId, ProductVariantDTO variantDTO) {
-        Optional<ProductVariant> variantOptional = variantRepository.findById(variantId);
-        if (variantOptional.isPresent()) {
-            ProductVariant variant = variantOptional.get();
-            variant = convertToEntity(variantDTO);
-            variant.setVariantId(variantId);
-            return convertToVariantDto(variantRepository.save(variant));
+        if (req.getCategoryId() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("category").get("categoryId"), req.getCategoryId()));
         }
-        return null;
-    }
+        if (req.getBrandName() != null) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("brandName")), "%" + req.getBrandName().toLowerCase() + "%"));
+        }
+        if (req.getMinPrice() != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("productPrice"), req.getMinPrice()));
+        }
+        if (req.getMaxPrice() != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("productPrice"), req.getMaxPrice()));
+        }
+        if (req.getMinRating() != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("averageRating"), req.getMinRating()));
+        }
+        if (req.getKeyword() != null) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("productTitle")), "%" + req.getKeyword().toLowerCase() + "%"));
+        }
 
-    @Override
-    public void deleteVariant(Long variantId) {
-        variantRepository.deleteById(variantId);
-    }
+        Page<Product> productPage = productRepository.findAll(spec, PageRequest.of(req.getPage(), req.getSize()));
 
-    private ProductDTO convertToDto(Product product) {
-        ProductDTO dto = new ProductDTO();
-        dto.setProductId(product.getProductId());
-        dto.setAsin(product.getAsin());
-        dto.setProductTitle(product.getProductTitle());
-        dto.setProductPrice(product.getProductPrice());
-        dto.setAverageRating(product.getAverageRating());
-        dto.setNumberOfRatings(product.getNumberOfRatings());
-        dto.setProductThumbnail(product.getProductThumbnail());
-        dto.setBrandName(product.getBrandName());
-        dto.setStockQuantity(product.getStockQuantity());
-        dto.setProductStatus(product.getProductStatus().name());
-        return dto;
-    }
-
-    private ProductVariantDTO convertToVariantDto(ProductVariant variant) {
-        ProductVariantDTO dto = new ProductVariantDTO();
-        dto.setVariantId(variant.getVariantId());
-        dto.setProductAsin(variant.getProductAsin());
-        dto.setStoreId(variant.getStoreId());
-        dto.setVariantPrice(variant.getVariantPrice());
-        dto.setVariantColor(variant.getVariantColor());
-        dto.setVariantSku(variant.getVariantSku());
-        dto.setVariantThumbnail(variant.getVariantThumbnail());
-        return dto;
-    }
-
-    private ProductVariant convertToEntity(ProductVariantDTO dto) {
-        ProductVariant variant = new ProductVariant();
-        variant.setVariantId(dto.getVariantId());
-        variant.setProductAsin(dto.getProductAsin());
-        variant.setStoreId(dto.getStoreId());
-        variant.setVariantPrice(dto.getVariantPrice());
-        variant.setVariantColor(dto.getVariantColor());
-        variant.setVariantSku(dto.getVariantSku());
-        variant.setVariantThumbnail(dto.getVariantThumbnail());
-        return variant;
+        return productPage.map(product -> {
+            ProductFilterResponse res = new ProductFilterResponse();
+            res.setProductId(product.getProductId());
+            res.setProductTitle(product.getProductTitle());
+            res.setProductPrice(product.getProductPrice());
+            res.setAverageRating(product.getAverageRating());
+            res.setProductThumbnail(product.getProductThumbnail());
+            res.setBrandName(product.getBrandName());
+            return res;
+        });
     }
 }

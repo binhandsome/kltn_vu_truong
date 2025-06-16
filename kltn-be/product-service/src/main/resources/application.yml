@@ -1,25 +1,37 @@
 server:
   port: 8082
+
 spring:
+  application:
+    name: product-service
+
   datasource:
     url: jdbc:mysql://localhost:3306/kltn_fashion_shop?useSSL=false&serverTimezone=UTC
     username: root
     password:
+
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: true
-  application:
-    name: product-service
+
   cloud:
     compatibility-verifier:
-      enabled: false # Vô hiệu hóa kiểm tra tương thích
+      enabled: false
+
 eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:localhost:${server.port}
   client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

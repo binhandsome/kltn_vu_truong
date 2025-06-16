@@ -1,16 +1,13 @@
+// Service: ProductService.java
 package com.kltnbe.productservice.services;
 
-import com.kltnbe.productservice.dtos.ProductDTO;
-import com.kltnbe.productservice.dtos.ProductVariantDTO;
-
-import java.util.List;
+import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
+import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
+import com.kltnbe.productservice.dtos.res.ProductSearchResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
-    ProductDTO getProductByAsin(String asin);
-    ProductVariantDTO getVariantById(Long variantId);
-    List<ProductDTO> searchProducts(String keyword);
-    List<ProductDTO> filterProducts(String category, String brand);
-    ProductVariantDTO createVariant(ProductVariantDTO variantDTO);
-    ProductVariantDTO updateVariant(Long variantId, ProductVariantDTO variantDTO);
-    void deleteVariant(Long variantId);
+    Page<ProductSearchResponse> searchProducts(String keyword, Pageable pageable);
+    Page<ProductFilterResponse> filterProducts(ProductFilterRequest request);
 }
