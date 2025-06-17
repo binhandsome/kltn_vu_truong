@@ -40,7 +40,7 @@ function WishList() {
   {/*Banner Start*/}
   <div
     className="dz-bnr-inr bg-secondary overlay-black-light"
-    style={{ backgroundImage: "url(images/background/bg1.jpg)" }}
+    style={{ backgroundImage: "url(../../assets/user/images/background/bg1.jpg)" }}
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
