@@ -66,7 +66,7 @@ function UserHeader() {
           </div>
           <ul className=" nav navbar-nav">
             <li className="has-mega-menu sub-menu-down auto-width menu-left">
-              <a href="javascript:void(0);">
+              <a href="/user">
                 <span>Home</span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
@@ -94,7 +94,7 @@ function UserHeader() {
               </div>
             </li>
             <li className="has-mega-menu sub-menu-down">
-              <a href="javascript:void(0);">
+              <a href="/user/shop/shopWithCategory">
                 <span>Shop</span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
@@ -102,7 +102,7 @@ function UserHeader() {
                 <ul>
                   <li className="side-left">
                   <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'} className="menu-title">Shop</a>
+                                                    <li><a href="/user/shop/shopWithCategory" className="menu-title">Shop</a>
                                                         <ul>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStandard'}>Shop Standard</a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopList'}>Shop List</a></li>
@@ -171,7 +171,7 @@ function UserHeader() {
               </div>
             </li>
             <li className="has-mega-menu sub-menu-down auto-width">
-              <a href="javascript:void(0);">
+              <a href="/user/blog/blogdetails/postStandard">
                 <span>Blog</span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
@@ -395,7 +395,7 @@ function UserHeader() {
               </div>
             </li>
             <li className="has-mega-menu sub-menu-down">
-              <a href="javascript:void(0);">
+              <a href="/user/portfolio/portfolioTiles">
                 <span>Portfolio</span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
@@ -479,7 +479,7 @@ function UserHeader() {
               </div>
             </li>
             <li className="has-mega-menu sub-menu-down wide-width">
-              <a href="javascript:void(0);">
+              <a href="/user/about/aboutUs">
                 <span>Pages</span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
