@@ -9,10 +9,13 @@ const Error404 = () => (
     <div className="fb-main-404section">
 		<div className="fb-404page">
 			<img src="../../assets/admin/images/error.png" alt=""/>
-			<h1>Oops... Page Not Found</h1>
-			<p>Do not Worry Back To Previous Pages</p>
+			{/* Oops... Page Not Found */}
+			<h1>Ồ... Không tìm thấy trang</h1>
+			{/* Do not Worry Back To Previous Pages */}
+			<p>Đừng lo lắng Quay lại trang trước</p>
 			<div className="fb-404btn">
-				<a href="index.html" className="ad-btn">back to home</a>
+				{/* Back to home  */}
+				<a href="index.html" className="ad-btn">Trở về</a>
 			</div>
 		</div>
 	</div>

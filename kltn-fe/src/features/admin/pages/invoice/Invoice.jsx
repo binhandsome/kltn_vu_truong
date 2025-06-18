@@ -5,14 +5,17 @@ const Invoice = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Invoice</h4>
+								{/* Invoice */}
+                                <h4 className="page-title">Hóa đơn</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Invoice</li>
+									{/* Invoice */}
+                                    <li className="breadcrumb-link active">Hóa đơn</li>
                                 </ul>
                             </div>
                         </div>
@@ -24,19 +27,21 @@ const Invoice = () => (
 						<div className="card">
 							<div className="card-body">
 								<div className="ad-invoice-title">
-									<h4>Order - 14812</h4>
+									<h4>Đơn hàng - 14812</h4>
 								</div>
 								<hr/>
 								<div className="row">
 									<div className="col-sm-6">
-										<h5 className="mb-2">Billed To:</h5>
+										{/* Billed To:  */}
+										<h5 className="mb-2">Được thanh toán cho:</h5>
 										<p>John Smith</p>
 										<p>14812 Main</p>
 										<p>Sdr. 2c</p>
 										<p>Lorem Ipsum, RY 545782</p>
 									</div>
 									<div className="col-sm-6 text-sm-end">
-										<h5 className="mb-2">Shipped To:</h5>
+										{/* Shipped To: */}
+										<h5 className="mb-2">Vận chuyển đến:</h5>
 										<p>Jenny Mark</p>
 										<p>2211 Main</p>
 										<p>Sdr. 2B</p>
@@ -45,25 +50,28 @@ const Invoice = () => (
 								</div>
 								<div className="row">
 									<div className="col-sm-6 mt-3">
-										<h5 className="mb-2">Payment Method:</h5>
+										{/* Payment Method: */}
+										<h5 className="mb-2">Phương thức thanh toán:</h5>
 										<p>Visa ending **** 1144</p>
 										<p>vd@gmail.com</p>
 									</div>
 									<div className="col-sm-6 mt-3 text-sm-end">
-										<h5 className="mb-2">Order Date:</h5>
+										{/* Order Date: */}
+										<h5 className="mb-2">Ngày đặt hàng:</h5>
 										<p>22/12/2022</p>
 									</div>
 								</div>
 								<div className="py-2 mt-3 mb-2">
-									<h4 className="font-size-15">Order Summary</h4>
+									{/* Order Summary */}
+									<h4 className="font-size-15">Tóm tắt đơn hàng</h4>
 								</div>
 								<div className="table-responsive">
 									<table className="table table-styled mb-0">
 										<thead>
 											<tr>
-												<th style={{ width: '70px' }}>No.</th>
-												<th>Item</th>
-												<th className="text-end">Price</th>
+												<th style={{ width: '70px' }}>Stt</th>
+												<th>Mục</th>
+												<th className="text-end">Giá</th>
 											</tr>
 										</thead>
 										<tbody>
@@ -85,17 +93,17 @@ const Invoice = () => (
 												<td className="text-end">$555.00</td>
 											</tr>
 											<tr>
-												<td colspan="2" className="text-end">Sub Total</td>
+												<td colspan="2" className="text-end">Tổng phụ</td>
 												<td className="text-end">$4578.00</td>
 											</tr>
 											<tr>
 												<td colspan="2" className="text-end">
-													<strong>Shipping</strong></td>
+													<strong>Vận chuyển</strong></td>
 												<td className=" text-end">$14.00</td>
 											</tr>
 											<tr>
 												<td colspan="2" className="text-end">
-													<strong>Total</strong></td>
+													<strong>Tổng cộng</strong></td>
 												<td className=" text-end"><h4 className="m-0">$45781.00</h4></td>
 											</tr>
 										</tbody>
@@ -104,7 +112,7 @@ const Invoice = () => (
 								<div className="d-print-none mt-2">
 									<div className="float-end">
 										<a href="javascript:window.print()" className="btn btn-success waves-effect waves-light me-1"><i className="fa fa-print"></i></a>
-										<a href="javascript:;" className="btn btn-primary w-md waves-effect waves-light">Send</a>
+										<a href="javascript:;" className="btn btn-primary w-md waves-effect waves-light">Gửi</a>
 									</div>
 								</div>
 							</div>

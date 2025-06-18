@@ -5,14 +5,16 @@ const Tabs = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Tabs </h4>
+								{/* Tabs */}
+                                <h4 className="page-title">Thẻ </h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Tabs </li>
+                                    <li className="breadcrumb-link active">Thẻ </li>
                                 </ul>
                             </div>
                         </div>
@@ -23,19 +25,20 @@ const Tabs = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Default Tabs</h4>
+								{/* Default Tabs */}
+                                <h4 className="card-title">Thẻ mặc định</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <ul className="nav nav-tabs" id="myTab2" role="tablist">
 									  <li className="nav-item">
-										<a className="nav-link active" id="home-tab2" data-bs-toggle="tab" href="tab.html#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
+										<a className="nav-link active" id="home-tab2" data-bs-toggle="tab" href="tab.html#home" role="tab" aria-controls="home" aria-selected="true">Trang chủ</a>
 									  </li>
 									  <li className="nav-item">
-										<a className="nav-link" id="profile-tab19" data-bs-toggle="tab" href="tab.html#profile" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+										<a className="nav-link" id="profile-tab19" data-bs-toggle="tab" href="tab.html#profile" role="tab" aria-controls="profile" aria-selected="false">Hồ sơ</a>
 									  </li>
 									  <li className="nav-item">
-										<a className="nav-link" id="contact-tab" data-bs-toggle="tab" href="tab.html#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
+										<a className="nav-link" id="contact-tab" data-bs-toggle="tab" href="tab.html#contact" role="tab" aria-controls="contact" aria-selected="false">Liên hệ</a>
 									  </li>
 									</ul>
 									<div className="tab-content ad-content2" id="myTabContent">
@@ -56,19 +59,20 @@ const Tabs = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Justify Tabs</h4>
+								{/* Justify Tabs */}
+                                <h4 className="card-title">Căn đều các thẻ</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                    <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
 									  <li className="nav-item">
-										<a className="nav-link active" id="pills-home-tab" data-bs-toggle="pill" href="tab.html#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Home</a>
+										<a className="nav-link active" id="pills-home-tab" data-bs-toggle="pill" href="tab.html#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Trang chủ</a>
 									  </li>
 									  <li className="nav-item">
-										<a className="nav-link" id="pills-profile-tab" data-bs-toggle="pill" href="tab.html#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Profile</a>
+										<a className="nav-link" id="pills-profile-tab" data-bs-toggle="pill" href="tab.html#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Hồ sơ</a>
 									  </li>
 									  <li className="nav-item">
-										<a className="nav-link" id="pills-contact-tab" data-bs-toggle="pill" href="tab.html#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false">Contact</a>
+										<a className="nav-link" id="pills-contact-tab" data-bs-toggle="pill" href="tab.html#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false">Liên hệ</a>
 									  </li>
 									</ul>
 									<div className="tab-content" id="pills-tabContent">
@@ -83,17 +87,18 @@ const Tabs = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Vertical Nav Tabs</h4>
+								{/* Vertical Nav Tabs */}
+                                <h4 className="card-title">Thẻ điều hướng dọc</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                    <div className="row">
 									  <div className="col-3">
 										<div className="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-										  <a className="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" href="tab.html#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">Home</a>
-										  <a className="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" href="tab.html#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false">Profile</a>
-										  <a className="nav-link" id="v-pills-messages-tab" data-bs-toggle="pill" href="tab.html#v-pills-messages" role="tab" aria-controls="v-pills-messages" aria-selected="false">Messages</a>
-										  <a className="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill" href="tab.html#v-pills-settings" role="tab" aria-controls="v-pills-settings" aria-selected="false">Settings</a>
+										  <a className="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" href="tab.html#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">Trang chủ</a>
+										  <a className="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" href="tab.html#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false">Hồ sơ</a>
+										  <a className="nav-link" id="v-pills-messages-tab" data-bs-toggle="pill" href="tab.html#v-pills-messages" role="tab" aria-controls="v-pills-messages" aria-selected="false">Tin nhắn</a>
+										  <a className="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill" href="tab.html#v-pills-settings" role="tab" aria-controls="v-pills-settings" aria-selected="false">Cài đặt</a>
 										</div>
 									  </div>
 									  <div className="col-9">
@@ -112,23 +117,23 @@ const Tabs = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Custom Tabs</h4>
+                                <h4 className="card-title">Thẻ tùy chỉnh</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                    <div className="mfh-machine-profile">
 										<ul className="nav nav-tabs" id="myTab1" role="tablist">
 											<li className="nav-item">
-												<a className="nav-link active" id="home-tab1" data-bs-toggle="tab" href="tab.html#home0" role="tab" aria-controls="home" aria-selected="true">Home</a>
+												<a className="nav-link active" id="home-tab1" data-bs-toggle="tab" href="tab.html#home0" role="tab" aria-controls="home" aria-selected="true">Trang chủ</a>
 											</li>
 											<li className="nav-item">
-												<a className="nav-link" id="profile-tab20" data-bs-toggle="tab" href="tab.html#profile0" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+												<a className="nav-link" id="profile-tab20" data-bs-toggle="tab" href="tab.html#profile0" role="tab" aria-controls="profile" aria-selected="false">Hồ sơ</a>
 											</li>
 											<li className="nav-item">
-												<a className="nav-link" id="profile-tab21" data-bs-toggle="tab" href="tab.html#messages" role="tab" aria-controls="profile" aria-selected="false">Messages</a>
+												<a className="nav-link" id="profile-tab21" data-bs-toggle="tab" href="tab.html#messages" role="tab" aria-controls="profile" aria-selected="false">Tin nhắn</a>
 											</li>
 											<li className="nav-item">
-												<a className="nav-link" id="profile-tab22" data-bs-toggle="tab" href="tab.html#settings" role="tab" aria-controls="profile" aria-selected="false">Settings</a>
+												<a className="nav-link" id="profile-tab22" data-bs-toggle="tab" href="tab.html#settings" role="tab" aria-controls="profile" aria-selected="false">Cài đặt</a>
 											</li>
 										</ul>
 										<div className="tab-content ad-content2" id="myTabContent2">
@@ -153,16 +158,19 @@ const Tabs = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Collapse</h4>
+								{/* Collapse */}
+                                <h4 className="card-title">Sụp đổ</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                    <p>
 									  <a className="btn btn-primary squer-btn" data-bs-toggle="collapse" href="tab.html#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-										Link with href
+										{/* Link with href */}
+										Liên kết với href
 									  </a>
 									  <button className="btn btn-primary squer-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-										Button with data-bs-target
+										{/* Button with data-bs-target */}
+										Nút có data-bs-target
 									  </button>
 									</p>
 									<div className="collapse" id="collapseExample">
@@ -177,14 +185,17 @@ const Tabs = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Multiple Targets</h4>
+								{/* Multiple Targets */}
+                                <h4 className="card-title">Nhiều mục tiêu</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
 									<p>
-									  <a className="btn btn-primary squer-btn" data-bs-toggle="collapse" href="tab.html#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">Toggle first element</a>
-									  <button className="btn btn-primary squer-btn" type="button" data-bs-toggle="collapse" data-bs-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Toggle second element</button>
-									  <button className="btn btn-primary squer-btn" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2">Toggle both elements</button>
+										{/* Toggle first element */}
+									  <a className="btn btn-primary squer-btn" data-bs-toggle="collapse" href="tab.html#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">Chuyển đổi phần tử đầu tiên</a>
+									  <button className="btn btn-primary squer-btn" type="button" data-bs-toggle="collapse" data-bs-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Chuyển đổi phần tử thứ 2</button>
+									  {/* Toggle both elements */}
+									  <button className="btn btn-primary squer-btn" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2">Chuyển đổi cả hai phần tử</button>
 									</p>
 									<div className="row">
 									  <div className="col">

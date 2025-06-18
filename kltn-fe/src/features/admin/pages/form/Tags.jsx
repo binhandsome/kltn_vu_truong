@@ -5,14 +5,17 @@ const Tags = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Tags</h4>
+                                {/* Tags */}
+                                <h4 className="page-title">Thẻ</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                                        {/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Tags</li>
+                                    {/* Tags */}
+                                    <li className="breadcrumb-link active">Thẻ</li>
                                 </ul>
                             </div>
                         </div>
@@ -27,8 +30,10 @@ const Tags = () => (
                         <div className="colxl-6 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Allow Case Sensitive</h4>
-                                    <p className="card-desc">Default <code>case-sensitive</code> is <code>false</code>. Set it to <code>true</code> to allow case sensitive.</p>
+                                    {/* Allow Case Sensitive */}
+                                    <h4>Cho phép phân biệt chữ hoa chữ thường</h4>
+                                    {/* Default <code>case-sensitive</code> is <code>false</code>. Set it to <code>true</code> to allow case sensitive. */}
+                                    <p className="card-desc">Mặc định <code>phân biệt chữ hoa chữ thường</code> là <code>false</code>. Đặt thành <code>true</code> để cho phép phân biệt chữ hoa chữ thường.</p>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -47,8 +52,10 @@ const Tags = () => (
                         <div className="colxl-6 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Disable "close" Character</h4>
-                                    <p className="card-desc">Default close char is <code>"×"</code>. Pass empty string <code>close-char:""</code> To remove close char.</p>
+                                    {/* Disable "close" Character */}
+                                    <h4>Tắt ký tự "đóng"</h4>
+                                    {/* Default close char is <code>"×"</code>. Pass empty string <code>close-char:""</code> To remove close char. */}
+                                    <p className="card-desc">Ký tự đóng mặc định là <code>"×"</code>. Truyền chuỗi rỗng <code>close-char:""</code> để xóa ký tự đóng.</p>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -67,8 +74,10 @@ const Tags = () => (
                         <div className="colxl-6 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Remove tag on delete Button</h4>
-                                    <p className="card-desc">Default close char is <code>"×"</code>. Pass empty string <code>close-char:""</code> To remove close char.</p>
+                                    {/* Remove tag on delete Button */}
+                                    <h4>Xóa thẻ trên nút xóa</h4>
+                                    {/* Default close char is <code>"×"</code>. Pass empty string <code>close-char:""</code> To remove close char. */}
+                                    <p className="card-desc">Ký tự đóng mặc định là <code>"×"</code>. Truyền chuỗi rỗng <code>close-char:""</code> để xóa ký tự đóng</p>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -88,8 +97,10 @@ const Tags = () => (
                         <div className="colxl-6 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Remove tag on delete Button</h4>
-                                    <p className="card-desc">Default you can edit the tag you just deleted from the tag box. set it <code>deleted:false</code> to avoid that.</p>
+                                    {/* Remove tag on delete Button */}
+                                    <h4>Xóa thẻ trên nút xóa</h4>
+                                    {/* Default you can edit the tag you just deleted from the tag box. set it <code>deleted:false</code> to avoid that. */}
+                                    <p className="card-desc">Mặc định, bạn có thể chỉnh sửa thẻ mà bạn vừa xóa khỏi hộp thẻ. Đặt <code>deleted:false</code> để tránh điều đó.</p>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -109,8 +120,10 @@ const Tags = () => (
                         <div className="colxl-6 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Allow Duplicate Tag</h4>
-                                    <p className="card-desc">Default duplicate tags are not allowed, set <code>duplicated:false</code> to allow duplicates.</p>
+                                    {/* Allow Duplicate Tag */}
+                                    <h4>Cho phép thẻ trùng lặp</h4>
+                                    {/* Default duplicate tags are not allowed, set <code>duplicated:false</code> to allow duplicates. */}
+                                    <p className="card-desc">Không cho phép các thẻ trùng lặp mặc định, hãy đặt <code>duplicated:false</code> để cho phép các thẻ trùng lặp.</p>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -130,8 +143,10 @@ const Tags = () => (
                         <div className="colxl-6 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Disable "Enter" Button </h4>
-                                    <p className="card-desc">Default Enter key add a new tag, set it <code>no-enter:true</code> to avoid that.</p>
+                                    {/* Disable "Enter" Button */}
+                                    <h4>Vô hiệu hóa nút "Enter" </h4>
+                                    {/* Default Enter key add a new tag, set it <code>no-enter:true</code> to avoid that. */}
+                                    <p className="card-desc">Phím Enter mặc định thêm một thẻ mới, hãy đặt thẻ đó là <code>no-enter:true</code> để tránh điều đó.</p>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -151,8 +166,10 @@ const Tags = () => (
                         <div className="colxl-6 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Enable "Comma"</h4>
-                                    <p className="card-desc">Default Comma key add a new tag, set it <code>no-comma:true</code> to avoid that.</p>
+                                    {/* Enable "Comma" */}
+                                    <h4>Bật "Dấu phẩy"</h4>
+                                    {/* Default Comma key add a new tag, set it <code>no-comma:true</code> to avoid that. */}
+                                    <p className="card-desc">Phím dấu phẩy mặc định thêm một thẻ mới, hãy đặt thẻ đó là <code>no-comma:true</code> để tránh điều đó.</p>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -172,8 +189,10 @@ const Tags = () => (
                         <div className="colxl-6 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Tag With Tagging Area</h4>
-                                    <p className="card-desc">Default No Input Fiels Show, set it <code>type-zone-class</code></p>
+                                    {/* Tag With Tagging Area */}
+                                    <h4>Thẻ với khu vực gắn thẻ</h4>
+                                    {/* Default No Input Fiels Show, set it <code>type-zone-class</code> */}
+                                    <p className="card-desc">Mặc định Không có trường nhập Hiển thị, đặt nó là <code>type-zone-class</code></p>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -193,7 +212,8 @@ const Tags = () => (
                         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Reset Tags</h4>
+                                    {/* Reset Tags */}
+                                    <h4>Đặt lại thẻ</h4>
                                 </div>
                                 <div className="card-body">
                                     <div className="form-group mb-0">
@@ -212,7 +232,8 @@ const Tags = () => (
                                                 </div>
                                             </div>
                                             <div className="col-xl-3 col-lg-4 col-md-12 col-sm-12 col-12">
-                                                <button className="btn btn-primary squer-btn reset-tagging" type="button">Reset</button>
+                                                {/* Reset */}
+                                                <button className="btn btn-primary squer-btn reset-tagging" type="button">Cài lại</button>
                                             </div>
                                         </div>
                                     </div>

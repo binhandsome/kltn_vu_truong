@@ -14,14 +14,15 @@ const Register = () => (
               <img src="../../assets/admin/images/logo2.png" alt="" />
             </a>
             <h2>
-              <span className="primary">Hello,</span>Welcome!
+              <span className="primary">Xin chào,</span>Chào mừng!
             </h2>
-            <p>Please Enter Your Details Below to Continue</p>
+            <p>Vui lòng nhập thông tin chi tiết của bạn bên dưới để tiếp tục</p>
             <div className="ad-auth-form">
               <div className="ad-auth-feilds mb-30">
                 <input
                   type="text"
-                  placeholder="Enter Name"
+                  // Enter name
+                  placeholder="Nhập tên"
                   className="ad-input"
                 />
                 <div className="ad-auth-icon">
@@ -42,7 +43,8 @@ const Register = () => (
               <div className="ad-auth-feilds mb-30">
                 <input
                   type="text"
-                  placeholder="Email Address"
+                  // Email address
+                  placeholder="Địa chỉ Email"
                   className="ad-input"
                 />
                 <div className="ad-auth-icon">
@@ -70,7 +72,8 @@ const Register = () => (
               <div className="ad-auth-feilds">
                 <input
                   type="password"
-                  placeholder="Password"
+                  // Password
+                  placeholder="Mật khẩu"
                   className="ad-input"
                 />
                 <div className="ad-auth-icon">
@@ -102,7 +105,8 @@ const Register = () => (
               </a>
             </div>
             <p className="ad-register-text">
-              Already have an account ? <a href="login.html">Login</a>
+              {/* Already have an account ? */}
+              Bạn đã có tài khoản ? <a href="login.html">Đăng nhập</a>
             </p>
           </form>
         </div>
@@ -110,7 +114,7 @@ const Register = () => (
     </div>
     <div className="ad-notifications ad-error">
       <p>
-        <span>Duhh!</span>Something Went Wrong
+        <span>Hừ!</span>Đã xảy ra lỗi
       </p>
     </div>
   </div>

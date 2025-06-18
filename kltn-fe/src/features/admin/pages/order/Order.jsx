@@ -5,7 +5,8 @@ const Order = () => (
         <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div className="page-title-wrapper">
                 <div className="page-title-box ad-title-box-use">
-                    <h4 className="page-title">Orders</h4>
+                    {/* Orders */}
+                    <h4 className="page-title">Quản lí đơn hàng</h4>
                 </div>
                 <div className="ad-breadcrumb">
                     <ul>
@@ -22,7 +23,8 @@ const Order = () => (
                         </li>
                         <li>
                             <div className="add-group" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                <a className="ad-btn">Add New Order</a>
+                                {/* Add New Order */}
+                                <a className="ad-btn">Thêm đơn hàng mới</a>
                             </div>
                         </li>
                     </ul>
@@ -36,7 +38,8 @@ const Order = () => (
         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div className="card table-card">
                 <div className="card-header pb-0">
-                    <h4>Orders List</h4>
+                    {/* Orders List */}
+                    <h4>Danh sách đơn hàng</h4>
                 </div>
                 <div className="card-body">
                     <div className="chart-holder">
@@ -50,14 +53,22 @@ const Order = () => (
                                                 <label for="checkbox1"></label>
                                             </div>
                                         </th>
-                                        <th>Order ID</th>
-                                        <th>Billing Name</th>
-                                        <th>Date</th>
-                                        <th>Total</th>
-                                        <th>Payment Status</th>
-                                        <th>Payment Method</th>
-                                        <th>View Details</th>
-                                        <th>Action</th>
+                                        {/* Order ID */}
+                                        <th>ID đơn hàng</th>
+                                        {/* Billing Name */}
+                                        <th>Tên thanh toán</th>
+                                        {/* Date */}
+                                        <th>Ngày</th>
+                                        {/* Total */}
+                                        <th>Tổng cộng</th>
+                                        {/* Payment Status */}
+                                        <th>Trạng thái thanh toán</th>
+                                        {/* Payment Method */}
+                                        <th>Phương thức thanh toán</th>
+                                        {/* View Details */}
+                                        <th>Xem chi tiết</th>
+                                        {/* Action */}
+                                        <th>Hoạt động</th>
                                     </tr>
                                 </thead>
                                 <tbody>

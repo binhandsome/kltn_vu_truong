@@ -24,20 +24,24 @@ const DataTable = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Default Datatable</h4>
+								{/* Default Datatable */}
+                                <h4>Dữ liệu mặc định</h4>
                             </div>
                             <div className="card-body">
                                <table id="example" className="table table-striped table-bordered dt-responsive nowrap" style={{ width: '100%' }}>
 									<thead>
 										<tr>
-											<th>First name</th>
-											<th>Last name</th>
+											<th>Họ</th>
+											<th>Tên</th>
+											{/* Position */}
 											<th>Position</th>
-											<th>Office</th>
-											<th>Age</th>
-											<th>Start date</th>
-											<th>Salary</th>
-											<th>Extn.</th>
+											{/* Office */}
+											<th>Văn phòng</th>
+											<th>Tuổi</th>
+											<th>Ngày bắt đầu</th>
+											<th>Lương</th>
+											{/* Extn. */}
+											<th>Máy lẻ.</th>
 											<th>E-mail</th>
 										</tr>
 									</thead>

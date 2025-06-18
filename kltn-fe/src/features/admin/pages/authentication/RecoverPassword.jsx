@@ -14,14 +14,15 @@ const RecoverPassword = () => (
               <img src="../../assets/admin/images/logo2.png" alt="" />
             </a>
             <h2>
-              <span className="primary">Hello,</span>Welcome!
+              <span className="primary">Xin chào,</span>Chào mừng!
             </h2>
-            <p>Enter your email and we will send you a reset link</p>
+            {/* Enter your email and we will send you a reset link */}
+            <p>Nhập email của bạn và chúng tôi sẽ gửi cho bạn một liên kết đặt lại</p>
             <div className="ad-auth-form">
               <div className="ad-auth-feilds mb-30">
                 <input
                   type="text"
-                  placeholder="Email Address"
+                  placeholder="Địa chỉ Email"
                   className="ad-input"
                 />
                 <div className="ad-auth-icon">
@@ -49,11 +50,13 @@ const RecoverPassword = () => (
             </div>
             <div className="ad-auth-btn">
               <a href="javascript:void(0);" className="ad-btn ad-login-member">
-                Send Password
+                {/* Send Password */}
+                Gửi mật khẩu
               </a>
             </div>
             <p className="ad-register-text">
-              Already have an account ? <a href="login.html">Login</a>
+              {/* Already have an account ? */}
+              Bạn đã có tài khoản? <a href="login.html">Đăng nhập</a>
             </p>
           </form>
         </div>
@@ -61,7 +64,7 @@ const RecoverPassword = () => (
     </div>
     <div className="ad-notifications ad-error">
       <p>
-        <span>Duhh!</span>Something Went Wrong
+        <span>Hừ!</span>Đã xảy ra lỗi
       </p>
     </div>
   </div>

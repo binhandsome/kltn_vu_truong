@@ -5,14 +5,16 @@ const ProgressBars = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Progress Bars</h4>
+								{/* Progress Bars */}
+                                <h4 className="page-title">Thanh tiến trình</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Progress Bars</li>
+                                    <li className="breadcrumb-link active">Thanh tiến trình</li>
                                 </ul>
                             </div>
                         </div>
@@ -24,7 +26,8 @@ const ProgressBars = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Basic Progress Bar</h4>
+								{/* Basic Progress Bar */}
+                                <h4>Thanh tiến trình cơ bản</h4>
                             </div>
                             <div className="card-body">
 								<div className="progress">
@@ -45,7 +48,8 @@ const ProgressBars = () => (
 					<div className="col-xl-6 col-lg-6 col-md-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Progress Bar With Label</h4>
+								{/* Progress Bar With Label */}
+                                <h4>Thanh tiến trình có nhãn</h4>
                             </div>
                             <div className="card-body">
 								<div className="progress">
@@ -66,7 +70,8 @@ const ProgressBars = () => (
 					<div className="col-xl-6 col-lg-6 col-md-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Progress Bar Height</h4>
+								{/* Progress Bar Height */}
+                                <h4>Chiều cao thanh tiến trình</h4>
                             </div>
                             <div className="card-body">
 								<div className="progress" style={{ height: '12px' }}>
@@ -95,7 +100,8 @@ const ProgressBars = () => (
 					<div className="col-xl-6 col-lg-6 col-md-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Colored Progress Bars</h4>
+								{/* Colored Progress Bars */}
+                                <h4>Thanh tiến trình có màu</h4>
                             </div>
                             <div className="card-body">
 								{/* <!-- Blue --> */}
@@ -139,7 +145,8 @@ const ProgressBars = () => (
 					<div className="col-xl-6 col-lg-6 col-md-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Striped Progress Bars</h4>
+								{/* Striped Progress Bars */}
+                                <h4>Thanh tiến trình sọc</h4>
                             </div>
                             <div className="card-body">
 								<div className="progress">
@@ -168,7 +175,8 @@ const ProgressBars = () => (
 					<div className="col-xl-6 col-lg-6 col-md-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Animated Progress Bar</h4>
+								{/* Animated Progress Bar */}
+                                <h4>Thanh tiến trình hoạt hình</h4>
                             </div>
                             <div className="card-body">
 								<div className="progress">
@@ -202,7 +210,8 @@ const ProgressBars = () => (
 					<div className="col-xl-6 col-lg-6 col-md-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Multiple Progress Bars</h4>
+								{/* Multiple Progress Bars */}
+                                <h4>Nhiều thanh tiến trình</h4>
                             </div>
                             <div className="card-body">
 								<div className="progress">

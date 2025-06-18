@@ -5,14 +5,17 @@ const Faq = () => (
         <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div className="page-title-wrapper">
                 <div className="page-title-box">
-                    <h4 className="page-title">FAQS</h4>
+                    {/* FAQS */}
+                    <h4 className="page-title">Câu hỏi thường gặp</h4>
                 </div>
                 <div className="breadcrumb-list">
                     <ul>
                         <li className="breadcrumb-link">
-                            <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                            {/* Dashboard */}
+                            <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                         </li>
-                        <li className="breadcrumb-link active">FAQs</li>
+                        {/* FAQs */}
+                        <li className="breadcrumb-link active">Câu hỏi thường gặp</li>
                     </ul>
                 </div>
             </div>
@@ -27,15 +30,18 @@ const Faq = () => (
             <div className="col-lg-12 col-md-12">
                 <div className="product-detail-tab">
                     <ul className="nav nav-tabs">
-                        <li><a data-bs-toggle="tab" className="active" href="faq.html#description">General Questions <i className="fas fa-question"></i></a></li>
-                        <li><a data-bs-toggle="tab" href="faq.html#review">Privacy Policy <i className="fas fa-user-secret"></i></a></li>
-                        <li><a data-bs-toggle="tab" href="faq.html#info">Support <i className="fas fa-headset"></i></a></li>
+                        {/* General Questions */}
+                        <li><a data-bs-toggle="tab" className="active" href="faq.html#description">Câu hỏi chung <i className="fas fa-question"></i></a></li>
+                        {/* Privacy Policy */}
+                        <li><a data-bs-toggle="tab" href="faq.html#review">Chính sách bảo mật <i className="fas fa-user-secret"></i></a></li>
+                        {/* Support */}
+                        <li><a data-bs-toggle="tab" href="faq.html#info">Hỗ trợ <i className="fas fa-headset"></i></a></li>
                     </ul>
                     <div className="tab-content">
                         <div id="description" className="tab-pane fade show active">
                             <div className="int-tab-peragraph">
-                                <h4><span><i className="far fa-question-circle"></i></span> What is Lorem Ipsum?</h4>
-                                <p>New common language will be more simple and regular than the existing European languages. It will be as simple as occidental.</p>
+                                <h4><span><i className="far fa-question-circle"></i></span> Bạn tên là gì?</h4>
+                                <p>Tôi tên là Vũ</p>
                                 <h4><span><i className="far fa-question-circle"></i></span> Where does it come from?</h4>
                                 <p>Everyone realizes why a new common language would be desirable one could refuse to pay expensive translators.</p>
                                 <h4><span><i className="far fa-question-circle"></i></span> Where can I get some?</h4>

@@ -7,7 +7,8 @@ const UserDashboard = () => (
         <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
           <div className="page-title-wrapper">
             <div className="page-title-box ad-title-box-use">
-              <h4 className="page-title">Users</h4>
+              {/* Users */}
+              <h4 className="page-title">Quản lí người dùng</h4>
             </div>
             <div className="ad-breadcrumb">
               <ul>
@@ -16,7 +17,7 @@ const UserDashboard = () => (
                     <input
                       className="form-control"
                       type="text"
-                      placeholder="Search Here..."
+                      placeholder="Tìm kiếm..."
                       id="text-input"
                     />
                     <svg
@@ -34,8 +35,9 @@ const UserDashboard = () => (
                   </div>
                 </li>
                 <li>
-                  <div className="add-group">
-                    <a className="ad-btn">Add User</a>
+                  <div className="add-group" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    {/* Add User */}
+                    <a className="ad-btn" >Thêm người dùng</a>
                   </div>
                 </li>
               </ul>
@@ -49,7 +51,8 @@ const UserDashboard = () => (
         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
           <div className="card table-card">
             <div className="card-header pb-0">
-              <h4>User List</h4>
+              {/* User List */}
+              <h4>Danh sách người dùng</h4>
             </div>
             <div className="card-body">
               <div className="chart-holder">
@@ -58,11 +61,16 @@ const UserDashboard = () => (
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Customer</th>
-                        <th>Progress</th>
-                        <th>Deliver Date</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        {/* Customer */}
+                        <th>Khách hàng</th>
+                        {/* Progress */}
+                        <th>Tiến triển</th>
+                        {/* Deliver Date */}
+                        <th>Ngày giao hàng</th>
+                        {/* Status */}
+                        <th>Trạng thái</th>
+                        {/* Action */}
+                        <th>Hoạt động</th>
                       </tr>
                     </thead>
                     <tbody>

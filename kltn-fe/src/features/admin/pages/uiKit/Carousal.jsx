@@ -5,14 +5,16 @@ const Carousal = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Carousal</h4>
+								{/* Carousal */}
+                                <h4 className="page-title">Vòng quay</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Carousal</li>
+                                    <li className="breadcrumb-link active">Vòng quay</li>
                                 </ul>
                             </div>
                         </div>
@@ -23,7 +25,8 @@ const Carousal = () => (
 				  <div className="col-sm-12">
 					<div className="card">
 					  <div className="card-header">
-						<h5>Carousal With controls</h5>
+						{/* Carousal With controls */}
+						<h5>Vòng quay với các nút điều khiển</h5>
 					  </div>
 					  <div className="card-body">
 						<div id="carouselExampleControls" className="carousel slide" data-bs-ride="carousel">
@@ -55,7 +58,8 @@ const Carousal = () => (
 				  <div className="col-sm-12">
 					<div className="card">
 					  <div className="card-header">
-						<h5>Carousal With indicators</h5>
+						{/* Carousal With indicators */}
+						<h5>Vòng quay với các chỉ số</h5>
 					  </div>
 					  <div className="card-body">
 						<div id="carouselExampleIndicators" className="carousel slide" data-bs-ride="carousel">
@@ -97,7 +101,8 @@ const Carousal = () => (
 				  <div className="col-sm-12">
 					<div className="card">
 					  <div className="card-header">
-						<h5>Carousal With Crossfade</h5>
+						{/* Carousal With Crossfade */}
+						<h5>Vòng xoay với Crossfade</h5>
 					  </div>
 					  <div className="card-body">
 						<div id="carouselExampleFade" className="carousel slide carousel-fade" data-bs-ride="carousel">

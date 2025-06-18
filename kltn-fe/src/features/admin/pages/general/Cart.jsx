@@ -5,14 +5,17 @@ const Cart = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title bold">Cart</h4>
+                                {/* Cart */}
+                                <h4 className="page-title bold">Giỏ hàng</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                                        {/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Cart</li>
+                                    {/* Cart */}
+                                    <li className="breadcrumb-link active">Giỏ hàng</li>
                                 </ul>
                             </div>
                         </div>
@@ -32,12 +35,12 @@ const Cart = () => (
                                         <table className="table table-styled mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th>Prdouct</th>
-                                                    <th>Prdouct Name</th>
-                                                    <th>Price</th>
-                                                    <th>Quantity</th>
-													<th>Action</th>
-													<th>Total</th>
+                                                    <th>Sản phẩm</th>
+                                                    <th>Tên sản phẩm</th>
+                                                    <th>Giá</th>
+                                                    <th>Số lượng</th>
+													<th>Hoạt động</th>
+													<th>Tổng cộng</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -112,18 +115,18 @@ const Cart = () => (
 													<div className="ad-breadcrumb ad-breadcrumb2 dd-flex">
 														<div className="form-group">
 															<div className="ad-user-btn">
-																<input className="form-control" type="text" placeholder="Enter Coupan Code"/>
+																<input className="form-control" type="text" placeholder="Nhập mã giảm giá"/>
 															</div>
 														</div>
 														<div className="form-group ad-apply-cart">
-															<a className="ad-btn">Apply</a>
+															<a className="ad-btn">Áp dụng</a>
 														</div>
 													</div>
 													</td>
                                                     <td>&nbsp;</td>
                                                     <td>&nbsp;</td>
                                                     <td>&nbsp;</td>
-                                                    <td><b>Total Price :</b></td>
+                                                    <td><b>Tổng giá :</b></td>
                                                     <td>$6935.00</td>
                                                 </tr>
 												<tr>
@@ -131,8 +134,10 @@ const Cart = () => (
                                                     <td>&nbsp;</td>
                                                     <td>&nbsp;</td>
                                                     <td>&nbsp;</td>
-                                                    <td><a href="all-product.html" className="btn btn-danger squer-btn mt-2 mr-2">Continue Shopping</a></td>
-                                                    <td><a href="checkout.html" className="btn btn-success squer-btn mt-2 mr-2">Checkout</a></td>
+                                                    {/* Tiếp tục mua sắm */}
+                                                    <td><a href="all-product.html" className="btn btn-danger squer-btn mt-2 mr-2">Tiếp tục mua sắm</a></td>
+                                                    {/* Checkout */}
+                                                    <td><a href="checkout.html" className="btn btn-success squer-btn mt-2 mr-2">Thanh toán</a></td>
                                                 </tr>
                                             </tbody>
                                         </table>

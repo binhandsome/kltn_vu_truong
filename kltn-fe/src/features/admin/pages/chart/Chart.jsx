@@ -5,14 +5,17 @@ const Chart = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title bold">Charts</h4>
+                                {/* Charts */}
+                                <h4 className="page-title bold">Biểu đồ</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                                        {/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Chart</li>
+                                    {/* Chart */}
+                                    <li className="breadcrumb-link active">Biểu đồ</li>
                                 </ul>
                             </div>
                         </div>
@@ -24,7 +27,7 @@ const Chart = () => (
                         {/* <!-- Basic Area Chart --> */}
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Basic Area Chart</h4>
+                                <h4>Biểu đồ vùng cơ bản</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -37,7 +40,7 @@ const Chart = () => (
                         {/* <!-- Area Spaline Chart --> */}
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Area Spaline Chart</h4>
+                                <h4>Biểu đồ đường trục khu vực</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -52,7 +55,7 @@ const Chart = () => (
                         {/* <!-- Basic Bar Chart--> */}
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Basic Bar Chart</h4>
+                                <h4>Biểu đồ thanh cơ bản</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -65,7 +68,7 @@ const Chart = () => (
                         {/* <!-- Vertical Bar Chart Card--> */}
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Vertical Bar Chart</h4>
+                                <h4>Biểu đồ thanh dọc</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -80,7 +83,7 @@ const Chart = () => (
                         {/* <!-- Column Bar Chart Card--> */}
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Column Bar Chart</h4>
+                                <h4>Biểu đồ thanh cột</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -93,7 +96,7 @@ const Chart = () => (
                         {/* <!-- Stacked Bar Chart Card--> */}
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Stacked Bar Chart</h4>
+                                <h4>Biểu đồ thanh xếp chồng lên nhau</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -108,7 +111,7 @@ const Chart = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Basic Line Chart</h4>
+                                <h4>Biểu đồ đường cơ bản</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -121,7 +124,7 @@ const Chart = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Line Chart with Data Labels</h4>
+                                <h4>Biểu đồ đường có nhãn dữ liệu</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -136,7 +139,7 @@ const Chart = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Line &amp; Column Chart</h4>
+                                <h4>Biểu đồ đường &amp; cột</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -149,7 +152,7 @@ const Chart = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Radial Chart</h4>
+                                <h4>Biểu đồ xuyên tâm</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -165,7 +168,7 @@ const Chart = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Radar Chart</h4>
+                                <h4>Biểu đồ radar</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -178,7 +181,7 @@ const Chart = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card chart-card">
                             <div className="card-header">
-                                <h4>Pie Chart</h4>
+                                <h4>Biểu đồ hình tròn</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">

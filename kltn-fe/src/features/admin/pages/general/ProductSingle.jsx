@@ -5,14 +5,17 @@ const ProductSingle = () => (
         <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div className="page-title-wrapper">
                 <div className="page-title-box">
-                    <h4 className="page-title">Product Single</h4>
+                    {/* Product Single */}
+                    <h4 className="page-title">Sản phẩm đơn</h4>
                 </div>
                 <div className="breadcrumb-list">
                     <ul>
                         <li className="breadcrumb-link">
-                            <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                            {/* Dashboard */}
+                            <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                         </li>
-                        <li className="breadcrumb-link active">Product Single</li>
+                        {/* Product Single */}
+                        <li className="breadcrumb-link active">Sản phẩm đơn</li>
                     </ul>
                 </div>
             </div>
@@ -53,8 +56,10 @@ const ProductSingle = () => (
                         <ul>
                             <li>$60</li>
                             <li>$100</li>
-                            <li>on offer</li>
-                            <li>3 Customer Reviews</li>
+                            {/* on offer */}
+                            <li>Được cung cấp</li>
+                            {/* 3 Customer Reviews */}
+                            <li>3 đánh giá của khách hàng</li>
                             <li>
                                 <i className="fa fa-star" aria-hidden="true"></i>
                                 <i className="fa fa-star" aria-hidden="true"></i>
@@ -67,14 +72,15 @@ const ProductSingle = () => (
                     <div className="int-thumb-description">
                         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat...</p>
                         <ul>
-                            <li><span>Product Dimensions: </span>Length (17 inch.), Height (32 inches)</li>
-                            <li><span>Primary Material: </span>Wooden</li>
-                            <li><span>Color: </span>Yellow, Style: Modern</li>
-                            <li><span>Warranty: </span>6 month warranty on manufacturing defects</li>
+                            <li><span>Kích thước sản phẩm: </span>Length (17 inch.), Height (32 inches)</li>
+                            <li><span>Vật liệu chính: </span>Wooden</li>
+                            <li><span>Màu sắc: </span>Yellow, Style: Modern</li>
+                            <li><span>Bảo hành: </span>6 month warranty on manufacturing defects</li>
                         </ul>
                     </div>
                     <div className="int-color-thumb">
-                        <h5>color</h5>
+                        {/* Color */}
+                        <h5>Màu sắc</h5>
                         <ul>
                             <li><a href="javascript:;"></a></li>
                             <li><a href="javascript:;"></a></li>
@@ -84,16 +90,21 @@ const ProductSingle = () => (
                     </div>
                     <div className="int-quantity-style2">
                         <div className="int-textbox-subscribe4">
-                            <p>Available Options</p>
-                            <div className="int-search-wrapper">
-                               <input type="text" placeholder="Enter Your Pincode" id="searchInput"/>
-                                <a href="javascript:;" className="ad-btn" id="searchInputBtn">check</a>
+                            {/* Available Options */}
+                            <p>Tùy chọn có sẵn</p>
+                            <div className="int-search-wrapper" style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                {/* Enter Your Pincode */}
+                               <input type="text" placeholder="Nhập mã pin của bạn" id="searchInput"/>
+                               {/* check */}
+                                <a href="javascript:;" className="ad-btn" id="searchInputBtn">Kiểm tra</a>
                             </div>
-                            <span>Generally delivered in 8 - 12 days</span>
+                            {/* Generally delivered in 8 - 12 days */}
+                            <span>Nói chung giao hàng trong vòng 8 - 12 ngày</span>
                         </div>
                     </div>
                     <div className="int-quantity-stock">
-                        <h5>Availability : <span>Many In Stock</span></h5>
+                        {/* Availability   Many In Stock  */}
+                        <h5>Sẵn có : <span>Nhiều Còn Hàng</span></h5>
                         <ul>
                             <li>Quantity</li>
                             <li>
@@ -108,7 +119,8 @@ const ProductSingle = () => (
                                 </div>
                             </li>
                             <li>
-                                <a href="cart.html" className="ad-btn">add to cart</a>
+                                {/* Add to cart */}
+                                <a href="cart.html" className="ad-btn">Thêm vào giỏ hàng</a>
                             </li>
                             <li>
                                 <a href="javascript:;" className="svg-icon">
@@ -152,9 +164,12 @@ const ProductSingle = () => (
             <div className="col-lg-12 col-md-12">
                 <div className="product-detail-tab">
                     <ul className="nav nav-tabs">
-                        <li><a data-bs-toggle="tab" className="active" href="product-single.html#description">Description</a></li>
-                        <li><a data-bs-toggle="tab" href="product-single.html#review">Review</a></li>
-                        <li><a data-bs-toggle="tab" href="product-single.html#info">Additional Information</a></li>
+                        {/* Description */}
+                        <li><a data-bs-toggle="tab" className="active" href="product-single.html#description">Mô tả</a></li>
+                        {/* Review */}
+                        <li><a data-bs-toggle="tab" href="product-single.html#review">Đánh giá</a></li>
+                        {/* Additional Information */}
+                        <li><a data-bs-toggle="tab" href="product-single.html#info">Thông tin bổ sung</a></li>
                     </ul>
                     <div className="tab-content">
                         <div id="description" className="tab-pane fade show active">
@@ -166,14 +181,16 @@ const ProductSingle = () => (
                         </div>
                         <div id="review" className="tab-pane fade">
                             <div className="fd-review-wrapper">
-                                <h3 className="review-heading">there are no reviews yet.</h3>
-                                <h5>be the first to review "this product"</h5>
+                                {/* There are no reviews yet. */}
+                                <h3 className="review-heading">Chưa có đánh giá nào.</h3>
+                                {/* Be the first to review "this product" */}
+                                <h5>Hãy là người đầu tiên đánh giá "sản phẩm này"</h5>
                                 <div className="row">
                                     <div className="col-lg-9">
                                         <div className="row">
                                             <div className="col-md-6">
                                                 <div className="form-block">
-                                                    <input type="text" className="form_field" placeholder="First Name"/>
+                                                    <input type="text" className="form_field" placeholder="Tên"/>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -183,11 +200,11 @@ const ProductSingle = () => (
                                             </div>
                                             <div className="col-md-12">
                                                 <div className="form-block">
-                                                    <textarea placeholder="Your Review" className="form_field"></textarea>
+                                                    <textarea placeholder="Đánh giá của bạn" className="form_field"></textarea>
                                                 </div>
                                             </div>
                                             <div className="col-md-12">
-                                                <a href="javascript:;" className="ad-btn">Send</a>
+                                                <a href="javascript:;" className="ad-btn">Gửi</a>
                                             </div>
                                         </div>
                                     </div>
@@ -197,28 +214,30 @@ const ProductSingle = () => (
                         <div id="info" className="tab-pane fade">
                             <ul className="additional-info">
                                 <li>
-                                    <span className="info-head">size -</span>
+                                    {/* size */}
+                                    <span className="info-head">Kích cỡ -</span>
                                     4 cm x 20 cm
                                 </li>
                                 <li>
-                                    <span className="info-head">system rating -</span>
-                                    high
+                                    {/* system rating */}
+                                    <span className="info-head">Đánh giá hệ thống -</span>
+                                    cao
                                 </li>
                                 <li>
-                                    <span className="info-head">color -</span>
-                                    brown
+                                    <span className="info-head">Màu -</span>
+                                    nâu
                                 </li>
                                 <li>
-                                    <span className="info-head">material -</span>
+                                    <span className="info-head">Vật liệu -</span>
                                    sofa
                                 </li>
                                 <li>
-                                    <span className="info-head">model number -</span>
+                                    <span className="info-head">Số mô hình -</span>
                                     GT 15014G
                                 </li>
                                 <li>
-                                    <span className="info-head">generic name -</span>
-                                   light
+                                    <span className="info-head">Tên chung -</span>
+                                   sáng
                                 </li>
                             </ul>
                         </div>

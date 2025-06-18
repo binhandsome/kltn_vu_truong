@@ -5,14 +5,16 @@ const Alert = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Alerts</h4>
+								{/* Alerts */}
+                                <h4 className="page-title">Cảnh báo</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Alerts</li>
+                                    <li className="breadcrumb-link active">Cảnh báo</li>
                                 </ul>
                             </div>
                         </div>
@@ -24,8 +26,10 @@ const Alert = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Alert Links</h4>
-								<p>Add the alert-link class to any links inside the alert box to create "matching colored links":</p>
+								{/* Alert Links */}
+                                <h4>Liên kết cảnh báo</h4>
+								{/* Add the alert-link class to any links inside the alert box to create "matching colored links": */}
+								<p>Thêm lớp alert-link vào bất kỳ liên kết nào bên trong hộp cảnh báo để tạo "liên kết có màu phù hợp":</p>
                             </div>
                             <div className="card-body">
 							  <div className="alert alert-success">
@@ -61,8 +65,10 @@ const Alert = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Closing Alerts</h4>
-                                <p>Alerts are created with the .alert class, followed by a contextual color classes:</p>
+								{/* Closing Alerts */}
+                                <h4>Cảnh báo đóng cửa</h4>
+								{/* Alerts are created with the .alert class, followed by a contextual color classes: */}
+                                <p>Cảnh báo được tạo bằng lớp .alert, theo sau là các lớp màu theo ngữ cảnh:</p>
                             </div>
                             <div className="card-body">
 							  <div className="alert alert-success">
@@ -122,8 +128,11 @@ const Alert = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Animated Alerts</h4>
-                                <p>The .fade and .show classes adds a fading effect when closing the alert message.</p>
+
+								{/* Animated Alerts */}
+                                <h4>Cảnh báo hoạt hình</h4>
+								{/* The .fade and .show classes adds a fading effect when closing the alert message. */}
+                                <p>Các lớp .fade và .show thêm hiệu ứng mờ dần khi đóng thông báo cảnh báo.</p>
                             </div>
                             <div className="card-body">
 							  <div className="alert alert-success alert-dismissible fade show">
