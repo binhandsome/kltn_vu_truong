@@ -5,14 +5,17 @@ const Inbox = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Inbox</h4>
+								{/* Inbox */}
+                                <h4 className="page-title">Hộp thư đến</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Inbox</li>
+									{/* Inbox */}
+                                    <li className="breadcrumb-link active">Hộp thư đến</li>
                                 </ul>
                             </div>
                         </div>
@@ -25,24 +28,30 @@ const Inbox = () => (
 							<div className="card card-body">
 								<div className="compose-btn">
 									<a href="javascript:;" className="btn btn-primary squer-btn" data-bs-toggle="modal" data-target="#composemodal">
-									Compose
+										{/* Compose */}
+										Soạn
 									</a>
 								</div>
 								<ul className="inbox-menu">
 									<li className="active">
-										<a href="javascript:;"><i className="fas fa-download"></i> Inbox <span className="mail-count">(5)</span></a>
+										{/* Inbox */}
+										<a href="javascript:;"><i className="fas fa-download"></i>Hộp thư đến <span className="mail-count">(5)</span></a>
 									</li>
 									<li>
-										<a href="javascript:;"><i className="far fa-star"></i> Important</a>
+										{/* Important */}
+										<a href="javascript:;"><i className="far fa-star"></i> Quan trọng</a>
 									</li>
 									<li>
-										<a href="javascript:;"><i className="far fa-paper-plane"></i> Sent Mail</a>
+										{/* Sent Mail */}
+										<a href="javascript:;"><i className="far fa-paper-plane"></i> Thư đã gửi</a>
 									</li>
 									<li>
-										<a href="javascript:;"><i className="far fa-file-alt"></i> Drafts <span className="mail-count">(13)</span></a>
+										{/* Drafts */}
+										<a href="javascript:;"><i className="far fa-file-alt"></i> Bản nháp <span className="mail-count">(13)</span></a>
 									</li>
 									<li>
-										<a href="javascript:;"><i className="far fa-trash-alt"></i> Trash</a>
+										{/* Trash */}
+										<a href="javascript:;"><i className="far fa-trash-alt"></i> Rác</a>
 									</li>
 								</ul>
 							</div>
@@ -56,30 +65,43 @@ const Inbox = () => (
 											<div className="col top-action-left">
 												<div className="float-left">
 													<div className="btn-group dropdown-action">
-														<button type="button" className="btn btn-primary squer-btn dropdown-toggle" data-bs-toggle="dropdown">Select</button>
+														{/* Select */}
+														<button type="button" className="btn btn-primary squer-btn dropdown-toggle" data-bs-toggle="dropdown">Lựa chọn</button>
 														<div className="dropdown-menu">
-															<a className="dropdown-item" href="javascript:;">All</a>
-															<a className="dropdown-item" href="javascript:;">None</a>
+															{/* All */}
+															<a className="dropdown-item" href="javascript:;">Tất cả</a>
+															{/* None */}
+															<a className="dropdown-item" href="javascript:;">Không có</a>
 															<div className="dropdown-divider"></div> 
-															<a className="dropdown-item" href="javascript:;">Read</a>
-															<a className="dropdown-item" href="javascript:;">Unread</a>
+															{/* Read */}
+															<a className="dropdown-item" href="javascript:;">Đọc</a>
+															{/* Unread */}
+															<a className="dropdown-item" href="javascript:;">Chưa đọc</a>
 														</div>
 													</div>
 													<div className="btn-group dropdown-action">
-														<button type="button" className="btn btn-primary squer-btn dropdown-toggle" data-bs-toggle="dropdown">Actions</button>
+														{/* Actions */}
+														<button type="button" className="btn btn-primary squer-btn dropdown-toggle" data-bs-toggle="dropdown">Hành động</button>
 														<div className="dropdown-menu">
-															<a className="dropdown-item" href="javascript:;">Reply</a>
-															<a className="dropdown-item" href="javascript:;">Forward</a>
-															<a className="dropdown-item" href="javascript:;">Archive</a>
+															{/* Reply */}
+															<a className="dropdown-item" href="javascript:;">Hồi đáp</a>
+															{/* Forward */}
+															<a className="dropdown-item" href="javascript:;">Phía trước</a>
+															{/* Archive */}
+															<a className="dropdown-item" href="javascript:;">Lưu trữ</a>
 															<div className="dropdown-divider"></div> 
-															<a className="dropdown-item" href="javascript:;">Mark As Read</a>
-															<a className="dropdown-item" href="javascript:;">Mark As Unread</a>
+															{/* Mark As Read */}
+															<a className="dropdown-item" href="javascript:;">Đánh dấu là đã đọc</a>
+															{/* Mark As Unread */}
+															<a className="dropdown-item" href="javascript:;">Đánh dấu là chưa đọc</a>
 															<div className="dropdown-divider"></div> 
-															<a className="dropdown-item" href="javascript:;">Delete</a>
+															{/* Delete */}
+															<a className="dropdown-item" href="javascript:;">Xóa bỏ</a>
 														</div>
 													</div>
 													<div className="btn-group dropdown-action mail-search">
-														<input type="text" placeholder="Search Messages" className="form-control search-message"/>
+														{/* Search Messages */}
+														<input type="text" placeholder="Tìm kiếm tin nhắn" className="form-control search-message"/>
 													</div>
 												</div>
 											</div>
@@ -93,7 +115,8 @@ const Inbox = () => (
 														</div>
 													</div>
 													<div className="text-right">
-														<span className="text-muted d-md-inline-block">Showing 10 of 112 </span>
+														{/* Showing 10 of 112 */}
+														<span className="text-muted d-md-inline-block">Hiển thị 10 trong số 112 </span>
 													</div>
 												</div>
 											</div>
@@ -141,7 +164,7 @@ const Inbox = () => (
 														<td className="name">Twitter</td>
 														<td className="subject">HRMS Bootstrap Admin Template</td>
 														<td></td>
-														<td className="mail-date">30 Nov</td>
+														<td className="mail-date">30 Tháng 11</td>
 													</tr>
 													<tr className="unread clickable-row">
 														<td>

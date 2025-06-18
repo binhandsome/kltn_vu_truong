@@ -19,12 +19,14 @@ const cssFiles = [
 
 const jsFiles = [
   '/assets/admin/js/jquery.min.js',
+  'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js',
   '/assets/admin/js/popper.min.js',
   '/assets/admin/js/bootstrap.min.js',
   '/assets/admin/js/swiper.min.js',
   '/assets/admin/js/apexchart/apexcharts.min.js',
   '/assets/admin/js/apexchart/control-chart-apexcharts.js',
   '/assets/admin/js/nice-select.min.js',
+  '/assets/admin/js/jquery.appear.js',
   '/assets/admin/js/custom.js',
   '/assets/admin/js/calendar.min.js',
 

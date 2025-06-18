@@ -7,17 +7,19 @@ const AdminDashboard = () => (
         <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
           <div className="page-title-wrapper">
             <div className="page-title-box">
-              <h4 className="page-title bold">Dashboard</h4>
+              {/* Dashboard */}
+              <h4 className="page-title bold">Bảng điều khiển</h4>
             </div>
             <div className="breadcrumb-list">
               <ul>
                 <li className="breadcrumb-link">
                   <a href="index.html">
                     <i className="fas fa-home mr-2" />
-                    Dashboard
+                    Bảng điều khiển
                   </a>
                 </li>
-                <li className="breadcrumb-link active">Admin</li>
+                {/* Admin */}
+                <li className="breadcrumb-link active">Quản trị viên</li>
               </ul>
             </div>
           </div>
@@ -128,7 +130,8 @@ const AdminDashboard = () => (
                 </svg>
               </div>
               <div className="icon-info-text">
-                <h5 className="ad-title">Happy Customers</h5>
+                {/* Happy Customers */}
+                <h5 className="ad-title">Chúc mừng khách hàng</h5>
                 <h4 className="ad-card-title">66k</h4>
               </div>
             </div>
@@ -146,7 +149,8 @@ const AdminDashboard = () => (
                 </svg>
               </div>
               <div className="icon-info-text">
-                <h5 className="ad-title">Daily Orders</h5>
+                {/* Daily Orders */}
+                <h5 className="ad-title">Đơn hàng hàng ngày</h5>
                 <h4 className="ad-card-title">15k</h4>
               </div>
             </div>
@@ -170,7 +174,8 @@ const AdminDashboard = () => (
                 </svg>
               </div>
               <div className="icon-info-text">
-                <h5 className="ad-title">Total Sales</h5>
+                {/* Total Sales */}
+                <h5 className="ad-title">Tổng doanh thu</h5>
                 <h4 className="ad-card-title">420k</h4>
               </div>
             </div>
@@ -198,7 +203,8 @@ const AdminDashboard = () => (
                 </svg>
               </div>
               <div className="icon-info-text">
-                <h5 className="ad-title">Total Revenue</h5>
+                {/* Total Revenue */}
+                <h5 className="ad-title">Tổng lợi nhuận</h5>
                 <h4 className="ad-card-title">10k</h4>
               </div>
             </div>
@@ -211,13 +217,14 @@ const AdminDashboard = () => (
           <div className="card chart-card">
             <div className="card-header">
               <h4 className="has-btn">
-                Total Revanue{" "}
+                {/* Total Revanue */}
+                Tổng lợi nhuận{" "}
                 <span>
                   <button
                     type="button"
                     className="btn btn-primary squer-btn sm-btn"
                   >
-                    Download
+                    Tải xuống
                   </button>
                 </span>
               </h4>
@@ -246,7 +253,8 @@ const AdminDashboard = () => (
                           aria-controls="tab1"
                           aria-selected="true"
                         >
-                          Weekly
+                          {/* Weekly */}
+                          Hàng tuần
                         </a>
                       </li>
                       <li className="nav-item">
@@ -259,7 +267,8 @@ const AdminDashboard = () => (
                           aria-controls="tab2"
                           aria-selected="false"
                         >
-                          Monthly
+                          {/* Monthly */}
+                          Hàng tháng
                         </a>
                       </li>
                       <li className="nav-item">
@@ -272,7 +281,8 @@ const AdminDashboard = () => (
                           aria-controls="tab3"
                           aria-selected="false"
                         >
-                          Yearly
+                          {/* Yearly */}
+                          Hàng năm
                         </a>
                       </li>
                     </ul>
@@ -289,7 +299,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-chart-bar mr-2 icon-only" />
-                                  Total Sales
+                                  {/*  Total Sales */}
+                                  Tổng doanh thu
                                 </td>
                                 <td>
                                   5995
@@ -301,7 +312,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-user-friends mr-2 icon-only" />
-                                  Total Customers
+                                  {/* Total Customers */}
+                                  Tổng số khách hàng
                                 </td>
                                 <td>
                                   5894
@@ -313,7 +325,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  Total Income
+                                  {/*  Total Income */}
+                                  Tổng thu nhập
                                 </td>
                                 <td>
                                   4453
@@ -325,7 +338,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-signal mr-2 icon-only" />
-                                  Total Expense
+                                  {/* Total Expense */}
+                                  Tổng chi phí
                                 </td>
                                 <td>
                                   7454
@@ -335,7 +349,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-heart mr-2 icon-only" />
-                                  Total Likes
+                                  {/* Total Likes */}
+                                  Tổng số lượt thích
                                 </td>
                                 <td>
                                   14454
@@ -345,7 +360,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-frown-open mr-2 icon-only" />
-                                  Tax Paid
+                                  {/* Tax Paid */}
+                                  Thuế đã nộp
                                 </td>
                                 <td>
                                   786
@@ -370,7 +386,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-chart-bar mr-2 icon-only" />
-                                  Total Sales
+                                  {/*  Total Sales */}
+                                  Tổng doanh thu
                                 </td>
                                 <td>
                                   5995
@@ -382,7 +399,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-user-friends mr-2 icon-only" />
-                                  Total Customers
+                                  {/* Total Customers */}
+                                  Tổng số khách hàng
                                 </td>
                                 <td>
                                   5894
@@ -394,7 +412,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  Total Income
+                                  {/*  Total Income */}
+                                  Tổng thu nhập
                                 </td>
                                 <td>
                                   4453
@@ -406,7 +425,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-signal mr-2 icon-only" />
-                                  Total Expense
+                                  {/* Total Expense */}
+                                  Tổng chi phí
                                 </td>
                                 <td>
                                   7454
@@ -416,7 +436,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-heart mr-2 icon-only" />
-                                  Total Likes
+                                  {/* Total Likes */}
+                                  Tổng số lượt thích
                                 </td>
                                 <td>
                                   14454
@@ -426,7 +447,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-frown-open mr-2 icon-only" />
-                                  Tax Paid
+                                  {/* Tax Paid */}
+                                  Thuế đã nộp
                                 </td>
                                 <td>
                                   786
@@ -451,7 +473,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-chart-bar mr-2 icon-only" />
-                                  Total Sales
+                                  {/*  Total Sales */}
+                                  Tổng doanh thu
                                 </td>
                                 <td>
                                   5995
@@ -463,7 +486,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-user-friends mr-2 icon-only" />
-                                  Total Customers
+                                  {/* Total Customers */}
+                                  Tổng số khách hàng
                                 </td>
                                 <td>
                                   5894
@@ -475,7 +499,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  Total Income
+                                  {/*  Total Income */}
+                                  Tổng thu nhập
                                 </td>
                                 <td>
                                   4453
@@ -487,7 +512,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="fas fa-signal mr-2 icon-only" />
-                                  Total Expense
+                                  {/* Total Expense */}
+                                  Tổng chi phí
                                 </td>
                                 <td>
                                   7454
@@ -497,7 +523,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-heart mr-2 icon-only" />
-                                  Total Likes
+                                  {/* Total Likes */}
+                                  Tổng số lượt thích
                                 </td>
                                 <td>
                                   14454
@@ -507,7 +534,8 @@ const AdminDashboard = () => (
                               <tr>
                                 <td>
                                   <i className="far fa-frown-open mr-2 icon-only" />
-                                  Tax Paid
+                                  {/* Tax Paid */}
+                                  Thuế đã nộp
                                 </td>
                                 <td>
                                   786
@@ -547,14 +575,22 @@ const AdminDashboard = () => (
                             <label htmlFor="checkbox1" />
                           </div>
                         </th>
-                        <th>Order ID</th>
-                        <th>Billing Name</th>
-                        <th>Date</th>
-                        <th>Total</th>
-                        <th>Payment Status</th>
-                        <th>Payment Method</th>
-                        <th>View Details</th>
-                        <th>Action</th>
+                        {/*  Order ID */}
+                        <th>ID đơn hàng</th>
+                        {/* Billing Name */}
+                        <th>Tên thanh toán</th>
+                        {/* Date */}
+                        <th>Ngày</th>
+                        {/* Total */}
+                        <th>Tổng cộng</th>
+                        {/* Payment Status */}
+                        <th>Trạng thái thanh toán</th>
+                        {/* Payment Method */}
+                        <th>Phương thức thanh toán</th>
+                        {/* View Details */}
+                        <th>Xem chi tiết</th>
+                        {/* Action */}
+                        <th>Hoạt động</th>
                       </tr>
                     </thead>
                     <tbody>

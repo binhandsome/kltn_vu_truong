@@ -5,14 +5,16 @@ const Pagination = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Pagination</h4>
+								{/* Pagination */}
+                                <h4 className="page-title">Phân trang</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Pagination</li>
+                                    <li className="breadcrumb-link active">Phân trang</li>
                                 </ul>
                             </div>
                         </div>
@@ -23,12 +25,13 @@ const Pagination = () => (
 				  <div className="col-sm-12">
 					<div className="card">
 					  <div className="card-header">
-						<h5>Custom Pagination</h5>
+						{/* Custom Pagination */}
+						<h5>Phân trang tùy chỉnh</h5>
 					  </div>
 					  <div className="card-body">
 						<div className="int-blog-pagination">
 							<ul className="pagination">
-							  <li className="page-item"><a className="page-link" href="javascript:;"><i className="fas fa-chevron-left"></i> Older</a></li>
+							  <li className="page-item"><a className="page-link" href="javascript:;"><i className="fas fa-chevron-left"></i> Lui lại</a></li>
 							  <li className="page-item"><a className="page-link" href="javascript:;">1</a></li>
 							  <li className="page-item"><a className="page-link" href="javascript:;">2</a></li>
 							  <li className="page-item active"><a className="page-link" href="javascript:;">3</a></li>
@@ -36,7 +39,7 @@ const Pagination = () => (
 							  <li className="page-item"><a className="page-link" href="javascript:;">12</a></li>
 							  <li className="page-item"><a className="page-link" href="javascript:;">13</a></li>
 							  <li className="page-item"><a className="page-link" href="javascript:;">14</a></li>
-							  <li className="page-item"><a className="page-link" href="javascript:;">Next <i className="fas fa-chevron-right"></i></a></li>
+							  <li className="page-item"><a className="page-link" href="javascript:;">Kế tiếp <i className="fas fa-chevron-right"></i></a></li>
 							</ul>
 						</div>
 					  </div>
@@ -47,7 +50,8 @@ const Pagination = () => (
 				  <div className="col-sm-12">
 					<div className="card">
 					  <div className="card-header">
-						<h5>Pagination active states</h5>
+						{/* Pagination active states */}
+						<h5>Trạng thái hoạt động phân trang</h5>
 					  </div>
 					  <div className="card-body">
 						<div className="mfh-pagination"> 
@@ -69,7 +73,8 @@ const Pagination = () => (
 				  <div className="col-sm-12">
 					<div className="card">
 					  <div className="card-header">
-						<h5>Pagination Working with icons</h5>
+						{/* Pagination Working with icons */}
+						<h5>Phân trang Làm việc với các biểu tượng</h5>
 					  </div>
 					  <div className="card-body">
 						<div className="fb-pagination">
@@ -91,7 +96,8 @@ const Pagination = () => (
 				  <div className="col-sm-12">
 					<div className="card">
 					  <div className="card-header">
-						<h5>Sizing</h5>
+						{/* Sizing */}
+						<h5>Định cỡ</h5>
 					  </div>
 					  <div className="card-body">
 						<div className="tp-pagination">

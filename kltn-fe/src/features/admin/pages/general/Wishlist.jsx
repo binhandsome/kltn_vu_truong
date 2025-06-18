@@ -5,14 +5,16 @@ const WishList = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Wishlist</h4>
+								{/* Wishlist */}
+                                <h4 className="page-title">Danh sách yêu thích</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Wishlist</li>
+                                    <li className="breadcrumb-link active">Danh sách yêu thích</li>
                                 </ul>
                             </div>
                         </div>
@@ -23,7 +25,7 @@ const WishList = () => (
                     <div className="col-lg-12">
 						<div className="card">
 							<div className="card-header">
-								<h5>Wishlist</h5>
+								<h5>Danh sách yêu thích</h5>
 							</div>
 							<div className="card-body pb-2">
 								<div className="row">
@@ -33,15 +35,16 @@ const WishList = () => (
 											<img src="../../assets/admin/images/product.png" alt=""/>
 											<div className="media-body ms-3">
 											  <div className="product-name">
-												<h6><a href="javascript:;" title="">Dining Chair</a></h6>
+												<h6><a href="javascript:;" title="">Ghế ăn</a></h6>
 											  </div>
 											  <div className="rating"><i className="fa fa-star"></i><i className="fa fa-star"></i><i className="fa fa-star"></i><i className="fa fa-star"></i><i className="fa fa-star"></i></div>
 											  <div className="price"> 
-												<div className="text-muted me-2">Price: 210$</div>
+												<div className="text-muted me-2">Giá: 210$</div>
 											  </div>
 											  <div className="avaiabilty">
-												<div className="text-success">In stock</div>
-												<button type="button" className="btn btn-primary squer-btn sm-btn mt-2 mr-2">Move to Cart</button>
+												<div className="text-success">Có sẵn</div>
+												{/* Move to Cart */}
+												<button type="button" className="btn btn-primary squer-btn sm-btn mt-2 mr-2">Chuyển đến giỏ hàng</button>
 											  </div>
 											</div>
 										  </div>

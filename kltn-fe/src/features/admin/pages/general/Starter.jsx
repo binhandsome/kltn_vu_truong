@@ -5,14 +5,17 @@ const Starter = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Starter Page</h4>
+                                {/* Starter Page */}
+                                <h4 className="page-title">Trang bắt đầu</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                                        {/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Starter Page</li>
+                                    {/* Starter Page */}
+                                    <li className="breadcrumb-link active">Trang bắt đầu</li>
                                 </ul>
                             </div>
                         </div>

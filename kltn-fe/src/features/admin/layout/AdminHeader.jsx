@@ -73,8 +73,10 @@ const AdminHeader = () => (
                             </a>
 							<div className="of-notification-comment">
 								<div className="of-nt-text">
-									<h5>Shopping Cart</h5>
-									<h6>Your Have 3 Item In Your Cart</h6>
+                                    {/* Shopping Cart */}
+									<h5>Giỏ hàng</h5>
+                                    {/* Your Have 3 Item In Your Cart */}
+									<h6>Bạn có 3 mặt hàng trong giỏ hàng của bạn</h6>
 								</div>
 								<div className="of-nt-scroll">
 								
@@ -182,12 +184,15 @@ const AdminHeader = () => (
 								</div>
 								</div>
 								<div className="int-flex-total">
-									<h4>Order Total - </h4>
+                                    {/* Order Total */}
+									<h4>Tổng số tiền đơn hàng - </h4>
 									<h5>$251</h5>
 								</div>
 								<div className="int-sop-cart-btn">
-									<a href="cart.html" className="ad-btn">View cart</a>
-									<a href="checkout.html" className="ad-btn">checkout</a>
+                                    {/* View cart */}
+									<a href="cart.html" className="ad-btn">Xem giỏ hàng</a>
+                                    {/* Checkout */}
+									<a href="checkout.html" className="ad-btn">Thanh toán</a>
 								</div>
 							</div>
                         </div>
@@ -201,26 +206,31 @@ const AdminHeader = () => (
                             </a>
                             <div className="recent-notification">
                                 <div className="drop-down-header">
-                                    <h4>All Notification</h4>
-                                    <p>You have 6 new notifications</p>
+                                    {/* All Notification */}
+                                    <h4>Tất cả thông báo</h4>
+                                    {/* You have 6 new notifications */}
+                                    <p>Bạn có 6 thông báo mới</p>
                                 </div>
                                 <ul>
                                     <li>
                                         <a href="javascript:void(0);">
-                                            <h5><i className="fas fa-exclamation-circle mr-2"></i>Storage Full</h5>
-                                            <p>Lorem ipsum dolor sit amet, consectetuer.</p>
+                                            {/* Storage Full */}
+                                            <h5><i className="fas fa-exclamation-circle mr-2"></i>Bộ nhớ đầy</h5>
+                                            <p>Vui lòng xoá 1 số thông tin để giảm bộ nhớ</p>
                                         </a>
                                     </li>
                                     <li>
                                         <a href="javascript:void(0);">
-                                            <h5><i className="far fa-envelope mr-2"></i>New Membership</h5>
-                                            <p>Lorem ipsum dolor sit amet, consectetuer.</p>
+                                            {/* New Membership */}
+                                            <h5><i className="far fa-envelope mr-2"></i>Thành viên mới</h5>
+                                            <p>Thêm thành viên abc thành công!</p>
                                         </a>
                                     </li>
                                 </ul>
                                 <div className="drop-down-footer">
+                                    {/* View All */}
                                     <a href="javascript:void(0);" className="btn sm-btn">
-                                        View All
+                                        Xem tất cả
                                     </a>
                                 </div>
                             </div>
@@ -241,17 +251,21 @@ const AdminHeader = () => (
                                 <ul>
                                     <li>
                                         <a href="/admin/authentication/myProfile">
-                                            <i className="far fa-edit"></i> Edit Profile
+                                        {/* Edit Profile */}
+                                            <i className="far fa-edit"></i>Chỉnh sửa hồ sơ
                                         </a>
                                     </li>
                                     <li>
                                         <a href="/admin/authentication/setting">
-                                            <i className="fas fa-cog"></i> Settings
+                                        {/* Settings */}
+                                            <i className="fas fa-cog"></i>Cài đặt
                                         </a>
                                     </li>
                                     <li>
                                         <a href="/admin/authentication/login">
-                                            <i className="fas fa-sign-out-alt"></i> logout
+                                        {/* Logout */}
+                                            <i className="fas fa-sign-out-alt"></i> 
+                                            Đăng xuất
                                         </a>
                                     </li>
                                 </ul>

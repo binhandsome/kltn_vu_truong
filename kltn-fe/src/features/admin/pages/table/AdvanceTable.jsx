@@ -5,14 +5,17 @@ const AdvanceTable = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h2 className="page-title bold">Advance Table</h2>
+                                {/* Advance Table */}
+                                <h2 className="page-title bold">Bảng nâng cao</h2>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Home</a>
+                                        {/* Home */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang chủ</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Table</li>
+                                    {/* Table */}
+                                    <li className="breadcrumb-link active">Bảng</li>
                                 </ul>
                             </div>
                         </div>
@@ -24,8 +27,10 @@ const AdvanceTable = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Styled Table</h4>
-                                <p className="card-desc"> Add class <code>.table.table-styled</code></p>
+                                {/* Styled Table */}
+                                <h4>Bảng theo kiểu</h4>
+                                {/* Add class <code>.table.table-styled</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-styled</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -34,11 +39,15 @@ const AdvanceTable = () => (
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
-                                                    <th>Customer</th>
-                                                    <th>Progress</th>
-                                                    <th>Deliver Date</th>
-                                                    <th>Status</th>
-                                                    <th>Action</th>
+                                                    <th>Khách hàng</th>
+                                                    {/* Progress */}
+                                                    <th>Tiến triển</th>
+                                                    {/* Deliver Date */}
+                                                    <th>Ngày giao hàng</th>
+                                                    {/* Status */}
+                                                    <th>Trạng thái</th>
+                                                    {/* Action */}
+                                                    <th>Hoạt động</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -76,10 +85,10 @@ const AdvanceTable = () => (
                                                         <div className="action-option ">
                                                             <ul>
                                                                 <li>
-                                                                    <a href="javascript:void(0); "><i className="far fa-edit mr-2 "></i>Edit</a>
+                                                                    <a href="javascript:void(0); "><i className="far fa-edit mr-2 "></i>Sửa</a>
                                                                 </li>
                                                                 <li>
-                                                                    <a href="javascript:void(0); "><i className="far fa-trash-alt mr-2 "></i>Delete</a>
+                                                                    <a href="javascript:void(0); "><i className="far fa-trash-alt mr-2 "></i>Xoá</a>
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -443,8 +452,10 @@ const AdvanceTable = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Advance Table</h4>
-                                <p className="card-desc"> Add class <code>.table.advance-table</code></p>
+                                {/* Advance Table */}
+                                <h4>Bảng nâng cao</h4>
+                                {/* Add class <code>.table.advance-table</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.advance-table</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -453,11 +464,16 @@ const AdvanceTable = () => (
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
-                                                    <th>Top Products</th>
-                                                    <th>Vendors</th>
-                                                    <th>Quantity</th>
-                                                    <th>Sold </th>
-                                                    <th>Stock</th>
+                                                    {/* Top Products */}
+                                                    <th>Sản phẩm hàng đầu</th>
+                                                    {/* Vendors */}
+                                                    <th>Nhà cung cấp</th>
+                                                    {/* Quantity */}
+                                                    <th>Số lượng</th>
+                                                    {/* Sold */}
+                                                    <th>Đã bán </th>
+                                                    {/* Stock */}
+                                                    <th>Cổ phần</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -628,8 +644,10 @@ const AdvanceTable = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 ">
                         <div className="card table-card ">
                             <div className="card-header pb-0 ">
-                                <h4>Dragable Table</h4>
-                                <p className="card-desc "> Add class <code>dragable-container</code></p>
+                                {/* Dragable Table */}
+                                <h4>Bảng có thể kéo được</h4>
+                                {/* Add class <code>dragable-container</code> */}
+                                <p className="card-desc "> Thêm lớp <code>dragable-container</code></p>
                             </div>
                             <div className="card-body ">
                                 <div className="chart-holder ">
@@ -638,10 +656,14 @@ const AdvanceTable = () => (
                                             <thead>
                                                 <tr>
                                                     <th><i className="fas fa-th "></i></th>
-                                                    <th>Top Products</th>
-                                                    <th>Vendors</th>
-                                                    <th>Quantity</th>
-                                                    <th>Sold </th>
+                                                    {/* Top Products */}
+                                                    <th>Sản phẩm hàng đầu</th>
+                                                    {/* Vendors */}
+                                                    <th>Nhà cung cấp</th>
+                                                    {/* Quantity */}
+                                                    <th>Số lượng</th>
+                                                    {/* Sold */}
+                                                    <th> Đã bán </th>
                                                 </tr>
                                                 </thead>
                                                 <tbody className="dragable-container ">

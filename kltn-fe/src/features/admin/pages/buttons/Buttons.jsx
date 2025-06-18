@@ -10,9 +10,11 @@ const Buttons = () => (
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                                        {/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Bảng điều khiển</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Button</li>
+                                    {/* Nút */}
+                                    <li className="breadcrumb-link active">Nút</li>
                                 </ul>
                             </div>
                         </div>
@@ -23,12 +25,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Default Buttons</h4>
+                                {/* Default Buttons */}
+                                <h4 className="card-title">Nút mặc định</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Diffrent Rounded Button use with there Class</p>
+                                        {/* Diffrent Rounded Button use with there Class */}
+                                        <p>Sử dụng nút bo tròn khác nhau với lớp của nó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn btn-primary mt-2 mr-2">Primary</button>
@@ -49,12 +53,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Squere Buttons</h4>
+                                {/* Squere Buttons */}
+                                <h4 className="card-title">Nút vuông</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Diffrent Squre Button use with there Class</p>
+                                        {/* Diffrent Squre Button use with there Class */}
+                                        <p>Nút Square khác nhau sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn btn-primary squer-btn mt-2 mr-2">Primary</button>
@@ -77,12 +83,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Hovered Animate Buttons</h4>
+                                {/* Hovered Animate Buttons */}
+                                <h4 className="card-title">Các nút hoạt hình khi di chuột</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Animated Rounded Button use with there Class</p>
+                                        {/* Animated Rounded Button use with there Class */}
+                                        <p>Nút tròn hoạt hình sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="effect-btn btn btn-primary mt-2 mr-2">Primary</button>
@@ -103,12 +111,13 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Hovered Squere Buttons</h4>
+                                {/* Hovered Squere Buttons */}
+                                <h4 className="card-title">Nút hình vuông di chuột</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Animated Squere Button use with there Class</p>
+                                        <p>Nút Squere hoạt hình sử dụng với Lớp của nó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="effect-btn btn btn-primary squer-btn mt-2 mr-2">Primary</button>
@@ -131,12 +140,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Outline Buttons</h4>
+                                {/* Outline Buttons */}
+                                <h4 className="card-title">Nút phác thảo</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>No animation Simple Outline Button</p>
+                                        {/* No animation Simple Outline Button */}
+                                        <p>Không có hoạt ảnh Nút phác thảo đơn giản</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn-outline primary-outline mt-2 mr-2">Primary</button>
@@ -156,12 +167,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Outline Buttons</h4>
+                                {/* Outline Buttons */}
+                                <h4 className="card-title">Nút phác thảo</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>No animation Simple Squere Outline Button</p>
+                                        {/* No animation Simple Squere Outline Button */}
+                                        <p>Không có hoạt ảnh Nút phác thảo hình vuông đơn giản</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn-outline primary-outline squer-btn mt-2 mr-2">Primary</button>
@@ -184,12 +197,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Small Buttons</h4>
+                                {/* Small Buttons */}
+                                <h4 className="card-title">Nút nhỏ</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Small Rounded Button use with there Class</p>
+                                        {/* Small Rounded Button use with there Class */}
+                                        <p>Nút tròn nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn btn-primary mt-2 mr-2 sm-btn">Primary</button>
@@ -209,12 +224,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Squere Buttons</h4>
+                                {/* Squere Buttons */}
+                                <h4 className="card-title">Nút vuông</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Samll Squre Button use with there Class</p>
+                                        {/* Samll Squre Button use with there Class */}
+                                        <p>Nút vuông nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn btn-primary squer-btn sm-btn mt-2 mr-2">Primary</button>
@@ -237,12 +254,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Small Hovered Buttons</h4>
+                                {/* Small Hovered Buttons */}
+                                <h4 className="card-title">Các nút nhỏ được di chuột</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Small Rounded Button use with there Class</p>
+                                        {/* Small Rounded Button use with there Class */}
+                                        <p>Nút tròn nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="effect-btn btn btn-primary mt-2 mr-2 sm-btn">Primary</button>
@@ -262,12 +281,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Squere Hovered Buttons</h4>
+                                {/* Squere Hovered Buttons */}
+                                <h4 className="card-title">Nút di chuột hình vuông</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Samll Squre Button use with there Class</p>
+                                        {/* Samll Squre Button use with there Class */}
+                                        <p>Nút vuông nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="effect-btn btn btn-primary squer-btn sm-btn mt-2 mr-2">Primary</button>
@@ -290,12 +311,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Small Hovered Buttons</h4>
+                                {/* Small Hovered Buttons */}
+                                <h4 className="card-title">Các nút nhỏ được di chuột</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Small Rounded Button use with there Class</p>
+                                        {/* Small Rounded Button use with there Class */}
+                                        <p>Nút tròn nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn-outline primary-outline mt-2 mr-2 sm-btn">Primary</button>
@@ -315,12 +338,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Squere Hovered Buttons</h4>
+                                {/* Squere Hovered Buttons */}
+                                <h4 className="card-title">Nút di chuột hình vuông</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Samll Squre Button use with there Class</p>
+                                        {/* Samll Squre Button use with there Class */}
+                                        <p>Nút vuông nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn-outline primary-outline squer-btn sm-btn mt-2 mr-2">Primary</button>
@@ -343,12 +368,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Rounded Icon Buttons</h4>
+                                {/* Rounded Icon Buttons */}
+                                <h4 className="card-title">Nút biểu tượng tròn</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Rounded Outline Button small icon use with there Class</p>
+                                        {/* Rounded Outline Button small icon use with there Class */}
+                                        <p>Nút phác thảo bo tròn biểu tượng nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn-outline primary-outline mt-2 mr-2 icon-sm"><i className="far fa-star"></i></button>
@@ -362,7 +389,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Rounded Outline Button large icon use with there Class</p>
+                                        {/* Rounded Outline Button large icon use with there Class */}
+                                        <p>Nút phác thảo bo tròn biểu tượng lớn sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn-outline primary-outline mt-2 mr-2 icon-lg"><i className="far fa-star"></i></button>
@@ -376,7 +404,7 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Rounded Button small icon use with there Class</p>
+                                        <p>Nút tròn biểu tượng nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn btn-primary mt-2 mr-2 icon-sm"><i className="far fa-star"></i></button>
@@ -390,7 +418,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Rounded Button Large icon use with there Class</p>
+                                        {/* Rounded Button Large icon use with there Class */}
+                                        <p>Nút tròn Biểu tượng lớn sử dụng với Lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="effect-btn btn btn-primary mt-2 mr-2 icon-lg"><i className="far fa-star"></i></button>
@@ -410,12 +439,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Squere Icon Buttons</h4>
+                                {/* Squere Icon Buttons */}
+                                <h4 className="card-title">Nút biểu tượng hình vuông</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Squere Outline Button Small icon use with there Class</p>
+                                        {/* Squere Outline Button Small icon use with there Class */}
+                                        <p>Nút phác thảo hình vuông Biểu tượng nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="squer-btn btn-outline primary-outline mt-2 mr-2 icon-sm"><i className="far fa-star"></i></button>
@@ -429,7 +460,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Squere Outline Button large icon use with there Class</p>
+                                        {/* Squere Outline Button large icon use with there Class */}
+                                        <p>Nút phác thảo hình vuông biểu tượng lớn sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="squer-btn btn-outline primary-outline mt-2 mr-2 icon-lg"><i className="far fa-star"></i></button>
@@ -443,7 +475,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Rounded Button small icon use with there Class</p>
+                                        {/* Rounded Button small icon use with there Class */}
+                                        <p>Nút tròn biểu tượng nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="squer-btn btn btn-primary mt-2 mr-2 icon-sm"><i className="far fa-star"></i></button>
@@ -457,7 +490,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Rounded Button Large icon use with there Class</p>
+                                        {/* Rounded Button Large icon use with there Class */}
+                                        <p>Nút tròn Biểu tượng lớn sử dụng với Lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="squer-btn effect-btn btn btn-primary mt-2 mr-2 icon-lg"><i className="far fa-star"></i></button>
@@ -479,12 +513,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Squere Button With Text icon</h4>
+                                {/* Squere Button With Text icon */}
+                                <h4 className="card-title">Nút vuông có biểu tượng văn bản</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Default Squere Button use with there Class</p>
+                                        {/* Default Squere Button use with there Class */}
+                                        <p>Nút Squere mặc định sử dụng với Lớp của nó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="squer-btn btn-outline primary-outline mt-2 mr-2"><i className="far fa-star mr-2"></i>Primary</button>
@@ -498,7 +534,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Small Squere Button use with there Class</p>
+                                        {/* Small Squere Button use with there Class */}
+                                        <p>Nút vuông nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="squer-btn sm-btn btn-outline primary-outline mt-2 mr-2"><i className="far fa-star mr-2"></i>Primary</button>
@@ -512,7 +549,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Default Squere Button use with there Class</p>
+                                        {/* Default Squere Button use with there Class */}
+                                        <p>Nút Squere mặc định sử dụng với Lớp của nó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="squer-btn btn btn-primary mt-2 mr-2"><i className="far fa-star mr-2"></i>Primary</button>
@@ -526,7 +564,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Small Squere Button use with there Class</p>
+                                        {/* Small Squere Button use with there Class */}
+                                        <p>Nút vuông nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="effect-btn squer-btn sm-btn btn btn-primary mt-2 mr-2"><i className="far fa-star mr-2"></i>Primary</button>
@@ -545,12 +584,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Rounded Button With Text icon</h4>
+                                {/* Rounded Button With Text icon */}
+                                <h4 className="card-title">Nút tròn có biểu tượng văn bản</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Default Rounded Button use with there Class</p>
+                                        {/* Default Rounded Button use with there Class */}
+                                        <p>Nút tròn mặc định sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn-outline primary-outline mt-2 mr-2"><i className="far fa-star mr-2"></i>Primary</button>
@@ -564,7 +605,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Small Rounded Button use with there Class</p>
+                                        {/* Small Rounded Button use with there Class */}
+                                        <p>Nút tròn nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="sm-btn btn-outline primary-outline mt-2 mr-2"><i className="far fa-star mr-2"></i>Primary</button>
@@ -578,7 +620,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Default Rounded Button use with there Class</p>
+                                        {/* Default Rounded Button use with there Class */}
+                                        <p>Nút tròn mặc định sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="btn btn-primary mt-2 mr-2"><i className="far fa-star mr-2"></i>Primary</button>
@@ -592,7 +635,8 @@ const Buttons = () => (
                                 </div>
                                 <div className="card-body pt-0">
                                     <div className="card-text">
-                                        <p>Small Rounded Button use with there Class</p>
+                                        {/* Small Rounded Button use with there Class */}
+                                        <p>Nút tròn nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button type="button" className="effect-btn sm-btn btn btn-primary mt-2 mr-2"><i className="far fa-star mr-2"></i>Primary</button>
@@ -614,12 +658,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Rounded Grouped Buttons</h4>
+                                {/* Rounded Grouped Buttons */}
+                                <h4 className="card-title">Các nút nhóm tròn</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Diffrent Rounded Button use with there Class</p>
+                                        {/* Diffrent Rounded Button use with there Class */}
+                                        <p>Sử dụng nút bo tròn khác nhau với lớp của nó</p>
                                     </div>
                                     <div className="btn-group btn-group-pill mt-2" role="group" aria-label="Basic example">
                                         <button className="btn btn-primary sm-btn" type="button" data-original-title="" title="">Left</button>
@@ -659,12 +705,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Squere Grouped Buttons</h4>
+                                {/* Squere Grouped Buttons */}
+                                <h4 className="card-title">Nút nhóm hình vuông</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Diffrent Squre Button use with there Class</p>
+                                        {/* Diffrent Squre Button use with there Class */}
+                                        <p>Nút Square khác nhau sử dụng với lớp đó</p>
                                     </div>
                                     <div className="btn-group mt-2" role="group" aria-label="Basic example">
                                         <button className="btn btn-primary sm-btn flat-btn" type="button" data-original-title="" title="">Left</button>
@@ -707,12 +755,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Rounded Grouped Buttons</h4>
+                                {/* Rounded Grouped Buttons */}
+                                <h4 className="card-title">Các nút nhóm tròn</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Diffrent Rounded Button use with there Class</p>
+                                        {/* Diffrent Rounded Button use with there Class */}
+                                        <p>Sử dụng nút bo tròn khác nhau với lớp của nó</p>
                                     </div>
                                     <div className="btn-group btn-group-pill mt-2" role="group" aria-label="Basic example">
                                         <button className="btn-outline primary-outline sm-btn" type="button" data-original-title="" title="">Left</button>
@@ -752,12 +802,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Squere Grouped Buttons</h4>
+                                {/* Squere Grouped Buttons */}
+                                <h4 className="card-title">Nút nhóm hình vuông</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Diffrent Squre Button use with there Class</p>
+                                        {/* Diffrent Squre Button use with there Class */}
+                                        <p>Nút Square khác nhau sử dụng với lớp đó</p>
                                     </div>
                                     <div className="btn-group mt-2" role="group" aria-label="Basic example">
                                         <button className="btn-outline primary-outline sm-btn flat-btn" type="button" data-original-title="" title="">Left</button>
@@ -799,12 +851,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Dropdown With Diffrent Size</h4>
+                                {/* Dropdown With Diffrent Size */}
+                                <h4 className="card-title">Dropdown với kích thước khác nhau</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Small Rounded Button use with there Class</p>
+                                        {/* Small Rounded Button use with there Class */}
+                                        <p>Nút tròn nhỏ sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <div className="btn-group mt-2 mr-2" role="group">
@@ -828,12 +882,14 @@ const Buttons = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Loading Buttons</h4>
+                                {/* Loading Buttons */}
+                                <h4 className="card-title">Đang tải nút</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
                                     <div className="card-text">
-                                        <p>Loading Button use with there Class</p>
+                                        {/* Loading Button use with there Class */}
+                                        <p>Nút tải sử dụng với lớp đó</p>
                                     </div>
                                     <div className="dd-flex align-items-center">
                                         <button className="lg-btn btn btn-primary mt-2 mr-2" data-original-title="" title=""><i className="fa fa-spin fa-spinner mr-2"></i>Expand UP</button>

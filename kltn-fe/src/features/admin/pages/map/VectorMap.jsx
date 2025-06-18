@@ -5,14 +5,17 @@ const VectorMap = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Vector Maps</h4>
+                                {/* Vector Maps */}
+                                <h4 className="page-title">Bản đồ véc tơ</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                                        {/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Vector Maps</li>
+                                    {/* Vector Maps */}
+                                    <li className="breadcrumb-link active">Bản đồ véc tơ</li>
                                 </ul>
                             </div>
                         </div>
@@ -25,12 +28,11 @@ const VectorMap = () => (
 						<div className="card">
 						   <div className="card-body">
 
-								<h4 className="card-title">Vector Default Maps</h4>
-								<p className="card-title-desc">Example of Vector maps.</p>
-
-							   <div className="ad-google-map">
-								    <div id="vmap" style="width: 100%; height: 600px;"></div>
-							   </div>
+								<h4 className="card-title">Bản đồ mặc định của Vector</h4>
+								<p className="card-title-desc">Ví dụ về bản đồ Vector.</p>
+                                <div classname="ad-google-map">
+                                    <div id="vmap" style={{ width: "100%", height: 600 }} />
+                                </div>
 							</div>
 						</div>
 					</div> 
