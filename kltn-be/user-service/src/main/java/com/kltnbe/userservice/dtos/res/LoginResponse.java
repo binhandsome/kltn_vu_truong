@@ -3,8 +3,14 @@ package com.kltnbe.userservice.dtos.res;
 public class LoginResponse {
     private String accessToken;
     private String refreshToken;
+    private String username;
 
-    // Getters và Setters
+    public LoginResponse(String accessToken, String refreshToken, String username) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.username = username;
+    }
+
     public String getAccessToken() {
         return accessToken;
     }
@@ -19,5 +25,13 @@ public class LoginResponse {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

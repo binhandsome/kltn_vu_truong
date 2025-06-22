@@ -1,79 +1,64 @@
 package com.kltnbe.userservice.utils;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Component
 public class JwtUtil {
-    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
+    @Value("${jwt.secret}")
+    private String secret;
 
-    private final SecretKeySpec signingKey;
-    private final long accessTokenExpiration;
-    private final long refreshTokenExpiration;
+    @Value("${jwt.expiration}")
+    private long accessTokenExpiration;
 
-    public JwtUtil(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration}") long accessTokenExpiration,
-            @Value("${jwt.refresh.expiration}") long refreshTokenExpiration
-    ) {
-        if (secret == null || secret.isEmpty()) {
-            logger.error("JWT secret key is not configured. Please set 'jwt.secret' in application.yml");
-            throw new IllegalStateException("JWT secret key is not configured. Please set 'jwt.secret' in application.yml");
-        }
+    @Value("${jwt.refresh.expiration}")
+    private long refreshTokenExpiration;
 
-        this.signingKey = new SecretKeySpec(Base64.getDecoder().decode(secret), "HmacSHA512");
-        this.accessTokenExpiration = accessTokenExpiration;
-        this.refreshTokenExpiration = refreshTokenExpiration;
-
-        logger.info("JwtUtil initialized successfully.");
-    }
+    private static final long CLOCK_SKEW_SECONDS = 5; // Cho phép lệch 5 giây
 
     public String generateAccessToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
-                .signWith(signingKey) // Sửa lại, chỉ dùng signingKey, loại bỏ SignatureAlgorithm.HS512
+                .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
 
     public String generateRefreshToken() {
-        String refreshToken = UUID.randomUUID().toString();
-        return Jwts.builder()
-                .setSubject(refreshToken)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
-                .signWith(signingKey) // Sửa lại, chỉ dùng signingKey, loại bỏ SignatureAlgorithm.HS512
-                .compact();
+        return UUID.randomUUID().toString();
     }
 
     public String getUsernameFromToken(String token) {
-        return Jwts.parser() // Thay parserBuilder() bằng parser()
-                .setSigningKey(signingKey)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        try {
+            return Jwts.parser()
+                    .setSigningKey(secret)
+                    .setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS)
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims().getSubject(); // Still extract username for refresh
+        }
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser() // Thay parserBuilder() bằng parser()
-                    .setSigningKey(signingKey)
+            Jwts.parser()
+                    .setSigningKey(secret)
+                    .setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS)
                     .parseClaimsJws(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            throw new ExpiredJwtException(e.getHeader(), e.getClaims(), "Token đã hết hạn");
         } catch (Exception e) {
-            logger.warn("Invalid token: {}", e.getMessage());
-            return false;
+            throw new RuntimeException("Token không hợp lệ", e);
         }
     }
 }

@@ -1,131 +1,219 @@
-// src/pages/common/HomePage.js
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet'; 
-import QuickViewModal from '../../components/home/QuickViewModal'; 
+import { Helmet } from 'react-helmet';
+import QuickViewModal from '../../components/home/QuickViewModal';
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import { Link } from 'react-router-dom'; 
-import WOW from 'wowjs'; // Import WOW.js
+import { Link } from 'react-router-dom';
+import WOW from 'wowjs';
+import { register } from '../../apiService/authService';
+import axios from 'axios';
 
 function Registration() {
-	const [hasBgClass, setHasBgClass] = useState(true); 
-  
-	useEffect(() => {
-	  if (hasBgClass) {
-		document.body.classList.add('bg');
-	  } else {
-		document.body.classList.remove('bg');
-	  }
-  
-	  return () => {
-		// Dọn dẹp: Xóa class khi component bị unmount
-		document.body.classList.remove('bg');
-	  };
-	}, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-	useEffect(() => { // New useEffect for WOW.js
-		const wow = new WOW.WOW();
-		wow.init();
-	
-		return () => { // Optional cleanup function
-			//wow.sync(); // sync and remove the DOM
-		};
-	  }, []);
+    const API_URL = 'http://localhost:8081/api/auth';
+const [isOtpInputVisible, setIsOtpInputVisible] = useState(false);
+const [isSendingDisabled, setIsSendingDisabled] = useState(false);
+const [countdown, setCountdown] = useState(60);
+    const [hasBgClass, setHasBgClass] = useState(true);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [otp, setOtp] = useState('');
+  const handleSendVerification = async () => {
+    // Bấm là khóa ngay input và nút
+    setIsSendingDisabled(true);
+    setIsOtpInputVisible(true);
+    setCountdown(60);
 
-  return (
-    <>
-      <div className="page-wraper">
+    // Bắt đầu đếm ngược
+    const timer = setInterval(() => {
+        setCountdown(prev => {
+            if (prev <= 1) {
+                clearInterval(timer);
+                setIsSendingDisabled(false);
+                return 60;
+            }
+            return prev - 1;
+        });
+    }, 1000);
 
-        {/* Header (đã được xử lý trong App.js) */}
+    // Gửi email OTP
+    try {
+        await axios.post(`${API_URL}/sendEmailRegister`, { email });
+        console.log("Gửi email xác thực thành công");
+    } catch (error) {
+        console.error("Gửi email thất bại:", error);
+    }
+};
 
-    <div className="page-content bg-light">
-  <section className="px-3">
-    <div className="row align-center-center">
-      <div className="col-xxl-6 col-xl-6 col-lg-6 start-side-content">
-        <div className="dz-bnr-inr-entry">
-          <h1>Registration</h1>
-          <nav
-            aria-label="breadcrumb text-align-start"
-            className="breadcrumb-row"
-          >
-            <ul className="breadcrumb">
-              <li className="breadcrumb-item">
-                <a href="index.html"> Home</a>
-              </li>
-              <li className="breadcrumb-item">Shop Registration</li>
-            </ul>
-          </nav>
-        </div>
-        <div className="registration-media">
-          <img src="../../assets/user/images//registration/pic3.png" alt="/" />
-        </div>
-      </div>
-      <div className="col-xxl-6 col-xl-6 col-lg-6 end-side-content">
-        <div className="login-area">
-          <h2 className="text-secondary text-center">Registration Now</h2>
-          <p className="text-center m-b30">
-            Welcome please registration to your account
-          </p>
-          <form>
-            <div className="m-b25">
-              <label className="label-title">Username</label>
-              <input
-                name="dzName"
-                required=""
-                className="form-control"
-                placeholder="Username"
-                type="text"
-              />
-            </div>
-            <div className="m-b25">
-              <label className="label-title">Email Address</label>
-              <input
-                name="dzName"
-                required=""
-                className="form-control"
-                placeholder="Email Address"
-                type="email"
-              />
-            </div>
-            <div className="m-b40">
-              <label className="label-title">Password</label>
-              <div className="secure-input ">
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control dz-password"
-                  placeholder="Password"
-                />
-                <div className="show-pass">
-                  <i className="eye-open fa-regular fa-eye" />
-                </div>
-              </div>
-            </div>
-            <div className="text-center">
-              <a
-                href="registration.html"
-                className="btn btn-secondary btnhover text-uppercase me-2"
-              >
-                Register
-              </a>
-              <a
-                href="login.html"
-                className="btn btn-outline-secondary btnhover text-uppercase"
-              >
-                Sign In
-              </a>
-            </div>
-          </form>
-        </div>
-      </div>
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        if (form.checkValidity()) {
+            try {
+                const user = { username, password, email, otp };
+                const response = await register(user);
+                setMessage(response.message);
+                setUsername('');
+                setPassword('');
+                setEmail('');
+            } catch (error) {
+                setMessage(`Error: ${error.message}`);
+            }
+        } else {
+            form.reportValidity(); 
+        }
+    };
+
+    useEffect(() => {
+        if (hasBgClass) {
+            document.body.classList.add('bg');
+        } else {
+            document.body.classList.remove('bg');
+        }
+        return () => {
+            document.body.classList.remove('bg');
+        };
+    }, [hasBgClass]);
+
+    useEffect(() => {
+        const wow = new WOW.WOW();
+        wow.init();
+        return () => {};
+    }, []);
+
+    return (
+        <>
+            <Helmet>
+                <title>Registration - KLTN Fashion Shop</title>
+            </Helmet>
+            <div className="page-wraper">
+                <div className="page-content bg-light">
+                    <section className="px-3">
+                        <div className="row align-center-center">
+                            <div className="col-xxl-6 col-xl-6 col-lg-6 start-side-content">
+                                <div className="dz-bnr-inr-entry">
+                                    <h1>Registration</h1>
+                                    <nav
+                                        aria-label="breadcrumb text-align-start"
+                                        className="breadcrumb-row"
+                                    >
+                                        <ul className="breadcrumb">
+                                            <li className="breadcrumb-item">
+                                                <Link to="/">Home</Link>
+                                            </li>
+                                            <li className="breadcrumb-item">Shop Registration</li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                                <div className="registration-media">
+                                    <img src="../../assets/user/images/registration/pic3.png" alt="Registration" />
+                                </div>
+                            </div>
+                            <div className="col-xxl-6 col-xl-6 col-lg-6 end-side-content">
+                                <div className="login-area">
+                                    <h2 className="text-secondary text-center">Register Now</h2>
+                                    <p className="text-center m-b30">
+                                        Welcome, please register for your account
+                                    </p>
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="m-b25">
+                                            <label className="label-title">Username</label>
+                                            <input
+                                                name="username"
+                                                value={username}
+                                                onChange={(e) => setUsername(e.target.value)}
+                                                required
+                                                className="form-control"
+                                                placeholder="Username"
+                                                type="text"
+                                            />
+                                        </div>
+                             <div className="m-b25">
+    <label className="label-title">Email Address</label>
+    <div style={{ display: 'flex' }}>
+        <input
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="form-control"
+            placeholder="Email Address"
+            type="email"
+            style={{ flex: 1 }}
+            disabled={isSendingDisabled}
+        />
+        <button
+            type="button"
+            className="btn btn-success"
+            style={{
+                marginLeft: '10px',
+                fontSize: '15px',
+                fontFamily: 'Arial, sans-serif',
+                fontWeight: 'bold'
+            }}
+            onClick={handleSendVerification}
+            disabled={isSendingDisabled}
+        >
+            {isSendingDisabled ? `Gửi lại (${countdown}s)` : 'Gửi Mã'}
+        </button>
     </div>
-  </section>
 </div>
 
-        {/* Footer (đã được xử lý trong App.js) */}
-         <ScrollTopButton/>
-        <QuickViewModal />
-      </div>
-    </>
-  );
+   {isOtpInputVisible && (
+  <div className="m-b25">
+    <input
+      name="otp"
+       value={otp}
+       onChange={(e) => setOtp(e.target.value)}
+      className="form-control"
+      placeholder="Nhập Mã OTP Nhận Từ Email Của Bạn"
+      type="text"
+      required
+    />
+  </div>
+)}
+
+                                        <div className="m-b40">
+                                            <label className="label-title">Password</label>
+                                            <div className="secure-input">
+                                                <input
+                                                    type="password"
+                                                    name="password"
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    required
+                                                    className="form-control dz-password"
+                                                    placeholder="Password"
+                                                />
+                                                <div className="show-pass">
+                                                    <i className="eye-open fa-regular fa-eye" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-center">
+                                            <button type="submit" className="btn btn-secondary">Register</button>
+                                            <Link
+                                                to="/user/auth/login"
+                                                className="btn btn-outline-secondary btnhover text-uppercase"
+                                            >
+                                                Sign In
+                                            </Link>
+                                        </div>
+                                    </form>
+                                    <br />
+                                    <div className="text-center">
+                                        {message && <p>{message}</p>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <ScrollTopButton />
+                <QuickViewModal />
+            </div>
+        </>
+    );
 }
 
 export default Registration;
