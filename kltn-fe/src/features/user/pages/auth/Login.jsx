@@ -5,9 +5,34 @@ import QuickViewModal from '../../components/home/QuickViewModal';
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
+import { login } from '../../apiService/authService';
 
 function Login() {
 	const [hasBgClass, setHasBgClass] = useState(true); 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    if (form.checkValidity()) {
+        try {
+            const credentials = { email, password };
+            const response = await login(credentials);
+            localStorage.setItem('accessToken', response.accessToken);
+            localStorage.setItem('refreshToken', response.refreshToken);
+            localStorage.setItem('username', response.username); // Thêm dòng này
+            setMessage('Đăng nhập thành công');
+            setEmail('');
+            setPassword('');
+        } catch (error) {
+            setMessage(`Error: ${error.message}`);
+        }
+    } else {
+        form.reportValidity();
+    }
+};
+
   
 	useEffect(() => {
 	  if (hasBgClass) {
@@ -15,18 +40,15 @@ function Login() {
 	  } else {
 		document.body.classList.remove('bg');
 	  }
-  
 	  return () => {
-		// Dọn dẹp: Xóa class khi component bị unmount
 		document.body.classList.remove('bg');
 	  };
-	}, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-	useEffect(() => { // New useEffect for WOW.js
+	}, [hasBgClass]); 
+	useEffect(() => { 
 		const wow = new WOW.WOW();
 		wow.init();
 	
-		return () => { // Optional cleanup function
-			//wow.sync(); // sync and remove the DOM
+		return () => {
 		};
 	  }, []);
 
@@ -63,11 +85,13 @@ function Login() {
           <p className="text-center m-b25">
             welcome please login to your account
           </p>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="m-b30">
               <label className="label-title">Email Address</label>
               <input
                 name="dzName"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)} 
                 required=""
                 className="form-control"
                 placeholder="Email Address"
@@ -80,6 +104,8 @@ function Login() {
                 <input
                   type="password"
                   name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="form-control dz-password"
                   placeholder="Password"
                 />
@@ -105,26 +131,25 @@ function Login() {
                 </div>
               </div>
               <div className="form-group">
-                <a className="text-primary" href="forget-password.html">
+                <a className="text-primary" href="/user/auth/forgetpassword">
                   Forgot Password
                 </a>
               </div>
             </div>
             <div className="text-center">
+              <button type="submit" className="btn btn-secondary">Login</button>
               <a
-                href="account-dashboard.html"
-                className="btn btn-secondary btnhover text-uppercase me-2 sign-btn"
-              >
-                Sign In
-              </a>
-              <a
-                href="registration.html"
+                href="/user/auth/registration"
                 className="btn btn-outline-secondary btnhover text-uppercase"
               >
                 Register
               </a>
             </div>
           </form>
+          <br />
+             <div className="text-center">
+                                        {message && <p>{message}</p>}
+                                    </div>
         </div>
       </div>
     </div>

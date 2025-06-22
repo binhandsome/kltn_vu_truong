@@ -3,228 +3,112 @@ package com.kltnbe.userservice.services;
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.entities.Auth;
-import com.kltnbe.userservice.entities.User;
-import com.kltnbe.userservice.enums.OtpPurpose;
-import com.kltnbe.userservice.enums.UserRole;
+import com.kltnbe.userservice.helpers.EmailServiceProxy;
 import com.kltnbe.userservice.repositories.AuthRepository;
-import com.kltnbe.userservice.repositories.UserRepository;
 import com.kltnbe.userservice.utils.JwtUtil;
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+    private final AuthRepository authRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Auth> authRedisTemplate;
 
+    private final EmailServiceProxy emailServiceProxy;
     @Autowired
-    private AuthRepository authRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private JwtUtil jwtUtil;
-    @Autowired
-    private EmailService emailService;
-
-    private final Map<String, TempRegisterInfo> otpCache = new ConcurrentHashMap<>();
-
-    @Override
-    public LoginResponse login(LoginRequest loginRequest) {
-        Auth auth = authRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
-        if (!passwordEncoder.matches(loginRequest.getPassword(), auth.getPasswordHash())) {
-            throw new RuntimeException("Mật khẩu không đúng");
-        }
-
-        String accessToken = jwtUtil.generateAccessToken(auth.getUsername());
-        String refreshToken = jwtUtil.generateRefreshToken();
-
-        auth.setRefreshToken(refreshToken);
-        auth.setLastLogin(new Date());
-        auth.setLastLoginIp("127.0.0.1");
-        auth.setLastLoginCountry("Vietnam");
-        auth.setUpdatedAt(new Date());
-        authRepository.save(auth);
-
-        LoginResponse response = new LoginResponse();
-        response.setAccessToken(accessToken);
-        response.setRefreshToken(refreshToken);
-        return response;
+    public AuthServiceImpl(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate, RedisTemplate<String, Auth> authRedisTemplate, EmailServiceProxy emailServiceProxy) {
+        this.authRepository = authRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+        this.redisTemplate = redisTemplate;
+        this.authRedisTemplate = authRedisTemplate;
+        this.emailServiceProxy = emailServiceProxy;
     }
+
 
     @Override
     public String register(RegisterRequest request) {
+        // Kiểm tra username/email tồn tại
         if (authRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Tên người dùng đã tồn tại");
+            return "Tên người dùng đã tồn tại";
         }
         if (authRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email đã được sử dụng");
+            return "Email đã được sử dụng";
         }
 
-        String otp = String.format("%06d", (int)(Math.random() * 1_000_000));
-        long expiresAt = System.currentTimeMillis() + 5 * 60 * 1000;
-
-        TempRegisterInfo info = new TempRegisterInfo();
-        info.setRegisterRequest(request);
-        info.setOtpCode(otp);
-        info.setExpiresAt(expiresAt);
-        info.setAttempts(0);
-        info.setPurpose(OtpPurpose.REGISTER);
-        otpCache.put(request.getUsername(), info);
-
-        emailService.sendOtpEmail(request.getEmail(), otp);
-
-        return "Đăng ký thành công. Vui lòng kiểm tra email để xác minh OTP.";
-    }
-
-    @Override
-    public String verifyOtp(String username, String inputOtp) {
-        TempRegisterInfo info = otpCache.get(username);
-        if (info == null || info.getPurpose() != OtpPurpose.REGISTER) {
-            return "Không tìm thấy yêu cầu đăng ký hoặc đã hết hạn.";
+        // Kiểm tra OTP có được cung cấp không
+        if (request.getOtp() == null || request.getOtp().isEmpty()) {
+            return "Mã OTP là bắt buộc";
         }
 
-        if (System.currentTimeMillis() > info.getExpiresAt()) {
-            otpCache.remove(username);
-            return "Mã OTP đã hết hạn.";
-        }
+        // Gọi email-service để kiểm tra OTP
+        RequestInfomation info = new RequestInfomation();
+        info.setEmail(request.getEmail());
+        info.setOtp(request.getOtp());
 
-        if (!info.getOtpCode().equals(inputOtp)) {
-            info.setAttempts(info.getAttempts() + 1);
-            if (info.getAttempts() >= 3) {
-                otpCache.remove(username);
-                return "Sai OTP quá 3 lần. Vui lòng đăng ký lại.";
+        try {
+            ResponseEntity<String> response = emailServiceProxy.checkOTP(info);
+
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                return "Lỗi xác minh OTP: Phản hồi không thành công từ email service";
             }
-            return "Mã OTP không đúng. Còn " + (3 - info.getAttempts()) + " lần thử.";
-        }
 
-        RegisterRequest request = info.getRegisterRequest();
-
-        Auth auth = new Auth();
-        auth.setUsername(request.getUsername());
-        auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        auth.setUserRole(UserRole.USER);
-        auth.setIsBanned(false);
-        auth.setIsActive(true);
-        auth.setLastLogin(new Date());
-        auth.setCreatedAt(new Date());
-        auth.setUpdatedAt(new Date());
-        auth.setEmail(request.getEmail());
-        auth = authRepository.save(auth);
-
-        User user = new User();
-        user.setAuthId(auth.getAuthId());
-        user.setCreatedAt(new Date());
-        user.setUpdatedAt(new Date());
-        user.setEmail(request.getEmail());
-        userRepository.save(user);
-
-        otpCache.remove(username);
-        return "Xác minh OTP thành công. Tài khoản đã được tạo.";
-    }
-
-    @Override
-    public String registerSeller(RegisterRequest request) {
-        if (authRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Tên người dùng đã tồn tại");
-        }
-        if (authRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email đã được sử dụng");
-        }
-
-        Auth auth = new Auth();
-        auth.setUsername(request.getUsername());
-        auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        auth.setUserRole(UserRole.SELLER);
-        auth.setIsBanned(false);
-        auth.setIsActive(true);
-        auth.setLastLogin(new Date());
-        auth.setCreatedAt(new Date());
-        auth.setUpdatedAt(new Date());
-        auth.setEmail(request.getEmail());
-        auth = authRepository.save(auth);
-
-        User user = new User();
-        user.setAuthId(auth.getAuthId());
-        user.setCreatedAt(new Date());
-        user.setUpdatedAt(new Date());
-        user.setEmail(request.getEmail());
-        userRepository.save(user);
-
-        return "Đăng ký người bán thành công.";
-    }
-
-    @Override
-    public String changePassword(PasswordChangeRequest request) {
-        Auth auth = authRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
-
-        if (!passwordEncoder.matches(request.getOldPassword(), auth.getPasswordHash())) {
-            throw new RuntimeException("Mật khẩu cũ không đúng");
-        }
-
-        auth.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
-        auth.setUpdatedAt(new Date());
-        authRepository.save(auth);
-
-        return "Đổi mật khẩu thành công.";
-    }
-
-    @Override
-    public String sendOtpToResetPassword(String email) {
-        Auth auth = authRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
-
-        String otp = String.format("%06d", (int)(Math.random() * 1_000_000));
-        long expiresAt = System.currentTimeMillis() + 5 * 60 * 1000;
-
-        TempRegisterInfo info = new TempRegisterInfo();
-        info.setOtpCode(otp);
-        info.setExpiresAt(expiresAt);
-        info.setAttempts(0);
-        info.setPurpose(OtpPurpose.RESET_PASSWORD);
-        info.setEmail(email);
-
-        otpCache.put(email, info);
-
-        emailService.sendOtpEmail(email, otp);
-        return "Mã OTP đã được gửi đến email.";
-    }
-
-    @Override
-    public String resetPasswordByOtp(String email, String otp, String newPassword) {
-        TempRegisterInfo info = otpCache.get(email);
-        if (info == null || info.getPurpose() != OtpPurpose.RESET_PASSWORD) {
-            return "Không tìm thấy yêu cầu đặt lại mật khẩu.";
-        }
-
-        if (System.currentTimeMillis() > info.getExpiresAt()) {
-            otpCache.remove(email);
-            return "Mã OTP đã hết hạn.";
-        }
-
-        if (!info.getOtpCode().equals(otp)) {
-            info.setAttempts(info.getAttempts() + 1);
-            if (info.getAttempts() >= 3) {
-                otpCache.remove(email);
-                return "Sai OTP quá 3 lần. Vui lòng gửi lại yêu cầu.";
+            if (response.getBody() == null || !response.getBody().equalsIgnoreCase("OTP đúng")) {
+                return "Mã OTP không hợp lệ";
             }
-            return "Sai mã OTP. Bạn còn " + (3 - info.getAttempts()) + " lần thử.";
+
+            // OTP đúng → tiếp tục đăng ký
+            Auth auth = new Auth();
+            auth.setUsername(request.getUsername());
+            auth.setEmail(request.getEmail());
+            auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            authRepository.save(auth);
+            return "Đăng ký tài khoản thành công";
+        } catch (FeignException.ServiceUnavailable e) {
+            return "Dịch vụ email không khả dụng. Vui lòng thử lại sau.";
+        } catch (FeignException e) {
+            return "Lỗi khi xác minh OTP: " + e.getMessage();
+        } catch (Exception e) {
+            return "Lỗi hệ thống khi đăng ký: " + e.getMessage();
         }
-
-        Auth auth = authRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
-
-        auth.setPasswordHash(passwordEncoder.encode(newPassword));
-        auth.setUpdatedAt(new Date());
-        authRepository.save(auth);
-
-        otpCache.remove(email);
-        return "Đặt lại mật khẩu thành công.";
     }
+
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+        Auth auth = authRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Tên người dùng hoặc mật khẩu không đúng"));
+        if (!passwordEncoder.matches(request.getPassword(), auth.getPasswordHash())) {
+            throw new RuntimeException("Tên người dùng hoặc mật khẩu không đúng");
+        }
+        String accessToken = jwtUtil.generateAccessToken(auth.getUsername());
+        String refreshToken = jwtUtil.generateRefreshToken();
+        redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L, TimeUnit.DAYS);
+        return new LoginResponse(accessToken, refreshToken, auth.getUsername());
+    }
+    @Override
+    public Auth getUserByUsername(String username) {
+        String cacheKey = "user:" + username;
+        Auth cachedUser = authRedisTemplate.opsForValue().get(cacheKey);
+        if (cachedUser != null) {
+            return cachedUser;
+        }
+        Auth auth = authRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+        authRedisTemplate.opsForValue().set(cacheKey, auth, 1L, TimeUnit.HOURS);
+        return auth;
+    }
+
+
+
+
 }

@@ -1,33 +1,45 @@
-import React, { useEffect} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import logo from '../../../assets/user/../../assets/user/images/logo.svg';
-
-//Import WOW.js
+import logo from '../../../assets/user/images/logo.svg';
+import { logout } from '../apiService/authService';
 import WOW from 'wowjs';
+import { authFetch } from '../apiService/authFetch';
 
-function UserHeader() {
-    const [selectedValue, setSelectedValue] = ('#000000'); // Initial value
 
-    const handleRadioChange = (event) => {
-      setSelectedValue(event.target.value);
+  function UserHeader() {
+  const [user,  setUser]  = useState(null);
+  const [color, setColor] = useState('#000');
+const API_URL = 'http://localhost:8081/api/auth';
+
+  /* -------- lấy user -------- */
+  const fetchUser = useCallback(async () => {
+    try {
+      const res  = await authFetch(`${API_URL}/me`);
+      const data = await res.json();
+      setUser(data);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
+  /* mount + mỗi khi token được refresh */
+  useEffect(() => {
+    fetchUser();
+
+    const onRefresh = () => fetchUser();
+    const onLogout  = () => setUser(null);
+    window.addEventListener('tokenRefreshed', onRefresh);
+    window.addEventListener('loggedOut',      onLogout);
+    return () => {
+      window.removeEventListener('tokenRefreshed', onRefresh);
+      window.removeEventListener('loggedOut',      onLogout);
     };
+  }, [fetchUser]);
 
-    useEffect(() => {
-      const wow = new WOW.WOW({
-        boxClass: 'wow',      // animated element css class (default is wow)
-        animateClass: 'animated', // animation css class (default is animated)
-        offset: 0,          // distance to the element when triggering the animation (default is 0)
-        mobile: true,       // trigger animations on mobile devices (default is true)
-        live: true,       // act on asynchronously loaded content (default is true)
-        callback: function(box) {
-          // the callback is fired every time an animation is started
-          // the argument that is passed in the callback is the DOM node being animated
-        },
-        scrollContainer: null,    // optional scroll container selector, otherwise use window
-      });
-      wow.init();
-    }, []);
+  /* WOW.js chỉ 1 lần */
+  useEffect(() => { new WOW.WOW({ live: false }).init(); }, []);
+
     return (
         <header className="site-header mo-left header">
   {/* Main Header */}
@@ -625,11 +637,20 @@ function UserHeader() {
         <div className="extra-nav">
           <div className="extra-cell">
             <ul className="header-right">
-              <li className="nav-item login-link">
+              {user ? (
+                  <li className="nav-item login-link">
+                <a className="nav-link" href="/user/myaccount/dashboard">
+                  {user.username}
+                </a>
+              </li>
+              ) : (
+ <li className="nav-item login-link">
                 <a className="nav-link" href="/user/auth/login">
                   Login / Register
                 </a>
               </li>
+              )}
+             
               <li className="nav-item search-link">
                 <a
                   className="nav-link"

@@ -3,40 +3,42 @@ package com.kltnbe.userservice.entities;
 import com.kltnbe.userservice.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 @Table(name = "auth")
 @Data
-public class Auth {
+public class Auth implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auth_id")
     private Long authId;
 
-    @Column(name = "username", nullable = false, unique = true, length = 50)
+    @Column(name = "username", nullable = true, unique = true, length = 50)
     private String username;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = true, length = 255)
     private String passwordHash;
 
-    @Column(name = "user_role", nullable = false)
+    @Column(name = "user_role", nullable = true, insertable = false, updatable = false)
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    @Column(name = "is_banned", nullable = false)
+    @Column(name = "is_banned", nullable = true, insertable = false, updatable = false)
     private Boolean isBanned;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "is_active", nullable = true, insertable = false, updatable = false)
     private Boolean isActive;
 
-    @Column(name = "last_login", nullable = false)
+    @Column(name = "last_login", nullable = true, insertable = false, updatable = false)
     private Date lastLogin;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", insertable = false, updatable = false)
     private Date createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private Date updatedAt;
 
     @Column(name = "last_login_ip", length = 45)
