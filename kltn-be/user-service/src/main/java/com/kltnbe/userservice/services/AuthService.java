@@ -1,7 +1,9 @@
 package com.kltnbe.userservice.services;
 
+import com.kltnbe.userservice.dtos.req.ChangePasswordRequest;
 import com.kltnbe.userservice.dtos.req.LoginRequest;
 import com.kltnbe.userservice.dtos.req.RegisterRequest;
+import com.kltnbe.userservice.dtos.req.ResetPasswordRequest;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.entities.Auth;
 
@@ -10,6 +12,9 @@ public interface AuthService {
     String register(RegisterRequest registerRequest);
     LoginResponse login(LoginRequest loginRequest);
     Auth getUserByUsername(String username);
+    String resetPassword(ResetPasswordRequest request);
+    String changePassword(String email, ChangePasswordRequest request);
+
 //    String verifyOtp(String username, String inputOtp);
 //    String registerSeller(RegisterRequest registerRequest);
 //

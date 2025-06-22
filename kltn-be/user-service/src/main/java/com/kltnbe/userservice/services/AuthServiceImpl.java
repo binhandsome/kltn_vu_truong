@@ -108,7 +108,41 @@ public class AuthServiceImpl implements AuthService {
         return auth;
     }
 
+    @Override
+    public String resetPassword(ResetPasswordRequest request) {
+        RequestInfomation info = new RequestInfomation();
+        info.setEmail(request.getEmail());
+        info.setOtp(request.getOtp());
 
+        try {
+            ResponseEntity<String> response = emailServiceProxy.checkOTP(info);
+            if (!response.getStatusCode().is2xxSuccessful() || !"OTP đúng".equalsIgnoreCase(response.getBody())) {
+                return "OTP không đúng hoặc đã hết hạn";
+            }
+
+            Auth auth = authRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+
+            auth.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+            authRepository.save(auth);
+            return "Đặt lại mật khẩu thành công";
+        } catch (Exception e) {
+            return "Lỗi hệ thống khi đặt lại mật khẩu: " + e.getMessage();
+        }
+    }
+    @Override
+    public String changePassword(String email, ChangePasswordRequest request) {
+        Auth auth = authRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), auth.getPasswordHash())) {
+            return "Mật khẩu hiện tại không chính xác";
+        }
+
+        auth.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        authRepository.save(auth);
+        return "Đổi mật khẩu thành công";
+    }
 
 
 }
