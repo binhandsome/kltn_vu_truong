@@ -1,12 +1,9 @@
 package com.kltnbe.cartservice.entities;
-
 import jakarta.persistence.*;
-import lombok.Data;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "cart_items")
-@Data
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

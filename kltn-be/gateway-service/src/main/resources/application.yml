@@ -12,7 +12,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
           lower-case-service-id: true
 
       routes:
@@ -20,6 +20,10 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/auth/**, /api/users/**
+        - id: email-service
+          uri: lb://email-service
+          predicates:
+            - Path=/api/email/**
 
         - id: product-service
           uri: lb://product-service
