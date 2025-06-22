@@ -5,14 +5,17 @@ const BasicForm = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Basic Form</h4>
+                                {/* Basic Form */}
+                                <h4 className="page-title">Mẫu cơ bản</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                                        {/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Basic Form</li>
+                                    {/* Basic Form */}
+                                    <li className="breadcrumb-link active">Mẫu cơ bản</li>
                                 </ul>
                             </div>
                         </div>
@@ -24,28 +27,35 @@ const BasicForm = () => (
                         <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Vertical</h4>
-                                    <p className="card-desc">Here are examples of form add <code>.form</code> tag with inputs.</p>
+                                    {/* Vertical */}
+                                    <h4>Thẳng đứng</h4>
+                                    {/* Here are examples of form add <code>.form</code> tag with inputs. */}
+                                    <p className="card-desc">Sau đây là các ví dụ về cách thêm thẻ <code> .form </code> với các đầu vào.</p>
                                 </div>
                                 <div className="card-body">
                                     <form>
                                         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                                             <div className="form-group">
-                                                <label className="col-form-label">User Name</label>
+                                                {/* User Name */}
+                                                <label className="col-form-label">Tên người dùng</label>
                                                 <input className="form-control" type="text" placeholder="Jenny"/>
                                             </div>
                                             <div className="form-group">
-                                                <label className="col-form-label">Password</label>
+                                                {/* Password */}
+                                                <label className="col-form-label">Mật khẩu</label>
                                                 <input className="form-control" type="password" placeholder="123456"/>
                                             </div>
                                             <div className="form-group">
                                                 <div className="checkbox">
                                                     <input id="checkbox1" type="checkbox"/>
-                                                    <label for="checkbox1">Remember Me</label>
+                                                    {/* Remember Me */}
+                                                    <label for="checkbox1">Nhớ</label>
                                                 </div>
                                             </div>
                                             <div className="form-group mb-0">
-                                                <button className="btn btn-primary" type="button">Reset</button>
+                                                {/* Reset */}
+                                                <button className="btn btn-primary" type="button">Cài lại</button>
+                                                {/* submit */}
                                                 <input className="btn btn-light" type="submit"/>
                                             </div>
                                         </div>
@@ -57,26 +67,30 @@ const BasicForm = () => (
                         <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Horizontal</h4>
-                                    <p className="card-desc">Here are examples of form add <code>.form</code> tag with inputs.</p>
+                                    {/* Horizontal */}
+                                    <h4>Nằm ngang</h4>
+                                    <p className="card-desc">Sau đây là các ví dụ về cách thêm thẻ <code>.form</code> vào biểu mẫu.</p>
                                 </div>
                                 <div className="card-body">
                                     <form>
                                         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                                             <div className="form-group row">
-                                                <label className="col-md-2 col-form-label">Username</label>
+                                                {/* Username */}
+                                                <label className="col-md-2 col-form-label">Tên người dùng</label>
                                                 <div className="col-md-10">
                                                     <input className="form-control" type="text" placeholder="Jenny"/>
                                                 </div>
                                             </div>
                                             <div className="form-group row">
-                                                <label className="col-md-2 col-form-label">Email</label>
+                                                {/* Email */}
+                                                <label className="col-md-2 col-form-label">E-mail</label>
                                                 <div className="col-md-10">
                                                     <input className="form-control" type="email" placeholder="example@domain.com" id="email-input"/>
                                                 </div>
                                             </div>
                                             <div className="form-group row">
-                                                <label className="col-md-2 col-form-label">Password</label>
+                                                {/* Password */}
+                                                <label className="col-md-2 col-form-label">Mật khẩu</label>
                                                 <div className="col-md-10">
                                                     <input className="form-control" type="password" placeholder="123456"/>
                                                 </div>
@@ -85,13 +99,14 @@ const BasicForm = () => (
                                                 <div className="col-sm-10 offset-sm-2">
                                                     <div className="checkbox">
                                                         <input id="checkbox2" type="checkbox"/>
-                                                        <label for="checkbox2">Remember Me</label>
+                                                        {/* Remember Me */}
+                                                        <label for="checkbox2">Nhớ</label>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="form-group row mb-0">
                                                 <div className="col-sm-10 offset-sm-2">
-                                                    <button className="btn btn-primary" type="button">reset</button>
+                                                    <button className="btn btn-primary" type="button">Cài lại</button>
                                                     <input className="btn btn-light" type="submit"/>
                                                 </div>
                                             </div>
@@ -103,29 +118,35 @@ const BasicForm = () => (
                         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                             <div className="card">
                                 <div className="card-header">
-                                    <h4>Separate</h4>
-                                    <p className="card-desc">Here are examples of form add <code>.separate-form</code> tag with inputs.</p>
+                                    {/* Separate */}
+                                    <h4>Chia</h4>
+                                    {/* Here are examples of form add <code>.separate-form</code> tag with inputs. */}
+                                    <p className="card-desc">Sau đây là các ví dụ về cách thêm thẻ <code>.separate-form</code> với các đầu vào.</p>
                                 </div>
                                 <div className="card-body">
                                     <form className="separate-form">
                                         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                                            <h5 className="from-title mb-1">Personal Info</h5>
+                                            {/* Personal Info */}
+                                            <h5 className="from-title mb-1">Thông tin cá nhân</h5>
                                             <div className="row">
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group">
-                                                        <label for="member-name" className="col-form-label">Your Name</label>
+                                                        {/* Your Name */}
+                                                        <label for="member-name" className="col-form-label">Tên của bạn</label>
                                                         <input className="form-control" type="text" placeholder="Enter Your Name" id="member-name"/>
                                                     </div>
                                                 </div>
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group">
-                                                        <label for="member-email" className="col-form-label">Your Email</label>
+                                                        {/* Your Email */}
+                                                        <label for="member-email" className="col-form-label">Email của bạn</label>
                                                         <input className="form-control" type="email" placeholder="Enter Your Email" id="member-email"/>
                                                     </div>
                                                 </div>
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group">
-                                                        <label for="company-name" className="col-form-label">Company Name (Optional)</label>
+                                                        {/* Company Name (Optional) */}
+                                                        <label for="company-name" className="col-form-label">Tên công ty (Tùy chọn)</label>
                                                         <input className="form-control" type="text" placeholder="Company Name" id="company-name"/>
                                                     </div>
                                                 </div>
@@ -137,25 +158,29 @@ const BasicForm = () => (
                                                 </div>
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group">
-                                                        <label for="dob" className="col-form-label">DOB</label>
+                                                        {/* DOB */}
+                                                        <label for="dob" className="col-form-label">Ngày sinh</label>
                                                         <input className="form-control" type="text" placeholder="Enter DOB" id="dob"/>
                                                     </div>
                                                 </div>
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group">
-                                                        <label for="another-number" className="col-form-label">Contact Number</label>
+                                                        {/* Contact Number */}
+                                                        <label for="another-number" className="col-form-label">Số liên lạc</label>
                                                         <input className="form-control" type="text" placeholder="Contact Number" id="another-number"/>
                                                     </div>
                                                 </div>
                                             </div>
                                             <hr className="mt-4 mb-4"/>
-                                            <h5 className="from-title mb-1">Billing Info</h5>
+                                            {/* Billing Info */}
+                                            <h5 className="from-title mb-1">Thông tin thanh toán</h5>
                                             <div className="row">
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group s-opt">
-                                                        <label for="region" className="col-form-label">Country Or Region</label>
+                                                        {/* Country Or Region */}
+                                                        <label for="region" className="col-form-label">Quốc gia hoặc Khu vực</label>
                                                         <select className="select2 form-control select-opt" id="region">
-                                                            <optgroup label="Alaskan/Hawaiian Time Zone">
+                                                            <optgroup label="Múi giờ Alaska/Hawaii ">
                                                               <option value="AK">Alaska</option>
                                                               <option value="HI">Hawaii</option>
                                                             </optgroup>
@@ -165,7 +190,7 @@ const BasicForm = () => (
                                                               <option value="OR">Oregon</option>
                                                               <option value="WA">Washington</option>
                                                             </optgroup>
-                                                            <optgroup label="Mountain Time Zone">
+                                                            <optgroup label="Múi giờ Thái Bình Dương">
                                                               <option value="AZ">Arizona</option>
                                                               <option value="CO">Colorado</option>
                                                               <option value="ID">Idaho</option>
@@ -176,7 +201,7 @@ const BasicForm = () => (
                                                               <option value="UT">Utah</option>
                                                               <option value="WY">Wyoming</option>
                                                             </optgroup>
-                                                            <optgroup label="Central Time Zone">
+                                                            <optgroup label="Múi giờ miền Trung">
                                                               <option value="AL">Alabama</option>
                                                               <option value="AR">Arkansas</option>
                                                               <option value="IL">Illinois</option>
@@ -193,7 +218,7 @@ const BasicForm = () => (
                                                               <option value="TN">Tennessee</option>
                                                               <option value="WI">Wisconsin</option>
                                                             </optgroup>
-                                                            <optgroup label="Eastern Time Zone">
+                                                            <optgroup label="Múi giờ miền Đông">
                                                               <option value="CT">Connecticut</option>
                                                               <option value="DE">Delaware</option>
                                                               <option value="FL">Florida</option>
@@ -223,7 +248,8 @@ const BasicForm = () => (
                                                 </div>
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group s-opt">
-                                                        <label for="city" className="col-form-label">Town/City</label>
+                                                        {/* Town/City */}
+                                                        <label for="city" className="col-form-label">Thị trấn/Thành phố</label>
                                                         <select className="select2 form-control select-opt" id="city">
                                                               <option value="AK">Alaska</option>
                                                               <option value="HI">Hawaii</option>
@@ -239,23 +265,27 @@ const BasicForm = () => (
                                                 </div>
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group">
-                                                        <label for="province" className="col-form-label">Province</label>
+                                                        {/* Province */}
+                                                        <label for="province" className="col-form-label">Tỉnh</label>
                                                         <input className="form-control" type="text" placeholder="province" id="province"/>
                                                     </div>
                                                 </div>
                                                 <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group">
-                                                        <label for="postal" className="col-form-label">Postal</label>
+                                                        {/* Postal */}
+                                                        <label for="postal" className="col-form-label">Bưu chính</label>
                                                         <input className="form-control" type="text" placeholder="Postal" id="postal"/>
                                                     </div>
                                                 </div>
                                             </div>
                                             <hr className="mt-4 mb-4"/>
-                                            <h5 className="from-title mb-1">Additional Details</h5>
+                                            {/* Additional Details */}
+                                            <h5 className="from-title mb-1">Chi tiết bổ sung</h5>
                                             <div className="row">
                                                 <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                                                     <div className="form-group">
-                                                        <label for="additional-msg" className="col-form-label">Drop Your Message</label>
+                                                        {/* Drop Your Message */}
+                                                        <label for="additional-msg" className="col-form-label">Gửi tin nhắn của bạn</label>
                                                         <textarea className="form-control" placeholder="Additional Notes" id="additional-msg"></textarea>
                                                     </div>
                                                 </div>
@@ -263,11 +293,11 @@ const BasicForm = () => (
                                             <div className="form-group">
                                                 <div className="checkbox">
                                                     <input id="checkbox3" type="checkbox"/>
-                                                    <label for="checkbox3">Remember Me</label>
+                                                    <label for="checkbox3">Nhớ</label>
                                                 </div>
                                             </div>
                                             <div className="form-group mb-0">
-                                                <button className="btn btn-primary" type="button">reset</button>
+                                                <button className="btn btn-primary" type="button">Cài lại</button>
                                                 <input className="btn btn-danger" type="submit"/>
                                             </div>
                                         </div>

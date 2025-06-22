@@ -6,17 +6,20 @@ const MyProfile = () => (
       <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
         <div className="page-title-wrapper">
           <div className="page-title-box">
-            <h4 className="page-title">User Profile</h4>
+            {/* User Profile */}
+            <h4 className="page-title">Hồ sơ người dùng</h4>
           </div>
           <div className="breadcrumb-list">
             <ul>
               <li className="breadcrumb-link">
                 <a href="index.html">
                   <i className="fas fa-home mr-2" />
-                  Dashboard
+                  {/* Dashboard */}
+                  Bảng điều khiển
                 </a>
               </li>
-              <li className="breadcrumb-link active">User Profile</li>
+              {/* User Profile */}
+              <li className="breadcrumb-link active">Hồ sơ người dùng</li>
             </ul>
           </div>
         </div>
@@ -37,7 +40,8 @@ const MyProfile = () => (
             className="cGcvT"
           />
           <div className="card-header">
-            <h4 className="card-title mb-0">My Profile</h4>
+            {/* My Profile */}
+            <h4 className="card-title mb-0">Hồ sơ của tôi</h4>
             <div className="card-options">
               <a
                 className="card-options-collapse"
@@ -82,7 +86,8 @@ const MyProfile = () => (
                 />
               </div>
               <div className="mb-3">
-                <label className="form-label">Email-Address</label>
+                {/* Email-Address */}
+                <label className="form-label">Địa chỉ Email</label>
                 <input
                   className="form-control"
                   placeholder="your-email@domain.com"
@@ -91,7 +96,8 @@ const MyProfile = () => (
                 />
               </div>
               <div className="mb-3">
-                <label className="form-label">Password</label>
+                {/* Password */}
+                <label className="form-label">Mật khẩu</label>
                 <input
                   className="form-control"
                   type="password"
@@ -101,6 +107,7 @@ const MyProfile = () => (
                 />
               </div>
               <div className="mb-3">
+                {/* Website */}
                 <label className="form-label">Website</label>
                 <input
                   className="form-control"
@@ -115,7 +122,8 @@ const MyProfile = () => (
                   data-bs-original-title=""
                   title=""
                 >
-                  Save
+                  {/* Save */}
+                  Lưu
                 </button>
               </div>
             </form>
@@ -125,7 +133,8 @@ const MyProfile = () => (
       <div className="col-xl-8">
         <form className="card">
           <div className="card-header">
-            <h4 className="card-title mb-0">Edit Profile</h4>
+            {/* Edit Profile */}
+            <h4 className="card-title mb-0">Chỉnh sửa hồ sơ</h4>
             <div className="card-options">
               <a
                 className="card-options-collapse"
@@ -151,7 +160,8 @@ const MyProfile = () => (
             <div className="row">
               <div className="col-md-5">
                 <div className="mb-3">
-                  <label className="form-label">Company</label>
+                  {/* Company */}
+                  <label className="form-label">Công ty</label>
                   <input
                     className="form-control"
                     type="text"
@@ -163,7 +173,8 @@ const MyProfile = () => (
               </div>
               <div className="col-sm-6 col-md-3">
                 <div className="mb-3">
-                  <label className="form-label">Username</label>
+                  {/* Username */}
+                  <label className="form-label">Tên người dùng</label>
                   <input
                     className="form-control"
                     type="text"
@@ -175,7 +186,8 @@ const MyProfile = () => (
               </div>
               <div className="col-sm-6 col-md-4">
                 <div className="mb-3">
-                  <label className="form-label">Email address</label>
+                  {/* Email address */}
+                  <label className="form-label">Địa chỉ Email</label>
                   <input
                     className="form-control"
                     type="email"
@@ -187,7 +199,8 @@ const MyProfile = () => (
               </div>
               <div className="col-sm-6 col-md-6">
                 <div className="mb-3">
-                  <label className="form-label">First Name</label>
+                  {/* First Name */}
+                  <label className="form-label">Họ</label>
                   <input
                     className="form-control"
                     type="text"
@@ -199,7 +212,8 @@ const MyProfile = () => (
               </div>
               <div className="col-sm-6 col-md-6">
                 <div className="mb-3">
-                  <label className="form-label">Last Name</label>
+                  {/* Last Name */}
+                  <label className="form-label">Tên</label>
                   <input
                     className="form-control"
                     type="text"
@@ -211,7 +225,8 @@ const MyProfile = () => (
               </div>
               <div className="col-md-12">
                 <div className="mb-3">
-                  <label className="form-label">Address</label>
+                  {/* Address */}
+                  <label className="form-label">Địa chỉ</label>
                   <input
                     className="form-control"
                     type="text"
@@ -223,7 +238,8 @@ const MyProfile = () => (
               </div>
               <div className="col-sm-6 col-md-4">
                 <div className="mb-3">
-                  <label className="form-label">City</label>
+                  {/* City */}
+                  <label className="form-label">Thành phố</label>
                   <input
                     className="form-control"
                     type="text"
@@ -235,7 +251,8 @@ const MyProfile = () => (
               </div>
               <div className="col-sm-6 col-md-3">
                 <div className="mb-3">
-                  <label className="form-label">Postal Code</label>
+                  {/* Postal Code */}
+                  <label className="form-label">Mã bưu chính</label>
                   <input
                     className="form-control"
                     type="number"
@@ -247,7 +264,8 @@ const MyProfile = () => (
               </div>
               <div className="col-md-5">
                 <div className="mb-3 form-select-btn">
-                  <label className="form-label">Country</label>
+                  {/* Country */}
+                  <label className="form-label">Quốc gia</label>
                   <select className="form-control btn-square form-btn">
                     <option value={0}>--Select--</option>
                     <option value={1}>Germany</option>
@@ -262,7 +280,8 @@ const MyProfile = () => (
               </div>
               <div className="col-md-12 mb-3">
                 <div>
-                  <label className="form-label">About Me</label>
+                  {/* About Me */}
+                  <label className="form-label">Giới thiệu về tôi</label>
                   <textarea
                     className="form-control"
                     rows={5}
@@ -278,7 +297,8 @@ const MyProfile = () => (
               data-bs-original-title=""
               title=""
             >
-              Update Profile
+              {/* Update Profile */}
+              Cập nhật hồ sơ
             </button>
           </div>
         </form>
@@ -286,7 +306,8 @@ const MyProfile = () => (
       <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
         <div className="card table-card">
           <div className="card-header pb-0">
-            <h4>Add projects And Upload</h4>
+            {/* Add projects And Upload */}
+            <h4>Thêm dự án và tải lên</h4>
           </div>
           <div className="card-body">
             <div className="chart-holder">
@@ -294,11 +315,16 @@ const MyProfile = () => (
                 <table className="table table-styled mb-0">
                   <thead>
                     <tr>
-                      <th>Project Name</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Price</th>
-                      <th>Action</th>
+                      {/* Project Name */}
+                      <th>Tên dự án</th>
+                      {/* Date */}
+                      <th>Ngày</th>
+                      {/* Status */}
+                      <th>Trạng thái</th>
+                      {/* Status */}
+                      <th>Giá</th>
+                      {/* Action */}
+                      <th>Hoạt động</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -329,13 +355,13 @@ const MyProfile = () => (
                             <li>
                               <a href="javascript:void(0); ">
                                 <i className="far fa-edit mr-2 " />
-                                Edit
+                                Sửa
                               </a>
                             </li>
                             <li>
                               <a href="javascript:void(0); ">
                                 <i className="far fa-trash-alt mr-2 " />
-                                Delete
+                                Xoá
                               </a>
                             </li>
                           </ul>
@@ -369,13 +395,13 @@ const MyProfile = () => (
                             <li>
                               <a href="javascript:void(0); ">
                                 <i className="far fa-edit mr-2 " />
-                                Edit
+                                Sửa 
                               </a>
                             </li>
                             <li>
                               <a href="javascript:void(0); ">
                                 <i className="far fa-trash-alt mr-2 " />
-                                Delete
+                                Xoá
                               </a>
                             </li>
                           </ul>

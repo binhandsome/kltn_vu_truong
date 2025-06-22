@@ -5,14 +5,17 @@ const BasicTable = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h2 className="page-title bold">Basic Table</h2>
+                                {/* Basic Table */}
+                                <h2 className="page-title bold">Bảng cơ bản</h2>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Home</a>
+                                        {/* Home */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang chủ</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Table</li>
+                                    {/* Table */}
+                                    <li className="breadcrumb-link active">Bảng</li>
                                 </ul>
                             </div>
                         </div>
@@ -24,8 +27,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Simple Table</h4>
-                                <p className="card-desc"> Add class <code>.table</code></p>
+                                {/* Simple Table */}
+                                <h4>Bảng đơn giản</h4>
+                                {/* Add class <code>.table</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -34,9 +39,9 @@ const BasicTable = () => (
                                             <thead>
                                                 <tr>
                                                     <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -69,8 +74,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Dark Table</h4>
-                                <p className="card-desc"> Add class <code>.table.table-dark</code></p>
+                                {/* Dark Table */}
+                                <h4>Bảng tối</h4>
+                                {/* Add class <code>.table.table-dark</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-dark</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -78,10 +85,10 @@ const BasicTable = () => (
                                         <table className="table table-dark mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -116,8 +123,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Table with Dark Head</h4>
-                                <p className="card-desc"> Add class <code>.table</code> with thead class <code>.thead-dark</code></p>
+                                {/* Table with Dark Head */}
+                                <h4>Bảng có đầu đen</h4>
+                                {/* Add class <code>.table</code> with thead class <code>.thead-dark</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table</code> với lớp <code>.thead-dark</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -125,10 +134,10 @@ const BasicTable = () => (
                                         <table className="table mb-0">
                                             <thead className="thead-dark">
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -161,8 +170,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Table with Light Head</h4>
-                                <p className="card-desc"> Add class <code>.table</code> with thead class <code>.thead-light</code></p>
+                                {/* Table with Light Head */}
+                                <h4>Bảng có đầu đèn</h4>
+                                {/* Add class <code>.table</code> with thead class <code>.thead-light</code> */}
+                                <p className="card-desc">Thêm lớp <code>.table</code> với lớp <code>.thead-light</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -170,10 +181,10 @@ const BasicTable = () => (
                                         <table className="table mb-0">
                                             <thead className="thead-light">
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -209,8 +220,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Striped Table</h4>
-                                <p className="card-desc"> Add class <code>.table.table-striped</code></p>
+                                {/* Striped Table */}
+                                <h4>Bảng sọc</h4>
+                                {/* Add class <code>.table.table-striped</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-striped</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -218,10 +231,10 @@ const BasicTable = () => (
                                         <table className="table table-striped mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -254,8 +267,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Dark Striped Table</h4>
-                                <p className="card-desc"> Add class <code>.table.table-striped.table-dark</code></p>
+                                {/* Dark Striped Table */}
+                                <h4>Bảng sọc đen</h4>
+                                {/* Add class <code>.table.table-striped.table-dark</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-striped.table-dark</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -263,10 +278,10 @@ const BasicTable = () => (
                                         <table className="table table-striped table-dark mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -302,8 +317,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Bordered Table</h4>
-                                <p className="card-desc"> Add class <code>.table.table-bordered</code></p>
+                                {/* Bordered Table */}
+                                <h4>Bảng có viền</h4>
+                                {/* Add class <code>.table.table-bordered</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-bordered</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -311,10 +328,10 @@ const BasicTable = () => (
                                         <table className="table table-bordered mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -346,8 +363,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Dark Bordered Table</h4>
-                                <p className="card-desc"> Add class <code>.table.table-bordered.table-dark</code></p>
+                                {/* Dark Bordered Table */}
+                                <h4>Bảng viền tối</h4>
+                                {/* Add class <code>.table.table-bordered.table-dark</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-bordered.table-dark</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -355,10 +374,10 @@ const BasicTable = () => (
                                         <table className="table table-bordered table-dark mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -393,8 +412,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Light Table with Hover</h4>
-                                <p className="card-desc"> Add class <code>.table.table-hover</code></p>
+                                {/* Light Table with Hover */}
+                                <h4>Bảng đèn có thể di chuyển</h4>
+                                {/* Add class <code>.table.table-hover</code> */}
+                                <p className="card-desc">Thêm lớp <code>.table.table-hover</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -402,10 +423,10 @@ const BasicTable = () => (
                                         <table className="table table-hover mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -437,8 +458,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Dark Table with Hover</h4>
-                                <p className="card-desc"> Add class <code>.table.table-hover.table-dark</code></p>
+                                {/* Dark Table with Hover */}
+                                <h4>Bảng tối với Hover</h4>
+                                {/* Add class <code>.table.table-hover.table-dark</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-hover.table-dark</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -446,10 +469,10 @@ const BasicTable = () => (
                                         <table className="table table-hover table-dark mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -484,8 +507,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Samll Table</h4>
-                                <p className="card-desc"> Add class <code>.table.table-sm</code></p>
+                                {/* Samll Table */}
+                                <h4>Bảng nhỏ</h4>
+                                {/* Add class <code>.table.table-sm</code */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-sm</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -493,10 +518,10 @@ const BasicTable = () => (
                                         <table className="table table-sm mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -528,8 +553,10 @@ const BasicTable = () => (
                     <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Dark Samll Table</h4>
-                                <p className="card-desc"> Add class <code>.table.table-sm.table-dark</code></p>
+                                {/* Dark Samll Table */}
+                                <h4>Bàn nhỏ màu tối</h4>
+                                {/* Add class <code>.table.table-sm.table-dark</code> */}
+                                <p className="card-desc"> Thêm lớp <code>.table.table-sm.table-dark</code></p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -537,10 +564,10 @@ const BasicTable = () => (
                                         <table className="table table-sm table-dark mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">First</th>
-                                                    <th scope="col">Last</th>
-                                                    <th scope="col">Handle</th>
+                                                <th scope="col">#</th>
+                                                    <th scope="col">Họ</th>
+                                                    <th scope="col">Tên</th>
+                                                    <th scope="col">Xử lí</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -574,8 +601,10 @@ const BasicTable = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Responsive table</h4>
-                                <p className="card-desc">Create responsive tables by wrapping any .table in .table-responsive to make them scroll horizontally on small devices (under 768px).</p>
+                                {/* Responsive table */}
+                                <h4>Bảng phản hồi</h4>
+                                {/* Create responsive tables by wrapping any .table in .table-responsive to make them scroll horizontally on small devices (under 768px). */}
+                                <p className="card-desc">Tạo bảng phản hồi bằng cách gói bất kỳ .table nào trong .table-responsive để khiến chúng cuộn theo chiều ngang trên các thiết bị nhỏ (dưới 768px).</p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -584,8 +613,8 @@ const BasicTable = () => (
                                             <thead>
                                                 <tr>
                                                     <th scope="col">#</th>
-                                                    <th scope="col">Heading</th>
-                                                    <th scope="col">Heading</th>
+                                                    <th scope="col">Tiêu đề</th>
+                                                    <th scope="col">Tiêu đề</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -648,8 +677,10 @@ const BasicTable = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Colored Table</h4>
-                                <p className="card-desc">Various Color Available with there Classes</p>
+                                {/* Colored Table */}
+                                <h4>Bảng màu</h4>
+                                {/* Various Color Available with there Classes */}
+                                <p className="card-desc">Có nhiều màu sắc khác nhau với các lớp học đó</p>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -658,8 +689,8 @@ const BasicTable = () => (
                                             <thead>
                                                 <tr>
                                                     <th scope="col">#</th>
-                                                    <th scope="col">Heading</th>
-                                                    <th scope="col">Heading</th>
+                                                    <th scope="col">Tiêu đề</th>
+                                                    <th scope="col">Tiêu đề</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

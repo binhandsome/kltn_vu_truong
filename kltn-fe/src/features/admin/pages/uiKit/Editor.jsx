@@ -5,14 +5,16 @@ const Editor = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Editor</h4>
+                                {/* Editor */}
+                                <h4 className="page-title">Biên tập viên</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+                                        {/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Editor</li>
+                                    <li className="breadcrumb-link active">Biên tập viên</li>
                                 </ul>
                             </div>
                         </div>
@@ -24,10 +26,11 @@ const Editor = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Note Editor</h4>
+                                {/* Note Editor */}
+                                <h4>Trình chỉnh sửa ghi chú</h4>
                             </div>
                             <div className="card-body">
-                                <textarea name="editor" placeholder="Enter text ..."></textarea>
+                                <textarea name="editor" placeholder="Nhập văn bản..."></textarea>
                             </div>
                         </div>
                     </div>

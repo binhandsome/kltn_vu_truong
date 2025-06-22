@@ -7,17 +7,19 @@ const Setting = () => (
         <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
           <div className="page-title-wrapper">
             <div className="page-title-box">
-              <h4 className="page-title">Setting</h4>
+              {/* Setting */}
+              <h4 className="page-title">Cài đặt</h4>
             </div>
             <div className="breadcrumb-list">
               <ul>
                 <li className="breadcrumb-link">
                   <a href="index.html">
                     <i className="fas fa-home mr-2" />
-                    Dashboard
+                    {/* Dashboard */}
+                    Bảng điều khiển
                   </a>
                 </li>
-                <li className="breadcrumb-link active">Setting</li>
+                <li className="breadcrumb-link active">Cài đặt</li>
               </ul>
             </div>
           </div>
@@ -31,7 +33,8 @@ const Setting = () => (
               <div className="row">
                 <div className="col-md-5">
                   <div className="mb-3">
-                    <label className="form-label">Company Name</label>
+                    {/* Company Name */}
+                    <label className="form-label">Tên công ty</label>
                     <input
                       className="form-control"
                       type="text"
@@ -43,7 +46,8 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-3">
                   <div className="mb-3">
-                    <label className="form-label">Contact Person</label>
+                    {/* Contact Person */}
+                    <label className="form-label">Người liên hệ</label>
                     <input
                       className="form-control"
                       type="text"
@@ -55,7 +59,8 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3">
-                    <label className="form-label">Address</label>
+                    {/* Address */}
+                    <label className="form-label">Địa chỉ</label>
                     <input
                       className="form-control"
                       type="text"
@@ -67,7 +72,7 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3 form-select-btn">
-                    <label className="form-label">Country</label>
+                    <label className="form-label">Quốc gia</label>
                     <select className="form-control btn-square form-btn">
                       <option value={0}>--Select--</option>
                       <option value={1}>Germany</option>
@@ -82,7 +87,7 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3">
-                    <label className="form-label">City</label>
+                    <label className="form-label">Thành phố</label>
                     <input
                       className="form-control"
                       type="text"
@@ -94,7 +99,8 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3 form-select-btn">
-                    <label className="form-label">State/Province</label>
+                    {/* State/Province */}
+                    <label className="form-label">Tiểu bang/Tỉnh</label>
                     <select className="form-control btn-square form-btn">
                       <option value={0}>--Select--</option>
                       <option value={1}>California</option>
@@ -108,7 +114,8 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3">
-                    <label className="form-label">Postal Code</label>
+                    {/* Postal Code */}
+                    <label className="form-label">Mã bưu chính</label>
                     <input
                       className="form-control"
                       type="text"
@@ -132,7 +139,8 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3">
-                    <label className="form-label">Phone Number</label>
+                    {/* Phone Number */}
+                    <label className="form-label">Số điện thoại</label>
                     <input
                       className="form-control"
                       type="text"
@@ -144,7 +152,8 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3">
-                    <label className="form-label">Mobile Number</label>
+                    {/* Mobile Number */}
+                    <label className="form-label">Số điện thoại di động</label>
                     <input
                       className="form-control"
                       type="text"
@@ -156,6 +165,7 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3">
+                    {/* Fax */}
                     <label className="form-label">Fax</label>
                     <input
                       className="form-control"
@@ -168,7 +178,8 @@ const Setting = () => (
                 </div>
                 <div className="col-sm-6 col-md-4">
                   <div className="mb-3">
-                    <label className="form-label">Website Url</label>
+                    {/* Website Url */}
+                    <label className="form-label">Url trang web</label>
                     <input
                       className="form-control"
                       type="text"
@@ -200,7 +211,8 @@ const Setting = () => (
   <div className="slide-setting-box">
     <div className="slide-setting-holder">
       <div className="setting-box-head">
-        <h4>Dashboard Demo</h4>
+        {/* Dashboard Demo  */}
+        <h4>Bản trình diễn bảng điều khiển</h4>
         <a href="javascript:void(0);" className="close-btn">
           Close
         </a>
@@ -208,19 +220,22 @@ const Setting = () => (
       <div className="setting-box-body">
         <div className="sd-light-vs">
           <a href="index.html">
-            Light Version
+            {/* Light Version */}
+            Phiên bản nhẹ
             <img src="../../assets/admin/images/light.png" alt="" />
           </a>
         </div>
         <div className="sd-light-vs">
           <a href="https://kamleshyadav.com/html/splashdash/html/b5/splashdash-admin-template-dark/index.html">
-            dark Version
+          {/* Dark Version  */}
+          Phiên bản tối
             <img src="../../assets/admin/images/dark.png" alt="" />
           </a>
         </div>
       </div>
       <div className="sd-color-op">
-        <h5>color option</h5>
+        {/* Color option */}
+        <h5>Tùy chọn màu sắc</h5>
         <div id="style-switcher">
           <div>
             <ul className="colors">

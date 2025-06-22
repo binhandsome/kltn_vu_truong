@@ -44,6 +44,7 @@ import Pagination from '../pages/uiKit/Pagination';
 import ProgressBars from '../pages/uiKit/ProgressBars';
 import Tabs from '../pages/uiKit/Tabs';
 import Typography from '../pages/uiKit/Typography';
+import Chart from '../pages/chart/Chart';
 
 const AdminRoutes = () => {
   return (
@@ -92,6 +93,7 @@ const AdminRoutes = () => {
         <Route path="uikit/progressBars" element={<ProgressBars />} />
         <Route path="uikit/tabs" element={<Tabs/>} />
         <Route path="uikit/typography" element={<Typography/>} />
+        <Route path="chart/chart" element={<Chart/>} />
       </Route>
     </Routes>
   );

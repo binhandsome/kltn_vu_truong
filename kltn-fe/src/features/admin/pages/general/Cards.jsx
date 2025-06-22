@@ -5,14 +5,17 @@ const Cards = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Cards</h4>
+								{/* Cards */}
+                                <h4 className="page-title">Thẻ</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Cards</li>
+									{/* Cards */}
+                                    <li className="breadcrumb-link active">Thẻ</li>
                                 </ul>
                             </div>
                         </div>
@@ -33,11 +36,11 @@ const Cards = () => (
 												<h6><a href="javascript:;" title="">Nicole James</a></h6>
 											  </div>
 											  <div className="price"> 
-												<div className="text-muted me-2">Products:- 122</div>
+												<div className="text-muted me-2">Các sản phẩm: 122</div>
 											  </div>
 											  <div className="avaiabilty">
-												<div className="text-success">Wallet Balance:- $13,575</div>
-												<a href="javascript:;">Work Shop Now <i className="fas fa-angle-right"></i></a>
+												<div className="text-success">Số dư trên Ví:- $13,575</div>
+												<a href="javascript:;">Mua sắm ngay bây giờ <i className="fas fa-angle-right"></i></a>
 											  </div>
 											</div>
 										  </div>
@@ -256,7 +259,8 @@ const Cards = () => (
 									</div>
 								</div>
 								<div className="ad-load-btn">
-									<button className="btn btn-primary squer-btn mt-2 mr-2" data-original-title="" title=""><i className="fa fa-spin fa-spinner mr-2"></i>Load More</button>
+									{/* Load More */}
+									<button className="btn btn-primary squer-btn mt-2 mr-2" data-original-title="" title=""><i className="fa fa-spin fa-spinner mr-2"></i>Tải thêm</button>
 								</div>
 							</div>
 							

@@ -5,7 +5,8 @@ const Customer = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box ad-title-box-use">
-                                <h4 className="page-title">Customers</h4>
+                                {/* Customers */}
+                                <h4 className="page-title">Khách hàng</h4>
                             </div>
                             <div className="ad-breadcrumb">
                                 <ul>
@@ -22,7 +23,8 @@ const Customer = () => (
                                     </li>
                                     <li>
 										<div className="add-group" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-											<a className="ad-btn">New Customers</a>
+                                            {/* New Customers */}
+											<a className="ad-btn">Khách hàng mới</a>
 										</div>
 									</li>
                                 </ul>
@@ -36,7 +38,8 @@ const Customer = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="card table-card">
                             <div className="card-header pb-0">
-                                <h4>Customers List</h4>
+                                {/* Customers List */}
+                                <h4>Danh sách khách hàng</h4>
                             </div>
                             <div className="card-body">
                                 <div className="chart-holder">
@@ -45,13 +48,20 @@ const Customer = () => (
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
-                                                    <th>Username</th>
-                                                    <th>Phone / Email</th>
-                                                    <th>Address</th>
-                                                    <th>Rating</th>
-                                                    <th>Wallet Balance</th>
-                                                    <th>Joining Date</th>
-													<th>Action</th>
+                                                    {/* Username */}
+                                                    <th>Tên người dùng</th>
+                                                    {/* Phone / Email */}
+                                                    <th>Điện thoại / Email</th>
+                                                    {/* Address */}
+                                                    <th>Địa chỉ</th>
+                                                    {/* Rating */}
+                                                    <th>Đánh giá</th>
+                                                    {/* Wallet Balance */}
+                                                    <th>Số dư trên Ví</th>
+                                                    {/* Joining Date */}
+                                                    <th>Ngày tham gia</th>
+                                                    {/* Action */}
+													<th>Hoạt động</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -90,10 +100,10 @@ const Customer = () => (
                                                         <div className="action-option ">
                                                             <ul>
                                                                 <li>
-                                                                    <a href="javascript:void(0); "><i className="far fa-edit mr-2 "></i>Edit</a>
+                                                                    <a href="javascript:void(0); "><i className="far fa-edit mr-2 "></i>Sửa</a>
                                                                 </li>
                                                                 <li>
-                                                                    <a href="javascript:void(0); "><i className="far fa-trash-alt mr-2 "></i>Delete</a>
+                                                                    <a href="javascript:void(0); "><i className="far fa-trash-alt mr-2 "></i>Xoá</a>
                                                                 </li>
                                                             </ul>
                                                         </div>

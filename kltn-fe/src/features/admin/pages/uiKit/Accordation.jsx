@@ -5,14 +5,17 @@ const Accordation = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Accordion </h4>
+								{/* Accordion */}
+                                <h4 className="page-title">Đàn xếp </h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Accordion </li>
+									{/* Accordion */}
+                                    <li className="breadcrumb-link active">Đàn xếp </li>
                                 </ul>
                             </div>
                         </div>
@@ -23,7 +26,8 @@ const Accordation = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Default Accordion</h4>
+								{/* Default Accordion */}
+                                <h4 className="card-title">Accordion mặc định</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
@@ -86,7 +90,8 @@ const Accordation = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Colored Accordion</h4>
+								{/* Colored Accordion */}
+                                <h4 className="card-title">Accordion màu</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
@@ -159,7 +164,8 @@ const Accordation = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Theme Color Accordion</h4>
+								{/* Theme Color Accordion */}
+                                <h4 className="card-title">Màu sắc chủ đề Accordion</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">
@@ -230,7 +236,8 @@ const Accordation = () => (
 					<div className="col-xl-6">
 						<div className="card">
                             <div className="card-header pb-0">
-                                <h4 className="card-title">Accordion With Icons</h4>
+								{/* Accordion With Icons */}
+                                <h4 className="card-title">Đàn Accordion Với Các Biểu Tượng</h4>
                             </div>
                             <div className="card-content">
                                 <div className="card-body">

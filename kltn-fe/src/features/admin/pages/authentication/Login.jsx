@@ -14,14 +14,16 @@ const Login = () => (
               <img src="../../assets/admin/images/logo2.png" alt="" />
             </a>
             <h2>
-              <span className="primary">Hello,</span>Welcome!
+              <span className="primary">Xin chào,</span>Chào mừng!
             </h2>
-            <p>Please Enter Your Details Below to Continue</p>
+            {/* Please Enter Your Details Below to Continue */}
+            <p>Vui lòng nhập thông tin chi tiết của bạn bên dưới để tiếp tục</p>
             <div className="ad-auth-form">
               <div className="ad-auth-feilds mb-30">
                 <input
                   type="text"
-                  placeholder="Email Address"
+                  // Email Address
+                  placeholder="Địa chỉ Email"
                   className="ad-input"
                 />
                 <div className="ad-auth-icon">
@@ -49,7 +51,8 @@ const Login = () => (
               <div className="ad-auth-feilds">
                 <input
                   type="password"
-                  placeholder="Password"
+                  // Password
+                  placeholder="Mật khẩu"
                   className="ad-input"
                 />
                 <div className="ad-auth-icon">
@@ -83,20 +86,25 @@ const Login = () => (
                     name="remeber"
                     className="ad-checkbox"
                   />
-                  <span>Remember Me</span>
+                  {/* Remember Me */}
+                  <span>Nhớ</span>
                 </label>
               </div>
               <a className="forgot-pws-btn" href="forgot-pws.html">
-                Forgot Password?
+                {/* Forgot Password? */}
+                Quên mật khẩu?
               </a>
             </div>
             <div className="ad-auth-btn">
               <a href="javascript:void(0);" className="ad-btn ad-login-member">
-                Login
+                {/* Login */}
+                Đăng nhập
               </a>
             </div>
             <p className="ad-register-text">
-              Don't have an account? <a href="register.html">Click Here</a>
+              {/* Don't have an account?  */} 
+              Bạn chưa có tài khoản? <a href="register.html">Bấm vào đây</a>
+              {/* Click Here */}
             </p>
           </form>
         </div>
@@ -104,7 +112,8 @@ const Login = () => (
     </div>
     <div className="ad-notifications ad-error">
       <p>
-        <span>Duhh!</span>Something Went Wrong
+        {/* Something Went Wrong */}
+        <span>Hừ!</span>Đã xảy ra lỗi
       </p>
     </div>
   </div>

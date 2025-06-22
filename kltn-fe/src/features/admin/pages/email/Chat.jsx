@@ -5,14 +5,17 @@ const Chat = () => (
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Chat</h4>
+								{/* Chat */}
+                                <h4 className="page-title">Trò chuyện</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Chat</li>
+									{/* Chat */}
+                                    <li className="breadcrumb-link active">Trò chuyện</li>
                                 </ul>
                             </div>
                         </div>
@@ -26,11 +29,12 @@ const Chat = () => (
 								<div className="inbox-people">
 								  <div className="headind-srch">
 									<div className="recent-heading">
-									  <h4>Recent</h4>
+										{/* Recent */}
+									  <h4>Gần đây</h4>
 									</div>
 									<div className="srch-bar">
 									  <div className="stylish-input-group">
-										<input type="text" className="search-bar"  placeholder="Search" />
+										<input type="text" className="search-bar"  placeholder="Tìm kiếm" />
 										<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56.966 56.966">
 											<path d="M55.146,51.887L41.588,37.786c3.486-4.144,5.396-9.358,5.396-14.786c0-12.682-10.318-23-23-23s-23,10.318-23,23
 											s10.318,23,23,23c4.761,0,9.298-1.436,13.177-4.162l13.661,14.208c0.571,0.593,1.339,0.92,2.162,0.92
@@ -48,8 +52,8 @@ const Chat = () => (
 											<img src="../../assets/admin/images/user1.png" alt=""/>
 										</div>
 										<div className="chat-ib">
-										  <h5>Nicole james <span className="chat_date">5 hours</span></h5>
-										  <p>Test, which is a new approach to have all solutions.</p>
+										  <h5>Nicole james <span className="chat_date">5 giờ</span></h5>
+										  <p>Kiểm tra, đây là cách tiếp cận mới để có tất cả các giải pháp.</p>
 										</div>
 									  </div>
 									</div>
@@ -136,7 +140,7 @@ const Chat = () => (
 										</div>
 										<div className="chat-ib">
 										  <h5>Steven John</h5>
-										  <p>Active Now</p>
+										  <p>Đang hoạt động</p>
 										</div>
 									  </div>
 									</div>
@@ -148,7 +152,7 @@ const Chat = () => (
 										<div className="received-withd-msg">
 										  <p>Test which is a new approach to have all
 											solutions</p>
-										  <span className="time-date"> 11:01 AM    |    June 9</span></div>
+										  <span className="time-date"> 11:01 AM    |   9 tháng 6</span></div>
 									  </div>
 									</div>
 									<div className="outgoing-msg">
@@ -205,8 +209,8 @@ const Chat = () => (
 								  </div>
 								  <div className="type-msg">
 									<div className="input-msg-write">
-									  <input type="text" className="write-msg" placeholder="Type a message" />
-									  <button className="msg-send-btn" type="button">Send <i className="fab fa-telegram-plane"></i></button>
+									  <input type="text" className="write-msg" placeholder="Nhập tin nhắn" />
+									  <button className="msg-send-btn" type="button">Gửi <i className="fab fa-telegram-plane"></i></button>
 									</div>
 								  </div>
 								</div>

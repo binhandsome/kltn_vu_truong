@@ -44,19 +44,22 @@ const Sidebar = () => {
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           </span>
-          <span className="menu-text">Dashboard</span>
+          {/* Dashboard */}
+          <span className="menu-text">Bảng điều khiển</span>
         </a>
         <ul className="sub-menu">
           <li>
+            {/* Admin */}
             <a href="/admin">
               <span className="icon-dash"></span>
-              <span className="menu-text">Admin</span>
+              <span className="menu-text">Quản trị viên</span>
             </a>
           </li>
           <li>
+            {/* User */}
             <a href="/admin/dashboard/userDashboard">
               <span className="icon-dash"></span>
-              <span className="menu-text">User</span>
+              <span className="menu-text">Người dùng</span>
             </a>
           </li>
         </ul>
@@ -80,7 +83,8 @@ const Sidebar = () => {
               <line x1={12} y1="22.08" x2={12} y2={12} />
             </svg>
           </span>
-          <span className="menu-text">Products</span>
+          {/* Products */}
+          <span className="menu-text">Quản lí sản phẩm</span>
         </a>
       </li>
       <li>
@@ -102,7 +106,8 @@ const Sidebar = () => {
               <circle cx="18.5" cy="18.5" r="2.5" />
             </svg>
           </span>
-          <span className="menu-text">Orders</span>
+          {/* Orders */}
+          <span className="menu-text">Quản lí đơn hàng</span>
         </a>
       </li>
       <li>
@@ -124,7 +129,8 @@ const Sidebar = () => {
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
           </span>
-          <span className="menu-text">Customers</span>
+          {/* Customers */}
+          <span className="menu-text">Quản lí khách hàng</span>
         </a>
       </li>
    
@@ -166,67 +172,78 @@ const Sidebar = () => {
               <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
             </svg>
           </span>
-          <span className="menu-text">UI Kit</span>
+          {/* UI Kit */}
+          <span className="menu-text">Bộ UI người dùng</span>
         </a>
         <ul className="sub-menu">
           <li>
+            {/* Progress Bars */}
             <a href="/admin/uikit/progressBars">
               <span className="icon-dash"></span>
-              <span className="menu-text">Progress Bars</span>
+              <span className="menu-text">Thanh tiến trình</span>
             </a>
           </li>
           <li>
+            {/* Alert */}
             <a href="/admin/uikit/alert">
               <span className="icon-dash"></span>
-              <span className="menu-text">alert</span>
+              <span className="menu-text">Báo động</span>
             </a>
           </li>
           <li>
+            {/* Editor */}
             <a href="/admin/uikit/editor">
               <span className="icon-dash"></span>
-              <span className="menu-text">editor</span>
+              <span className="menu-text">Biên tập viên</span>
             </a>
           </li>
           <li>
+            {/* Modal */}
             <a href="/admin/uikit/modal">
               <span className="icon-dash"></span>
-              <span className="menu-text">Modal</span>
+              <span className="menu-text">Phương thức</span>
             </a>
           </li>
           <li>
+            {/* Tabs */}
             <a href="/admin/uikit/tabs">
               <span className="icon-dash"></span>
-              <span className="menu-text">Tabs</span>
+              <span className="menu-text">Quản lí thẻ</span>
             </a>
           </li>
           <li>
+            {/* Carousal */}
             <a href="/admin/uikit/carousal">
               <span className="icon-dash"></span>
-              <span className="menu-text">Carousal</span>
+              <span className="menu-text">Băng chuyền</span>
             </a>
           </li>
           <li>
+            {/* Counter */}
             <a href="/admin/uikit/counter">
               <span className="icon-dash"></span>
-              <span className="menu-text">Counter</span>
+              <span className="menu-text">Quầy tính tiền</span>
             </a>
           </li>
           <li>
+            {/* Accordation */}
             <a href="/admin/uikit/accordation">
               <span className="icon-dash"></span>
-              <span className="menu-text">Accordation</span>
+              <span className="menu-text">Sự phù hợp</span>
             </a>
           </li>
           <li>
+            {/* Pagination */}
             <a href="/admin/uikit/pagination">
               <span className="icon-dash"></span>
-              <span className="menu-text">Pagination</span>
+              <span className="menu-text">Phân trang</span>
             </a>
           </li>
           <li>
+            {/* Typograpgy */}
             <a href="/admin/uikit/typography">
               <span className="icon-dash"></span>
-              <span className="menu-text">Typograpgy</span>
+              <span className="menu-text">Kiểu chữ</span>
             </a>
           </li>
         </ul>
@@ -248,19 +265,22 @@ const Sidebar = () => {
               <polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
           </span>
-          <span className="menu-text">Form</span>
+          {/* Form */}
+          <span className="menu-text">Hình thức</span>
         </a>
         <ul className="sub-menu">
           <li>
+            {/* Basic Form */}
             <a href="/admin/form/basicForm">
               <span className="icon-dash"></span>
-              <span className="menu-text">Basic Form</span>
+              <span className="menu-text">Mẫu cơ bản</span>
             </a>
           </li>
           <li>
+            {/* Tags */}
             <a href="/admin/form/tags">
               <span className="icon-dash"></span>
-              <span className="menu-text">Tags</span>
+              <span className="menu-text">Mẫu thẻ</span>
             </a>
           </li>
         </ul>
@@ -282,25 +302,29 @@ const Sidebar = () => {
               <line x1={12} y1={18} x2="12.01" y2={18} />
             </svg>
           </span>
-          <span className="menu-text">Table</span>
+          {/* Table */}
+          <span className="menu-text">Bảng</span>
         </a>
         <ul className="sub-menu">
           <li>
+            {/* Basic Table */}
             <a href="/admin/table/basicTable">
               <span className="icon-dash"></span>
-              <span className="menu-text">Basic Table</span>
+              <span className="menu-text">Bảng cơ bản</span>
             </a>
           </li>
           <li>
+            {/* Advance Table */}
             <a href="/admin/table/advanceTable">
               <span className="icon-dash"></span>
-              <span className="menu-text">Advance Table</span>
+              <span className="menu-text">Bảng nâng cao</span>
             </a>
           </li>
           <li>
+            {/* Data Table */}
             <a href="/admin/table/dataTable">
               <span className="icon-dash"></span>
-              <span className="menu-text">Data Table</span>
+              <span className="menu-text">Bảng dữ liệu</span>
             </a>
           </li>
         </ul>
@@ -323,19 +347,22 @@ const Sidebar = () => {
               <line x1={16} y1={6} x2={16} y2={22} />
             </svg>
           </span>
-          <span className="menu-text">Map</span>
+          {/* Map */}
+          <span className="menu-text">Bản đồ</span>
         </a>
         <ul className="sub-menu">
           <li>
+            {/* Google Map */}
             <a href="/admin/map/googleMap">
               <span className="icon-dash"></span>
-              <span className="menu-text">Google Map</span>
+              <span className="menu-text">Bản đồ Google</span>
             </a>
           </li>
           <li>
+            {/* Vector Map */}
             <a href="/admin/map/vectorMap">
               <span className="icon-dash"></span>
-              <span className="menu-text">vector Map</span>
+              <span className="menu-text">Bản đồ vector</span>
             </a>
           </li>
         </ul>
@@ -357,7 +384,8 @@ const Sidebar = () => {
               <path d="M22 12A10 10 0 0 0 12 2v10z" />
             </svg>
           </span>
-          <span className="menu-text">Chart</span>
+          {/* Chart */}
+          <span className="menu-text">Biểu đồ</span>
         </a>
       </li>
       <li>
@@ -378,7 +406,8 @@ const Sidebar = () => {
               <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
             </svg>
           </span>
-          <span className="menu-text">buttons</span>
+          {/* Buttons */}
+          <span className="menu-text">Nút</span>
         </a>
       </li>
       <li>
@@ -399,7 +428,8 @@ const Sidebar = () => {
               <rect x={6} y={14} width={12} height={8} />
             </svg>
           </span>
-          <span className="menu-text">Invoice</span>
+          {/* Invoice */}
+          <span className="menu-text">Hóa đơn</span>
         </a>
       </li>
       <li>
@@ -423,15 +453,17 @@ const Sidebar = () => {
         </a>
         <ul className="sub-menu">
           <li>
+            {/* Inbox */}
             <a href="/admin/email/inbox">
               <span className="icon-dash"></span>
-              <span className="menu-text">Inbox</span>
+              <span className="menu-text">Hộp thư đến</span>
             </a>
           </li>
           <li>
+            {/* Chat */}
             <a href="/admin/email/chat">
               <span className="icon-dash"></span>
-              <span className="menu-text">Chat</span>
+              <span className="menu-text">Trò chuyện</span>
             </a>
           </li>
         </ul>
@@ -454,31 +486,36 @@ const Sidebar = () => {
               <line x1={12} y1={16} x2="12.01" y2={16} />
             </svg>
           </span>
-          <span className="menu-text">Authentication</span>
+          {/* Authentication */}
+          <span className="menu-text">Xác thực</span>
         </a>
         <ul className="sub-menu">
           <li>
+            {/* Login */}
             <a href="/admin/authentication/login">
               <span className="icon-dash"></span>
-              <span className="menu-text">Login</span>
+              <span className="menu-text">Đăng nhập</span>
             </a>
           </li>
           <li>
+            {/* Register */}
             <a href="/admin/authentication/register">
               <span className="icon-dash"></span>
-              <span className="menu-text">Register</span>
+              <span className="menu-text">Đăng ký</span>
             </a>
           </li>
           <li>
+            {/* My Profile */}
             <a href="/admin/authentication/myProfile">
               <span className="icon-dash"></span>
-              <span className="menu-text">My Profile</span>
+              <span className="menu-text">Hồ sơ của tôi</span>
             </a>
           </li>
           <li>
+            {/* Recover Password */}
             <a href="/admin/authentication/recoverPassword">
               <span className="icon-dash"></span>
-              <span className="menu-text">Recover Password</span>
+              <span className="menu-text">Khôi phục mật khẩu</span>
             </a>
           </li>
         </ul>
@@ -501,55 +538,64 @@ const Sidebar = () => {
               <polyline points="2 12 12 17 22 12" />
             </svg>
           </span>
-          <span className="menu-text">General</span>
+          {/* General */}
+          <span className="menu-text">Tổng quan</span>
         </a>
         <ul className="sub-menu show-submenu">
           <li>
+            {/* Starter */}
             <a href="/admin/general/starter">
               <span className="icon-dash"></span>
-              <span className="menu-text">Starter</span>
+              <span className="menu-text">Người mới bắt đầu</span>
             </a>
           </li>
           <li>
+            {/* Cards */}
             <a href="/admin/general/cards">
               <span className="icon-dash"></span>
-              <span className="menu-text">Cards</span>
+              <span className="menu-text">Thẻ</span>
             </a>
           </li>
           <li>
+            {/* Product Single */}
             <a href="/admin/general/productSingle">
               <span className="icon-dash"></span>
-              <span className="menu-text">Product Single</span>
+              <span className="menu-text">Sản phẩm đơn</span>
             </a>
           </li>
           <li>
+            {/* Wishlist */}
             <a href="/admin/general/wishlist">
               <span className="icon-dash"></span>
-              <span className="menu-text">Wishlist</span>
+              <span className="menu-text">Ds yêu thích</span>
             </a>
           </li>
           <li>
+            {/* Cart */}
             <a href="/admin/general/cart">
               <span className="icon-dash"></span>
-              <span className="menu-text">Cart</span>
+              <span className="menu-text">Giỏ hàng</span>
             </a>
           </li>
           <li>
+            {/* Checkout */}
             <a href="/admin/general/checkout">
               <span className="icon-dash"></span>
-              <span className="menu-text">Checkout</span>
+              <span className="menu-text">Thanh toán</span>
             </a>
           </li>
           <li>
+            {/* Faq */}
             <a href="/admin/general/faq">
               <span className="icon-dash"></span>
-              <span className="menu-text">Faq</span>
+              <span className="menu-text">Câu hỏi thường gặp</span>
             </a>
           </li>
           <li>
+            {/* Error 404 */}
             <a href="/admin/general/error404">
               <span className="icon-dash"></span>
-              <span className="menu-text">Error 404</span>
+              <span className="menu-text">Lỗi 404</span>
             </a>
           </li>
         </ul>
@@ -572,7 +618,8 @@ const Sidebar = () => {
               <line x1="5.5" y1={16} x2="18.5" y2={16} />
             </svg>
           </span>
-          <span className="menu-text">Support</span>
+          {/* Support */}
+          <span className="menu-text">Hỗ trợ</span>
         </a>
       </li>
       <li>
@@ -591,7 +638,8 @@ const Sidebar = () => {
               <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
             </svg>
           </span>
-          <span className="menu-text">Documentation</span>
+          {/* Documentation */}
+          <span className="menu-text">Tài liệu</span>
         </a>
       </li>
     </ul>

@@ -5,14 +5,16 @@ const Typography = () => (
                     <div className="col xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">Typography</h4>
+								{/* Typography */}
+                                <h4 className="page-title">Kiểu chữ</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">Typography</li>
+                                    <li className="breadcrumb-link active">Kiểu chữ</li>
                                 </ul>
                             </div>
                         </div>
@@ -38,8 +40,10 @@ const Typography = () => (
 
 						<div className="card">
 							<div className="card-body">
-								<h4 className="card-title">Headings</h4>
-								<p className="card-title-desc mb-3">All HTML headings, <code>&lt;h1&gt;</code> through <code>&lt;h6&gt;</code>, are available.</p>
+								{/* Headings */}
+								<h4 className="card-title">Tiêu đề</h4>
+								{/* All HTML headings, <code>&lt;h1&gt;</code> through <code>&lt;h6&gt;</code>, are available. */}
+								<p className="card-title-desc mb-3">Tất cả các tiêu đề HTML, từ <code>&lt;h1&gt;</code> đến <code>&lt;h6&gt;</code>, đều có sẵn.</p>
 
 								<h1 className="mb-3">h1. Bootstrap heading</h1>
 								<h2 className="mb-3">h2. Bootstrap heading</h2>
@@ -57,9 +61,10 @@ const Typography = () => (
 					
 						<div className="card">
 							<div className="card-body">
-
-								<h4 className="card-title">Display headings</h4>
-								<p className="card-title-desc">Traditional heading elements are designed to work best in the meat of your page content. </p>
+								{/* Display headings  */}
+								<h4 className="card-title">Hiển thị tiêu đề</h4>
+								{/* Traditional heading elements are designed to work best in the meat of your page content.  */}
+								<p className="card-title-desc">Các thành phần tiêu đề truyền thống được thiết kế để hoạt động tốt nhất trong nội dung chính của trang.</p>
 
 								<h1 className="display-1">Display 1</h1>
 								<h1 className="display-2">Display 2</h1>
@@ -77,21 +82,22 @@ const Typography = () => (
 					<div className="col-xl-6">
 						<div className="card">
 							<div className="card-body">
-
-								<h4 className="card-title">Inline text elements</h4>
-								<p className="card-title-desc">Styling for common inline HTML5 elements.</p>
+								{/* Inline text elements  */}
+								<h4 className="card-title">Các phần tử văn bản nội tuyến</h4>
+								{/* Styling for common inline HTML5 elements. */}
+								<p className="card-title-desc">Định dạng cho các phần tử HTML5 nội tuyến phổ biến.</p>
 
 								<p className="lead">
-									Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
+									Chúng ta sống với những mũi tên, hồ nước, hoặc augue, laoreet, gốc rễ của cổ họng, nỗi đau, tác giả.
 								</p>
-								<p>You can use the mark tag to <mark>highlight</mark> text.</p>
-								<p><del>This line of text is meant to be treated as deleted text.</del></p>
-								<p><s>This line of text is meant to be treated as no longer accurate.</s></p>
-								<p><ins>This line of text is meant to be treated as an addition to the document.</ins></p>
-								<p><u>This line of text will render as underlined</u></p>
-								<p><small>This line of text is meant to be treated as fine print.</small></p>
-								<p><strong>This line rendered as bold text.</strong></p>
-								<p className="mb-0"><em>This line rendered as italicized text.</em></p>
+								<p>Bạn có thể sử dụng thẻ đánh dấu để <mark>làm nổi bật</mark> văn bản.</p>
+								<p><del>Dòng văn bản này được coi là văn bản đã xóa.</del></p>
+								<p><s>Dòng văn bản này được coi là không còn chính xác nữa.</s></p>
+								<p><ins>Dòng văn bản này được coi là phần bổ sung cho tài liệu.</ins></p>
+								<p><u>Dòng văn bản này sẽ hiển thị dưới dạng gạch chân</u></p>
+								<p><small>Dòng văn bản này được coi là chữ in nhỏ.</small></p>
+								<p><strong>Dòng này được hiển thị dưới dạng văn bản in đậm.</strong></p>
+								<p className="mb-0"><em>Dòng này được hiển thị dưới dạng văn bản in nghiêng.</em></p>
 							</div>
 						</div>
 
@@ -103,40 +109,40 @@ const Typography = () => (
 
 						<div className="card">
 							<div className="card-body">
-
-								<h4 className="card-title">Unstyled List</h4>
-								<p className="card-title-desc">Remove the default <code className="highlighter-rouge">list-style</code> and left margin on list
-									items (immediate children only). <strong>This only applies to immediate
-										children list items</strong>, meaning you will need to add the class
-									for any nested lists as well.</p>
+								{/* Unstyled List */}
+								<h4 className="card-title">Danh sách không theo kiểu</h4>
+								<p className="card-title-desc">Xóa <code className="highlighter-rouge">kiểu danh sách</code> mặc định và lề trái trên các mục danh sách
+									(chỉ dành cho các mục con trực tiếp). <strong>Điều này chỉ áp dụng cho các mục danh sách
+									con trực tiếp</strong>, nghĩa là bạn cũng sẽ cần thêm lớp
+									cho bất kỳ danh sách lồng nhau nào.</p>
 
 								<ul className="list-unstyled mb-0">
-									<li>Integer molestie lorem at massa</li>
-									<li>Nulla volutpat aliquam velit
-										<ul>
-											<li>Phasellus iaculis neque</li>
-											<li>Purus sodales ultricies</li>
-											<li>Vestibulum laoreet porttitor sem</li>
-										</ul>
+									<li>Không có lorem phiền toái nào đối với massa</li>
+									<li>Không ai muốn có một sự nghiệp
+								<ul>
+									<li>Cổ Phasellus iaculis</li>
+									<li>Ultrician sodal tím</li>
+									<li>Người mang vòng nguyệt quế của tiền sảnh</li>
+								</ul>
 									</li>
-									<li>Faucibus porta lacus fringilla vel</li>
+									<li>Miệng gấu được bao quanh bởi một hồ nước.</li>
 								</ul>
 							</div>
 						</div>
 
 						<div className="card">
 							<div className="card-body">
-
-								<h4 className="card-title">Inline List</h4>
-								<p className="card-title-desc">Remove a list’s bullets and apply some
-									light <code className="highlighter-rouge">margin</code> with a combination
-									of two classes, <code className="highlighter-rouge">.list-inline</code> and
+								{/* Inline List */}
+								<h4 className="card-title">Danh sách nội tuyến</h4>
+								<p className="card-title-desc">Xóa các dấu đầu dòng của danh sách và áp dụng một số
+									<code className="highlighter-rouge">lề</code> nhẹ với sự kết hợp
+									của hai lớp, <code className="highlighter-rouge">.list-inline</code> và
 									<code className="highlighter-rouge">.list-inline-item</code>.</p>
 
 								<ul className="list-inline mb-0">
-									<li className="list-inline-item">Lorem ipsum</li>
-									<li className="list-inline-item">Phasellus iaculis</li>
-									<li className="list-inline-item">Nulla volutpat</li>
+									<li className="list-inline-item">Làm rất tốt</li>
+									<li className="list-inline-item">Thuyền mục tiêu</li>
+									<li className="list-inline-item">Không có cuối tuần</li>
 								</ul>
 
 							</div>
@@ -150,25 +156,25 @@ const Typography = () => (
 						<div className="card">
 							<div className="card-body">
 
-								<h4 className="card-title">Blockquotes</h4>
-								<p className="card-title-desc">For quoting blocks of content from
-									another source within your document. Wrap <code className="highlighter-rouge">&lt;blockquote
-										className="blockquote"&gt;</code> around any <abbr title="HyperText Markup Language">HTML</abbr> as the quote.</p>
+							<h4 className="card-title">Trích dẫn khối</h4>
+								<p className="card-title-desc">Để trích dẫn các khối nội dung từ
+								một nguồn khác trong tài liệu của bạn. Quấn <code className="highlighter-rouge">&lt;blockquote
+								className="blockquote"&gt;</code> quanh bất kỳ <abbr title="Ngôn ngữ đánh dấu siêu văn bản">HTML</abbr> nào làm trích dẫn.</p>
 
-								<div className="row">
-									<div className="col-xl-6">
-										<div>
-											<blockquote className="blockquote font-size-16 mb-0">
-												<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
-												<footer className="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
+							<div className="row">
+							<div className="col-xl-6">
+							<div>
+									<blockquote className="blockquote font-size-16 mb-0">
+									<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Các số nguyên được đặt ở một ante.</p>
+												<footer className="blockquote-footer">Ai đó nổi tiếng trong <cite title="Source Title">Tiêu đề nguồn</cite></footer>
 											</blockquote>
 										</div>
 									</div>
 									<div className="col-xl-6">
 										<div className="mt-4 mt-lg-0">
-											<blockquote className="blockquote  blockquote-reverse font-size-16 mb-0">
-												<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
-												<footer className="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
+											<blockquote className="blockquote blockquote-reverse font-size-16 mb-0">
+												<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Các số nguyên được đặt ở một ante.</p>
+												<footer className="blockquote-footer">Ai đó nổi tiếng trong <cite title="Source Title">Tiêu đề nguồn</cite></footer>
 											</blockquote>
 										</div>
 									</div>
@@ -184,33 +190,33 @@ const Typography = () => (
 						<div className="card">
 							<div className="card-body">
 
-								<h4 className="card-title">Description list alignment</h4>
-								<p className="card-title-desc">Align terms and descriptions
-									horizontally by using our grid system’s predefined classes (or semantic
-									mixins). For longer terms, you can optionally add a <code className="highlighter-rouge">.text-truncate</code> class to
-									truncate the text with an ellipsis.</p>
+							<h4 className="card-title">Căn chỉnh danh sách mô tả</h4>
+							<p className="card-title-desc">Căn chỉnh các thuật ngữ và mô tả
+							theo chiều ngang bằng cách sử dụng các lớp được xác định trước của hệ thống lưới của chúng tôi (hoặc các
+							mixin ngữ nghĩa). Đối với các thuật ngữ dài hơn, bạn có thể tùy chọn thêm lớp <code className="highlighter-rouge">.text-truncate</code> để
+							cắt bớt văn bản bằng dấu ba chấm.</p>
 
-								<dl className="row">
-								  <dt className="col-sm-3">Description lists</dt>
-								  <dd className="col-sm-9">A description list is perfect for defining terms.</dd>
+							<dl className="row">
+								<dt className="col-sm-3">Danh sách mô tả</dt>
+								<dd className="col-sm-9">Danh sách mô tả là lựa chọn hoàn hảo để xác định các thuật ngữ.</dd>
 
-								  <dt className="col-sm-3">Euismod</dt>
-								  <dd className="col-sm-9">
+								<dt className="col-sm-3">Euismod</dt>
+								<dd className="col-sm-9">
 									<p>Vestibulum id ligula porta felis euismod semper eget lacinia odio sem nec elit.</p>
-									<p>Donec id elit non mi porta gravida at eget metus.</p>
-								  </dd>
+									<p>Donec id elit non mi porta graida at eget metus.</p>
+								</dd>
 
-								  <dt className="col-sm-3">Malesuada porta</dt>
-								  <dd className="col-sm-9">Etiam porta sem malesuada magna mollis euismod.</dd>
+								<dt className="col-sm-3">Cổng Malesuada</dt>
+								<dd className="col-sm-9">Etiam porta sem Malesuada magna mollis euismod.</dd>
 
-								  <dt className="col-sm-3 text-truncate">Truncated term is truncated</dt>
-								  <dd className="col-sm-9">Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</dd>
+								<dt className="col-sm-3 text-truncate">Thuật ngữ bị cắt ngắn bị cắt bớt</dt>
+								<dd className="col-sm-9">Fusce dapibus, Tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</dd>
 
-								  <dt className="col-sm-3">Nesting</dt>
+								  <dt className="col-sm-3">Lồng nhau</dt>
 								  <dd className="col-sm-9">
 									<dl className="row">
-									  <dt className="col-sm-4">Nested definition list</dt>
-									  <dd className="col-sm-8">Aenean posuere, tortor sed cursus feugiat, nunc augue blandit nunc.</dd>
+									  <dt className="col-sm-4">Danh sách định nghĩa lồng nhau</dt>
+									  <dd className="col-sm-8">Aenean đặt, Tortor nhưng đường lối của Feugiat, bây giờ đang tâng bốc nhà tuyên truyền.</dd>
 									</dl>
 								  </dd>
 								</dl>

@@ -5,14 +5,17 @@ const AllProduct = () => (
                     <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div className="page-title-wrapper">
                             <div className="page-title-box">
-                                <h4 className="page-title">All Product</h4>
+								{/* All Product */}
+                                <h4 className="page-title">Tất cả sản phẩm</h4>
                             </div>
                             <div className="breadcrumb-list">
                                 <ul>
                                     <li className="breadcrumb-link">
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Dashboard</a>
+										{/* Dashboard */}
+                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
                                     </li>
-                                    <li className="breadcrumb-link active">All Product</li>
+									{/* All Product */}
+                                    <li className="breadcrumb-link active">Tất cả sản phẩm</li>
                                 </ul>
                             </div>
                         </div>
@@ -23,10 +26,10 @@ const AllProduct = () => (
                     <div className="col-xl-3 col-lg-4 col-md-4 col-sm-12">
 						<div className="int-blog-sidebar">
 							<div className="int-sidebar-box">
-								<h4>search</h4>
+								<h4>Tìm kiếm</h4>
 								<div className="int-search-btn">
 									<div className="input-group">
-										<input type="text" placeholder="Search..."/>
+										<input type="text" placeholder="Tìm kiếm..."/>
 										<div className="input-group-append">
 										  <button type="button">
 											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30.239 30.239" width="18" height="18"><g><g>
@@ -39,7 +42,8 @@ const AllProduct = () => (
 							</div>
 							
 							<div className="int-sidebar-box recent-blog-one">
-								<h4>category</h4>
+								{/* Category */}
+								<h4>Loại</h4>
 								<div className="int-blog-category-mini">
 									<ul>
 										<li><a href="javascript:;"><svg 
@@ -47,7 +51,7 @@ const AllProduct = () => (
 										 width="12px" height="8px">
 										<path fillRule="evenodd"  fill=" "
 										 d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "/>
-										</svg> Tables </a><span>201</span></li>
+										</svg> Bảng </a><span>201</span></li>
 										<li><a href="javascript:;"><svg 
 										 xmlns="http://www.w3.org/2000/svg"
 										 width="12px" height="8px">
@@ -97,7 +101,8 @@ const AllProduct = () => (
 								</div>
 							</div>
 							<div className="int-sidebar-box">
-								<h4>Filter Price</h4>
+								{/* Filter Price */}
+								<h4>Lọc giá</h4>
 								<div className="int-blog-category-mini">
 									<div className="range-slider">
 										<div className="price-range"><p><span id="amount"></span></p></div>
@@ -111,61 +116,62 @@ const AllProduct = () => (
 								</div>
 							</div>
 							<div className="int-sidebar-box">
-								<h4>Discount</h4>
+								{/* Discount */}
+								<h4>Giảm giá</h4>
 								<div className="int-blog-category-mini">
 									<ul>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember" name="remember" value="1"/>
-										  <label for="auth_remember">Less than 20%</label>
+										  <label for="auth_remember">Dưới 20%</label>
 										</div>
 										<span>12</span></li>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember2" name="remember" value="1"/>
-										  <label for="auth_remember2">10% or More</label>
+										  <label for="auth_remember2">10% hoặc hơn</label>
 										</div>
 										<span>18</span></li>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember21" name="remember" value="1"/>
-										  <label for="auth_remember21">20% or More</label>
+										  <label for="auth_remember21">20% hoặc hơn</label>
 										</div>
 										<span>16</span></li>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember3" name="remember" value="1"/>
-										  <label for="auth_remember3">30% or More</label>
+										  <label for="auth_remember3">30% hoặc hơn</label>
 										</div>
 										<span>156</span></li>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember4" name="remember" value="1"/>
-										  <label for="auth_remember4">50% or More</label>
+										  <label for="auth_remember4">40% hoặc hơn</label>
 										</div>
 										<span>260</span></li>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember5" name="remember" value="1"/>
-										  <label for="auth_remember5">70% or More</label>
+										  <label for="auth_remember5">50% hoặc hơn</label>
 										</div>
 										<span>96</span></li>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember6" name="remember" value="1"/>
-										  <label for="auth_remember6">80% or More</label>
+										  <label for="auth_remember6">75% hoặc hơn</label>
 										</div>
 										<span>14</span></li>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember7" name="remember" value="1"/>
-										  <label for="auth_remember7">75% or More</label>
+										  <label for="auth_remember7">90% hoặc hơn</label>
 										</div>
 										<span>44</span></li>
 										<li>
 										<div className="int-checkbox">
 										  <input type="checkbox" id="auth_remember8" name="remember" value="1"/>
-										  <label for="auth_remember8">95% or More</label>
+										  <label for="auth_remember8">100%</label>
 										</div>
 										<span>55</span></li>
 									</ul>
@@ -183,7 +189,7 @@ const AllProduct = () => (
 									<div className="product-grid">
 										<div className="product-item">
 											<img src="../../assets/admin/images/product/p1.png" alt="product-img"/>
-											<div className="product-overlay"><h4>sale</h4></div>
+											<div className="product-overlay"><h4>Giảm</h4></div>
 											<div className="product-ovr-links">
 												<ul>
 													<li>
@@ -227,8 +233,8 @@ const AllProduct = () => (
 											<i className="fa fa-star" aria-hidden="fals"></i>
 											<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
-											<h3><a href="product-single.html">Dining Chair</a></h3>
-											<h6>Simply dummy text of the printing</h6>
+											<h3><a href="product-single.html">Ghế bệt</a></h3>
+											<h6>Ghế ngồi bệt</h6>
 											<p><span>$100 </span>$60</p>
 										</div>										
 									</div>
