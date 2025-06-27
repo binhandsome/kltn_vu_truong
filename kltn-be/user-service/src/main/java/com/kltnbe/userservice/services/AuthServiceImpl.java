@@ -44,12 +44,10 @@ public class AuthServiceImpl implements AuthService {
         if (authRepository.findByEmail(request.getEmail()).isPresent()) {
             return "Email đã được sử dụng";
         }
-
         // Kiểm tra OTP có được cung cấp không
         if (request.getOtp() == null || request.getOtp().isEmpty()) {
             return "Mã OTP là bắt buộc";
         }
-
         // Gọi email-service để kiểm tra OTP
         RequestInfomation info = new RequestInfomation();
         info.setEmail(request.getEmail());

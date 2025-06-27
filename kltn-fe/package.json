@@ -10,6 +10,7 @@
     "axios": "^1.10.0",
     "bootstrap": "^5.3.3",
     "feather-icons": "^4.29.2",
+    "jquery": "^3.7.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-helmet": "^6.1.0",

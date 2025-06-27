@@ -49,45 +49,14 @@ public class Product {
     @Column(name = "updated_at", nullable = false)
     private Date updatedAt;
 
-    public String getAsin() {
-        return asin;
-    }
+    @Column(name = "sales_rank")
+    private String salesRank;
 
-    public void setAsin(String asin) {
-        this.asin = asin;
-    }
+    @Column(name = "product_type", length = 100)
+    private String productType;
 
-    public BigDecimal getAverageRating() {
-        return averageRating;
-    }
-
-    public void setAverageRating(BigDecimal averageRating) {
-        this.averageRating = averageRating;
-    }
-
-    public String getBrandName() {
-        return brandName;
-    }
-
-    public void setBrandName(String brandName) {
-        this.brandName = brandName;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Integer getNumberOfRatings() {
-        return numberOfRatings;
-    }
-
-    public void setNumberOfRatings(Integer numberOfRatings) {
-        this.numberOfRatings = numberOfRatings;
-    }
+    @Column(name = "store_id")
+    private Long storeId;
 
     public Long getProductId() {
         return productId;
@@ -97,28 +66,12 @@ public class Product {
         this.productId = productId;
     }
 
-    public BigDecimal getProductPrice() {
-        return productPrice;
+    public String getAsin() {
+        return asin;
     }
 
-    public void setProductPrice(BigDecimal productPrice) {
-        this.productPrice = productPrice;
-    }
-
-    public ProductStatus getProductStatus() {
-        return productStatus;
-    }
-
-    public void setProductStatus(ProductStatus productStatus) {
-        this.productStatus = productStatus;
-    }
-
-    public String getProductThumbnail() {
-        return productThumbnail;
-    }
-
-    public void setProductThumbnail(String productThumbnail) {
-        this.productThumbnail = productThumbnail;
+    public void setAsin(String asin) {
+        this.asin = asin;
     }
 
     public String getProductTitle() {
@@ -129,6 +82,46 @@ public class Product {
         this.productTitle = productTitle;
     }
 
+    public BigDecimal getProductPrice() {
+        return productPrice;
+    }
+
+    public void setProductPrice(BigDecimal productPrice) {
+        this.productPrice = productPrice;
+    }
+
+    public BigDecimal getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(BigDecimal averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getNumberOfRatings() {
+        return numberOfRatings;
+    }
+
+    public void setNumberOfRatings(Integer numberOfRatings) {
+        this.numberOfRatings = numberOfRatings;
+    }
+
+    public String getProductThumbnail() {
+        return productThumbnail;
+    }
+
+    public void setProductThumbnail(String productThumbnail) {
+        this.productThumbnail = productThumbnail;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
     public Integer getStockQuantity() {
         return stockQuantity;
     }
@@ -137,11 +130,51 @@ public class Product {
         this.stockQuantity = stockQuantity;
     }
 
+    public ProductStatus getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(ProductStatus productStatus) {
+        this.productStatus = productStatus;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public Date getUpdatedAt() {
         return updatedAt;
     }
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getSalesRank() {
+        return salesRank;
+    }
+
+    public void setSalesRank(String salesRank) {
+        this.salesRank = salesRank;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
+    }
+
+    public Long getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(Long storeId) {
+        this.storeId = storeId;
     }
 }
