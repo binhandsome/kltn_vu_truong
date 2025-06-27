@@ -13,11 +13,8 @@ public class ProductVariant {
     @Column(name = "variant_id")
     private Long variantId;
 
-    @Column(name = "product_asin", nullable = false, length = 10)
+    @Column(name = "product_asin", nullable = false, length = 50)
     private String productAsin;
-
-    @Column(name = "store_id", nullable = false)
-    private Long storeId;
 
     @Column(name = "variant_price")
     private BigDecimal variantPrice;
@@ -25,13 +22,68 @@ public class ProductVariant {
     @Column(name = "variant_color", length = 50)
     private String variantColor;
 
-    @Column(name = "variant_sku", length = 50)
+    @Column(name = "variant_sku", nullable = false, unique = true, length = 100)
     private String variantSku;
 
     @Column(name = "variant_thumbnail", length = 255)
     private String variantThumbnail;
 
-    @ManyToOne
-    @JoinColumn(name = "product_asin", referencedColumnName = "asin", insertable = false, updatable = false)
-    private Product product;
+    @Column(name = "store_id")
+    private Long storeId;
+
+    public Long getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(Long variantId) {
+        this.variantId = variantId;
+    }
+
+    public String getProductAsin() {
+        return productAsin;
+    }
+
+    public void setProductAsin(String productAsin) {
+        this.productAsin = productAsin;
+    }
+
+    public BigDecimal getVariantPrice() {
+        return variantPrice;
+    }
+
+    public void setVariantPrice(BigDecimal variantPrice) {
+        this.variantPrice = variantPrice;
+    }
+
+    public String getVariantColor() {
+        return variantColor;
+    }
+
+    public void setVariantColor(String variantColor) {
+        this.variantColor = variantColor;
+    }
+
+    public String getVariantSku() {
+        return variantSku;
+    }
+
+    public void setVariantSku(String variantSku) {
+        this.variantSku = variantSku;
+    }
+
+    public String getVariantThumbnail() {
+        return variantThumbnail;
+    }
+
+    public void setVariantThumbnail(String variantThumbnail) {
+        this.variantThumbnail = variantThumbnail;
+    }
+
+    public Long getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(Long storeId) {
+        this.storeId = storeId;
+    }
 }

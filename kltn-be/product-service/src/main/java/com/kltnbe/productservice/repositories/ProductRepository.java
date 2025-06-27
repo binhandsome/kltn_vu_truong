@@ -8,8 +8,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> , JpaSpecificationExecutor<Product> {
+public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    @Query("SELECT p FROM Product p WHERE LOWER(p.productTitle) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+//    @Query("SELECT p FROM Product p WHERE LOWER(p.productTitle) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+//    Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+    Page<Product> findAll(Pageable pageable);
+    Page<Product> findProductBySalesRank(String salesRank, Pageable pageable);
+    Page<Product> findProductByProductType(String productType, Pageable pageable);
 }

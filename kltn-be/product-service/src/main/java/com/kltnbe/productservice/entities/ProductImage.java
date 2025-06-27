@@ -15,13 +15,41 @@ public class ProductImage {
     @Column(name = "product_asin", nullable = false, length = 50)
     private String productAsin;
 
-    @Column(name = "image_data")
+    @Column(name = "image_data", length = 255)
     private String imageData;
 
     @Column(name = "is_main_image")
     private Boolean isMainImage;
 
-    @ManyToOne
-    @JoinColumn(name = "product_asin", referencedColumnName = "asin", insertable = false, updatable = false)
-    private Product product;
+    public Long getImageId() {
+        return imageId;
+    }
+
+    public void setImageId(Long imageId) {
+        this.imageId = imageId;
+    }
+
+    public String getProductAsin() {
+        return productAsin;
+    }
+
+    public void setProductAsin(String productAsin) {
+        this.productAsin = productAsin;
+    }
+
+    public String getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(String imageData) {
+        this.imageData = imageData;
+    }
+
+    public Boolean getIsMainImage() {
+        return isMainImage;
+    }
+
+    public void setIsMainImage(Boolean isMainImage) {
+        this.isMainImage = isMainImage;
+    }
 }

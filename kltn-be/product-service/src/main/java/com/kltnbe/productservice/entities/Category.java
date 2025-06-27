@@ -15,19 +15,63 @@ public class Category {
     @Column(name = "product_asin", nullable = false, length = 50)
     private String productAsin;
 
-    @Column(name = "category_name", length = 100)
-    private String categoryName;
+    @Column(name = "categories", length = 255)
+    private String categories;
 
-    @Column(name = "category_description", length = 255)
-    private String categoryDescription;
-
-    @Column(name = "category_features", columnDefinition = "LONGTEXT")
-    private String categoryFeatures;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
     @Column(name = "store_id")
     private Long storeId;
 
-    @ManyToOne
-    @JoinColumn(name = "product_asin", referencedColumnName = "asin", insertable = false, updatable = false)
-    private Product product;
+    @Column(name = "target_group", length = 100)
+    private String targetGroup;
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getProductAsin() {
+        return productAsin;
+    }
+
+    public void setProductAsin(String productAsin) {
+        this.productAsin = productAsin;
+    }
+
+    public String getCategories() {
+        return categories;
+    }
+
+    public void setCategories(String categories) {
+        this.categories = categories;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Long getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(Long storeId) {
+        this.storeId = storeId;
+    }
+
+    public String getTargetGroup() {
+        return targetGroup;
+    }
+
+    public void setTargetGroup(String targetGroup) {
+        this.targetGroup = targetGroup;
+    }
 }
