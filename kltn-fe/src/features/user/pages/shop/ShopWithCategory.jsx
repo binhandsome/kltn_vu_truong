@@ -1,13 +1,101 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import WOW from 'wowjs';
-import QuickViewModal from '../../components/home/QuickViewModal';
+// import QuickViewModal from '../../components/home/QuickViewModal';
 import ScrollTopButton from '../../layout/ScrollTopButton';
+import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 function ShopWithCategory() {
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalPages, setTotalPages] = useState(0);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const salesRank = searchParams.get('salesRank');
+  const productType = searchParams.get('productType');
+  const [products, setProducts] = useState([]);
+  const [categorySalesRank, setCategorySalesRank] = useState([]);
+  const [categoryProductType, setCategoryProductType] = useState([]); 
+  const [productTypeCategories, setProductTypeCategories] = useState([]);
+  const [salesRankCategories, setSalesRankCategories] = useState([]);
+  const maxPagesToShow = 10; // Hiển thị tối đa 10 trang mỗi lần
+  const [selectedProduct, setSelectedProduct] = useState(null); 
+  const [quantity, setQuantity] = useState(1);
+
+ const fetchProductsByCategories = async (page, size) => {
+  const params = { page, size };
+
+  if (salesRank) params.salesRank = salesRank;
+  if (productType) params.productType = productType;
+
+  console.log("Gọi API với params:", params);
+
+  try {
+    const response = await axios.get('http://localhost:8083/api/products/filterCategories', { params });
+
+    // Lấy danh sách sản phẩm từ response.data.products.content
+    const productsPage = response.data.products;
+    setProducts(productsPage.content);
+    setTotalPages(productsPage.totalPages);
+    setCategorySalesRank(response.data.salesRanks);
+    setCategoryProductType(response.data.productTypes);
+    setProductTypeCategories(response.data.productTypeCategories);
+    setSalesRankCategories(response.data.salesRankCategories);
+    console.log("Products:", productsPage.content);
+    console.log("SalesRanks:", response.data.salesRanks);
+    console.log("ProductTypes:", response.data.productTypes);
+    console.log("product and data", response.data.productTypeCategories)
+     console.log("product and data", response.data.salesRankCategories)
+
+    // Nếu cần, bạn cũng có thể lưu salesRanks & productTypes vào state riêng
+    // setSalesRanks(response.data.salesRanks);
+    // setProductTypes(response.data.productTypes);
+
+  } catch (error) {
+    console.error("Lỗi khi gọi API:", error);
+  }
+};
+ const handleChange = (e) => {
+  const value = e.target.value;
+  const parsed = parseInt(value);
+  if (isNaN(parsed) || parsed < 1) {
+    setQuantity(1); 
+  } else {
+    setQuantity(parsed);
+  }
+};
+ const scrollToFilterWrapper = () => {
+    const filterWrapper = document.querySelector('.filter-wrapper');
+    if (filterWrapper) {
+      filterWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Xử lý chuyển trang và cuộn lên
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 0 && pageNumber < totalPages) {
+      setCurrentPage(pageNumber);
+      scrollToFilterWrapper(); // Cuộn lên sau khi chuyển trang
+    }
+  };
+  const handlePageChangeProduct = (event) => {
+    const newSize = parseInt(event.target.value);
+    setPageSize(newSize);
+    scrollToFilterWrapper();
+  }
+
+  // Tính toán phạm vi trang hiển thị
+  const getPageRange = () => {
+    const startPage = Math.floor(currentPage / maxPagesToShow) * maxPagesToShow;
+    const endPage = Math.min(startPage + maxPagesToShow, totalPages);
+    return [...Array(endPage - startPage).keys()].map((i) => startPage + i);
+  };
+useEffect(() => {
+  fetchProductsByCategories(currentPage, pageSize);
+}, [salesRank, productType, currentPage, pageSize]); 
   useEffect(() => {
     const wow = new WOW.WOW();
     wow.init();
-    // Nếu sau này load thêm nội dung động thì gọi wow.sync();
   }, []);
 
   return (
@@ -413,19 +501,48 @@ function ShopWithCategory() {
             <div className="col-xl-12">
               <div className="swiper category-swiper">
                 <div className="swiper-wrapper">
-                  <div className="swiper-slide">
-                    <div className="shop-card">
-                      <div className="dz-media rounded">
-                        <img src="/../../assets/user/images/shop/product/1.png" alt="image" />
-                      </div>
-                      <div className="dz-content">
-                        <h6 className="title">
-                          <a href="shop-list.html">SilkBliss Dress</a>
-                        </h6>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="swiper-slide">
+   {Array.isArray(productTypeCategories) && productTypeCategories.length > 0 ? (
+  productTypeCategories.map(item => (
+    <div  className="swiper-slide" key={item.category}>
+      <div className="shop-card">
+        <div className="dz-media rounded">
+          <img style={{width: '400px', height: '250px'}} src={item.thumbnail} alt={item.category} />
+        </div>
+        <div className="dz-content">
+          <h6 className="title">
+            <a href={`/user/shop/shopWithCategory?productType=${encodeURIComponent(item.category)}`}>
+              {item.category}
+            </a>
+          </h6>
+        </div>
+      </div>
+    </div>
+  ))
+) : Array.isArray(salesRankCategories) && salesRankCategories.length > 0 ? (
+  salesRankCategories.map(item => (
+    <div className="swiper-slide" key={item.category}>
+      <div className="shop-card">
+        <div className="dz-media rounded">
+          <img style={{width: '400px', height: '250px'}} src={item.thumbnail} alt={item.category} />
+        </div>
+        <div className="dz-content">
+          <h6 className="title">
+            <a href={`/user/shop/shopWithCategory?salesRank=${encodeURIComponent(item.category)}`}>
+              {item.category}
+            </a>
+          </h6>
+        </div>
+      </div>
+    </div>
+  ))
+) : (
+  <p>Không có categories để hiển thị.</p>
+)}
+
+
+
+                
+                  {/* <div className="swiper-slide">
                     <div className="shop-card">
                       <div className="dz-media rounded">
                         <img src="../../assets/user/images/shop/product/3.png" alt="image" />
@@ -436,8 +553,8 @@ function ShopWithCategory() {
                         </h6>
                       </div>
                     </div>
-                  </div>
-                  <div className="swiper-slide">
+                  </div> */}
+                  {/* <div className="swiper-slide">
                     <div className="shop-card">
                       <div className="dz-media rounded">
                         <img src="../../assets/user/images/shop/product/4.png" alt="image" />
@@ -508,7 +625,7 @@ function ShopWithCategory() {
                         </h6>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -1489,6 +1606,8 @@ function ShopWithCategory() {
                             className="btn btn-secondary btn-md btn-rounded"
                             data-bs-toggle="modal"
                             data-bs-target="#exampleModal"
+                           onClick={() => setSelectedProduct(products)}
+
                           >
                             <i className="fa-solid fa-eye d-md-none d-block" />
                             <span className="d-md-block d-none">
@@ -1832,55 +1951,20 @@ function ShopWithCategory() {
                 aria-labelledby="tab-list-grid-btn"
               >
                 <div className="row gx-xl-4 g-3">
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
+                  {products.length > 0 ? (
+                    products.map((products) => (
+ <div className="col-6 col-xl-3 col-lg-5 col-md-4 col-sm-6 m-md-b15 m-b30">
                     <div className="shop-card style-1">
                       <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/1.png" alt="image" />
+                        <img src={products.productThumbnail} style={{ width: '350px', height: '300px'}} alt="image" />
                         <div className="shop-meta">
                           <a
                             href="javascript:void(0);"
                             className="btn btn-secondary btn-md btn-rounded"
                             data-bs-toggle="modal"
                             data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Cozy Knit Cardigan Sweater
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/2.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
+                            onClick={() => setSelectedProduct(products)}
+
                           >
                             <i className="fa-solid fa-eye d-md-none d-block" />
                             <span className="d-md-block d-none">
@@ -1910,7 +1994,377 @@ function ShopWithCategory() {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
+                    ))
+                   ) : (
+  'khong co gi het'
+                  
+                  )}
+                            <div className="modal quick-view-modal fade"
+  id="exampleModal"
+  tabIndex={-1}
+  aria-hidden="true"
+>
+  <div className="modal-dialog modal-dialog-centered">
+    <div className="modal-content">
+      <button
+        type="button"
+        className="btn-close"
+        data-bs-dismiss="modal"
+        aria-label="Close"
+      >
+        <i className="icon feather icon-x" />
+      </button>
+      <div className="modal-body">
+        <div className="row g-xl-4 g-3">
+          <div className="col-xl-6 col-md-6">
+            <div className="dz-product-detail mb-0">
+              <div className="swiper-btn-center-lr">
+                <div className="swiper quick-modal-swiper2">
+                  <div className="swiper-wrapper" id="lightgallery">
+                    
+                    {selectedProduct !== null && (
+     <div className="swiper-slide">
+                      <div className="dz-media DZoomImage">
+                        <a
+                          className="mfp-link lg-item"
+                          href={selectedProduct.productThumbnail}
+                          data-src={selectedProduct.productThumbnail}
+                        >
+                          <i className="feather icon-maximize dz-maximize top-right" />
+                        </a>
+                        <img src={selectedProduct.productThumbnail} style={{ width: '100%', height: '500px' }} alt="image" />
+                      </div>
+                    </div>
+)}
+     {selectedProduct !== null && (
+     <div className="swiper-slide">
+                      <div className="dz-media DZoomImage">
+                        <a
+                          className="mfp-link lg-item"
+                          href={selectedProduct.productThumbnail}
+                          data-src={selectedProduct.productThumbnail}
+                        >
+                          <i className="feather icon-maximize dz-maximize top-right" />
+                        </a>
+                        <img src={selectedProduct.productThumbnail} style={{ width: '100%', height: '500px' }} alt="image" />
+                      </div>
+                    </div>
+)}     {selectedProduct !== null && (
+     <div className="swiper-slide">
+                      <div className="dz-media DZoomImage">
+                        <a
+                          className="mfp-link lg-item"
+                          href={selectedProduct.productThumbnail}
+                          data-src={selectedProduct.productThumbnail}
+                        >
+                          <i className="feather icon-maximize dz-maximize top-right" />
+                        </a>
+                        <img src={selectedProduct.productThumbnail} style={{ width: '100%', height: '500px' }} alt="image" />
+                      </div>
+                    </div>
+)}
+                    {/* <div className="swiper-slide">
+                      <div className="dz-media DZoomImage">
+                        <a
+                          className="mfp-link lg-item"
+                          href="../../assets/user/images//products/lady-2.png"
+                          data-src="../../assets/user/images//products/lady-2.png"
+                        >
+                          <i className="feather icon-maximize dz-maximize top-right" />
+                        </a>
+                        <img src="../../assets/user/images//products/lady-2.png" alt="image" />
+                      </div>
+                    </div>
+                    <div className="swiper-slide">
+                      <div className="dz-media DZoomImage">
+                        <a
+                          className="mfp-link lg-item"
+                          href="../../assets/user/images//products/lady-3.png"
+                          data-src="../../assets/user/images//products/lady-3.png"
+                        >
+                          <i className="feather icon-maximize dz-maximize top-right" />
+                        </a>
+                        <img src="../../assets/user/images//products/lady-3.png" alt="image" />
+                      </div>
+                    </div> */}
+                  </div>
+                </div>
+                <div className="swiper quick-modal-swiper thumb-swiper-lg thumb-sm swiper-vertical">
+                  <div className="swiper-wrapper">
+                         {selectedProduct !== null && (
+
+                    <div className="swiper-slide">
+                      <img
+                        src={selectedProduct.productThumbnail}
+                        alt="image"
+                        style={{ width: '100%', height: '50px' }}
+                      />
+                    </div>
+                         )}
+                          {selectedProduct !== null && (
+
+                    <div className="swiper-slide">
+                      <img
+                        src={selectedProduct.productThumbnail}
+                        alt="image"
+                        style={{ width: '100%', height: '50px' }}
+                      />
+                    </div>
+                         )} {selectedProduct !== null && (
+
+                    <div className="swiper-slide">
+                      <img
+                        src={selectedProduct.productThumbnail}
+                        alt="image"
+                        style={{ width: '100%', height: '50px' }}
+                      />
+                    </div>
+                         )}
+                    {/* <div className="swiper-slide">
+                      <img
+                        src="../../assets/user/images//products/thumb-img/lady-2.png"
+                        alt="image"
+                      />
+                    </div>
+                    <div className="swiper-slide">
+                      <img
+                        src="../../assets/user/images//products/thumb-img/lady-3.png"
+                        alt="image"
+                      />
+                    </div> */}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-xl-6 col-md-6">
+            <div className="dz-product-detail style-2 ps-xl-3 ps-0 pt-2 mb-0">
+              
+              <div className="dz-content">
+           
+
+                <div className="dz-content-footer">
+                  <div className="dz-content-start">
+                    <span className="badge bg-secondary mb-2">
+                      SALE 20% Off
+                    </span>
+                    <h4 className="title mb-1">
+                            {selectedProduct !== null && (
+                      <a href="shop-list.html">{selectedProduct.productTitle}</a>
+                            )}
+                    </h4>
+                    <div className="review-num">
+                      <ul className="dz-rating me-2">
+                        <li className="star-fill">
+                          <i className="flaticon-star-1" />
+                        </li>
+                        <li className="star-fill">
+                          <i className="flaticon-star-1" />
+                        </li>
+                        <li className="star-fill">
+                          <i className="flaticon-star-1" />
+                        </li>
+                        <li>
+                          <i className="flaticon-star-1" />
+                        </li>
+                        <li>
+                          <i className="flaticon-star-1" />
+                        </li>
+                      </ul>
+                      <span className="text-secondary me-2">4.7 Rating</span>
+                      <a href="javascript:void(0);">(5 customer reviews)</a>
+                    </div>
+                  </div>
+                </div>
+                <p className="para-text">
+                  Lorem Ipsum is simply dummy text of the printing and
+                  typesetting industry. Lorem Ipsum has.
+                </p>
+                <div className="meta-content m-b20 d-flex align-items-end">
+                  <div className="me-3">
+                    <span className="form-label">Price</span>
+                                            {selectedProduct !== null && (
+
+                    <span className="price">
+                      ${(selectedProduct.productPrice * quantity).toFixed(2)} <del>$132.17</del>
+                 
+                    </span>
+                                            )}
+                  </div>
+       <div className="btn-quantity light me-0">
+    <label className="form-label fw-bold">Quantity</label>
+    <div className="input-group">
+<button
+  className="btn btn-dark rounded-circle p-0"
+  style={{
+    width: '40px',
+    height: '40px',
+    backgroundColor: '#000',
+    color: '#fff',
+    border: 'none',
+    minWidth: 'unset',      // ép bỏ min-width của Bootstrap
+    flex: '0 0 auto'         // ngăn input-group ép dãn
+  }}
+  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+>
+  -
+</button>
+      <input
+        type="text"
+        min="1"
+        value={quantity}
+        onChange={handleChange}
+        className="form-control text-center"
+      />
+      <button
+  className="btn btn-dark rounded-circle p-0"
+  style={{
+    width: '40px',
+    height: '40px',
+    backgroundColor: '#000',
+    color: '#fff',
+    border: 'none',
+    minWidth: 'unset',      // ép bỏ min-width của Bootstrap
+    flex: '0 0 auto'         // ngăn input-group ép dãn
+  }}
+  onClick={() => setQuantity(q => Math.max(1, q + 1))}
+>+</button>
+    </div>
+  </div>
+                </div>
+                <div className=" cart-btn">
+                  <a
+                    href="shop-cart.html"
+                    className="btn btn-secondary text-uppercase"
+                  >
+                    Add To Cart
+                  </a>
+                  <a
+                    href="shop-wishlist.html"
+                    className="btn btn-md btn-outline-secondary btn-icon"
+                  >
+                    <svg
+                      width={19}
+                      height={17}
+                      viewBox="0 0 19 17"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9.24805 16.9986C8.99179 16.9986 8.74474 16.9058 8.5522 16.7371C7.82504 16.1013 7.12398 15.5038 6.50545 14.9767L6.50229 14.974C4.68886 13.4286 3.12289 12.094 2.03333 10.7794C0.815353 9.30968 0.248047 7.9162 0.248047 6.39391C0.248047 4.91487 0.755203 3.55037 1.67599 2.55157C2.60777 1.54097 3.88631 0.984375 5.27649 0.984375C6.31552 0.984375 7.26707 1.31287 8.10464 1.96065C8.52734 2.28763 8.91049 2.68781 9.24805 3.15459C9.58574 2.68781 9.96875 2.28763 10.3916 1.96065C11.2292 1.31287 12.1807 0.984375 13.2197 0.984375C14.6098 0.984375 15.8885 1.54097 16.8202 2.55157C17.741 3.55037 18.248 4.91487 18.248 6.39391C18.248 7.9162 17.6809 9.30968 16.4629 10.7792C15.3733 12.094 13.8075 13.4285 11.9944 14.9737C11.3747 15.5016 10.6726 16.1001 9.94376 16.7374C9.75136 16.9058 9.50417 16.9986 9.24805 16.9986ZM5.27649 2.03879C4.18431 2.03879 3.18098 2.47467 2.45108 3.26624C1.71033 4.06975 1.30232 5.18047 1.30232 6.39391C1.30232 7.67422 1.77817 8.81927 2.84508 10.1066C3.87628 11.3509 5.41011 12.658 7.18605 14.1715L7.18935 14.1743C7.81021 14.7034 8.51402 15.3033 9.24654 15.9438C9.98344 15.302 10.6884 14.7012 11.3105 14.1713C13.0863 12.6578 14.6199 11.3509 15.6512 10.1066C16.7179 8.81927 17.1938 7.67422 17.1938 6.39391C17.1938 5.18047 16.7858 4.06975 16.045 3.26624C15.3152 2.47467 14.3118 2.03879 13.2197 2.03879C12.4197 2.03879 11.6851 2.29312 11.0365 2.79465C10.4585 3.24179 10.0558 3.80704 9.81975 4.20255C9.69835 4.40593 9.48466 4.52733 9.24805 4.52733C9.01143 4.52733 8.79774 4.40593 8.67635 4.20255C8.44041 3.80704 8.03777 3.24179 7.45961 2.79465C6.811 2.29312 6.07643 2.03879 5.27649 2.03879Z"
+                        fill="black"
+                      />
+                    </svg>
+                    Add To Wishlist
+                  </a>
+                </div>
+                <div className="dz-info mb-0">
+                  <ul>
+                    <li>
+                      <strong>Categories:</strong>
+                    </li>
+        {selectedProduct !== null && (
+  <>
+    <li>
+      <a href={`/user/shop/shopWithCategory?salesRank=${selectedProduct.salesRank}`}>
+        {selectedProduct.salesRank}
+        {selectedProduct.productType && ','}
+      </a>
+    </li>
+
+    {selectedProduct.productType && (
+      <li>
+        <a href={`/user/shop/shopWithCategory?productType=${selectedProduct.productType}`}>{selectedProduct.productType}</a>
+      </li>
+    )}
+  </>
+)}
+                    {/* <li>
+                      <a href="shop-standard.html">Swimwear,</a>
+                    </li>
+                    <li>
+                      <a href="shop-standard.html">Summer,</a>
+                    </li>
+                    <li>
+                      <a href="shop-standard.html">Clothing</a>
+                    </li> */}
+                  </ul>
+                  <ul>
+                    <li>
+                      <strong>Tags:</strong>
+                    </li>
+                    <li>
+                      <a href="shop-standard.html">Casual</a>
+                    </li>
+                    <li>
+                      <a href="shop-standard.html">Athletic,</a>
+                    </li>
+                    <li>
+                      <a href="shop-standard.html">Workwear,</a>
+                    </li>
+                    <li>
+                      <a href="shop-standard.html">Accessories</a>
+                    </li>
+                  </ul>
+                  <div className="dz-social-icon">
+                    <ul>
+                      <li>
+                        <a
+                          target="_blank"
+                          className="text-dark"
+                          href="https://www.facebook.com/dexignzone"
+                        >
+                          <i className="fab fa-facebook-f" />
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          target="_blank"
+                          className="text-dark"
+                          href="https://twitter.com/dexignzones"
+                        >
+                          <i className="fab fa-twitter" />
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          target="_blank"
+                          className="text-dark"
+                          href="https://www.youtube.com/@dexignzone1723"
+                        >
+                          <i className="fa-brands fa-youtube" />
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          target="_blank"
+                          className="text-dark"
+                          href="https://www.linkedin.com/showcase/3686700/admin/"
+                        >
+                          <i className="fa-brands fa-linkedin-in" />
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          target="_blank"
+                          className="text-dark"
+                          href="https://www.instagram.com/dexignzone/"
+                        >
+                          <i className="fab fa-instagram" />
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+                  {/* <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
                     <div className="shop-card style-1">
                       <div className="dz-media">
                         <img src="../../assets/user/images/shop/product/3.png" alt="image" />
@@ -2293,46 +2747,51 @@ function ShopWithCategory() {
                         <span className="badge ">Get 20% Off</span>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
           </div>
-          <div className="row page mt-0">
+                  <div className="row page mt-0">
             <div className="col-md-6">
               <p className="page-text">Showing 1–5 Of 50 Results</p>
             </div>
-            <div className="col-md-6">
-              <nav aria-label="Blog Pagination">
-                <ul className="pagination style-1">
-                  <li className="page-item">
-                    <a className="page-link prev" href="javascript:void(0);">
-                      Prev
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link active" href="javascript:void(0);">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="javascript:void(0);">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="javascript:void(0);">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link next" href="javascript:void(0);">
-                      Next
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
+          <div className="col-md-6">
+        <nav aria-label="Product Pagination">
+          <ul className="pagination style-1">
+            {/* Nút Previous */}
+            <li className="page-item">
+              <a
+                className={`page-link ${currentPage === 0 ? 'disabled' : ''}`}
+               
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </a>
+            </li>
+            {/* Các số trang trong phạm vi */}
+            {getPageRange().map((page) => (
+              <li className="page-item" key={page}>
+                <a
+                  className={`page-link ${page === currentPage ? 'active' : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page + 1}
+                </a>
+              </li>
+            ))}
+            {/* Nút Next */}
+            <li className="page-item">
+              <a
+                className={`page-link next ${currentPage >= totalPages - 1 ? 'disabled' : ''}`}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
           </div>
         </div>
       </div>
@@ -2343,7 +2802,6 @@ function ShopWithCategory() {
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
-        <QuickViewModal />
       </div>
     </>
   );

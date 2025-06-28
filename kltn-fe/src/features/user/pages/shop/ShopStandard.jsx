@@ -2084,12 +2084,12 @@ function ShopStandard({products }) {
                 <div className="dz-info mb-0">
                   <ul>
                     <li>
-                      <strong>SKU:</strong>
+                      <strong>Categories:</strong>
                     </li>
         {selectedProduct !== null && (
   <>
     <li>
-      <a href="shop-standard.html">
+      <a href={`/user/shop/shopWithCategory?salesRank=${selectedProduct.salesRank}`}>
         {selectedProduct.salesRank}
         {selectedProduct.productType && ','}
       </a>
@@ -2097,12 +2097,11 @@ function ShopStandard({products }) {
 
     {selectedProduct.productType && (
       <li>
-        <a href="shop-standard.html">{selectedProduct.productType}</a>
+        <a href={`/user/shop/shopWithCategory?productType=${selectedProduct.productType}`}>{selectedProduct.productType}</a>
       </li>
     )}
   </>
 )}
-
                     {/* <li>
                       <a href="shop-standard.html">Swimwear,</a>
                     </li>

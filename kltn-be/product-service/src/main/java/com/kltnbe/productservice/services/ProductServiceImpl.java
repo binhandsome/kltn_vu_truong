@@ -1,8 +1,6 @@
 // ServiceImpl: ProductServiceImpl.java
 package com.kltnbe.productservice.services;
 
-import com.kltnbe.productservice.dtos.req.ProductByProductType;
-import com.kltnbe.productservice.dtos.req.ProductBySalesRank;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
 //import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
@@ -18,6 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -94,13 +93,21 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(productFileterAll.getPage(), productFileterAll.getSize());
         return productRepository.findAll(pageable);
     }
-    public Page<Product> findProductBySalesRank(ProductBySalesRank productBySalesRank) {
-        Pageable pageable = PageRequest.of(productBySalesRank.getPage(), productBySalesRank.getSize());
-        return productRepository.findProductBySalesRank(productBySalesRank.getSalesRank(), pageable);
+    public Page<Product> findProductBySalesRank(String salesRank, Pageable pageable){
+        return productRepository.findProductBySalesRank(salesRank, pageable);
     }
-    public Page<Product> findProductByProductType(ProductByProductType productByProductType) {
-        Pageable pageable = PageRequest.of(productByProductType.getPage(), productByProductType.getSize());
-        return productRepository.findProductByProductType(productByProductType.getProductType(), pageable);
+    public Page<Product> findProductByProductType(String productType, Pageable pageable ) {
+        return productRepository.findProductByProductType(productType, pageable);
+    }
+
+    @Override
+    public List<String> getAllSalesRanks() {
+        return productRepository.findAllDistinctSalesRanks();
+    }
+
+    @Override
+    public List<String> getAllProductTypes() {
+        return productRepository.findAllDistinctProductTypes();
     }
 
 
