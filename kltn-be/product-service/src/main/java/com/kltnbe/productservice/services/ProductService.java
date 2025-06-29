@@ -9,6 +9,7 @@ import com.kltnbe.productservice.entities.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductService {
     Page<Product> getAllProducts(ProductFileterAll productFileterAll);
@@ -16,4 +17,5 @@ public interface ProductService {
     Page<Product> findProductByProductType(String productType, Pageable pageable);
     List<String> getAllSalesRanks();
     List<String> getAllProductTypes();
+    Optional<Product> findProductDetail(String asin);
 }

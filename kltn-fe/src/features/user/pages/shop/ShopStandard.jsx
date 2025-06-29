@@ -2082,6 +2082,10 @@ function ShopStandard({products }) {
                   </a>
                 </div>
                 <div className="dz-info mb-0">
+                                {selectedProduct !== null && (
+
+                  <ul><li><strong>SKU:</strong></li><li>{selectedProduct.asin}</li></ul>
+                      )}
                   <ul>
                     <li>
                       <strong>Categories:</strong>

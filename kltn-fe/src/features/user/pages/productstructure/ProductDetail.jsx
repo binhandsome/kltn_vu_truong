@@ -2,29 +2,52 @@
 import React, { useEffect, useState } from 'react';
 import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import WOW from 'wowjs'; // Import WOW.js
-
+import WOW from 'wowjs'; 
+import axios from 'axios';
+import { useLocation } from 'react-router-dom'; // Ensure react-router-dom is installed
 function ProductDetail() {
     const [hasBgClass, setHasBgClass] = useState(true); 
-  
+	const location = useLocation();
+	const searchParams = new URLSearchParams(location.search);
+	const asin = searchParams.get('asin');
+	const [products, setProducts] = useState([]);
+
+const fetchProductDetailWithAsin = async (asin) => {
+    if (!asin) {
+      console.error('ASIN is missing or null');
+      return;
+    }
+    try {
+      const response = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+      setProducts(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error('Lỗi khi gọi API:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (asin) {
+      fetchProductDetailWithAsin(asin);
+    }
+  }, [asin]);
+
     useEffect(() => {
       if (hasBgClass) {
         document.body.classList.add('bg');
       } else {
         document.body.classList.remove('bg');
       }
-  
       return () => {
-        // Dọn dẹp: Xóa class khi component bị unmount
         document.body.classList.remove('bg');
       };
-    }, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-    useEffect(() => { // New useEffect for WOW.js
+    }, [hasBgClass]); 
+
+    useEffect(() => {
         const wow = new WOW.WOW();
         wow.init();
     
-        return () => { // Optional cleanup function
-            //wow.sync(); // sync and remove the DOM
+        return () => { 
         };
       }, []);
 
@@ -54,13 +77,28 @@ function ProductDetail() {
 									<div className="swiper-wrapper" id="lightgallery">
 										<div className="swiper-slide">
 											<div className="dz-media DZoomImage rounded">
-												<a className="mfp-link lg-item" href="../assets/user/images/products/lady-1.png" data-src="../assets/user/images/products/lady-1.png">
+												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
 													<i className="feather icon-maximize dz-maximize top-right"></i>
 												</a>
-												<img src="../../assets/user/images/products/lady-1.png" alt="img"/>
+												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
 											</div>
 										</div>
-										<div className="swiper-slide">
+											<div className="swiper-slide">
+											<div className="dz-media DZoomImage rounded">
+												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
+													<i className="feather icon-maximize dz-maximize top-right"></i>
+												</a>
+												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
+											</div>
+										</div>	<div className="swiper-slide">
+											<div className="dz-media DZoomImage rounded">
+												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
+													<i className="feather icon-maximize dz-maximize top-right"></i>
+												</a>
+												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
+											</div>
+										</div>
+										{/* <div className="swiper-slide">
 											<div className="dz-media DZoomImage rounded">
 												<a className="mfp-link lg-item" href="../assets/user/images/products/lady-2.png" data-src="../assets/user/images/products/lady-2.png">
 													<i className="feather icon-maximize dz-maximize top-right"></i>
@@ -75,20 +113,25 @@ function ProductDetail() {
 												</a>
 												<img src="../../assets/user/images/products/lady-3.png" alt="img"/>
 											</div>
-										</div>
+										</div> */}
 									</div>
 								</div>
 								<div className="swiper product-gallery-swiper thumb-swiper-lg swiper-vertical">
 									<div className="swiper-wrapper">
 										<div className="swiper-slide">
-											<img src="../../assets/user/images/products/thumb-img/lady-1.png" alt="img"/>
+											<img src={products.productThumbnail} alt="img"/>
 										</div>
-										<div className="swiper-slide">
+											<div className="swiper-slide">
+											<img src={products.productThumbnail} alt="img"/>
+										</div>	<div className="swiper-slide">
+											<img src={products.productThumbnail} alt="img"/>
+										</div>
+										{/* <div className="swiper-slide">
 											<img src="../../assets/user/images/products/thumb-img/lady-3.png" alt="img"/>
 										</div>
 										<div className="swiper-slide">
 											<img src="../../assets/user/images/products/thumb-img/lady-3.png" alt="img"/>
-										</div>
+										</div> */}
 									</div>
 								</div>
 							</div>	
@@ -100,7 +143,7 @@ function ProductDetail() {
 								<div className="dz-content-footer">
 									<div className="dz-content-start">
 										<span className="badge bg-purple mb-2">SALE 20% Off</span>
-										<h4 className="title mb-1">Women Red & White Striped Crepe Top</h4>
+										<h4 className="title mb-1">{products.productTitle}</h4>
 										<div className="review-num">
 											<ul className="dz-rating me-2">
 												<li>
@@ -140,7 +183,7 @@ function ProductDetail() {
 								</p>
 								<div className="meta-content m-b20">
 									<span className="price-name">Price</span>
-									<span className="price">$125.75 <del>$132.17</del></span>
+									<span className="price">${products.productPrice} <del>$132.17</del></span>
 								</div>
 								<div className="product-num gap-md-2 gap-xl-0">
 									<div className="btn-quantity light">
