@@ -201,6 +201,7 @@ const fetchProductDetailWithAsin = async (asin) => {
 
 											<input type="radio" className="btn-check" name="btnradio1" id="btnradiol03"/>
 											<label className="btn" for="btnradiol03">L</label>
+											
 										</div>
 									</div>
 									<div className="meta-content">
@@ -235,15 +236,18 @@ const fetchProductDetailWithAsin = async (asin) => {
 								<div className="dz-info">
 									<ul>
 										<li><strong>SKU:</strong></li>
-										<li>PRT584E63A</li>
+										<li>{products.asin}</li>
 									</ul>
 									<ul>
 										<li><strong>Category:</strong></li>
-										<li><a href="shop-standard.html">Dresses,</a></li>												
-										<li><a href="shop-standard.html">Jeans,</a></li>												
+										<li><a href={`/user/shop/shopWithCategory?salesRank=${products.salesRank}`}>{products.salesRank},</a></li>		
+										{products !== null && (
+									    <li><a href={`/user/shop/shopWithCategory?productType=${products.productType}`}> {products.productType}</a></li>														
+										)}
+										{/* <li><a href="shop-standard.html">Jeans,</a></li>												
 										<li><a href="shop-standard.html">Swimwear,</a></li>												
 										<li><a href="shop-standard.html">Summer,</a></li>												
-										<li><a href="shop-standard.html">Clothing,</a></li>												
+										<li><a href="shop-standard.html">Clothing,</a></li>												 */}
 									</ul>
 									<ul>
 										<li><strong>Tags:</strong></li>

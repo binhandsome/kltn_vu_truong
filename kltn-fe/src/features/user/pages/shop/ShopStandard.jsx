@@ -1808,7 +1808,7 @@ function ShopStandard({products }) {
                 </div>
                 <div className="dz-content">
                   <h5 className="title">
-                    <a href="shop-list.html">{product.productTitle}</a>
+                    <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>{product.productTitle}</a>
                   </h5>
                   <h5 className="price">${product.productPrice}</h5>
                 </div>

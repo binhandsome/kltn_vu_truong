@@ -93,6 +93,7 @@ function ShopWithCategory() {
 useEffect(() => {
   fetchProductsByCategories(currentPage, pageSize);
 }, [salesRank, productType, currentPage, pageSize]); 
+
   useEffect(() => {
     const wow = new WOW.WOW();
     wow.init();
