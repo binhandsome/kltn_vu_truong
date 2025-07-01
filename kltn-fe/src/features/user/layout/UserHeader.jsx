@@ -637,19 +637,35 @@ const API_URL = 'http://localhost:8081/api/auth';
         <div className="extra-nav">
           <div className="extra-cell">
             <ul className="header-right">
-              {user ? (
-                  <li className="nav-item login-link">
-                <a className="nav-link" href="/user/myaccount/dashboard">
-                  {user.username}
-                </a>
-              </li>
-              ) : (
- <li className="nav-item login-link">
-                <a className="nav-link" href="/user/auth/login">
-                  Login / Register
-                </a>
-              </li>
-              )}
+            {user ? (
+  <>
+    <li className="nav-item login-link">
+      <a className="nav-link" href="/user/myaccount/dashboard">
+        {user.username}
+      </a>
+    </li>
+    <li className="nav-item">
+      <a
+        className="nav-link"
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          logout(); // gọi API logout
+          window.dispatchEvent(new Event('loggedOut')); // cập nhật state
+        }}
+      >
+        Logout
+      </a>
+    </li>
+  </>
+) : (
+  <li className="nav-item login-link">
+    <a className="nav-link" href="/user/auth/login">
+      Login / Register
+    </a>
+  </li>
+)}
+
              
               <li className="nav-item search-link">
                 <a

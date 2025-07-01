@@ -43,6 +43,13 @@ function Login() {
 		document.body.classList.remove('bg');
 	  };
 	}, [hasBgClass]); 
+  useEffect(() => {
+    const successMsg = localStorage.getItem('resetSuccess');
+    if (successMsg) {
+      setMessage(successMsg);
+      localStorage.removeItem('resetSuccess');
+    }
+  }, []);
 	useEffect(() => { 
 		const wow = new WOW.WOW();
 		wow.init();

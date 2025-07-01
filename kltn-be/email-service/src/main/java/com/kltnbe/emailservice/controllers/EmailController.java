@@ -1,5 +1,6 @@
 package com.kltnbe.emailservice.controllers;
 
+import com.kltnbe.emailservice.dtos.req.ForgotPasswordOtpRequest;
 import com.kltnbe.emailservice.dtos.req.RequestInfomation;
 import com.kltnbe.emailservice.entities.Email;
 import com.kltnbe.emailservice.helpers.RandomNumberHelper;
@@ -7,7 +8,6 @@ import com.kltnbe.emailservice.repositories.EmailRepository;
 import com.kltnbe.emailservice.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +56,18 @@ public class EmailController {
             return ResponseEntity.status(500).body("Thất bại: " + e.getMessage());
         }
     }
-
-
+    @PostMapping("/sendOtpResetPassword")
+    public ResponseEntity<String> sendOtpResetPassword(@RequestBody ForgotPasswordOtpRequest request) {
+        try {
+            String otp = randomNumberHelper.generate6DigitString();
+            emailService.sendOtpEmail(request.getEmail(), otp);
+            return ResponseEntity.ok("OTP đặt lại mật khẩu đã được gửi");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi gửi OTP: " + e.getMessage());
+        }
     }
+
+
+
+
+}

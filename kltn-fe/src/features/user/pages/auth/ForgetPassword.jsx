@@ -1,149 +1,152 @@
-// src/pages/common/HomePage.js
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet'; 
-import QuickViewModal from '../../components/home/QuickViewModal'; 
+import WOW from 'wowjs';
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import { Link } from 'react-router-dom'; 
-import WOW from 'wowjs'; // Import WOW.js
+import QuickViewModal from '../../components/home/QuickViewModal';
+import { requestOtpResetPassword, resetPassword } from '../../apiService/authService';
+import { useNavigate } from 'react-router-dom';
 
 function ForgetPassword() {
-	const [hasBgClass, setHasBgClass] = useState(true); 
-  
-	useEffect(() => {
-	  if (hasBgClass) {
-		document.body.classList.add('bg');
-	  } else {
-		document.body.classList.remove('bg');
-	  }
-  
-	  return () => {
-		// Dọn dẹp: Xóa class khi component bị unmount
-		document.body.classList.remove('bg');
-	  };
-	}, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-	useEffect(() => { // New useEffect for WOW.js
-		const wow = new WOW.WOW();
-		wow.init();
-	
-		return () => { // Optional cleanup function
-			//wow.sync(); // sync and remove the DOM
-		};
-	  }, []);
+  const navigate = useNavigate();
+  const [hasBgClass, setHasBgClass] = useState(true);
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [isOtpInputVisible, setIsOtpInputVisible] = useState(false);
+  const [isSendingDisabled, setIsSendingDisabled] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+
+  const handleSendVerification = async () => {
+    setIsSendingDisabled(true);
+    setIsOtpInputVisible(true);
+    setCountdown(60);
+
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setIsSendingDisabled(false);
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    try {
+      await requestOtpResetPassword(email);
+      setMessage("Mã OTP đã được gửi đến email của bạn.");
+    } catch (error) {
+      setMessage(`Lỗi gửi mã OTP: ${error.message}`);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    try {
+      await resetPassword({ email, otp, newPassword });
+
+      // Lưu thông báo vào localStorage hoặc state toàn cục
+      localStorage.setItem('resetSuccess', 'Đổi mật khẩu thành công');
+
+      // Chuyển về login page
+      navigate('/user/auth/login');
+    } catch (error) {
+      setMessage(error.message || 'Có lỗi xảy ra khi đặt lại mật khẩu');
+    }
+  };
+
+  useEffect(() => {
+    if (hasBgClass) document.body.classList.add('bg');
+    return () => document.body.classList.remove('bg');
+  }, [hasBgClass]);
+
+  useEffect(() => {
+    new WOW.WOW().init();
+  }, []);
 
   return (
-    <>
-      <div className="page-wraper">
-
-        {/* Header (đã được xử lý trong App.js) */}
-<div className="page-content bg-light">
-  <section className="px-3">
-    <div className="row">
-      <div className="col-xxl-6 col-xl-6 col-lg-6 start-side-content">
-        <div className="dz-bnr-inr-entry">
-          <h1>Forgot Password</h1>
-          <nav
-            aria-label="breadcrumb text-align-start"
-            className="breadcrumb-row"
-          >
-            <ul className="breadcrumb">
-              <li className="breadcrumb-item">
-                <a href="index.html"> Home</a>
-              </li>
-              <li className="breadcrumb-item">Forgot Password</li>
-            </ul>
-          </nav>
-        </div>
-        <div className="registration-media">
-          <img src="../../assets/user/images//registration/pic3.png" alt="/" />
-        </div>
-      </div>
-      <div className="col-xxl-6 col-xl-6 col-lg-6 end-side-content justify-content-center">
-        <div className="login-area">
-          <h2 className="text-secondary text-center">Forgot Password</h2>
-          <p className="text-center m-b25">
-            Enter your e-mail address below to reset your password.
-          </p>
-          <form>
-            <div className="m-b30">
-              <label className="label-title">Email Address</label>
-              <input
-                name="dzName"
-                required=""
-                className="form-control"
-                placeholder="Email Address"
-                type="email"
-              />
-            </div>
-            <div className="d-flex justify-content-between">
-              <a
-                href="login.html"
-                className="btn btn-outline-secondary btnhover text-uppercase"
-              >
-                Back
-              </a>
-              <a
-                href="javascript:void(0);"
-                className="btn btn-secondary btnhover text-uppercase submit-btn form-toggle"
-              >
-                Submit
-              </a>
-            </div>
-          </form>
-        </div>
-        <div className="forget-password-area">
-          <h2 className="text-secondary text-center">Reset Password</h2>
-          <p className="text-center m-b25">
-            Almost done, enter your new password and you're all set to go
-          </p>
-          <form>
-            <div className="m-b30">
-              <label className="label-title">New Password</label>
-              <div className="secure-input ">
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control dz-password"
-                  placeholder="New Password"
-                />
-                <div className="show-pass">
-                  <i className="eye-open fa-regular fa-eye" />
-                </div>
+    <div className="page-wraper">
+      <div className="page-content bg-light">
+        <section className="px-3">
+          <div className="row">
+            <div className="col-xxl-6 col-xl-6 col-lg-6 start-side-content">
+              <div className="dz-bnr-inr-entry">
+                <h1>Forgot Password</h1>
+              </div>
+              <div className="registration-media">
+                <img src="../../assets/user/images/registration/pic3.png" alt="/" />
               </div>
             </div>
-            <div className="m-b30">
-              <label className="label-title">Confirm Password</label>
-              <div className="secure-input ">
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control dz-password"
-                  placeholder="Confirm Password"
-                />
-                <div className="show-pass">
-                  <i className="eye-open fa-regular fa-eye" />
-                </div>
-              </div>
-            </div>
-            <div className="text-center">
-              <a
-                href="account-dashboard.html"
-                className="btn btn-secondary btnhover text-uppercase sign-btn"
-              >
-                Reset Password
-              </a>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </section>
+            <div className="col-xxl-6 col-xl-6 col-lg-6 end-side-content justify-content-center">
+              <div className="login-area">
+                <h2 className="text-secondary text-center">Reset Password</h2>
+                <p className="text-center m-b25">Enter your email to reset your password</p>
+                <form onSubmit={handleResetPassword}>
+                  <div className="m-b25">
+                    <label className="label-title">Email Address</label>
+                    <div className="d-flex align-items-center" style={{ gap: '10px' }}>
+  <input
+    type="email"
+    className="form-control"
+    placeholder="Nhập địa chỉ email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    required
+    disabled={isSendingDisabled}
+    style={{ flex: 1 }}
+  />
+  <button
+    type="button"
+    className="btn btn-success"
+    onClick={handleSendVerification}
+    disabled={isSendingDisabled}
+    style={{ whiteSpace: 'nowrap', padding: '15px 20px' }}
+  >
+    {isSendingDisabled ? `Gửi lại (${countdown}s)` : 'Gửi Mã'}
+  </button>
 </div>
 
-        {/* Footer (đã được xử lý trong App.js) */}
-         <ScrollTopButton/>
-        <QuickViewModal />
+                  </div>
+
+                  {isOtpInputVisible && (
+                    <>
+                      <div className="m-b25">
+                        <label className="label-title">OTP</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value)}
+                          placeholder="Nhập mã OTP"
+                          required
+                        />
+                      </div>
+                      <div className="m-b25">
+                        <label className="label-title">New Password</label>
+                        <input
+                          type="password"
+                          className="form-control"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Nhập mật khẩu mới"
+                          required
+                        />
+                      </div>
+                      <div className="text-center">
+                        <button type="submit" className="btn btn-secondary">Reset Password</button>
+                      </div>
+                    </>
+                  )}
+                </form>
+                {message && <p className="text-center mt-3">{message}</p>}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </>
+      <ScrollTopButton />
+      <QuickViewModal />
+    </div>
   );
 }
 
