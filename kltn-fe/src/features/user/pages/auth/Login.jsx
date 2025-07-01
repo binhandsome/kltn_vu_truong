@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet';
 import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
-import WOW from 'wowjs'; // Import WOW.js
+import WOW from 'wowjs'; 
 import { login } from '../../apiService/authService';
 
 function Login() {
@@ -33,7 +33,6 @@ function Login() {
     }
 };
 
-  
 	useEffect(() => {
 	  if (hasBgClass) {
 		document.body.classList.add('bg');
