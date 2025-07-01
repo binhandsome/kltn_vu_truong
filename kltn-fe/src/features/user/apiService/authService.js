@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:8081/api/auth';
+const API_EMAIL_URL = 'http://localhost:8082/api/email';
 
 export const register = async (user) => {
     try {
@@ -83,4 +84,43 @@ export const refreshToken = async () => {
   })();
 
   return refreshPromise;
+};
+/* ------------------ GỬI OTP RESET PASSWORD ------------------ */
+export const requestOtpResetPassword = async (email) => {
+  try {
+    const res = await fetch(`${API_EMAIL_URL}/sendOtpResetPassword`, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ email }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Không thể gửi mã OTP');
+    }
+
+    return await res.text(); // Trả về "OTP đã được gửi"
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi mạng khi gửi OTP');
+  }
+};
+
+/* ------------------ ĐẶT LẠI MẬT KHẨU ------------------ */
+export const resetPassword = async ({ email, otp, newPassword }) => {
+  try {
+    const res = await fetch(`${API_URL}/reset-password`, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ email, otp, newPassword }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Không thể đặt lại mật khẩu');
+    }
+
+    return await res.text(); // Trả về "Đặt lại mật khẩu thành công"
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi mạng khi đặt lại mật khẩu');
+  }
 };

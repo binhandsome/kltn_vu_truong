@@ -21,11 +21,25 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Tắt CSRF
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/email/sendEmailRegister").permitAll()
-                        .requestMatchers("/api/email/checkOTP").permitAll() // Cho phép endpoint này không cần xác thực
+                        .requestMatchers("/api/email/checkOTP").permitAll()
+                        .requestMatchers("/api/email/sendOtpResetPassword").permitAll()// Cho phép endpoint này không cần xác thực
                         .anyRequest().authenticated()
                 );
 
         return http.build();
+    }
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:3000")
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
+            }
+        };
     }
 
 

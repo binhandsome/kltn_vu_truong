@@ -1,9 +1,6 @@
 package com.kltnbe.userservice.controllers;
 
-import com.kltnbe.userservice.dtos.req.LoginRequest;
-import com.kltnbe.userservice.dtos.req.PasswordChangeRequest;
-import com.kltnbe.userservice.dtos.req.RegisterRequest;
-import com.kltnbe.userservice.dtos.req.RequestInfomation;
+import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.helpers.EmailServiceProxy;
@@ -15,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -123,6 +122,19 @@ public class AuthController {
             return ResponseEntity.status(500).body("Failed to forward email request: " + e.getMessage());
         }
     }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(authService.resetPassword(request));
+    }
+    @PutMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(authService.changePassword(userDetails.getUsername(), request));
+    }
+
 //
 //    @PostMapping("/verify-otp")
 //    public String verifyOtp(@RequestParam String username, @RequestParam String otp) {

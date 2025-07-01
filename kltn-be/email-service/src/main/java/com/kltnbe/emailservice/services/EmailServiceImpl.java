@@ -37,6 +37,7 @@ public class EmailServiceImpl implements EmailService {
         System.out.println("Email sent to: " + to);
     }
 
+
     @Transactional
     public void deleteAllEmail(String email) {
         long countEmail = emailRepository.countByEmail(email);
