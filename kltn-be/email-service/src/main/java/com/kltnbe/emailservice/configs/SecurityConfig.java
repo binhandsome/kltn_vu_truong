@@ -18,16 +18,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Tắt CSRF
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/email/sendEmailRegister").permitAll()
-                        .requestMatchers("/api/email/checkOTP").permitAll()
-                        .requestMatchers("/api/email/sendOtpResetPassword").permitAll()// Cho phép endpoint này không cần xác thực
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().permitAll()
                 );
-
         return http.build();
     }
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
