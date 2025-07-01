@@ -1808,7 +1808,7 @@ function ShopStandard({products }) {
                 </div>
                 <div className="dz-content">
                   <h5 className="title">
-                    <a href="shop-list.html">{product.productTitle}</a>
+                    <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>{product.productTitle}</a>
                   </h5>
                   <h5 className="price">${product.productPrice}</h5>
                 </div>
@@ -2082,6 +2082,10 @@ function ShopStandard({products }) {
                   </a>
                 </div>
                 <div className="dz-info mb-0">
+                                {selectedProduct !== null && (
+
+                  <ul><li><strong>SKU:</strong></li><li>{selectedProduct.asin}</li></ul>
+                      )}
                   <ul>
                     <li>
                       <strong>Categories:</strong>

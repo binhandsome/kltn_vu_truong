@@ -93,6 +93,7 @@ function ShopWithCategory() {
 useEffect(() => {
   fetchProductsByCategories(currentPage, pageSize);
 }, [salesRank, productType, currentPage, pageSize]); 
+
   useEffect(() => {
     const wow = new WOW.WOW();
     wow.init();
@@ -681,14 +682,14 @@ useEffect(() => {
                   <option>high to Low</option>
                 </select>
               </div>
-              <div className="form-group Category">
-                <select className="default-select">
-                  <option>Products</option>
-                  <option>9 Products</option>
-                  <option>12 Products</option>
-                  <option>14 Products</option>
-                  <option>18 Products</option>
-                  <option>24 Products</option>
+               <div className="form-group Category">
+                <select className="default-select" value={pageSize} onChange={handlePageChangeProduct}>
+                  <option value={20}>Products</option>
+                  <option value={32}>32 Products</option>
+                  <option value={44}>44 Products</option>
+                  <option value={60}>60 Products</option>
+                  <option value={72}>72 Products</option>
+                  <option value={84}>84 Products</option>
                 </select>
               </div>
               <div className="shop-tab">
@@ -2259,11 +2260,16 @@ useEffect(() => {
                   </a>
                 </div>
                 <div className="dz-info mb-0">
+                  {selectedProduct !== null && (
+
+                  <ul><li><strong>SKU:</strong></li><li>{selectedProduct.asin}</li></ul>
+                      )}
                   <ul>
                     <li>
                       <strong>Categories:</strong>
                     </li>
         {selectedProduct !== null && (
+          
   <>
     <li>
       <a href={`/user/shop/shopWithCategory?salesRank=${selectedProduct.salesRank}`}>

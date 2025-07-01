@@ -2,8 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import QuickViewModal from '../../components/home/QuickViewModal';
 import ScrollTopButton from '../../layout/ScrollTopButton';
+
+import { Link } from 'react-router-dom'; 
+import WOW from 'wowjs'; 
+
 import { Link, useNavigate } from 'react-router-dom';
 import WOW from 'wowjs';
+
 import { login } from '../../apiService/authService';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -46,6 +51,19 @@ function Login() {
       document.body.classList.remove('bg');
     };
   }, [hasBgClass]);
+
+
+	useEffect(() => {
+	  if (hasBgClass) {
+		document.body.classList.add('bg');
+	  } else {
+		document.body.classList.remove('bg');
+	  }
+	  return () => {
+		document.body.classList.remove('bg');
+	  };
+	}, [hasBgClass]); 
+
 
   useEffect(() => {
     const successMsg = localStorage.getItem('resetSuccess');

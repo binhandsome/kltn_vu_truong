@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -108,6 +109,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<String> getAllProductTypes() {
         return productRepository.findAllDistinctProductTypes();
+    }
+    @Override
+    public Optional<Product> findProductDetail(String asin) {
+        return productRepository.findProductByAsin(asin);
     }
 
 

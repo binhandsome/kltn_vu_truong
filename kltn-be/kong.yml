@@ -1,3 +1,22 @@
+
+_format_version: "3.0"  # kiểu string
+services:
+  - name: product-service
+    url: http://host.docker.internal:8083
+    routes:
+      - name: product-protected
+        paths:
+          - /api/products/
+        strip_path: false
+      - name: product-public
+        paths:
+          - /api/products/public
+        strip_path: false
+
+# plugins:
+#   - name: jwt
+#     route: product-protected
+
 _format_version: "2.1"
 services:
   - name: user-service
@@ -15,3 +34,4 @@ services:
           - /api/email
 
 # Bạn có thể khai báo plugin xác thực JWT tại đây nếu cần
+

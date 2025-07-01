@@ -4,7 +4,7 @@ import QuickViewModal from '../components/home/QuickViewModal';
 import ScrollTopButton from '../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
-
+import 'mutation-observer';
 function HomePage() {
 	useEffect(() => {
 		const wow = new WOW.WOW();

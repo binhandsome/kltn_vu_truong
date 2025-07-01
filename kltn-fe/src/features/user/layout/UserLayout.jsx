@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import UserHeader from './UserHeader';
 import UserFooter from './UserFooter';
-
+import 'mutation-observer';
 const cssFiles = [
   '/assets/user/icons/feather/css/iconfont.css',
   '/assets/user/icons/fontawesome/css/all.min.css',
@@ -20,7 +20,6 @@ const cssFiles = [
   '/assets/user/vendor/lightgallery/dist/css/lg-thumbnail.css',
   '/assets/user/vendor/lightgallery/dist/css/lg-zoom.css',
   '/assets/user/vendor/slick/slick.css',
-
   '/assets/user/css/style.css',
   '/assets/user/css/skin/skin-1.css',
   '/assets/user/css/custom-fix.css',
