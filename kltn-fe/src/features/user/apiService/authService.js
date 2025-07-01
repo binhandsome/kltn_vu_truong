@@ -1,7 +1,7 @@
 import { authFetch } from './authFetch';
 
-const API_URL = 'http://localhost:8080/api/auth';
-const API_EMAIL_URL = 'http://localhost:8080/api/email';
+const API_URL = 'http://localhost:8000/api/auth';
+const API_EMAIL_URL = 'http://localhost:8000/api/email';
 
 export const register = async (user) => {
   const response = await fetch(`${API_URL}/register`, {

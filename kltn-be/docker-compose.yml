@@ -81,9 +81,13 @@ services:
       - kong-net
 
   user-service:
-    build: ./user-service
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
     container_name: user-service
     restart: always
+    volumes:
+      - ./user-service:/app
     depends_on:
       - kltn-mysql
       - redis
@@ -99,12 +103,15 @@ services:
       - "8081:8081"
     networks:
       - kong-net
-    entrypoint: ["/wait-for-mysql.sh", "kltn-mysql", "3306", "--", "java", "-jar", "/app.jar"]
 
   email-service:
-    build: ./email-service
+    build:
+      context: ./email-service
+      dockerfile: Dockerfile
     container_name: email-service
     restart: always
+    volumes:
+      - ./email-service:/app
     depends_on:
       - kltn-mysql
       - redis
@@ -120,7 +127,6 @@ services:
       - "8082:8082"
     networks:
       - kong-net
-    entrypoint: ["/wait-for-mysql.sh", "kltn-mysql", "3306", "--", "java", "-jar", "/app.jar"]
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -136,8 +142,6 @@ services:
     networks:
       - kong-net
 
-
 networks:
   kong-net:
     driver: bridge
-

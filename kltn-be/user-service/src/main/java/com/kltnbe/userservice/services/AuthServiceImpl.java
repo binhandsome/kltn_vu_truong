@@ -10,6 +10,8 @@ import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -83,15 +85,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
+        System.out.println("🔍 Authenticating user with email: " + request.getEmail());
         Auth auth = authRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Tên người dùng hoặc mật khẩu không đúng"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + request.getEmail()));
         if (!passwordEncoder.matches(request.getPassword(), auth.getPasswordHash())) {
-            throw new RuntimeException("Tên người dùng hoặc mật khẩu không đúng");
+            throw new BadCredentialsException("Invalid password");
         }
-        String accessToken = jwtUtil.generateAccessToken(auth.getUsername());
-        String refreshToken = jwtUtil.generateRefreshToken();
-        redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L, TimeUnit.DAYS);
-        return new LoginResponse(accessToken, refreshToken, auth.getUsername());
+        String accessToken = jwtUtil.generateAccessToken(auth.getEmail()); // Sử dụng email thay vì username
+        String refreshToken = jwtUtil.generateRefreshToken(auth.getEmail());
+        redisTemplate.opsForValue().set("refresh:" + auth.getEmail(), refreshToken, 7L, TimeUnit.DAYS);
+        return new LoginResponse(accessToken, refreshToken, auth.getEmail());
     }
     @Override
     public Auth getUserByUsername(String username) {
