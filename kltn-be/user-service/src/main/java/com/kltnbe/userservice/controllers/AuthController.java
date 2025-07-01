@@ -132,34 +132,7 @@ public class AuthController {
             @RequestBody ChangePasswordRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        return ResponseEntity.ok(authService.changePassword(userDetails.getUsername(), request));
+        String message = authService.changePassword(userDetails.getUsername(), request);
+        return ResponseEntity.ok(message);
     }
-
-//
-//    @PostMapping("/verify-otp")
-//    public String verifyOtp(@RequestParam String username, @RequestParam String otp) {
-//        return authService.verifyOtp(username, otp);
-//    }
-//
-//    @PostMapping("/register-seller")
-//    public String registerSeller(@RequestBody RegisterRequest request) {
-//        return authService.registerSeller(request);
-//    }
-//
-//    @PostMapping("/change-password")
-//    public String changePassword(@RequestBody PasswordChangeRequest request) {
-//        return authService.changePassword(request);
-//    }
-//
-//    @PostMapping("/forgot-password")
-//    public String forgotPassword(@RequestParam String email) {
-//        return authService.sendOtpToResetPassword(email);
-//    }
-//
-//    @PostMapping("/reset-password")
-//    public String resetPassword(@RequestParam String email,
-//                                @RequestParam String otp,
-//                                @RequestParam String newPassword) {
-//        return authService.resetPasswordByOtp(email, otp, newPassword);
-//    }
 }

@@ -1,38 +1,62 @@
-const API_URL = 'http://localhost:8081/api/auth';
-const API_EMAIL_URL = 'http://localhost:8082/api/email';
+import { authFetch } from './authFetch';
+
+const API_URL = 'http://localhost:8080/api/auth';
+const API_EMAIL_URL = 'http://localhost:8080/api/email';
 
 export const register = async (user) => {
-    try {
-        const response = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(user),
-        });
-        if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.error || `Request failed with status ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        throw new Error('Network error');
-    }
+  const response = await fetch(`${API_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(user),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `Request failed with status ${response.status}`);
+  }
+
+  return await response.json(); // ✅ vì BE trả chuỗi
 };
 
-// ---- TIỆN ÍCH LƯU/XÓA TOKEN ----
+export const sendOtpToEmail = async (email) => {
+  const res = await fetch(`${API_URL}/sendEmailRegister`, {
+    method : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body   : JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Không thể gửi OTP');
+  }
+
+  return await res.text();
+};
+
+export const isLoggedIn = () => {
+  return !!localStorage.getItem('accessToken');
+};
+
 const saveTokens = ({ accessToken, refreshToken }) => {
   localStorage.setItem('accessToken', accessToken);
   localStorage.setItem('refreshToken', refreshToken);
 };
 
-export const logout = () => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('username');
-  window.dispatchEvent(new Event('loggedOut'));
+export const logout = async () => {
+  try {
+
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('username');
+
+    window.dispatchEvent(new Event('loggedOut'));
+  } catch (error) {
+    console.error('Lỗi khi logout:', error);
+  }
 };
 
-/* ------------------ AUTH ------------------ */
-export const login = async credentials => {
+
+export const login = async (credentials) => {
   const res = await fetch(`${API_URL}/login`, {
     method : 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,12 +74,11 @@ export const login = async credentials => {
   window.dispatchEvent(new Event('tokenRefreshed'));
   return data;
 };
+
 let refreshPromise = null;
 
 export const refreshToken = async () => {
-  if (refreshPromise) {
-    return refreshPromise;
-  }
+  if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
     try {
@@ -85,42 +108,50 @@ export const refreshToken = async () => {
 
   return refreshPromise;
 };
-/* ------------------ GỬI OTP RESET PASSWORD ------------------ */
+
 export const requestOtpResetPassword = async (email) => {
-  try {
-    const res = await fetch(`${API_EMAIL_URL}/sendOtpResetPassword`, {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({ email }),
-    });
+  const res = await fetch(`${API_EMAIL_URL}/sendOtpResetPassword`, {
+    method : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body   : JSON.stringify({ email }),
+  });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Không thể gửi mã OTP');
-    }
-
-    return await res.text(); // Trả về "OTP đã được gửi"
-  } catch (error) {
-    throw new Error(error.message || 'Lỗi mạng khi gửi OTP');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Không thể gửi mã OTP');
   }
+
+  return await res.text();
 };
 
-/* ------------------ ĐẶT LẠI MẬT KHẨU ------------------ */
 export const resetPassword = async ({ email, otp, newPassword }) => {
-  try {
-    const res = await fetch(`${API_URL}/reset-password`, {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({ email, otp, newPassword }),
-    });
+  const res = await fetch(`${API_URL}/reset-password`, {
+    method : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body   : JSON.stringify({ email, otp, newPassword }),
+  });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Không thể đặt lại mật khẩu');
-    }
-
-    return await res.text(); // Trả về "Đặt lại mật khẩu thành công"
-  } catch (error) {
-    throw new Error(error.message || 'Lỗi mạng khi đặt lại mật khẩu');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Không thể đặt lại mật khẩu');
   }
+
+  return await res.text();
+};
+
+export const changePassword = async (oldPassword, newPassword) => {
+  const res = await authFetch(`${API_URL}/change-password`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      currentPassword: oldPassword,
+      newPassword: newPassword,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Đổi mật khẩu thất bại');
+  }
+
+  return await res.text();
 };

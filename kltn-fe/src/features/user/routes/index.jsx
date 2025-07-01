@@ -30,6 +30,7 @@ import PostStandard from '../pages/blog/blogdetails/PostStandard';
 import PortfolioTiles from '../pages/portfolio/PortfolioTiles';
 import PortfolioDetails from '../pages/portfolio/PortfolioDetails';
 import Login from '../pages/auth/Login';
+import ChangePassword from '../pages/auth/ChangePassword';
 import Registration from '../pages/auth/Registration';
 import ForgetPassword from '../pages/auth/ForgetPassword';
 import AboutUs from '../pages/about/AboutUs';
@@ -40,20 +41,58 @@ import ShopStyle1 from '../pages/shop/ShopStyle1';
 import ShopStyle2 from '../pages/shop/ShopStyle2';
 import ShopStandard from '../pages/shop/ShopStandard';
 
+import RequireAuth from '../components/RequireAuth';
+import NoAuthOnly from '../components/NoAuthOnly';
+
 const UserRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<UserLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="auth/login" element={<Login />} />
+        
+        {/* ⛔ Cấm vào nếu đã đăng nhập */}
+        <Route
+          path="auth/login"
+          element={
+            <NoAuthOnly>
+              <Login />
+            </NoAuthOnly>
+          }
+        />
+        <Route
+          path="auth/forgetPassword"
+          element={
+            <NoAuthOnly>
+              <ForgetPassword />
+            </NoAuthOnly>
+          }
+        />
+
+        {/* ✅ Chỉ vào được nếu đã đăng nhập */}
+        <Route
+          path="myaccount/dashboard"
+          element={
+            <RequireAuth>
+              <Dashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+  path="myaccount/changePassword"
+  element={
+    <RequireAuth>
+      <ChangePassword />
+    </RequireAuth>
+  }
+/>
+
+        {/* Các route còn lại giữ nguyên */}
         <Route path="auth/registration" element={<Registration />} />
-        <Route path="auth/forgetPassword" element={<ForgetPassword />} />
         <Route path="productstructure/productDetail" element={<ProductDetail />} />
         <Route path="shop/shopWithCategory" element={<ShopWithCategory />} />
         <Route path="myaccount/address" element={<Address />} />
         <Route path="myaccount/billingAddress" element={<BillingAddress />} />
         <Route path="myaccount/cancellationRequests" element={<CancellationRequests />} />
-        <Route path="myaccount/dashboard" element={<Dashboard />} />
         <Route path="myaccount/download" element={<Download />} />
         <Route path="myaccount/orders" element={<Orders />} />
         <Route path="myaccount/ordersConfimation" element={<OrdersConfimation />} />
@@ -78,7 +117,7 @@ const UserRoutes = () => {
         <Route path="shop/shopFiltersTopBar" element={<ShopFiltersTopBar />} />
         <Route path="shop/shopList" element={<ShopList />} />
         <Route path="shop/shopSidebar" element={<ShopSideBar />} />
-        <Route path="shop/shopStyle1" element={<ShopStyle1/>} />
+        <Route path="shop/shopStyle1" element={<ShopStyle1 />} />
         <Route path="shop/shopStyle2" element={<ShopStyle2 />} />
         <Route path="shop/shopStandard" element={<ShopStandard />} />
       </Route>

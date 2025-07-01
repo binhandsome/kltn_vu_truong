@@ -8,38 +8,34 @@ import { authFetch } from '../apiService/authFetch';
 
 
   function UserHeader() {
-  const [user,  setUser]  = useState(null);
-  const [color, setColor] = useState('#000');
-const API_URL = 'http://localhost:8081/api/auth';
+    const [user, setUser] = useState(null);
 
-  /* -------- lấy user -------- */
-  const fetchUser = useCallback(async () => {
-    try {
-      const res  = await authFetch(`${API_URL}/me`);
-      const data = await res.json();
-      setUser(data);
-    } catch {
-      setUser(null);
-    }
-  }, []);
-
-  /* mount + mỗi khi token được refresh */
+    useEffect(() => {
+      const handleUpdateUser = () => {
+        const username = localStorage.getItem('username');
+        console.log('📦 USERNAME FROM STORAGE:', username);
+        setUser(username ? { username } : null);
+      };
+    
+      const handleLoggedOut = () => {
+        setUser(null);
+        // 👉 Chuyển về trang login
+        window.location.href = '/user/auth/login';
+      };
+    
+      handleUpdateUser(); // Lần đầu
+    
+      window.addEventListener('tokenRefreshed', handleUpdateUser);
+      window.addEventListener('loggedOut', handleLoggedOut);
+    
+      return () => {
+        window.removeEventListener('tokenRefreshed', handleUpdateUser);
+        window.removeEventListener('loggedOut', handleLoggedOut);
+      };
+    }, []);
   useEffect(() => {
-    fetchUser();
-
-    const onRefresh = () => fetchUser();
-    const onLogout  = () => setUser(null);
-    window.addEventListener('tokenRefreshed', onRefresh);
-    window.addEventListener('loggedOut',      onLogout);
-    return () => {
-      window.removeEventListener('tokenRefreshed', onRefresh);
-      window.removeEventListener('loggedOut',      onLogout);
-    };
-  }, [fetchUser]);
-
-  /* WOW.js chỉ 1 lần */
-  useEffect(() => { new WOW.WOW({ live: false }).init(); }, []);
-
+    new WOW.WOW({ live: false }).init();
+  }, []);
     return (
         <header className="site-header mo-left header">
   {/* Main Header */}
@@ -639,22 +635,15 @@ const API_URL = 'http://localhost:8081/api/auth';
             <ul className="header-right">
             {user ? (
   <>
-    <li className="nav-item login-link">
-      <a className="nav-link" href="/user/myaccount/dashboard">
-        {user.username}
-      </a>
-    </li>
-    <li className="nav-item">
+    <li className="nav-item user-link">
       <a
         className="nav-link"
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          logout(); // gọi API logout
-          window.dispatchEvent(new Event('loggedOut')); // cập nhật state
-        }}
+        href="javascript:void(0);"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasUser"
+        aria-controls="offcanvasUser"
       >
-        Logout
+        <i className="iconly-Broken-User" />
       </a>
     </li>
   </>
@@ -665,8 +654,6 @@ const API_URL = 'http://localhost:8081/api/auth';
     </a>
   </li>
 )}
-
-             
               <li className="nav-item search-link">
                 <a
                   className="nav-link"
@@ -1169,6 +1156,78 @@ const API_URL = 'http://localhost:8081/api/auth';
     </div>
   </div>
   {/* Sidebar cart */}
+  {/* Sidebar me */}
+  <div
+  className="offcanvas dz-offcanvas offcanvas offcanvas-end"
+  tabIndex={-1}
+  id="offcanvasUser"
+>
+  <button
+    type="button"
+    className="btn-close"
+    data-bs-dismiss="offcanvas"
+    aria-label="Close"
+  >
+    ×
+  </button>
+  <div className="offcanvas-body">
+    <div className="product-description">
+      <h5 className="mb-4">Tài khoản của bạn</h5>
+      <ul className="sidebar-cart-list">
+        <li>
+          <div className="cart-widget d-flex align-items-center">
+            <div className="cart-content w-100">
+              <a href="/user/myaccount/profile">👤 Cập nhật người dùng</a>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div className="cart-widget d-flex align-items-center">
+            <div className="cart-content w-100">
+              <a href="/user/myaccount/changePassword">🔐 Đổi mật khẩu</a>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div className="cart-widget d-flex align-items-center">
+            <div className="cart-content w-100">
+              <a href="/user/myaccount/orders">📦 Đơn hàng của tôi</a>
+            </div>
+          </div>
+        </li>
+        <li>
+  <div className="cart-widget d-flex align-items-center">
+    <div className="cart-content w-100">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          logout();
+
+          // Ẩn offcanvas nếu có
+          const userPanel = document.getElementById("offcanvasUser");
+          if (userPanel?.classList.contains("show")) {
+            userPanel.classList.remove("show");
+          }
+
+          // Gỡ lớp overlay của Bootstrap
+          document.body.classList.remove("offcanvas-backdrop");
+
+          // 👉 Không cần gọi window.dispatchEvent vì trong logout() đã có
+        }}
+      >
+        🚪 Đăng xuất
+      </a>
+    </div>
+  </div>
+</li>
+
+      </ul>
+    </div>
+  </div>
+</div>
+
+
   {/* Sidebar finter */}
   <div
     className="offcanvas dz-offcanvas offcanvas offcanvas-end "

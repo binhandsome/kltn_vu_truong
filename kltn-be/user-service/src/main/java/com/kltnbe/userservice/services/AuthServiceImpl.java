@@ -129,18 +129,23 @@ public class AuthServiceImpl implements AuthService {
         }
     }
     @Override
-    public String changePassword(String email, ChangePasswordRequest request) {
-        Auth auth = authRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+    public String changePassword(String username, ChangePasswordRequest request) {
+        // Lấy thông tin user từ username (không dùng email để tránh lộ thông tin nếu bị giả mạo)
+        Auth auth = authRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
 
+        // Kiểm tra mật khẩu hiện tại
         if (!passwordEncoder.matches(request.getCurrentPassword(), auth.getPasswordHash())) {
-            return "Mật khẩu hiện tại không chính xác";
+            throw new RuntimeException("Mật khẩu hiện tại không chính xác");
         }
 
+        // Mã hóa và cập nhật mật khẩu mới
         auth.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         authRepository.save(auth);
+
         return "Đổi mật khẩu thành công";
     }
+
 
 
 }
