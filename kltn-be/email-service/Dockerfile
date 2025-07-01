@@ -1,14 +1,15 @@
 FROM eclipse-temurin:21-jdk-jammy
 
-# Cài netcat để chờ MySQL
+# Cài netcat để đợi MySQL
 RUN apt-get update && apt-get install -y netcat
 
-# Sao chép script wait-for-mysql.sh
+# Sao chép script chờ MySQL
 COPY wait-for-mysql.sh /wait-for-mysql.sh
 RUN chmod +x /wait-for-mysql.sh
 
-# Sao chép file JAR
-COPY target/email-service-0.0.1-SNAPSHOT.jar /app.jar
+# Sao chép toàn bộ source code và Maven wrapper
+COPY . /app
+WORKDIR /app
 
-# Dùng ENTRYPOINT gọi script
-ENTRYPOINT ["/wait-for-mysql.sh", "kltn-mysql", "3306", "java", "-jar", "/app.jar"]
+# Dùng ENTRYPOINT gọi spring-boot:run sau khi MySQL sẵn sàng
+ENTRYPOINT ["/wait-for-mysql.sh", "kltn-mysql", "3306", "./mvnw", "spring-boot:run"]

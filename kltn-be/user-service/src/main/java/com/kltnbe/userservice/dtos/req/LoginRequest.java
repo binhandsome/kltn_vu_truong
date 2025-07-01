@@ -1,11 +1,10 @@
 package com.kltnbe.userservice.dtos.req;
 
+import org.antlr.v4.runtime.misc.NotNull;
+
 public class LoginRequest {
     private String email;
     private String password;
-
-    // Getters và Setters
-
 
     public String getEmail() {
         return email;

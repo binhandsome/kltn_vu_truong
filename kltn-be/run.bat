@@ -5,9 +5,15 @@ echo ============================
 echo 🚀 KLTN - Backend Starter
 echo ============================
 
+:: Build ứng dụng Spring Boot
+echo 🧱 Building user-service JAR...
+cd user-service
+call mvnw clean package -DskipTests
+cd ..
+
 :: Xoá Docker containers và volumes cũ
 echo 🧹 Cleaning up Docker...
-docker compose down
+docker compose down -v
 
 :: Xoá Docker network nếu còn
 docker network rm kltn-be_kong-net >nul 2>&1
@@ -49,9 +55,9 @@ docker run --rm --network=kltn-be_kong-net ^
   -e "KONG_PG_PASSWORD=kong" ^
   kong/kong-gateway:3.3.0.0 kong migrations bootstrap
 
-:: Build Docker services
+:: Build Docker services lại hoàn toàn (không dùng cache)
 echo 🔨 Building Docker services...
-docker compose build
+docker compose build --no-cache
 
 :: Khởi động tất cả container
 echo 🐳 Starting Docker containers...

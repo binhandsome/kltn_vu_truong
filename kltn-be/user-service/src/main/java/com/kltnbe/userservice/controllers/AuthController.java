@@ -98,7 +98,7 @@ public class AuthController {
             }
 
             String newAccessToken = jwtUtil.generateAccessToken(username);
-            String newRefreshToken = jwtUtil.generateRefreshToken();
+            String newRefreshToken = jwtUtil.generateRefreshToken(username);
             redisTemplate.opsForValue().set("refresh:" + username, newRefreshToken, 7L, TimeUnit.DAYS);
             System.out.println("Token refreshed successfully for user: " + username);
             return ResponseEntity.ok(new LoginResponse(newAccessToken, newRefreshToken, username));
