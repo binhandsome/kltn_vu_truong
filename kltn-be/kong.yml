@@ -1,3 +1,4 @@
+
 _format_version: "3.0"  # kiểu string
 services:
   - name: product-service
@@ -15,3 +16,22 @@ services:
 # plugins:
 #   - name: jwt
 #     route: product-protected
+
+_format_version: "2.1"
+services:
+  - name: user-service
+    url: http://user-service:8081
+    routes:
+      - name: user-route
+        paths:
+          - /api/auth
+
+  - name: email-service
+    url: http://email-service:8082
+    routes:
+      - name: email-route
+        paths:
+          - /api/email
+
+# Bạn có thể khai báo plugin xác thực JWT tại đây nếu cần
+

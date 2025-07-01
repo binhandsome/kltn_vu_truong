@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Component
 public class JwtUtil {
+
     @Value("${jwt.secret}")
     private String secret;
 
@@ -20,7 +21,7 @@ public class JwtUtil {
     @Value("${jwt.refresh.expiration}")
     private long refreshTokenExpiration;
 
-    private static final long CLOCK_SKEW_SECONDS = 5; // Cho phép lệch 5 giây
+    private static final long CLOCK_SKEW_SECONDS = 5;
 
     public String generateAccessToken(String username) {
         return Jwts.builder()
@@ -44,7 +45,10 @@ public class JwtUtil {
                     .getBody()
                     .getSubject();
         } catch (ExpiredJwtException e) {
-            return e.getClaims().getSubject(); // Still extract username for refresh
+            return e.getClaims().getSubject(); // Cho refresh token
+        } catch (Exception e) {
+            System.err.println("❌ getUsernameFromToken error: " + e.getMessage());
+            return null;
         }
     }
 
@@ -55,10 +59,9 @@ public class JwtUtil {
                     .setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS)
                     .parseClaimsJws(token);
             return true;
-        } catch (ExpiredJwtException e) {
-            throw new ExpiredJwtException(e.getHeader(), e.getClaims(), "Token đã hết hạn");
         } catch (Exception e) {
-            throw new RuntimeException("Token không hợp lệ", e);
+            System.err.println("❌ Token validation failed: " + e.getMessage());
+            return false;
         }
     }
 }

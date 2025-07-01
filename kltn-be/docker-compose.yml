@@ -1,0 +1,143 @@
+services:
+  kltn-mysql:
+    image: mysql:8
+    container_name: kltn-mysql
+    restart: always
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=kltn_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kong-net
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - kong-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    networks:
+      - kong-net
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - kong-net
+
+  kong-database:
+    image: postgres:13
+    container_name: kong-database
+    restart: always
+    environment:
+      - POSTGRES_USER=kong
+      - POSTGRES_DB=kong
+      - POSTGRES_PASSWORD=kong
+    ports:
+      - "5432:5432"
+    networks:
+      - kong-net
+
+  kong:
+    image: kong/kong-gateway:3.3.0.0
+    container_name: kong
+    restart: always
+    depends_on:
+      - kong-database
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=kong-database
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444
+      - KONG_PROXY_LISTEN=0.0.0.0:8000, 0.0.0.0:8443
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8443:8443"
+      - "8444:8444"
+    networks:
+      - kong-net
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    restart: always
+    depends_on:
+      - kltn-mysql
+      - redis
+      - eureka-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://kltn-mysql:3306/userservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    ports:
+      - "8081:8081"
+    networks:
+      - kong-net
+    entrypoint: ["/wait-for-mysql.sh", "kltn-mysql", "3306", "--", "java", "-jar", "/app.jar"]
+
+  email-service:
+    build: ./email-service
+    container_name: email-service
+    restart: always
+    depends_on:
+      - kltn-mysql
+      - redis
+      - eureka-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://kltn-mysql:3306/emailservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    ports:
+      - "8082:8082"
+    networks:
+      - kong-net
+    entrypoint: ["/wait-for-mysql.sh", "kltn-mysql", "3306", "--", "java", "-jar", "/app.jar"]
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8088:80"
+    environment:
+      - PMA_HOST=kltn-mysql
+      - PMA_PORT=3306
+    depends_on:
+      - kltn-mysql
+    networks:
+      - kong-net
+
+
+networks:
+  kong-net:
+    driver: bridge
+
