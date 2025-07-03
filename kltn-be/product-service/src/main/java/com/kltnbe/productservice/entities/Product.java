@@ -1,14 +1,22 @@
 package com.kltnbe.productservice.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.kltnbe.productservice.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
 @Data
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "asin"  // Dùng asin làm ID duy nhất trong JSON
+)
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,6 +65,64 @@ public class Product {
 
     @Column(name = "store_id")
     private Long storeId;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Category> category;
+
+//    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+//    private List<ProductVariant> variants;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductSize> sizes;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductImage> images;
+    @Column(name = "percent_discount")
+    private Double percentDiscount;
+
+    @Column(name = "color_asin", columnDefinition = "TEXT")
+    private String colorAsin;
+
+    public Double getPercentDiscount() {
+        return percentDiscount;
+    }
+
+    public void setPercentDiscount(Double percentDiscount) {
+        this.percentDiscount = percentDiscount;
+    }
+
+    public List<Category> getCategory() {
+        return category;
+    }
+
+    public void setCategory(List<Category> category) {
+        this.category = category;
+    }
+
+//    public List<ProductVariant> getVariants() {
+//        return variants;
+//    }
+//
+//    public void setVariants(List<ProductVariant> variants) {
+//        this.variants = variants;
+//    }
+
+    public List<ProductSize> getSizes() {
+        return sizes;
+    }
+
+    public void setSizes(List<ProductSize> sizes) {
+        this.sizes = sizes;
+    }
+
+    public List<ProductImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ProductImage> images) {
+        this.images = images;
+    }
 
     public Long getProductId() {
         return productId;

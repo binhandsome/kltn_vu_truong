@@ -1785,7 +1785,7 @@ function ShopStandard({products }) {
             <div key={product.asin} className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
               <div className="shop-card style-1">
                 <div className="dz-media">
-                  <img src={product.productThumbnail} alt="image" style={{ width: '300px', height: '300px' }} />
+                  <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${product.productThumbnail}`} alt="image" />
                   <div className="shop-meta">
                     <a
                       className="btn btn-secondary btn-md btn-rounded"
@@ -1810,10 +1810,10 @@ function ShopStandard({products }) {
                   <h5 className="title">
                     <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>{product.productTitle}</a>
                   </h5>
-                  <h5 className="price">${product.productPrice}</h5>
+                  <h5 className="price">${((product.productPrice) - ((product.productPrice * product.percentDiscount / 100)) ) .toFixed(2)}</h5>
                 </div>
                 <div className="product-tag">
-                  <span className="badge">Get 20% Off</span>
+                  <span className="badge">Get {product.percentDiscount}% Off</span>
                 </div>
               </div>
             </div>
@@ -1850,16 +1850,16 @@ function ShopStandard({products }) {
                       <div className="dz-media DZoomImage">
                         <a
                           className="mfp-link lg-item"
-                          href={selectedProduct.productThumbnail}
-                          data-src={selectedProduct.productThumbnail}
+                          href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+                          data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`}
                         >
                           <i className="feather icon-maximize dz-maximize top-right" />
                         </a>
-                        <img src={selectedProduct.productThumbnail} style={{ width: '100%', height: '500px' }} alt="image" />
+                        <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`} alt="image" />
                       </div>
                     </div>
 )}
-     {selectedProduct !== null && (
+     {/* {selectedProduct !== null && (
      <div className="swiper-slide">
                       <div className="dz-media DZoomImage">
                         <a
@@ -1885,7 +1885,7 @@ function ShopStandard({products }) {
                         <img src={selectedProduct.productThumbnail} style={{ width: '100%', height: '500px' }} alt="image" />
                       </div>
                     </div>
-)}
+)} */}
                     {/* <div className="swiper-slide">
                       <div className="dz-media DZoomImage">
                         <a
@@ -1915,16 +1915,18 @@ function ShopStandard({products }) {
                 <div className="swiper quick-modal-swiper thumb-swiper-lg thumb-sm swiper-vertical">
                   <div className="swiper-wrapper">
                          {selectedProduct !== null && (
-
-                    <div className="swiper-slide">
+                          selectedProduct.images.map((image, index) => (
+ <div className="swiper-slide">
                       <img
-                        src={selectedProduct.productThumbnail}
+                        src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`}
                         alt="image"
-                        style={{ width: '100%', height: '50px' }}
                       />
                     </div>
+                          ))
+
+                   
                          )}
-                          {selectedProduct !== null && (
+                          {/* {selectedProduct !== null && (
 
                     <div className="swiper-slide">
                       <img
@@ -1933,7 +1935,8 @@ function ShopStandard({products }) {
                         style={{ width: '100%', height: '50px' }}
                       />
                     </div>
-                         )} {selectedProduct !== null && (
+                         )}  */}
+                         {/* {selectedProduct !== null && (
 
                     <div className="swiper-slide">
                       <img
@@ -1942,7 +1945,7 @@ function ShopStandard({products }) {
                         style={{ width: '100%', height: '50px' }}
                       />
                     </div>
-                         )}
+                         )} */}
                     {/* <div className="swiper-slide">
                       <img
                         src="../../assets/user/images//products/thumb-img/lady-2.png"
@@ -1968,12 +1971,15 @@ function ShopStandard({products }) {
 
                 <div className="dz-content-footer">
                   <div className="dz-content-start">
+                                                {selectedProduct !== null && (
+
                     <span className="badge bg-secondary mb-2">
-                      SALE 20% Off
+                      SALE {selectedProduct.percentDiscount}% Off
                     </span>
+                       )}
                     <h4 className="title mb-1">
                             {selectedProduct !== null && (
-                      <a href="shop-list.html">{selectedProduct.productTitle}</a>
+                      <a href=  {`/user/productstructure/ProductDetail?asin=${selectedProduct.asin}`}>{selectedProduct.productTitle}</a>
                             )}
                     </h4>
                     <div className="review-num">
@@ -2008,10 +2014,8 @@ function ShopStandard({products }) {
                     <span className="form-label">Price</span>
                                             {selectedProduct !== null && (
 
-                    <span className="price">
-                      ${(selectedProduct.productPrice * quantity).toFixed(2)} <del>$132.17</del>
-                 
-                    </span>
+                   									<span className="price">${((selectedProduct.productPrice * quantity) - ((selectedProduct.productPrice * selectedProduct.percentDiscount / 100) * quantity) ) .toFixed(2)} <del>${(selectedProduct.productPrice * quantity).toFixed(2)}</del></span>
+
                                             )}
                   </div>
        <div className="btn-quantity light me-0">

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
+import {handleChange} from '../../apiService/productService'
 import WOW from 'wowjs'; 
 import axios from 'axios';
 import { useLocation } from 'react-router-dom'; // Ensure react-router-dom is installed
@@ -11,6 +12,16 @@ function ProductDetail() {
 	const searchParams = new URLSearchParams(location.search);
 	const asin = searchParams.get('asin');
 	const [products, setProducts] = useState([]);
+	const [quantity, setQuantity] = useState(1);
+let colorAsinArray = [];
+try {
+  colorAsinArray = typeof products.colorAsin === 'string'
+    ? JSON.parse(products.colorAsin)
+    : products.colorAsin;
+} catch (e) {
+  console.error("Không thể parse colorAsin:", e);
+  colorAsinArray = [];
+}
 
 const fetchProductDetailWithAsin = async (asin) => {
     if (!asin) {
@@ -25,7 +36,15 @@ const fetchProductDetailWithAsin = async (asin) => {
       console.error('Lỗi khi gọi API:', error);
     }
   };
-
+  const handleChange = (e) => {
+  const value = e.target.value;
+  const parsed = parseInt(value);
+  if (isNaN(parsed) || parsed < 1) {
+    setQuantity(1); 
+  } else {
+    setQuantity(parsed);
+  }
+};
   useEffect(() => {
     if (asin) {
       fetchProductDetailWithAsin(asin);
@@ -75,6 +94,84 @@ const fetchProductDetailWithAsin = async (asin) => {
 							<div className="swiper-btn-center-lr">
 								<div className="swiper product-gallery-swiper2">
 									<div className="swiper-wrapper" id="lightgallery">
+								{products.images && products.images.length > 0 ? (
+  products.images.map((image, index) => (
+    <div className="swiper-slide" key={index}>
+      <div className="dz-media DZoomImage rounded">
+        <a
+          className="mfp-link lg-item"
+		  href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
+          data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
+        >
+          <i className="feather icon-maximize dz-maximize top-right"></i>
+        </a>
+        <img
+          style={{ width: '80%', height: '80%' }}
+          src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}` || '/default-image.jpg'}
+          alt="img"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  ))
+) : (
+  <p>No images available</p>
+)}
+						{products.images && products.images.length > 0 ? (
+  products.images.map((image, index) => (
+    <div className="swiper-slide" key={index}>
+      <div className="dz-media DZoomImage rounded">
+        <a
+          className="mfp-link lg-item"
+		  href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
+          data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
+        >
+          <i className="feather icon-maximize dz-maximize top-right"></i>
+        </a>
+        <img
+          style={{ width: '80%', height: '80%' }}
+          src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}` || '/default-image.jpg'}
+          alt="img"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  ))
+) : (
+  <p>No images available</p>
+)}						{products.images && products.images.length > 0 ? (
+  products.images.map((image, index) => (
+    <div className="swiper-slide" key={index}>
+      <div className="dz-media DZoomImage rounded">
+        <a
+          className="mfp-link lg-item"
+		  href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
+          data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
+        >
+          <i className="feather icon-maximize dz-maximize top-right"></i>
+        </a>
+        <img
+          style={{ width: '80%', height: '80%' }}
+          src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}` || '/default-image.jpg'}
+          alt="img"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  ))
+) : (
+  <p>No images available</p>
+)}
+										
+								
+											{/* <div className="swiper-slide">
+											<div className="dz-media DZoomImage rounded">
+												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
+													<i className="feather icon-maximize dz-maximize top-right"></i>
+												</a>
+												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
+											</div>
+										</div>	
 										<div className="swiper-slide">
 											<div className="dz-media DZoomImage rounded">
 												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
@@ -82,22 +179,7 @@ const fetchProductDetailWithAsin = async (asin) => {
 												</a>
 												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
 											</div>
-										</div>
-											<div className="swiper-slide">
-											<div className="dz-media DZoomImage rounded">
-												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
-													<i className="feather icon-maximize dz-maximize top-right"></i>
-												</a>
-												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
-											</div>
-										</div>	<div className="swiper-slide">
-											<div className="dz-media DZoomImage rounded">
-												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
-													<i className="feather icon-maximize dz-maximize top-right"></i>
-												</a>
-												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
-											</div>
-										</div>
+										</div> */}
 										{/* <div className="swiper-slide">
 											<div className="dz-media DZoomImage rounded">
 												<a className="mfp-link lg-item" href="../assets/user/images/products/lady-2.png" data-src="../assets/user/images/products/lady-2.png">
@@ -118,14 +200,44 @@ const fetchProductDetailWithAsin = async (asin) => {
 								</div>
 								<div className="swiper product-gallery-swiper thumb-swiper-lg swiper-vertical">
 									<div className="swiper-wrapper">
+										{products.images && products.images.length > 0 ? (
+											products.images.map((image, index) => (
+											<div className="swiper-slide" key={index}>
+											<img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`} alt="img"/>
+											
+										</div>
+											))
+										) : (
+											  <p>No images available</p>
+										
+										)}
+										{products.images && products.images.length > 0 ? (
+											products.images.map((image, index) => (
+											<div className="swiper-slide" key={index}>
+											<img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`} alt="img"/>
+											
+										</div>
+											))
+										) : (
+											  <p>No images available</p>
+										
+										)}	{products.images && products.images.length > 0 ? (
+											products.images.map((image, index) => (
+											<div className="swiper-slide" key={index}>
+											<img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`} alt="img"/>
+											
+										</div>
+											))
+										) : (
+											  <p>No images available</p>
+										
+										)}
+											{/* <div className="swiper-slide">
+											<img src={products.productThumbnail} alt="img"/>
+										</div>	
 										<div className="swiper-slide">
 											<img src={products.productThumbnail} alt="img"/>
-										</div>
-											<div className="swiper-slide">
-											<img src={products.productThumbnail} alt="img"/>
-										</div>	<div className="swiper-slide">
-											<img src={products.productThumbnail} alt="img"/>
-										</div>
+										</div> */}
 										{/* <div className="swiper-slide">
 											<img src="../../assets/user/images/products/thumb-img/lady-3.png" alt="img"/>
 										</div>
@@ -142,7 +254,7 @@ const fetchProductDetailWithAsin = async (asin) => {
 							<div className="dz-content">
 								<div className="dz-content-footer">
 									<div className="dz-content-start">
-										<span className="badge bg-purple mb-2">SALE 20% Off</span>
+										<span className="badge bg-purple mb-2">SALE {products.percentDiscount}% Off</span>
 										<h4 className="title mb-1">{products.productTitle}</h4>
 										<div className="review-num">
 											<ul className="dz-rating me-2">
@@ -179,50 +291,121 @@ const fetchProductDetailWithAsin = async (asin) => {
 									</div>
 								</div>
 								<p className="para-text">
-									This comfortable cotton crop-top features the Divi Engine logo on the front expressing how easy “data Divi Engine life” is. It is the perfect tee for any occasion.
+									{products.productTitle}
 								</p>
+								
 								<div className="meta-content m-b20">
 									<span className="price-name">Price</span>
-									<span className="price">${products.productPrice} <del>$132.17</del></span>
+									<span className="price">${((products.productPrice * quantity) - ((products.productPrice * products.percentDiscount / 100) * quantity) ) .toFixed(2)} <del>${(products.productPrice * quantity).toFixed(2)}</del></span>
 								</div>
 								<div className="product-num gap-md-2 gap-xl-0">
-									<div className="btn-quantity light">
-										<label className="form-label">Quantity</label>
-										<input  type="text" value="1" name="demo_vertical2"/>
-									</div>
+									   <div className="btn-quantity light">
+    <label className="form-label fw-bold">Quantity</label>
+<div className="input-group light d-flex align-items-center">
+  <button
+    className="btn btn-dark rounded-circle p-0"
+    style={{
+      width: '40px',
+      height: '40px',
+      backgroundColor: '#000',
+      color: '#fff',
+      border: 'none',
+      minWidth: 'unset',
+      flex: '0 0 auto',
+      marginRight: '8px' // tạo khoảng cách bên phải nút -
+    }}
+    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+  >
+    -
+  </button>
+
+  <input
+    type="text"
+    value={quantity}
+    onChange={handleChange}
+    style={{ width: '60px', textAlign: 'center' }}
+  />
+
+  <button
+    className="btn btn-dark rounded-circle p-0"
+    style={{
+      width: '40px',
+      height: '40px',
+      backgroundColor: '#000',
+      color: '#fff',
+      border: 'none',
+      minWidth: 'unset',
+      flex: '0 0 auto',
+      marginLeft: '8px' // tạo khoảng cách bên trái nút +
+    }}
+    onClick={() => setQuantity(q => q + 1)}
+  >
+    +
+  </button>
+</div>
+
+  </div>
 									<div className="d-block">
 										<label className="form-label">Size</label>
 										<div className="btn-group product-size m-0">
-											<input type="radio" className="btn-check" name="btnradio1" id="btnradio101" checked=""/>
-											<label className="btn" for="btnradio101">S</label>
+  {products.sizes && products.sizes.length > 0 ? (
+    <>
+      {/* Hiển thị size đầu tiên */}
+      <input
+        type="radio"
+        className="btn-check"
+        name="btnradio2"
+        id="btnradiol0"
+      />
+      <label className="btn" htmlFor="btnradiol0">
+        {products.sizes[0].sizeName}
+      </label>
 
-											<input type="radio" className="btn-check" name="btnradio1" id="btnradiol02"/>
-											<label className="btn" for="btnradiol02">M</label>
-
-											<input type="radio" className="btn-check" name="btnradio1" id="btnradiol03"/>
-											<label className="btn" for="btnradiol03">L</label>
-											
-										</div>
+      {/* Hiển thị các size tiếp theo */}
+      {products.sizes.slice(1).map((size, index) => {
+        const inputId = `btnradiol${index + 1}`;
+        return (
+          <React.Fragment key={index}>
+            <input
+              type="radio"
+              className="btn-check"
+              name="btnradio2"
+              id={inputId}
+            />
+            <label className="btn" htmlFor={inputId}>
+              {size.sizeName}
+            </label>
+          </React.Fragment>
+        );
+      })}
+    </>
+  ) : (
+    <p>No size available</p>
+  )}
+</div>
 									</div>
 									<div className="meta-content">
 										<label className="form-label">Color</label>
 										<div className="d-flex align-items-center color-filter">
-											<div className="form-check">
-												<input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel21" value="#24262B" aria-label="..." checked/>
-												<span></span>
-											</div>
-											<div className="form-check">
-												<input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel22" value="#8CB2D1" aria-label="..."/>
-												<span></span>
-											</div>
-											<div className="form-check">
-												<input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel23" value="#0D775E" aria-label="..."/>
-												<span></span>
-											</div>
-											<div className="form-check">
-												<input className="form-check-input" type="radio" name="radioNoLabel" id="radioNoLabel24" value="#FEC4C4" aria-label="..."/>
-												<span></span>
-											</div>
+											{Array.isArray(colorAsinArray) && colorAsinArray.length > 0 ? (
+  colorAsinArray.map((item, index) => (
+    <div className="form-check" key={index}>
+      <input
+        className="form-check-input"
+        type="radio"
+        name="radioNoLabel"
+        id={`radioNoLabel-${index}`} // id nên unique
+        value={item.code_color}
+        aria-label="..."
+      />
+      <span></span>
+    </div>
+  ))
+) : (
+  "khong co gi het"
+)}
+
+					
 										</div>
 									</div>
 								</div>
@@ -249,13 +432,13 @@ const fetchProductDetailWithAsin = async (asin) => {
 										<li><a href="shop-standard.html">Summer,</a></li>												
 										<li><a href="shop-standard.html">Clothing,</a></li>												 */}
 									</ul>
-									<ul>
+									{/* <ul>
 										<li><strong>Tags:</strong></li>
 										<li><a href="shop-standard.html">Casual,</a></li>												
 										<li><a href="shop-standard.html">Athletic,</a></li>												
 										<li><a href="shop-standard.html">Workwear,</a></li>												
 										<li><a href="shop-standard.html">Accessories,</a></li>												
-									</ul>
+									</ul> */}
 									<ul className="social-icon">
 										<li><strong>Share:</strong></li>
 										<li>

@@ -28,12 +28,11 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
-
     @Autowired
     private ProductRepository productRepository;
-
     @GetMapping("/getAllProduct")
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
+//        System.out.print(productService.getAllProducts(productFileterAll).get().findFirst().get().getImages().get(0).getProduct());
         return productService.getAllProducts(productFileterAll);
     }
     @GetMapping("/filterCategories")

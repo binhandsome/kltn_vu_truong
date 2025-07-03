@@ -12,8 +12,9 @@ public class ProductSize {
     @Column(name = "size_id")
     private Long sizeId;
 
-    @Column(name = "product_asin", nullable = false, length = 50)
-    private String productAsin;
+    @ManyToOne
+    @JoinColumn(name = "product_asin", referencedColumnName = "asin")
+    private Product product;
 
     @Column(name = "size_name", length = 50)
     private String sizeName;
@@ -29,13 +30,14 @@ public class ProductSize {
         this.sizeId = sizeId;
     }
 
-    public String getProductAsin() {
-        return productAsin;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductAsin(String productAsin) {
-        this.productAsin = productAsin;
+    public void setProduct(Product product) {
+        this.product = product;
     }
+
 
     public String getSizeName() {
         return sizeName;
