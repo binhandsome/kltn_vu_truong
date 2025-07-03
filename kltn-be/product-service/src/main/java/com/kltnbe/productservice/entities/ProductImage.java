@@ -12,8 +12,9 @@ public class ProductImage {
     @Column(name = "image_id")
     private Long imageId;
 
-    @Column(name = "product_asin", nullable = false, length = 50)
-    private String productAsin;
+    @ManyToOne
+    @JoinColumn(name = "product_asin", referencedColumnName = "asin")
+    private Product product;
 
     @Column(name = "image_data", length = 255)
     private String imageData;
@@ -29,12 +30,20 @@ public class ProductImage {
         this.imageId = imageId;
     }
 
-    public String getProductAsin() {
-        return productAsin;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductAsin(String productAsin) {
-        this.productAsin = productAsin;
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public Boolean getMainImage() {
+        return isMainImage;
+    }
+
+    public void setMainImage(Boolean mainImage) {
+        isMainImage = mainImage;
     }
 
     public String getImageData() {

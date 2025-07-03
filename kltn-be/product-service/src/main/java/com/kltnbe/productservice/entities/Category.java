@@ -1,19 +1,28 @@
 package com.kltnbe.productservice.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Table(name = "categories")
 @Data
+//@JsonIdentityInfo(
+//        generator = ObjectIdGenerators.PropertyGenerator.class,
+//        property = "categoryId"  // Mỗi Category có ID riêng
+//)
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(name = "product_asin", nullable = false, length = 50)
-    private String productAsin;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_asin", referencedColumnName = "asin")
+    @JsonBackReference
+    private Product product;
 
     @Column(name = "categories", length = 255)
     private String categories;
@@ -35,12 +44,12 @@ public class Category {
         this.categoryId = categoryId;
     }
 
-    public String getProductAsin() {
-        return productAsin;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductAsin(String productAsin) {
-        this.productAsin = productAsin;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public String getCategories() {

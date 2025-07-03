@@ -507,7 +507,7 @@ useEffect(() => {
     <div  className="swiper-slide" key={item.category}>
       <div className="shop-card">
         <div className="dz-media rounded">
-          <img style={{width: '400px', height: '250px'}} src={item.thumbnail} alt={item.category} />
+          <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_400,h_350/imgProduct/IMG/${item.thumbnail}`} alt={item.category} />
         </div>
         <div className="dz-content">
           <h6 className="title">
@@ -524,7 +524,7 @@ useEffect(() => {
     <div className="swiper-slide" key={item.category}>
       <div className="shop-card">
         <div className="dz-media rounded">
-          <img style={{width: '400px', height: '250px'}} src={item.thumbnail} alt={item.category} />
+          <img  src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_400,h_350/imgProduct/IMG/${item.thumbnail}`} alt={item.category} />
         </div>
         <div className="dz-content">
           <h6 className="title">
@@ -1631,7 +1631,7 @@ useEffect(() => {
                             Cozy Knit Cardigan Sweater
                           </a>
                         </h5>
-                        <h5 className="price">$80</h5>
+                        <h5 className="price">${setSelectedProduct.productPrice}</h5>
                       </div>
                       <div className="product-tag">
                         <span className="badge ">Get 20% Off</span>
@@ -1957,7 +1957,7 @@ useEffect(() => {
  <div className="col-6 col-xl-3 col-lg-5 col-md-4 col-sm-6 m-md-b15 m-b30">
                     <div className="shop-card style-1">
                       <div className="dz-media">
-                        <img src={products.productThumbnail} style={{ width: '350px', height: '300px'}} alt="image" />
+                        <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_350,h_300/imgProduct/IMG/${products.productThumbnail}`} alt="image" />
                         <div className="shop-meta">
                           <a
                             href="javascript:void(0);"
@@ -1984,14 +1984,15 @@ useEffect(() => {
                       </div>
                       <div className="dz-content">
                         <h5 className="title">
-                          <a href="shop-list.html">
-                            Sophisticated Swagger Suit
+                    
+                          <a href={`/user/productstructure/ProductDetail?asin=${products.asin}`}>
+                            {products.productTitle}
                           </a>
                         </h5>
-                        <h5 className="price">$80</h5>
+                        <h5 className="price">${((products.productPrice) - ((products.productPrice * products.percentDiscount / 100)) ) .toFixed(2)}</h5>
                       </div>
                       <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
+                        <span className="badge ">Get {products.percentDiscount}% Off</span>
                       </div>
                     </div>
                   </div>
@@ -2024,20 +2025,23 @@ useEffect(() => {
                   <div className="swiper-wrapper" id="lightgallery">
                     
                     {selectedProduct !== null && (
+                      selectedProduct.images.map((image, index) => (
      <div className="swiper-slide">
                       <div className="dz-media DZoomImage">
                         <a
                           className="mfp-link lg-item"
-                          href={selectedProduct.productThumbnail}
-                          data-src={selectedProduct.productThumbnail}
+                          href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
+                          data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
                         >
                           <i className="feather icon-maximize dz-maximize top-right" />
                         </a>
-                        <img src={selectedProduct.productThumbnail} style={{ width: '100%', height: '500px' }} alt="image" />
+                        <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`} alt="image" />
                       </div>
                     </div>
+                      ))
+                  
 )}
-     {selectedProduct !== null && (
+     {/* {selectedProduct !== null && (
      <div className="swiper-slide">
                       <div className="dz-media DZoomImage">
                         <a
@@ -2063,7 +2067,7 @@ useEffect(() => {
                         <img src={selectedProduct.productThumbnail} style={{ width: '100%', height: '500px' }} alt="image" />
                       </div>
                     </div>
-)}
+)} */}
                     {/* <div className="swiper-slide">
                       <div className="dz-media DZoomImage">
                         <a
@@ -2093,16 +2097,18 @@ useEffect(() => {
                 <div className="swiper quick-modal-swiper thumb-swiper-lg thumb-sm swiper-vertical">
                   <div className="swiper-wrapper">
                          {selectedProduct !== null && (
-
-                    <div className="swiper-slide">
+                          selectedProduct.images.map((image, index) => (
+ <div className="swiper-slide">
                       <img
-                        src={selectedProduct.productThumbnail}
+                        src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`}
                         alt="image"
                         style={{ width: '100%', height: '50px' }}
                       />
                     </div>
+                          ))
+                   
                          )}
-                          {selectedProduct !== null && (
+                          {/* {selectedProduct !== null && (
 
                     <div className="swiper-slide">
                       <img
@@ -2120,7 +2126,7 @@ useEffect(() => {
                         style={{ width: '100%', height: '50px' }}
                       />
                     </div>
-                         )}
+                         )} */}
                     {/* <div className="swiper-slide">
                       <img
                         src="../../assets/user/images//products/thumb-img/lady-2.png"
@@ -2151,7 +2157,7 @@ useEffect(() => {
                     </span>
                     <h4 className="title mb-1">
                             {selectedProduct !== null && (
-                      <a href="shop-list.html">{selectedProduct.productTitle}</a>
+                      <a href=  {`/user/productstructure/ProductDetail?asin=${selectedProduct.asin}`}>{selectedProduct.productTitle}</a>
                             )}
                     </h4>
                     <div className="review-num">
@@ -2177,19 +2183,18 @@ useEffect(() => {
                     </div>
                   </div>
                 </div>
+                     {selectedProduct !== null && (
                 <p className="para-text">
-                  Lorem Ipsum is simply dummy text of the printing and
-                  typesetting industry. Lorem Ipsum has.
+                  {selectedProduct.productTitle}
                 </p>
+                     )}
                 <div className="meta-content m-b20 d-flex align-items-end">
                   <div className="me-3">
                     <span className="form-label">Price</span>
                                             {selectedProduct !== null && (
 
-                    <span className="price">
-                      ${(selectedProduct.productPrice * quantity).toFixed(2)} <del>$132.17</del>
-                 
-                    </span>
+                  									<span className="price">${((selectedProduct.productPrice * quantity) - ((selectedProduct.productPrice * selectedProduct.percentDiscount / 100) * quantity) ) .toFixed(2)} <del>${(selectedProduct.productPrice * quantity).toFixed(2)}</del></span>
+
                                             )}
                   </div>
        <div className="btn-quantity light me-0">
@@ -2295,7 +2300,7 @@ useEffect(() => {
                       <a href="shop-standard.html">Clothing</a>
                     </li> */}
                   </ul>
-                  <ul>
+                  {/* <ul>
                     <li>
                       <strong>Tags:</strong>
                     </li>
@@ -2311,7 +2316,7 @@ useEffect(() => {
                     <li>
                       <a href="shop-standard.html">Accessories</a>
                     </li>
-                  </ul>
+                  </ul> */}
                   <div className="dz-social-icon">
                     <ul>
                       <li>
