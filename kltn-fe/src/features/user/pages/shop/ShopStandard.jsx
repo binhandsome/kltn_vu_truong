@@ -6,6 +6,7 @@ import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
 import axios from 'axios';
+import { param } from 'jquery';
 
 function ShopStandard({products }) {
 	const [hasBgClass, setHasBgClass] = useState(true); 
@@ -16,7 +17,9 @@ function ShopStandard({products }) {
   const maxPagesToShow = 10; // Hiển thị tối đa 10 trang mỗi lần
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [quantity, setQuantity] = useState(1);
- const inputRef = useRef(null); 
+const [priceDiscount, setPriceDiscount] = useState(0); // Quản lý priceDiscount bằng state
+
+//  const inputRef = useRef(null); 
 
   const fetchProducts = async (page, size) => {
     try {
@@ -32,6 +35,43 @@ function ShopStandard({products }) {
       console.error('khong tim thay product', error);
     }
   };
+useEffect(() => {
+    if (selectedProduct) {
+      const discountPrice = (
+        selectedProduct.productPrice * quantity -
+        (selectedProduct.productPrice * selectedProduct.percentDiscount / 100) * quantity
+      ).toFixed(2);
+      setPriceDiscount(discountPrice);
+    } else {
+      setPriceDiscount(0);
+    }
+  }, [selectedProduct, quantity]);
+const addCart = async () => {
+  const cartId = localStorage.getItem("cartId") || ''; // Lấy cartId từ localStorage
+  console.log('Cart ID hiện tại:', cartId); // Log để kiểm tra cartId
+  try {
+    const payload = {
+      token: '',
+      asin: selectedProduct.asin,
+      quantity,
+      price: parseFloat(priceDiscount),
+      cartId: cartId,
+    };
+    console.log("Dữ liệu gửi lên server:", payload); // Log dữ liệu trước khi gửi
+
+    const response = await axios.post('http://localhost:8084/api/cart/addCart', payload); // Gửi trực tiếp payload
+
+    console.log("Phản hồi từ server:", response.data); // Log phản hồi
+    if (response.data.cartId) {
+      localStorage.setItem("cartId", response.data.cartId); // Cập nhật cartId
+      console.log("Đã cập nhật cartId vào localStorage:", response.data.cartId);
+    }
+    console.log("Thêm giỏ hàng thành công");
+  } catch (error) {
+    console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message); // Log lỗi chi tiết
+  }
+};
+
   useEffect(() => {
     fetchProducts(currentPage, pageSize);
   }, [currentPage, pageSize]);
@@ -94,8 +134,22 @@ function ShopStandard({products }) {
     width: '600px',
     height: '450px'
   };
- 
+useEffect(() => {
+    const modalElement = document.getElementById('exampleModal');
+    
+    const handleModalClose = () => {
+      setQuantity(1); // Reset quantity về 1
+      setPriceDiscount(0); // Reset priceDiscount hoặc tính lại nếu cần
+    };
 
+    // Thêm sự kiện hidden.bs.modal
+    modalElement.addEventListener('hidden.bs.modal', handleModalClose);
+
+    // Cleanup sự kiện khi component unmount
+    return () => {
+      modalElement.removeEventListener('hidden.bs.modal', handleModalClose);
+    };
+  }, []);
   return (
     <>
       <div className="page-wraper">
@@ -2014,7 +2068,7 @@ function ShopStandard({products }) {
                     <span className="form-label">Price</span>
                                             {selectedProduct !== null && (
 
-                   									<span className="price">${((selectedProduct.productPrice * quantity) - ((selectedProduct.productPrice * selectedProduct.percentDiscount / 100) * quantity) ) .toFixed(2)} <del>${(selectedProduct.productPrice * quantity).toFixed(2)}</del></span>
+                   									<span className="price">${priceDiscount} <del>${(selectedProduct.productPrice * quantity).toFixed(2)}</del></span>
 
                                             )}
                   </div>
@@ -2060,12 +2114,11 @@ function ShopStandard({products }) {
   </div>
                 </div>
                 <div className=" cart-btn">
-                  <a
-                    href="shop-cart.html"
+                  <button  onClick={addCart}
                     className="btn btn-secondary text-uppercase"
                   >
                     Add To Cart
-                  </a>
+                  </button>
                   <a
                     href="shop-wishlist.html"
                     className="btn btn-md btn-outline-secondary btn-icon"

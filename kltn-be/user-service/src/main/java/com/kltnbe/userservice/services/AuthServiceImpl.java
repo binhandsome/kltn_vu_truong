@@ -93,6 +93,7 @@ public class AuthServiceImpl implements AuthService {
         redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L, TimeUnit.DAYS);
         return new LoginResponse(accessToken, refreshToken, auth.getUsername());
     }
+
     @Override
     public Auth getUserByUsername(String username) {
         String cacheKey = "user:" + username;

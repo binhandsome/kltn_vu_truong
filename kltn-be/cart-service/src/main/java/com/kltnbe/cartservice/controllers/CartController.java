@@ -1,61 +1,29 @@
 package com.kltnbe.cartservice.controllers;
 
+import com.kltnbe.cartservice.dtos.req.CartRequest;
 import com.kltnbe.cartservice.dtos.res.CartResponse;
-import com.kltnbe.cartservice.dtos.res.CheckoutResponse;
-import com.kltnbe.cartservice.dtos.req.CartItemRequest;
-import com.kltnbe.cartservice.dtos.req.PaymentRequest;
 import com.kltnbe.cartservice.services.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
     @Autowired
-    private CartService cartService;
+    private final CartService cartService;
 
-    @PostMapping("/add")
-    public ResponseEntity<CartResponse> addToCart(
-            Authentication authentication,
-            @RequestBody CartItemRequest request) {
-        String username = authentication.getName();
-        CartResponse response = cartService.addToCart(username, request);
-        return ResponseEntity.ok(response);
+    public CartController(CartService cartService) {
+        this.cartService = cartService;
+    }
+    @PostMapping("/addCart")
+    public CartResponse addItemToCart(@RequestBody CartRequest cartRequest) {
+        System.out.println("Gọi endpoint /addCart với request: " + cartRequest); // Thêm log
+        CartResponse cartResponse = cartService.addItemToCart(cartRequest);
+        System.out.println("Trả về response: " + cartResponse); // Thêm log
+        return cartResponse;
     }
 
-    @GetMapping
-    public ResponseEntity<CartResponse> getCart(Authentication authentication) {
-        String username = authentication.getName();
-        CartResponse response = cartService.getCart(username);
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("/update")
-    public ResponseEntity<CartResponse> updateCartItem(
-            Authentication authentication,
-            @RequestBody CartItemRequest request) {
-        String username = authentication.getName();
-        CartResponse response = cartService.updateCartItem(username, request);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/remove/{cartItemId}")
-    public ResponseEntity<CartResponse> removeCartItem(
-            Authentication authentication,
-            @PathVariable Long cartItemId) {
-        String username = authentication.getName();
-        CartResponse response = cartService.removeCartItem(username, cartItemId);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/checkout")
-    public ResponseEntity<CheckoutResponse> checkout(
-            Authentication authentication,
-            @RequestBody PaymentRequest paymentRequest) {
-        String username = authentication.getName();
-        CheckoutResponse response = cartService.checkout(username, paymentRequest);
-        return ResponseEntity.ok(response);
-    }
 }

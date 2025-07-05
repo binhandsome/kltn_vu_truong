@@ -21,7 +21,7 @@ function Login() {
             const response = await login(credentials);
             localStorage.setItem('accessToken', response.accessToken);
             localStorage.setItem('refreshToken', response.refreshToken);
-            localStorage.setItem('username', response.username); // Thêm dòng này
+            localStorage.setItem('username', response.username); 
             setMessage('Đăng nhập thành công');
             setEmail('');
             setPassword('');
