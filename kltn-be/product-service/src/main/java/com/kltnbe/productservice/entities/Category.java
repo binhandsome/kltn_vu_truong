@@ -9,11 +9,8 @@ import lombok.Data;
 @Entity
 @Table(name = "categories")
 @Data
-//@JsonIdentityInfo(
-//        generator = ObjectIdGenerators.PropertyGenerator.class,
-//        property = "categoryId"  // Mỗi Category có ID riêng
-//)
 public class Category {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
@@ -24,7 +21,7 @@ public class Category {
     @JsonBackReference
     private Product product;
 
-    @Column(name = "categories", length = 255)
+    @Column(name = "categories", columnDefinition = "TEXT")
     private String categories;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -36,21 +33,14 @@ public class Category {
     @Column(name = "target_group", length = 100)
     private String targetGroup;
 
-    public Long getCategoryId() {
-        return categoryId;
-    }
+    @Column(name = "category_name", length = 100)
+    private String categoryName;
 
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
-    }
+    @Column(name = "category_description", length = 255)
+    private String categoryDescription;
 
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
+    @Column(name = "category_features", columnDefinition = "LONGTEXT")
+    private String categoryFeatures;
 
     public String getCategories() {
         return categories;
@@ -60,12 +50,52 @@ public class Category {
         this.categories = categories;
     }
 
+    public String getCategoryDescription() {
+        return categoryDescription;
+    }
+
+    public void setCategoryDescription(String categoryDescription) {
+        this.categoryDescription = categoryDescription;
+    }
+
+    public String getCategoryFeatures() {
+        return categoryFeatures;
+    }
+
+    public void setCategoryFeatures(String categoryFeatures) {
+        this.categoryFeatures = categoryFeatures;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public Long getStoreId() {

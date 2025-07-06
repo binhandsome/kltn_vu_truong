@@ -1,21 +1,48 @@
 // src/pages/common/HomePage.js
 import React, { useEffect,useRef, useState } from 'react';
+import Select from 'react-select'; 
 import { Helmet } from 'react-helmet'; 
 // import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
 import axios from 'axios';
+import noUiSlider from 'nouislider';
+import 'nouislider/dist/nouislider.css';
 
 function ShopStandard({products }) {
 	const [hasBgClass, setHasBgClass] = useState(true); 
-  const [product, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState(products || []);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
   const maxPagesToShow = 10; // Hiển thị tối đa 10 trang mỗi lần
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [colors, setColors] = useState([]);
+  const [sizes, setSizes] = useState([]);
+  const [categoryTree, setCategoryTree] = useState({});
+  const [expandedNodes, setExpandedNodes] = useState({});
+  const [seeMoreStates, setSeeMoreStates] = useState({});
+  const [selectedPriceRange, setSelectedPriceRange] = useState(null);
+  const priceOptions = [
+    { label: "Dưới $50", min: 0, max: 50 },
+    { label: "$50 – $100", min: 50, max: 100 },
+    { label: "$100 – $200", min: 100, max: 200 },
+    { label: "Trên $200", min: 200, max: 1000000 },
+  ];
+  
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+const colorOptions = colors.map((c) => ({
+  value: c.code_color,
+  label: c.name_color || c.code_color,
+  color: c.code_color,
+}));
  const inputRef = useRef(null); 
 
   const fetchProducts = async (page, size) => {
@@ -26,15 +53,15 @@ function ShopStandard({products }) {
           size: size,
         },
       });
-      setProducts(response.data.content);
+      setFilteredProducts(response.data.content);
       setTotalPages(response.data.totalPages);
     }catch (error) {
       console.error('khong tim thay product', error);
     }
   };
-  useEffect(() => {
-    fetchProducts(currentPage, pageSize);
-  }, [currentPage, pageSize]);
+  // useEffect(() => {
+  //   fetchProducts(currentPage, pageSize);
+  // }, [currentPage, pageSize]);
     const handleChange = (e) => {
   const value = e.target.value;
   const parsed = parseInt(value);
@@ -44,6 +71,11 @@ function ShopStandard({products }) {
     setQuantity(parsed);
   }
 };
+useEffect(() => {
+  if (!isFiltering) {
+    fetchProducts(currentPage, pageSize);
+  }
+}, [currentPage, pageSize, isFiltering]);
 
   const scrollToFilterWrapper = () => {
     const filterWrapper = document.querySelector('.filter-wrapper');
@@ -56,9 +88,9 @@ function ShopStandard({products }) {
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 0 && pageNumber < totalPages) {
       setCurrentPage(pageNumber);
-      scrollToFilterWrapper(); // Cuộn lên sau khi chuyển trang
     }
-  };
+  }
+  
   const handlePageChangeProduct = (event) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
@@ -89,12 +121,259 @@ function ShopStandard({products }) {
 		return () => { // Optional cleanup function
 			//wow.sync(); // sync and remove the DOM
 		};
-	  }, []);
+	  }, []);  
  const imageWrapperStyle = {
     width: '600px',
     height: '450px'
   };
- 
+// Gọi API lấy màu
+useEffect(() => {
+  const fetchColors = async () => {
+    try {
+      const res = await axios.get('http://localhost:8083/api/colors/getAll');
+      setColors(res.data || []);
+    } catch (err) {
+      console.error('Lỗi khi fetch màu:', err);
+    }
+  };
+  fetchColors();
+}, []);
+useEffect(() => {
+  const fetchSizes = async () => {
+    try {
+      const res = await axios.get('http://localhost:8083/api/sizes/getAll');
+      setSizes(res.data || []);
+    } catch (err) {
+      console.error('Lỗi khi fetch size:', err);
+    }
+  };
+  fetchSizes();
+}, []);
+ // Gọi API lấy category phân cấp
+ useEffect(() => {
+  const fetchCategoryTree = async () => {
+    try {
+      const res = await axios.get("http://localhost:8083/api/categories/hierarchy");
+      const tree = buildCategoryTree(res.data);
+      setCategoryTree(tree);
+    } catch (err) {
+      console.error("Lỗi khi fetch category:", err);
+    }
+  };
+
+  fetchCategoryTree();
+}, []);
+// Chuyen category thanh tree
+const buildCategoryTree = (flatData) => {
+  const root = {};
+
+  Object.entries(flatData).forEach(([path, count]) => {
+    const parts = path.split(' > ');
+    let current = root;
+
+    parts.forEach((part, index) => {
+      if (!current[part]) {
+        current[part] = { __count: 0, __children: {} };
+      }
+
+      if (index === parts.length - 1) {
+        current[part].__count = count;
+      }
+
+      current = current[part].__children;
+    });
+  });
+
+  return root;
+};
+// Quan ly trang thai mo rong
+const toggleNode = (path) => {
+  setExpandedNodes((prev) => ({
+    ...prev,
+    [path]: !prev[path],
+  }));
+};
+
+// Render category long nhau
+const renderCategoryTree = (tree, parentPath = '', level = 0) => {
+  return (
+    <ul style={{ listStyle: 'none', paddingLeft: level * 20, margin: 0, maxWidth: '240px' }}>
+      {Object.entries(tree).map(([name, { __count, __children }]) => {
+        const path = parentPath ? `${parentPath} > ${name}` : name;
+        const isExpanded = expandedNodes[path];
+        const hasChildren = Object.keys(__children).length > 0;
+
+        const totalChildren = Object.entries(__children);
+        const visibleCount = seeMoreStates[path] || 5;
+        const visibleChildren = isExpanded ? totalChildren.slice(0, visibleCount) : [];
+
+        return (
+          <li key={path} style={{ textAlign: 'left', marginBottom: '4px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                fontWeight: level === 0 ? '600' : 'normal',
+              }}
+            >
+              {/* Mũi tên để mở rộng */}
+              {hasChildren && (
+                <span
+                  style={{ cursor: 'pointer', marginRight: 6 }}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Ngăn click vào tên category
+                    setExpandedNodes((prev) => ({
+                      ...prev,
+                      [path]: !prev[path],
+                    }));
+                  }}
+                >
+                  {isExpanded ? '▼' : '▶'}
+                </span>
+              )}
+
+              {/* Tên category để lọc */}
+              <span
+                onClick={() => setSelectedCategory(path)}
+                title={name}
+                style={{
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                  maxWidth: '160px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  verticalAlign: 'middle',
+                }}
+              >
+                {name}
+              </span>
+              &nbsp;<span>({__count})</span>
+            </div>
+
+            {/* Children */}
+            {hasChildren && isExpanded && (
+              <>
+                <ul style={{ listStyle: 'none', paddingLeft: 20, margin: 0 }}>
+                  {visibleChildren.map(([childName, childData]) =>
+                    renderCategoryTree({ [childName]: childData }, path, level + 1)
+                  )}
+                </ul>
+
+                {/* See more */}
+                {totalChildren.length > visibleCount && (
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSeeMoreStates((prev) => ({
+                        ...prev,
+                        [path]: (prev[path] || 5) + 5,
+                      }));
+                    }}
+                    style={{
+                      cursor: 'pointer',
+                      color: '#007bff',
+                      border: '1px solid #007bff',
+                      borderRadius: '5px',
+                      padding: '3px 8px',
+                      marginTop: '6px',
+                      width: 'fit-content',
+                      fontSize: '0.85rem',
+                      background: '#f9f9f9',
+                      marginLeft: 'auto',
+                      marginRight: 'auto',
+                      textAlign: 'center',
+                    }}
+                  >
+                    See more
+                  </div>
+                )}
+              </>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+// Lọc
+const handleApplyFilter = async () => {
+  try {
+    const min = selectedPriceRange?.min ?? 0;
+    const max = selectedPriceRange?.max ?? 1000000;
+
+    const body = {
+      search: searchKeyword || null,
+      colors: selectedColor ? [selectedColor] : [],
+      sizes: selectedSize ? [selectedSize] : [],
+      categories: selectedCategory ? [selectedCategory] : [],
+      minPrice: min,
+      maxPrice: max,
+      sortBy: 'lowToHigh',
+      page: currentPage,
+      size: pageSize,
+    };
+
+    const res = await axios.post('http://localhost:8083/api/products/filter', body);
+    setFilteredProducts(res.data.content || []);
+    setTotalPages(res.data.totalPages || 1);
+  } catch (err) {
+    console.error("❌ Lỗi khi lọc sản phẩm:", err);
+  }
+};
+
+
+
+// useEffect(() => {
+//   handleApplyFilter();
+// }, [selectedColor, selectedSize, selectedCategory, priceRange, searchKeyword, currentPage]);
+
+// Ham lay gia tu slider
+const getPriceRangeFromSlider = () => {
+  const slider = document.getElementById("slider-tooltips2");
+  if (slider && slider.noUiSlider) {
+    const [min, max] = slider.noUiSlider.get().map(parseFloat);
+    return { min, max };
+  }
+  return null;
+};
+// Reset filter
+const handleResetFilter = () => {
+  setSelectedColor(null);
+  setSelectedSize(null);
+  setSelectedCategory(null);
+  setSearchKeyword("");
+  setSelectedPriceRange(null); // ✅ reset khoảng giá
+  setCurrentPage(0);
+};
+
+
+// ✅ Lọc sản phẩm khi có bất kỳ filter nào được chọn
+useEffect(() => {
+  const hasAnyFilter =
+    selectedColor !== null ||
+    selectedSize !== null ||
+    selectedCategory !== null ||
+    selectedPriceRange !== null ||
+    searchKeyword.trim() !== "";
+
+  if (hasAnyFilter) {
+    setIsFiltering(true);
+    handleApplyFilter();
+  } else {
+    setIsFiltering(false);
+    fetchProducts(currentPage, pageSize);
+  }
+}, [
+  selectedColor,
+  selectedSize,
+  selectedCategory,
+  selectedPriceRange,
+  searchKeyword,
+  currentPage,
+  pageSize,
+]);
+
 
   return (
     <>
@@ -161,281 +440,108 @@ function ShopStandard({products }) {
                 <div className="widget widget_search">
                   <div className="form-group">
                     <div className="input-group">
-                      <input
-                        name="dzSearch"
-                        required="required"
-                        type="search"
-                        className="form-control"
-                        placeholder="Search Product"
-                      />
+                    <input
+  name="dzSearch"
+  required="required"
+  type="search"
+  className="form-control"
+  placeholder="Search Product"
+  value={searchKeyword}
+  onChange={(e) => setSearchKeyword(e.target.value)}
+/>
                       <div className="input-group-addon">
-                        <button
-                          name="submit"
-                          value="Submit"
-                          type="submit"
-                          className="btn"
-                        >
-                          <i className="icon feather icon-search" />
-                        </button>
+                      <button
+  name="submit"
+  value="Submit"
+  type="button"
+  className="btn"
+  onClick={handleApplyFilter}
+>
+  <i className="icon feather icon-search" />
+</button>
+
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="widget">
-                  <h6 className="widget-title">Price</h6>
-                  <div className="price-slide range-slider">
-                    <div className="price">
-                      <div className="range-slider style-1">
-                        <div id="slider-tooltips2" className="mb-3" />
-                        <span
-                          className="example-val"
-                          id="slider-margin-value-min2"
-                        />
-                        <span
-                          className="example-val"
-                          id="slider-margin-value-max2"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+  <h6 className="widget-title">Khoảng giá</h6>
+  <div className="price-checkbox-list">
+    {priceOptions.map((option, index) => (
+      <div key={index} style={{ marginBottom: "4px" }}>
+        <label style={{ cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={
+              selectedPriceRange?.min === option.min &&
+              selectedPriceRange?.max === option.max
+            }
+            onChange={() => {
+              const isSame =
+                selectedPriceRange?.min === option.min &&
+                selectedPriceRange?.max === option.max;
+              setSelectedPriceRange(isSame ? null : { min: option.min, max: option.max });
+            }}
+            style={{ marginRight: 8 }}
+          />
+          {option.label}
+        </label>
+      </div>
+    ))}
+  </div>
+</div>
+
                 <div className="widget">
-                  <h6 className="widget-title">Color</h6>
-                  <div className="d-flex align-items-center flex-wrap color-filter ps-2">
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel01"
-                        defaultValue="#000000"
-                        aria-label="..."
-                        defaultChecked=""
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel02"
-                        defaultValue="#9BD1FF"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel03"
-                        defaultValue="#21B290"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel04"
-                        defaultValue="#FEC4C4"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel05"
-                        defaultValue="#FF7354"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel06"
-                        defaultValue="#51EDC8"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel07"
-                        defaultValue="#B77CF3"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel08"
-                        defaultValue="#FF4A76"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel09"
-                        defaultValue="#3E68FF"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="radioNoLabel"
-                        id="radioNoLabel20"
-                        defaultValue="#7BEF68"
-                        aria-label="..."
-                      />
-                      <span />
-                    </div>
-                  </div>
-                </div>
-                <div className="widget">
-                  <h6 className="widget-title">Size</h6>
-                  <div className="btn-group product-size">
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradio101"
-                      defaultChecked=""
-                    />
-                    <label className="btn" htmlFor="btnradio101">
-                      4
-                    </label>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradiol02"
-                    />
-                    <label className="btn" htmlFor="btnradiol02">
-                      6
-                    </label>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradiol03"
-                    />
-                    <label className="btn" htmlFor="btnradiol03">
-                      8
-                    </label>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradiol04"
-                    />
-                    <label className="btn" htmlFor="btnradiol04">
-                      10
-                    </label>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradiol05"
-                    />
-                    <label className="btn" htmlFor="btnradiol05">
-                      12
-                    </label>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradiol06"
-                    />
-                    <label className="btn" htmlFor="btnradiol06">
-                      14
-                    </label>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradiol07"
-                    />
-                    <label className="btn" htmlFor="btnradiol07">
-                      16
-                    </label>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradiol08"
-                    />
-                    <label className="btn" htmlFor="btnradiol08">
-                      18
-                    </label>
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="btnradio1"
-                      id="btnradiol09"
-                    />
-                    <label className="btn" htmlFor="btnradiol09">
-                      20
-                    </label>
-                  </div>
-                </div>
-                <div className="widget widget_categories">
-                  <h6 className="widget-title">Category</h6>
-                  <ul>
-                    <li className="cat-item cat-item-26">
-                      <a href="blog-category.html">Dresses</a> (10)
-                    </li>
-                    <li className="cat-item cat-item-36">
-                      <a href="blog-category.html">Top &amp; Blouses</a> (5)
-                    </li>
-                    <li className="cat-item cat-item-43">
-                      <a href="blog-category.html">Boots</a> (17)
-                    </li>
-                    <li className="cat-item cat-item-27">
-                      <a href="blog-category.html">Jewelry</a> (13)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Makeup</a> (06)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Fragrances</a> (17)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Shaving &amp; Grooming</a>{" "}
-                      (13)
-                    </li>
-                    <li className="cat-item cat-item-43">
-                      <a href="blog-category.html">Jacket</a> (06)
-                    </li>
-                    <li className="cat-item cat-item-36">
-                      <a href="blog-category.html">Coat</a> (22)
-                    </li>
-                  </ul>
-                </div>
-                <div className="widget widget_tag_cloud">
+  <h6 className="widget-title">Color</h6>
+  <div style={{ zIndex: 9999, position: 'relative' }}>
+  <Select
+  options={colors.map((c, idx) => ({
+    value: c.codeColor || `unknown-${idx}`,
+    label: c.nameColor || c.codeColor || `Màu ${idx + 1}`,
+  }))}
+  placeholder="Chọn màu..."
+  isClearable
+  onChange={(option) => setSelectedColor(option?.value || null)}
+  styles={{
+    menu: (base) => ({
+      ...base,
+      zIndex: 9999,
+    }),
+    control: (base) => ({
+      ...base,
+      minHeight: '36px',
+      fontSize: '14px',
+    }),
+  }}
+/>
+  </div>
+</div>
+
+<div className="widget">
+  <h6 className="widget-title">Size</h6>
+  <div className="btn-group product-size">
+    {sizes.map((size, idx) => (
+      <React.Fragment key={idx}>
+        <input
+          type="radio"
+          className="btn-check"
+          name="btnradio1"
+          id={`btnradio-size-${idx}`}
+          value={size}
+          onClick={() => setSelectedSize(size)}
+        />
+        <label className="btn" htmlFor={`btnradio-size-${idx}`}>
+          {size}
+        </label>
+      </React.Fragment>
+    ))}
+  </div>
+</div>
+<div className="widget widget_categories" style={{ maxWidth: '300px', overflow: 'hidden' }}>
+  <h6 className="widget-title">Category</h6>
+  {renderCategoryTree(categoryTree)}
+</div>
+                {/* <div className="widget widget_tag_cloud">
                   <h6 className="widget-title">Tags</h6>
                   <div className="tagcloud">
                     <a href="blog-tag.html">Vintage </a>
@@ -447,13 +553,22 @@ function ShopStandard({products }) {
                     <a href="blog-tag.html">Business Meeting</a>
                     <a href="blog-tag.html">Formal</a>
                   </div>
-                </div>
-                <a
-                  href="javascript:void(0);"
-                  className="btn btn-sm font-14 btn-secondary btn-sharp"
-                >
-                  RESET
-                </a>
+                </div> */}
+                <div style={{marginTop: '16px' }}>
+  <button
+    onClick={handleResetFilter}
+    style={{
+      padding: '8px 16px',
+      backgroundColor: '#fff',
+      color: '#000',
+      border: '1px solid #000',
+      borderRadius: '4px',
+      cursor: 'pointer',
+    }}
+  >
+    RESET
+  </button>
+</div>
               </aside>
             </div>
           </div>
@@ -1779,8 +1894,8 @@ function ShopStandard({products }) {
                 aria-labelledby="tab-list-grid-btn"
               >
                 <div className="row gx-xl-4 g-3">
-                   {product.length > 0 ? (
-          product.map((product) => (
+                   {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
             
             <div key={product.asin} className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
               <div className="shop-card style-1">
@@ -2120,23 +2235,14 @@ function ShopStandard({products }) {
                       <a href="shop-standard.html">Clothing</a>
                     </li> */}
                   </ul>
-                  <ul>
-                    <li>
-                      <strong>Tags:</strong>
-                    </li>
-                    <li>
-                      <a href="shop-standard.html">Casual</a>
-                    </li>
-                    <li>
-                      <a href="shop-standard.html">Athletic,</a>
-                    </li>
-                    <li>
-                      <a href="shop-standard.html">Workwear,</a>
-                    </li>
-                    <li>
-                      <a href="shop-standard.html">Accessories</a>
-                    </li>
-                  </ul>
+                  {selectedProduct?.sizes?.length > 0 && (
+  <ul>
+    <li><strong>Sizes:</strong></li>
+    {selectedProduct.sizes.map((sizeObj, index) => (
+      <li key={index}>{sizeObj.sizeName}</li>
+    ))}
+  </ul>
+)}
                   <div className="dz-social-icon">
                     <ul>
                       <li>

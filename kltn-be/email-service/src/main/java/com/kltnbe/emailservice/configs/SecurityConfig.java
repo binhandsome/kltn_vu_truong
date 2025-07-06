@@ -21,14 +21,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 👈 Enable CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().permitAll()
-                .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/auth/**",
                                 "/api/email/sendEmailRegister",
                                 "/api/email/checkOTP",
                                 "/api/email/sendOtpResetPassword",
@@ -36,8 +33,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 );
+
         return http.build();
     }
+
 
     // ✅ Cấu hình CORS cụ thể
     private CorsConfigurationSource corsConfigurationSource() {

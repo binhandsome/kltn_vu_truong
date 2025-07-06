@@ -1,6 +1,7 @@
 package com.kltnbe.productservice.controllers;
 
 
+import com.kltnbe.productservice.dtos.ProductFilterDTO;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
 //import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,11 +75,18 @@ public class ProductController {
         }
         return response;
     }
-    @GetMapping("/productDetail/{asin}")
-    public ResponseEntity<?> findProductDetail(@PathVariable String asin) {
-        Optional<Product> product = productService.findProductDetail(asin);
-        return product.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/api/products/{asin}")
+    public ResponseEntity<Object> getProductDetail(@PathVariable String asin) {
+        return productService.getProductDetail(asin)
+                .<ResponseEntity<Object>>map(ResponseEntity::ok)
+                .orElseGet(() ->
+                        ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found")
+                );
+    }
+
+    @PostMapping("/filter")
+    public ResponseEntity<Page<Product>> filterProducts(@RequestBody ProductFilterDTO filter) {
+        return ResponseEntity.ok(productService.filterProducts(filter));
     }
 
 }

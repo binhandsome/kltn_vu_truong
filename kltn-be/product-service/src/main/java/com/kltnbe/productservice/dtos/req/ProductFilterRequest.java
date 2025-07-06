@@ -7,8 +7,8 @@ import java.math.BigDecimal;
 public class ProductFilterRequest {
     private String salesRank;
     private String productType;
-    private int page;
-    private int size;
+    private int page =0;
+    private int size =12;
 
     public String getSalesRank() {
         return salesRank;

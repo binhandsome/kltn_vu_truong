@@ -1,6 +1,8 @@
 // Service: ProductService.java
 package com.kltnbe.productservice.services;
 
+import com.kltnbe.productservice.dtos.ProductDetailDto;
+import com.kltnbe.productservice.dtos.ProductFilterDTO;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
 //import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
@@ -17,5 +19,6 @@ public interface ProductService {
     Page<Product> findProductByProductType(String productType, Pageable pageable);
     List<String> getAllSalesRanks();
     List<String> getAllProductTypes();
-    Optional<Product> findProductDetail(String asin);
+    Optional<ProductDetailDto> getProductDetail(String asin);
+    Page<Product> filterProducts(ProductFilterDTO filter);
 }
