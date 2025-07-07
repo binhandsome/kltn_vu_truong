@@ -8,6 +8,7 @@ public class CartItemDto implements Serializable {
     private int quantity;
     private BigDecimal price;
 
+
     public CartItemDto() {}
 
     public CartItemDto(String asin, int quantity, BigDecimal price) {

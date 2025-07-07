@@ -17,11 +17,11 @@ public class EmailServiceApplication    {
     public static void main(String[] args) {
         SpringApplication.run(EmailServiceApplication.class, args);
     }
-    @Bean
-    public CommandLineRunner testSendEmail(EmailService emailService) {
-        return args -> {
-            emailService.sendOtpEmail("lethicuba1004@gmail.com", "123456");
-            System.out.println("Email đã được gửi!");
-        };
-    }
+//    @Bean
+//    public CommandLineRunner testSendEmail(EmailService emailService) {
+//        return args -> {
+//            emailService.sendOtpEmail("lethicuba1004@gmail.com", "123456");
+//            System.out.println("Email đã được gửi!");
+//        };
+
 }

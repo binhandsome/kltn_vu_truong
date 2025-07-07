@@ -115,5 +115,12 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findProductByAsin(asin);
     }
 
+    @Override
+    public List<Product> getListProductByListAsin(List<String> asin) {
+        System.out.print(asin + "asin cua tao la");
+        List<Product> productList = productRepository.findAllByAsinIn(asin);
+        return productList;
+    }
+
 
 }

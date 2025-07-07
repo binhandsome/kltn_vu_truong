@@ -32,4 +32,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "ORDER BY FUNCTION('RAND')")
     List<String> findRandomThumbnailByProductType(@Param("productType") String productType, Pageable pageable);
     Optional<Product> findProductByAsin(String asin);
+    List<Product> findAllByAsinIn(List<String> asins);
+
 }

@@ -47,14 +47,42 @@ useEffect(() => {
     }
   }, [selectedProduct, quantity]);
 const addCart = async () => {
-  const cartId = localStorage.getItem("cartId") || ''; // Lấy cartId từ localStorage
-  console.log('Cart ID hiện tại:', cartId); // Log để kiểm tra cartId
+  const cartId = localStorage.getItem("cartId") || ''; 
+  const token = localStorage.getItem("accessToken") || '';
+  console.log('Cart ID hiện tại:', cartId);
   try {
     const payload = {
-      token: '',
+      token: token,
       asin: selectedProduct.asin,
       quantity,
       price: parseFloat(priceDiscount),
+      cartId: cartId,
+    };
+    console.log("Dữ liệu gửi lên server:", payload); // Log dữ liệu trước khi gửi
+
+    const response = await axios.post('http://localhost:8084/api/cart/addCart', payload); // Gửi trực tiếp payload
+
+    console.log("Phản hồi từ server:", response.data); // Log phản hồi
+    if (response.data.cartId) {
+      localStorage.setItem("cartId", response.data.cartId); // Cập nhật cartId
+      console.log("Đã cập nhật cartId vào localStorage:", response.data.cartId);
+    }
+    console.log("Thêm giỏ hàng thành công");
+  } catch (error) {
+    console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message); // Log lỗi chi tiết
+  }
+};
+
+const addCartWithQuantity = async (quantity, product) => {
+  const cartId = localStorage.getItem("cartId") || ''; // Lấy cartId từ localStorage
+  const token = localStorage.getItem("accessToken") || ''; // Lấy cartId từ localStorage
+  console.log('Cart ID hiện tại:', cartId); // Log để kiểm tra cartId
+  try {
+    const payload = {
+      token: token,
+      asin: product.asin,
+      quantity,
+      price: parseFloat(product.productPrice),
       cartId: cartId,
     };
     console.log("Dữ liệu gửi lên server:", payload); // Log dữ liệu trước khi gửi
@@ -96,7 +124,7 @@ const addCart = async () => {
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 0 && pageNumber < totalPages) {
       setCurrentPage(pageNumber);
-      scrollToFilterWrapper(); // Cuộn lên sau khi chuyển trang
+      scrollToFilterWrapper(); 
     }
   };
   const handlePageChangeProduct = (event) => {
@@ -1854,8 +1882,13 @@ useEffect(() => {
                       <i className="icon feather icon-heart dz-heart" />
                       <i className="icon feather icon-heart-on dz-heart-fill" />
                     </div>
-                    <div className="btn btn-primary meta-icon dz-carticon">
-                      <i className="flaticon flaticon-basket" />
+                    <div className="btn btn-primary meta-icon dz-carticon" onClick={() => {
+  console.log("Click basket icon!", product);
+  addCartWithQuantity(1, product);
+}}>
+
+                  <i className="flaticon flaticon-basket" 
+/>
                       <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
                     </div>
                   </div>
@@ -2060,8 +2093,9 @@ useEffect(() => {
                   </div>
                 </div>
                 <p className="para-text">
-                  Lorem Ipsum is simply dummy text of the printing and
-                  typesetting industry. Lorem Ipsum has.
+                    {selectedProduct !== null && (
+                      selectedProduct.productTitle
+         )}
                 </p>
                 <div className="meta-content m-b20 d-flex align-items-end">
                   <div className="me-3">

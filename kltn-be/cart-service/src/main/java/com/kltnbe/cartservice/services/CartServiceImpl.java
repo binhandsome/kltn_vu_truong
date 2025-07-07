@@ -9,10 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -46,6 +43,7 @@ public class CartServiceImpl implements CartService {
         } else if (cartRequest.getCartId() != null && !cartRequest.getCartId().isEmpty()) {
             key = "cart:" + cartRequest.getCartId();
             setUser = "guest";
+            generatedCartId = cartRequest.getCartId();
             System.out.println("Xử lý với cartId: " + cartRequest.getCartId());
         } else {
             String cartId = UUID.randomUUID().toString();
@@ -54,7 +52,6 @@ public class CartServiceImpl implements CartService {
             generatedCartId = cartId;
             System.out.println("Tạo mới cartId: " + cartId);
         }
-
         CartRedisDto cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
         if (cartRedisDto == null) {
             cartRedisDto = new CartRedisDto();
@@ -66,7 +63,6 @@ public class CartServiceImpl implements CartService {
             System.out.println("Danh sách items: " + cartRedisDto.getItems());
         }
 
-        // Safely check for existing item with null-safe comparison
         Optional<CartItemDto> existingItemOpt = cartRedisDto.getItems().stream()
                 .filter(item -> Objects.equals(item.getAsin(), cartRequest.getAsin()))
                 .findFirst();
@@ -95,10 +91,8 @@ public class CartServiceImpl implements CartService {
 
         BigDecimal totalPrice = cartRedisDto.getItems().stream()
                 .filter(item -> item.getPrice() != null)
-                .map(CartItemDto::getPrice) // chỉ lấy đơn giá, không nhân quantity
+                .map(CartItemDto::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-
         CartResponse response = new CartResponse();
         response.setMessage("Thêm giỏ hàng thành công");
         response.setCartId(generatedCartId);
@@ -109,4 +103,56 @@ public class CartServiceImpl implements CartService {
 
         return response;
     }
+
+    @Override
+    public CartResponse getItemCart(CartRequest cartRequest) {
+        String key;
+        CartRedisDto cartRedisDto = null;
+
+        if (cartRequest.getToken() != null && !cartRequest.getToken().isEmpty()) {
+            String username = jwtUtil.getUsernameFromToken(cartRequest.getToken());
+            key = "cart:" + username;
+            cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
+
+            if (cartRedisDto != null && cartRedisDto.getItems() != null && !cartRedisDto.getItems().isEmpty()) {
+                return buildCartResponse(cartRedisDto, "Hiển thị giỏ hàng thành công với Token", cartRequest.getCartId());
+            }
+        }
+
+        if (cartRequest.getCartId() != null && !cartRequest.getCartId().isEmpty()) {
+            key = "cart:" + cartRequest.getCartId();
+            cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
+
+            if (cartRedisDto != null && cartRedisDto.getItems() != null && !cartRedisDto.getItems().isEmpty()) {
+                return buildCartResponse(cartRedisDto, "Hiển thị giỏ hàng thành công với Cart ID", cartRequest.getCartId());
+            }
+        }
+
+        // Không tìm thấy giỏ hàng hoặc giỏ hàng trống
+        CartResponse emptyResponse = new CartResponse();
+        emptyResponse.setTotalQuantity(0);
+        emptyResponse.setTotalPrice(BigDecimal.ZERO);
+        emptyResponse.setMessage("Không có sản phẩm trong giỏ hàng");
+        emptyResponse.setItems(new ArrayList<>());
+        return emptyResponse;
+    }
+
+    private CartResponse buildCartResponse(CartRedisDto cartRedisDto, String message, String cartId) {
+        CartResponse cartResponse = new CartResponse();
+        int totalQuantity = cartRedisDto.getItems().stream()
+                .mapToInt(CartItemDto::getQuantity)
+                .sum();
+
+        BigDecimal totalPrice = cartRedisDto.getItems().stream()
+                .filter(item -> item.getPrice() != null)
+                .map(CartItemDto::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        cartResponse.setItems(cartRedisDto.getItems());
+        cartResponse.setTotalQuantity(totalQuantity);
+        cartResponse.setTotalPrice(totalPrice);
+        cartResponse.setMessage(message);
+        cartResponse.setCartId(cartId);
+        return cartResponse;
+    }
+
 }

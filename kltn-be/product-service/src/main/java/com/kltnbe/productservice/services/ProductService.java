@@ -18,4 +18,6 @@ public interface ProductService {
     List<String> getAllSalesRanks();
     List<String> getAllProductTypes();
     Optional<Product> findProductDetail(String asin);
+    List<Product> getListProductByListAsin(List<String> asin);
+
 }

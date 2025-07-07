@@ -5,11 +5,14 @@ import logo from '../../../assets/user/images/logo.svg';
 import { logout } from '../apiService/authService';
 import WOW from 'wowjs';
 import { authFetch } from '../apiService/authFetch';
+import axios from 'axios';
+import $ from 'jquery';
 
 
   function UserHeader() {
   const [user,  setUser]  = useState(null);
   const [color, setColor] = useState('#000');
+  const [listCart, setListCart] = useState([]);
 const API_URL = 'http://localhost:8081/api/auth';
 
   /* -------- lấy user -------- */
@@ -22,6 +25,31 @@ const API_URL = 'http://localhost:8081/api/auth';
       setUser(null);
     }
   }, []);
+  useEffect(() => {
+  $('.touchspin-input').TouchSpin();
+  $('.touchspin-input').on('change', (e) => {
+    const asin = e.target.dataset.asin;
+    const newValue = Number(e.target.value);
+    updateQuantity(asin, newValue);
+  });
+}, []);
+const updateQuantity = (asin, newQuantity) => {
+  setListCart(prev =>
+    prev.items.map(item =>
+      item.asin === asin
+        ? { ...item, quantity: Math.max(1, newQuantity) }
+        : item
+    )
+  );
+};
+
+const handleQuantityChange = (asin, newQuantity) => {
+  setListCart(prev =>
+    prev.items.map(item =>
+      item.asin === asin ? { ...item, quantity: Number(newQuantity) } : item
+    )
+  );
+};
 
   /* mount + mỗi khi token được refresh */
   useEffect(() => {
@@ -36,7 +64,65 @@ const API_URL = 'http://localhost:8081/api/auth';
       window.removeEventListener('loggedOut',      onLogout);
     };
   }, [fetchUser]);
+const getCartProduct = async () => {
+  const cartId = localStorage.getItem("cartId") || '';
+  const token = localStorage.getItem("accessToken") || '';
+  try {
+    const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
+      params: { cartId, token },
+    });
+    console.log("Phản hồi từ server:", cartResponse.data);
 
+    const cartItems = cartResponse.data.items;
+    if (!cartItems || cartItems.length === 0) {
+      setListCart([]);
+      return;
+    }
+
+    const asins = cartItems.map(item => item.asin).join(',');
+    console.log('Asins:', asins);
+
+    const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
+      params: { asins },
+    });
+    console.log("Chi tiết sản phẩm:", productResponse.data);
+
+    const combined = cartItems.map(item => {
+  const product = productResponse.data.find(p => p.asin === item.asin);
+  const itemTotalPrice = item.quantity * item.price;
+  return {
+    ...item,
+    ...product,
+    itemTotalPrice,
+  };
+});
+
+// Tạo response cuối cùng: gộp full cartResponse.data + items đã merge
+const finalResponse = {
+  ...cartResponse.data,    // giữ message, totalQuantity, totalPrice, cartId
+  items: combined,         // thay items bằng danh sách đã merge
+};
+
+// Lưu kết quả cuối cùng vào listCart (hoặc state riêng nếu bạn cần)
+setListCart(finalResponse);
+
+console.log("Kết quả cuối cùng:", finalResponse);
+
+
+  } catch (error) {
+    console.log("Không thể lấy giỏ hàng:", error.response ? error.response.data : error.message);
+    setListCart([]);
+  }
+};
+
+// Xem giá trị listCart khi cập nhật xong:
+useEffect(() => {
+  console.log("listCart updated:", listCart);
+}, [listCart]);
+
+useEffect(() => {
+  getCartProduct();
+}, []);
   /* WOW.js chỉ 1 lần */
   useEffect(() => { new WOW.WOW({ live: false }).init(); }, []);
 
@@ -933,7 +1019,9 @@ const API_URL = 'http://localhost:8081/api/auth';
                 aria-selected="true"
               >
                 Shopping Cart
-                <span className="badge badge-light">5</span>
+          <span className="badge badge-light">
+  {listCart && listCart.items ? listCart.items.length : 0}
+</span>
               </button>
             </li>
             <li className="nav-item" role="presentation">
@@ -962,26 +1050,28 @@ const API_URL = 'http://localhost:8081/api/auth';
             >
               <div className="shop-sidebar-cart">
                 <ul className="sidebar-cart-list">
-                  <li>
+{listCart && listCart.items && listCart.items.length > 0 ? (
+                    listCart.items.map((item) => (
+   <li>
                     <div className="cart-widget">
                       <div className="dz-media me-3">
-                        <img src="../../assets/user/images/shop/shop-cart/pic1.jpg" alt="" />
+                        <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${item.productThumbnail}`} alt="" />
                       </div>
                       <div className="cart-content">
                         <h6 className="title">
                           <a href="product-thumbnail.html">
-                            Sophisticated Swagger Suit
+                            {item.productTitle}
                           </a>
                         </h6>
                         <div className="d-flex align-items-center">
                           <div className="btn-quantity light quantity-sm me-3">
                             <input
                               type="text"
-                              defaultValue={1}
+                              defaultValue={item.quantity}
                               name="demo_vertical2"
                             />
                           </div>
-                          <h6 className="dz-price mb-0">$50.00</h6>
+                          <h6 className="dz-price mb-0">${item.price}</h6>
                         </div>
                       </div>
                       <a href="javascript:void(0);" className="dz-close">
@@ -989,7 +1079,15 @@ const API_URL = 'http://localhost:8081/api/auth';
                       </a>
                     </div>
                   </li>
-                  <li>
+                    )
+                    
+                  )
+                ):(
+  <li>Giỏ hàng trống</li>
+                
+                  )}
+              
+                  {/* <li>
                     <div className="cart-widget">
                       <div className="dz-media me-3">
                         <img src="../../assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
@@ -1042,7 +1140,7 @@ const API_URL = 'http://localhost:8081/api/auth';
                         <i className="ti-close" />
                       </a>
                     </div>
-                  </li>
+                  </li> */}
                 </ul>
                 <div className="cart-total">
                   <h5 className="mb-0">Subtotal:</h5>
