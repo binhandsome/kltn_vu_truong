@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from '../../../assets/user/images/logo.svg';
@@ -6,15 +6,41 @@ import { logout } from '../apiService/authService';
 import WOW from 'wowjs';
 import { authFetch } from '../apiService/authFetch';
 import axios from 'axios';
-import $ from 'jquery';
-
 
   function UserHeader() {
   const [user,  setUser]  = useState(null);
   const [color, setColor] = useState('#000');
   const [listCart, setListCart] = useState([]);
 const API_URL = 'http://localhost:8081/api/auth';
+const [quantity, setQuantity] = useState(1);
+const [quantityMap, setQuantityMap] = useState({});
 
+const handleIncrement = (productId, quantity) => {
+  const newQuantity = (quantity || 1) + 1;
+  setQuantityMap((prev) => ({
+    ...prev,
+    [productId]: newQuantity,
+  }));
+};
+
+
+const handleDecrement = (productId, quantity) => {
+const newQuantity = (quantity || 1) - 1;
+  setQuantityMap((prev) => ({
+    ...prev,
+    [productId]: newQuantity,
+  }));
+};
+
+const handleChange = (productId, value) => {
+  const num = Number(value);
+  if (!isNaN(num) && num >= 1) {
+    setQuantityMap((prev) => ({
+      ...prev,
+      [productId]: num,
+    }));
+  }
+};
   /* -------- lấy user -------- */
   const fetchUser = useCallback(async () => {
     try {
@@ -25,31 +51,6 @@ const API_URL = 'http://localhost:8081/api/auth';
       setUser(null);
     }
   }, []);
-  useEffect(() => {
-  $('.touchspin-input').TouchSpin();
-  $('.touchspin-input').on('change', (e) => {
-    const asin = e.target.dataset.asin;
-    const newValue = Number(e.target.value);
-    updateQuantity(asin, newValue);
-  });
-}, []);
-const updateQuantity = (asin, newQuantity) => {
-  setListCart(prev =>
-    prev.items.map(item =>
-      item.asin === asin
-        ? { ...item, quantity: Math.max(1, newQuantity) }
-        : item
-    )
-  );
-};
-
-const handleQuantityChange = (asin, newQuantity) => {
-  setListCart(prev =>
-    prev.items.map(item =>
-      item.asin === asin ? { ...item, quantity: Number(newQuantity) } : item
-    )
-  );
-};
 
   /* mount + mỗi khi token được refresh */
   useEffect(() => {
@@ -1065,12 +1066,40 @@ useEffect(() => {
                         </h6>
                         <div className="d-flex align-items-center">
                           <div className="btn-quantity light quantity-sm me-3">
-                            <input
-                              type="text"
-                              defaultValue={item.quantity}
-                              name="demo_vertical2"
-                            />
-                          </div>
+  <div
+    className="d-flex align-items-center"
+    style={{ gap: '5px' }}
+  >
+    <input
+      type="text"
+value={quantityMap[item.productId] ?? item.quantity ?? 1}
+      onChange={(e) => handleChange(item.productId, item.quantity)}
+      className="form-control"
+      style={{
+        textAlign: 'center',
+        width: '60px',
+      }}
+    />
+    <div className="d-flex flex-column">
+      <button
+        className="btn btn-outline-secondary py-1 px-2"
+ onClick={() =>
+    handleIncrement(item.productId, quantityMap[item.productId] ?? item.quantity ?? 1)
+  }      >
+        <i className="fa-solid fa-plus"></i>
+      </button>
+      <button
+        className="btn btn-outline-secondary py-1 px-2"
+onClick={() =>
+    handleDecrement(item.productId, quantityMap[item.productId] ?? item.quantity ?? 1)
+  }           >
+        <i className="fa-solid fa-minus"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
                           <h6 className="dz-price mb-0">${item.price}</h6>
                         </div>
                       </div>
@@ -1086,65 +1115,11 @@ useEffect(() => {
   <li>Giỏ hàng trống</li>
                 
                   )}
-              
-                  {/* <li>
-                    <div className="cart-widget">
-                      <div className="dz-media me-3">
-                        <img src="../../assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
-                      </div>
-                      <div className="cart-content">
-                        <h6 className="title">
-                          <a href="product-thumbnail.html">
-                            Cozy Knit Cardigan Sweater
-                          </a>
-                        </h6>
-                        <div className="d-flex align-items-center">
-                          <div className="btn-quantity light quantity-sm me-3">
-                            <input
-                              type="text"
-                              defaultValue={1}
-                              name="demo_vertical2"
-                            />
-                          </div>
-                          <h6 className="dz-price mb-0">$40.00</h6>
-                        </div>
-                      </div>
-                      <a href="javascript:void(0);" className="dz-close">
-                        <i className="ti-close" />
-                      </a>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="cart-widget">
-                      <div className="dz-media me-3">
-                        <img src="../../assets/user/images/shop/shop-cart/pic3.jpg" alt="" />
-                      </div>
-                      <div className="cart-content">
-                        <h6 className="title">
-                          <a href="product-thumbnail.html">
-                            Athletic Mesh Sports Leggings
-                          </a>
-                        </h6>
-                        <div className="d-flex align-items-center">
-                          <div className="btn-quantity light quantity-sm me-3">
-                            <input
-                              type="text"
-                              defaultValue={1}
-                              name="demo_vertical2"
-                            />
-                          </div>
-                          <h6 className="dz-price  mb-0">$65.00</h6>
-                        </div>
-                      </div>
-                      <a href="javascript:void(0);" className="dz-close">
-                        <i className="ti-close" />
-                      </a>
-                    </div>
-                  </li> */}
-                </ul>
+            
+        </ul>
                 <div className="cart-total">
                   <h5 className="mb-0">Subtotal:</h5>
-                  <h5 className="mb-0">300.00$</h5>
+                  <h5 className="mb-0">{listCart.totalPrice}$</h5>
                 </div>
                 <div className="mt-auto">
                   <div className="shipping-time">

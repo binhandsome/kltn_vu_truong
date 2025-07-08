@@ -10,6 +10,7 @@
     "aos": "^2.3.4",
     "axios": "^1.10.0",
     "bootstrap": "^5.3.3",
+    "bootstrap-touchspin": "^4.7.3",
     "feather-icons": "^4.29.2",
     "jquery": "^3.7.1",
     "mutation-observer": "^1.0.3",
