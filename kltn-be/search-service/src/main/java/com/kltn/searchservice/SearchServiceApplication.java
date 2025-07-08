@@ -1,4 +1,4 @@
-package search.service.search_service;
+package com.kltn.searchservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

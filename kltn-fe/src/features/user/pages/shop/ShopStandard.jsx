@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import WOW from 'wowjs'; // Import WOW.js
 import axios from 'axios';
 import { param } from 'jquery';
+import { type } from '@testing-library/user-event/dist/type';
 
 function ShopStandard({products }) {
 	const [hasBgClass, setHasBgClass] = useState(true); 
@@ -14,10 +15,13 @@ function ShopStandard({products }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
-  const maxPagesToShow = 10; // Hiển thị tối đa 10 trang mỗi lần
+  const maxPagesToShow = 10;
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [quantity, setQuantity] = useState(1);
-const [priceDiscount, setPriceDiscount] = useState(0); // Quản lý priceDiscount bằng state
+  const [priceDiscount, setPriceDiscount] = useState(0); // Quản lý priceDiscount bằng state
+  const [salesRankCount, setSalesRankCount] = useState([]);
+  const [productTypeCount, setProductTypeCount] = useState([]);
+  const [tags, setTags] = useState([]);
 
 //  const inputRef = useRef(null); 
 
@@ -35,6 +39,23 @@ const [priceDiscount, setPriceDiscount] = useState(0); // Quản lý priceDiscou
       console.error('khong tim thay product', error);
     }
   };
+  const getAllCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8083/api/products/getAllCategories', {
+      }
+    );
+    setSalesRankCount(response.data.salesRankCount);
+    setProductTypeCount(response.data.productTypeCount);
+    setTags(response.data.tags);
+
+    console.log(response.data.salesRankCount + 'ok data')
+    }catch (error) {
+      console.error('khong co categories nao', error)
+    }
+  }
+ useEffect(() => {
+  getAllCategories();
+}, []); // Thêm mảng phụ thuộc rỗng
 useEffect(() => {
     if (selectedProduct) {
       const discountPrice = (
@@ -484,47 +505,39 @@ useEffect(() => {
                     </label>
                   </div>
                 </div> */}
-                <div className="widget widget_categories">
-                  <h6 className="widget-title">Category</h6>
+                       <div className="widget widget_categories">
+                          <h6 className="widget-title">Category</h6>
                   <ul>
+                {Object.entries(salesRankCount).map(([type, count]) => (
+                
                     <li className="cat-item cat-item-26">
-                      <a href="blog-category.html">Dresses</a> (10)
+                      <a href={`/user/shop/shopWithCategory?salesRank=${type}`}>{type}</a> ({count})
                     </li>
-                    <li className="cat-item cat-item-36">
-                      <a href="blog-category.html">Top &amp; Blouses</a> (5)
+                
+           
+                ))}
+                       </ul>
+                         </div>
+                 <div className="widget widget_categories">
+                  <h6 className="widget-title">Type</h6>
+                  <ul>
+                       {Object.entries(productTypeCount).map(([type, count]) => (
+                    <li className="cat-item cat-item-26">
+                      <a href={`/user/shop/shopWithCategory?productType=${type}`}>{type}</a> ({count})
                     </li>
-                    <li className="cat-item cat-item-43">
-                      <a href="blog-category.html">Boots</a> (17)
-                    </li>
-                    <li className="cat-item cat-item-27">
-                      <a href="blog-category.html">Jewelry</a> (13)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Makeup</a> (06)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Fragrances</a> (17)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Shaving &amp; Grooming</a>{" "}
-                      (13)
-                    </li>
-                    <li className="cat-item cat-item-43">
-                      <a href="blog-category.html">Jacket</a> (06)
-                    </li>
-                    <li className="cat-item cat-item-36">
-                      <a href="blog-category.html">Coat</a> (22)
-                    </li>
+                ))}
+    
+                  
                   </ul>
                 </div>
                 <div className="widget widget_tag_cloud">
                   <h6 className="widget-title">Tags</h6>
                   <div className="tagcloud">
-                    <a href="blog-tag.html">Unisex </a>
-                    <a href="blog-tag.html">Women</a>
-                    <a href="blog-tag.html">Girls</a>
-                    <a href="blog-tag.html">Men</a>
-                    <a href="blog-tag.html">Boys</a>
+                                           {Object.entries(tags).map(([type, count]) => (
+
+                    <a href={`/user/shop/shopWithCategory?tags=${type}`}>{type} </a>
+                                    ))}
+   
   
                   </div>
                 </div>
@@ -2209,10 +2222,16 @@ useEffect(() => {
                     <li>
                       <strong>Tags:</strong>
                     </li>
-                    <li>
-                      <a href="shop-standard.html">Casual</a>
-                    </li>
-                    <li>
+              {Object.entries(tags).map(([tag, count], index, arr) => (
+  <li key={tag}>
+    <a href="shop-standard.html">
+      {tag}{index < arr.length - 1 ? ', ' : ''}
+    </a>
+  </li>
+))}
+
+              
+                    {/* <li>
                       <a href="shop-standard.html">Athletic,</a>
                     </li>
                     <li>
@@ -2220,7 +2239,7 @@ useEffect(() => {
                     </li>
                     <li>
                       <a href="shop-standard.html">Accessories</a>
-                    </li>
+                    </li> */}
                   </ul>
                   <div className="dz-social-icon">
                     <ul>

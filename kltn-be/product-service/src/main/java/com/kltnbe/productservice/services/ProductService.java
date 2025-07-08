@@ -15,6 +15,7 @@ public interface ProductService {
     Page<Product> getAllProducts(ProductFileterAll productFileterAll);
     Page<Product> findProductBySalesRank(String salesRank, Pageable pageable);
     Page<Product> findProductByProductType(String productType, Pageable pageable);
+    Page<Product> findProductByTags(String tags, Pageable pageable);
     List<String> getAllSalesRanks();
     List<String> getAllProductTypes();
     Optional<Product> findProductDetail(String asin);

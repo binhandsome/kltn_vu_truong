@@ -5,6 +5,7 @@ import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
 //import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
 //import com.kltnbe.productservice.dtos.res.ProductSearchResponse;
+import com.kltnbe.productservice.dtos.res.CategoryResponse;
 import com.kltnbe.productservice.dtos.res.CategoryWithImage;
 import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
 import com.kltnbe.productservice.entities.Product;
@@ -17,10 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @RestController
@@ -35,6 +33,35 @@ public class ProductController {
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
 //        System.out.print(productService.getAllProducts(productFileterAll).get().findFirst().get().getImages().get(0).getProduct());
         return productService.getAllProducts(productFileterAll);
+    }
+    @GetMapping("/getAllCategories")
+    public CategoryResponse categoryResponse() {
+        CategoryResponse categoryResponse = new CategoryResponse();
+        List<Object[]> results = productRepository.countProductsBySalesRanks();
+        Map<String, Integer> salesRanksCount = new HashMap<>();
+        for (Object[] result : results) {
+            String rank = (String) result[0];
+            Long count = (Long) result[1];
+            salesRanksCount.put(rank, count.intValue());
+            categoryResponse.setSalesRankCount(salesRanksCount);
+        }
+        List<Object[]> resultsProductType = productRepository.countProductsByProductType();
+        Map<String, Integer> productTypeCount = new HashMap<>();
+        for (Object[] result : resultsProductType) {
+            String type = (String) result[0];
+            Long count = (Long) result[1];
+            productTypeCount.put(type, count.intValue());
+            categoryResponse.setProductTypeCount(productTypeCount);
+        }
+        List<Object[]> resultsTags = productRepository.countProductsByTags();
+        Map<String, Integer> tagsCount = new HashMap<>();
+        for (Object[] result : resultsTags) {
+            String tags = (String) result[0];
+            Long count = (Long) result[1];
+            tagsCount.put(tags, count.intValue());
+            categoryResponse.setTags(tagsCount);
+        }
+        return categoryResponse;
     }
     @GetMapping("/filterCategories")
     public ProductFilterResponse filterProductByCategories(ProductFilterRequest req) {
@@ -71,6 +98,10 @@ public class ProductController {
             response.setProductTypes(productTypes);
             response.setProductTypeCategories(productTypeCategories);
             System.out.print("salesRank and Categories" + productTypeCategories);
+        } else if (req.getTags() != null) {
+            Page<Product> products = productService.findProductByTags(req.getTags(), pageable);
+            response.setProducts(products);
+            System.out.print("tags mame: ");
         }
         return response;
     }

@@ -84,6 +84,25 @@ public class Product {
     @Column(name = "color_asin", columnDefinition = "TEXT")
     private String colorAsin;
 
+    @Column(name = "tags")
+    private String tags;
+
+    public String getColorAsin() {
+        return colorAsin;
+    }
+
+    public void setColorAsin(String colorAsin) {
+        this.colorAsin = colorAsin;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
     public Double getPercentDiscount() {
         return percentDiscount;
     }

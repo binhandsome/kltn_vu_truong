@@ -17,6 +17,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findAll(Pageable pageable);
     Page<Product> findProductBySalesRank(String salesRank, Pageable pageable);
     Page<Product> findProductByProductType(String productType, Pageable pageable);
+    Page<Product> findProductByTags(String tags, Pageable pageable);
     @Query("SELECT DISTINCT COALESCE(p.salesRank, 'Other') FROM Product p")
     List<String> findAllDistinctSalesRanks();
     @Query("SELECT DISTINCT COALESCE(p.productType, 'Other') FROM Product p")
@@ -33,5 +34,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<String> findRandomThumbnailByProductType(@Param("productType") String productType, Pageable pageable);
     Optional<Product> findProductByAsin(String asin);
     List<Product> findAllByAsinIn(List<String> asins);
-
+    @Query("SELECT p.salesRank, COUNT(p) FROM Product p GROUP BY p.salesRank")
+    List<Object[]> countProductsBySalesRanks();
+    @Query("SELECT p.productType, COUNT(p) FROM Product p GROUP BY p.productType")
+    List<Object[]> countProductsByProductType();
+    @Query("SELECT p.tags, COUNT(p) FROM Product p GROUP BY p.tags")
+    List<Object[]> countProductsByTags();
 }
