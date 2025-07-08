@@ -281,7 +281,7 @@ useEffect(() => {
                     </div>
                   </div>
                 </div>
-                <div className="widget">
+                {/* <div className="widget">
                   <h6 className="widget-title">Color</h6>
                   <div className="d-flex align-items-center flex-wrap color-filter ps-2">
                     <div className="form-check">
@@ -483,7 +483,7 @@ useEffect(() => {
                       20
                     </label>
                   </div>
-                </div>
+                </div> */}
                 <div className="widget widget_categories">
                   <h6 className="widget-title">Category</h6>
                   <ul>
@@ -520,14 +520,12 @@ useEffect(() => {
                 <div className="widget widget_tag_cloud">
                   <h6 className="widget-title">Tags</h6>
                   <div className="tagcloud">
-                    <a href="blog-tag.html">Vintage </a>
-                    <a href="blog-tag.html">Wedding</a>
-                    <a href="blog-tag.html">Cotton</a>
-                    <a href="blog-tag.html">Linen</a>
-                    <a href="blog-tag.html">Navy</a>
-                    <a href="blog-tag.html">Urban</a>
-                    <a href="blog-tag.html">Business Meeting</a>
-                    <a href="blog-tag.html">Formal</a>
+                    <a href="blog-tag.html">Unisex </a>
+                    <a href="blog-tag.html">Women</a>
+                    <a href="blog-tag.html">Girls</a>
+                    <a href="blog-tag.html">Men</a>
+                    <a href="blog-tag.html">Boys</a>
+  
                   </div>
                 </div>
                 <a
