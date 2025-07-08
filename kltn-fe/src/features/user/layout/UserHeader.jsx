@@ -14,6 +14,7 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8081/api/auth';
 const [quantity, setQuantity] = useState(1);
 const [quantityMap, setQuantityMap] = useState({});
+const [wishlistItems, setWishlistItems] = useState([]);
 
 const handleIncrement = (productId, quantity) => {
   const newQuantity = (quantity || 1) + 1;
@@ -126,7 +127,44 @@ useEffect(() => {
 }, []);
   /* WOW.js chỉ 1 lần */
   useEffect(() => { new WOW.WOW({ live: false }).init(); }, []);
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    try {
+      const res = await axios.get("http://localhost:8083/api/wishlist", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWishlistItems(res.data);
+    } catch (error) {
+      console.error("❌ Lỗi lấy wishlist:", error);
+    }
+  };
 
+  useEffect(() => {
+    fetchWishlist();
+
+    // ✅ Lắng nghe sự kiện thêm/xoá từ nơi khác
+    const handleUpdated = () => fetchWishlist();
+    window.addEventListener("wishlistUpdated", handleUpdated);
+
+    return () => window.removeEventListener("wishlistUpdated", handleUpdated);
+  }, [user]);
+
+  const handleRemoveFromWishlist = async (asin) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    try {
+      await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWishlistItems(prev => prev.filter(item => item.asin !== asin));
+
+      // ✅ Phát sự kiện ra ngoài
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    } catch (err) {
+      console.error("❌ Lỗi xoá khỏi wishlist:", err);
+    }
+  };
     return (
         <header className="site-header mo-left header">
   {/* Main Header */}
@@ -1026,20 +1064,23 @@ useEffect(() => {
               </button>
             </li>
             <li className="nav-item" role="presentation">
-              <button
-                className="nav-link"
-                id="wishlist"
-                data-bs-toggle="tab"
-                data-bs-target="#wishlist-pane"
-                type="button"
-                role="tab"
-                aria-controls="wishlist-pane"
-                aria-selected="false"
-              >
-                Wishlist
-                <span className="badge badge-light">2</span>
-              </button>
-            </li>
+  <button
+    className="nav-link"
+    id="wishlist"
+    data-bs-toggle="tab"
+    data-bs-target="#wishlist-pane"
+    type="button"
+    role="tab"
+    aria-controls="wishlist-pane"
+    aria-selected="false"
+  >
+    Wishlist
+    <span className="badge badge-light">
+      {wishlistItems.length}
+    </span>
+  </button>
+</li>
+
           </ul>
           <div className="tab-content pt-4" id="dz-shopcart-sidebar">
             <div
@@ -1157,85 +1198,77 @@ onClick={() =>
               </div>
             </div>
             <div
-              className="tab-pane fade"
-              id="wishlist-pane"
-              role="tabpanel"
-              aria-labelledby="wishlist"
-              tabIndex={0}
-            >
-              <div className="shop-sidebar-cart">
-                <ul className="sidebar-cart-list">
-                  <li>
-                    <div className="cart-widget">
-                      <div className="dz-media me-3">
-                        <img src="../../assets/user/images/shop/shop-cart/pic1.jpg" alt="" />
-                      </div>
-                      <div className="cart-content">
-                        <h6 className="title">
-                          <a href="product-thumbnail.html">
-                            Sophisticated Swagger Suit
-                          </a>
-                        </h6>
-                        <div className="d-flex align-items-center">
-                          <h6 className="dz-price  mb-0">$50.00</h6>
-                        </div>
-                      </div>
-                      <a href="javascript:void(0);" className="dz-close">
-                        <i className="ti-close" />
-                      </a>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="cart-widget">
-                      <div className="dz-media me-3">
-                        <img src="../../assets/user/images/shop/shop-cart/pic2.jpg" alt="" />
-                      </div>
-                      <div className="cart-content">
-                        <h6 className="title">
-                          <a href="product-thumbnail.html">
-                            Cozy Knit Cardigan Sweater
-                          </a>
-                        </h6>
-                        <div className="d-flex align-items-center">
-                          <h6 className="dz-price  mb-0">$40.00</h6>
-                        </div>
-                      </div>
-                      <a href="javascript:void(0);" className="dz-close">
-                        <i className="ti-close" />
-                      </a>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="cart-widget">
-                      <div className="dz-media me-3">
-                        <img src="../../assets/user/images/shop/shop-cart/pic3.jpg" alt="" />
-                      </div>
-                      <div className="cart-content">
-                        <h6 className="title">
-                          <a href="product-thumbnail.html">
-                            Athletic Mesh Sports Leggings
-                          </a>
-                        </h6>
-                        <div className="d-flex align-items-center">
-                          <h6 className="dz-price  mb-0">$65.00</h6>
-                        </div>
-                      </div>
-                      <a href="javascript:void(0);" className="dz-close">
-                        <i className="ti-close" />
-                      </a>
-                    </div>
-                  </li>
-                </ul>
-                <div className="mt-auto">
-                  <a
-                    href="shop-wishlist.html"
-                    className="btn btn-secondary btn-block"
-                  >
-                    Check Your Favourite
-                  </a>
-                </div>
-              </div>
+  className="tab-pane fade"
+  id="wishlist-pane"
+  role="tabpanel"
+  aria-labelledby="wishlist"
+  tabIndex={0}
+>
+  <div className="shop-sidebar-cart">
+  <ul className="sidebar-cart-list">
+  {wishlistItems.length > 0 ? (
+    wishlistItems.map((item) => (
+      <li key={item.asin}>
+        <div className="cart-widget">
+          <div className="dz-media me-3">
+            <img
+              src={item.image
+                ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_100,h_100/imgProduct/IMG/${item.image}`
+                : "/assets/user/images/no-image.jpg"}
+              alt={item.title || "Sản phẩm"}
+            />
+          </div>
+
+          <div className="cart-content">
+            <h6 className="title mb-1">
+              <a href={`/user/productstructure/ProductDetail?asin=${item.asin}`}>
+                {item.title}
+              </a>
+            </h6>
+
+            <div className="d-flex align-items-center">
+              <h6 className="dz-price mb-0">
+                {item.discountedPrice && item.discountedPrice !== item.originalPrice ? (
+                  <>
+                    <span className="text-muted text-line-through me-2">
+                      ${parseFloat(item.originalPrice).toFixed(2)}
+                    </span>
+                    <strong>${parseFloat(item.discountedPrice).toFixed(2)}</strong>
+                  </>
+                ) : (
+                  <strong>${parseFloat(item.originalPrice).toFixed(2)}</strong>
+                )}
+              </h6>
             </div>
+          </div>
+
+          <button
+            className="dz-close"
+            onClick={() => handleRemoveFromWishlist(item.asin)}
+            aria-label="Remove from wishlist"
+          >
+            <i className="ti-close" />
+          </button>
+        </div>
+      </li>
+    ))
+  ) : (
+    <li className="text-center text-muted p-3">
+      Không có sản phẩm yêu thích
+    </li>
+  )}
+</ul>
+
+
+
+    <div className="mt-auto">
+      <a href="/shop-wishlist" className="btn btn-secondary btn-block">
+        Check Your Favourite
+      </a>
+    </div>
+  </div>
+</div>
+
           </div>
         </div>
       </div>

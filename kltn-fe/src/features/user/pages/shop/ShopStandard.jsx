@@ -18,6 +18,7 @@ function ShopStandard({products }) {
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [quantity, setQuantity] = useState(1);
 const [priceDiscount, setPriceDiscount] = useState(0); // Quản lý priceDiscount bằng state
+const [wishlistItems, setWishlistItems] = useState([]);
 
 //  const inputRef = useRef(null); 
 
@@ -99,9 +100,21 @@ const addCartWithQuantity = async (quantity, product) => {
     console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message); // Log lỗi chi tiết
   }
 };
-
+const fetchWishlist = async () => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return;
+  try {
+    const res = await axios.get("http://localhost:8083/api/wishlist", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setWishlistItems(res.data);
+  } catch (error) {
+    console.error("❌ Lỗi lấy wishlist:", error);
+  }
+};
   useEffect(() => {
     fetchProducts(currentPage, pageSize);
+    fetchWishlist();
   }, [currentPage, pageSize]);
     const handleChange = (e) => {
   const value = e.target.value;
@@ -178,6 +191,42 @@ useEffect(() => {
       modalElement.removeEventListener('hidden.bs.modal', handleModalClose);
     };
   }, []);
+  // xu li wishlist
+  const handleToggleWishlist = (asin) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    const isInWishlist = wishlistItems.some(item => item.asin === asin);
+
+    if (isInWishlist) {
+      axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(() => {
+        setWishlistItems(prev => prev.filter(item => item.asin !== asin));
+        window.dispatchEvent(new Event("wishlistUpdated"));
+      })
+      .catch(err => console.error("❌ Lỗi xoá khỏi wishlist:", err));
+    } else {
+      axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(() => {
+        return axios.get("http://localhost:8083/api/wishlist", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      })
+      .then(res => {
+        setWishlistItems(res.data);
+        window.dispatchEvent(new Event("wishlistUpdated"));
+      })
+      .catch(err => console.error("❌ Lỗi thêm vào wishlist:", err));
+    }
+  };
+
+  const isProductInWishlist = (asin) => wishlistItems.some(item => item.asin === asin);
+
+  
   return (
     <>
       <div className="page-wraper">
@@ -1876,10 +1925,16 @@ useEffect(() => {
                       <i className="fa-solid fa-eye d-md-none d-block" />
                       <span className="d-md-block d-none">Quick View</span>
                     </a>
-                    <div className="btn btn-primary meta-icon dz-wishicon">
-                      <i className="icon feather icon-heart dz-heart" />
-                      <i className="icon feather icon-heart-on dz-heart-fill" />
-                    </div>
+                    <div 
+  className="btn btn-primary meta-icon dz-wishicon"
+  onClick={() => handleToggleWishlist(product.asin)}
+>
+  {isProductInWishlist(product.asin) ? (
+    <i className="icon feather icon-heart-on dz-heart" style={{ color: 'red' }} />
+  ) : (
+    <i className="icon feather icon-heart dz-heart" style={{ color: '#fff' }} />
+  )}
+</div>
                     <div className="btn btn-primary meta-icon dz-carticon" onClick={() => {
   console.log("Click basket icon!", product);
   addCartWithQuantity(1, product);

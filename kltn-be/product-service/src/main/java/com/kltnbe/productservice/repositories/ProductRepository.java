@@ -34,4 +34,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findProductByAsin(String asin);
     List<Product> findAllByAsinIn(List<String> asins);
 
+
 }
