@@ -15,19 +15,44 @@ public class CartController {
     public CartController(CartService cartService) {
         this.cartService = cartService;
     }
+
     @PostMapping("/addCart")
     public CartResponse addItemToCart(@RequestBody CartRequest cartRequest) {
-        System.out.println("Gọi endpoint /addCart với request: " + cartRequest); // Thêm log
+        System.out.println("Gọi endpoint /addCart với request: " + cartRequest);
         CartResponse cartResponse = cartService.addItemToCart(cartRequest);
-        System.out.println("Trả về response: " + cartResponse); // Thêm log
-        return cartResponse;
-    }
-    @GetMapping("/getCart")
-    public CartResponse getItemCart(CartRequest cartRequest) {
-        System.out.println("Gọi endpoint /addCart với request: " + cartRequest); // Thêm log
-        CartResponse cartResponse = cartService.getItemCart(cartRequest);
-        System.out.println("Trả về response: " + cartResponse); // Thêm log
+        System.out.println("Trả về response: " + cartResponse);
         return cartResponse;
     }
 
+    @GetMapping("/getCart")
+    public CartResponse getItemCart(CartRequest cartRequest) {
+        System.out.println("Gọi endpoint /getCart với request: " + cartRequest);
+        CartResponse cartResponse = cartService.getItemCart(cartRequest);
+        System.out.println("Trả về response: " + cartResponse);
+        return cartResponse;
+    }
+
+    @PostMapping("/removeItem")
+    public CartResponse removeItemFromCart(@RequestBody CartRequest cartRequest) {
+        System.out.println("Gọi endpoint /removeItem với request: " + cartRequest);
+        CartResponse cartResponse = cartService.removeItemFromCart(cartRequest);
+        System.out.println("Trả về response: " + cartResponse);
+        return cartResponse;
+    }
+
+    @PutMapping("/updateItem")
+    public CartResponse updateItemQuantity(@RequestBody CartRequest cartRequest) {
+        System.out.println("Gọi endpoint /updateItem với request: " + cartRequest);
+        CartResponse cartResponse = cartService.updateItemQuantity(cartRequest);
+        System.out.println("Trả về response: " + cartResponse);
+        return cartResponse;
+    }
+
+    @DeleteMapping("/clearCart")
+    public CartResponse clearCart(@RequestBody CartRequest cartRequest) {
+        System.out.println("Gọi endpoint /clearCart với request: " + cartRequest);
+        CartResponse cartResponse = cartService.clearCart(cartRequest);
+        System.out.println("Trả về response: " + cartResponse);
+        return cartResponse;
+    }
 }

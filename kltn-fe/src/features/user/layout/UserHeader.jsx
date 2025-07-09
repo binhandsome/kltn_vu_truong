@@ -8,163 +8,231 @@ import { authFetch } from '../apiService/authFetch';
 import axios from 'axios';
 
   function UserHeader() {
-  const [user,  setUser]  = useState(null);
-  const [color, setColor] = useState('#000');
-  const [listCart, setListCart] = useState([]);
-const API_URL = 'http://localhost:8081/api/auth';
-const [quantity, setQuantity] = useState(1);
-const [quantityMap, setQuantityMap] = useState({});
-const [wishlistItems, setWishlistItems] = useState([]);
-
-const handleIncrement = (productId, quantity) => {
-  const newQuantity = (quantity || 1) + 1;
-  setQuantityMap((prev) => ({
-    ...prev,
-    [productId]: newQuantity,
-  }));
-};
-
-
-const handleDecrement = (productId, quantity) => {
-const newQuantity = (quantity || 1) - 1;
-  setQuantityMap((prev) => ({
-    ...prev,
-    [productId]: newQuantity,
-  }));
-};
-
-const handleChange = (productId, value) => {
-  const num = Number(value);
-  if (!isNaN(num) && num >= 1) {
-    setQuantityMap((prev) => ({
-      ...prev,
-      [productId]: num,
-    }));
-  }
-};
-  /* -------- lấy user -------- */
-  const fetchUser = useCallback(async () => {
-    try {
-      const res  = await authFetch(`${API_URL}/me`);
-      const data = await res.json();
-      setUser(data);
-    } catch {
-      setUser(null);
-    }
-  }, []);
-
-  /* mount + mỗi khi token được refresh */
-  useEffect(() => {
-    fetchUser();
-
-    const onRefresh = () => fetchUser();
-    const onLogout  = () => setUser(null);
-    window.addEventListener('tokenRefreshed', onRefresh);
-    window.addEventListener('loggedOut',      onLogout);
-    return () => {
-      window.removeEventListener('tokenRefreshed', onRefresh);
-      window.removeEventListener('loggedOut',      onLogout);
+    const [user, setUser] = useState(null);
+    const [color, setColor] = useState('#000');
+    const [listCart, setListCart] = useState([]);
+    const [quantity, setQuantity] = useState(1);
+    const [quantityMap, setQuantityMap] = useState({});
+    const [wishlistItems, setWishlistItems] = useState([]);
+    const API_URL = 'http://localhost:8081/api/auth';
+  
+    const handleIncrement = (productId, quantity) => {
+      const newQuantity = (quantity || 1) + 1;
+      setQuantityMap(prev => ({ ...prev, [productId]: newQuantity }));
+    
+      const product = listCart.items.find(item => item.productId === productId);
+      if (product) {
+        const unitPrice = product.price / product.quantity; // ✅ tính giá đơn vị
+        updateCartItemQuantity(product.asin, newQuantity, unitPrice);
+      }
     };
-  }, [fetchUser]);
-const getCartProduct = async () => {
-  const cartId = localStorage.getItem("cartId") || '';
-  const token = localStorage.getItem("accessToken") || '';
-  try {
-    const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
-      params: { cartId, token },
-    });
-    console.log("Phản hồi từ server:", cartResponse.data);
+    const handleDecrement = (productId, quantity) => {
+      const newQuantity = Math.max(1, (quantity || 1) - 1);
+      setQuantityMap(prev => ({ ...prev, [productId]: newQuantity }));
+    
+      const product = listCart.items.find(item => item.productId === productId);
+      if (product) {
+        const unitPrice = product.price / product.quantity;
+        updateCartItemQuantity(product.asin, newQuantity, unitPrice);
+      }
+    };
+    const handleChange = (productId, value) => {
+      const num = Number(value);
+      if (!isNaN(num) && num >= 1) {
+        setQuantityMap(prev => ({ ...prev, [productId]: num }));
+    
+        const product = listCart.items.find(item => item.productId === productId);
+        if (product) {
+          const unitPrice = product.price / product.quantity;
+          updateCartItemQuantity(product.asin, num, unitPrice);
+        }
+      }
+    };
+    
+    const fetchUser = useCallback(async () => {
+      try {
+        const res = await authFetch(`${API_URL}/me`);
+        const data = await res.json();
+        setUser(data);
+      } catch {
+        setUser(null);
+      }
+    }, []);
+  
+    useEffect(() => {
+      fetchUser();
+      const onRefresh = () => fetchUser();
+      const onLogout = () => setUser(null);
+      window.addEventListener('tokenRefreshed', onRefresh);
+      window.addEventListener('loggedOut', onLogout);
+      return () => {
+        window.removeEventListener('tokenRefreshed', onRefresh);
+        window.removeEventListener('loggedOut', onLogout);
+      };
+    }, [fetchUser]);
+  
+    const getCartProduct = async () => {
+      const cartId = localStorage.getItem("cartId") || '';
+      const token = localStorage.getItem("accessToken") || '';
+      try {
+        const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
+          params: { cartId, token },
+        });
+    
+        const cartItems = cartResponse.data.items || [];
+        if (!cartItems.length) {
+          setListCart({
+            items: [],
+            totalQuantity: 0,
+            totalPrice: 0,
+            message: "Không có sản phẩm trong giỏ hàng"
+          });
+          return;
+        }
+    
+        const asins = cartItems.map(item => item.asin).join(',');
+        const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
+          params: { asins },
+        });
+    
+        const combined = cartItems.map(item => {
+          const product = productResponse.data.find(p => p.asin === item.asin);
+          if (!product) return null;
+        
+          const unitPrice = product.productPrice;
+          const discount = product.percentDiscount || 0;
+          const discountedUnitPrice = unitPrice - (unitPrice * discount / 100);
+          const itemTotalPrice = discountedUnitPrice * item.quantity;
+        
+          return {
+            ...item,
+            ...product,
+            unitPrice,
+            discountedUnitPrice,
+            itemTotalPrice,
+          };
+        }).filter(Boolean);
+        
+    
+        if (combined.length === 0) {
+          setListCart({
+            items: [],
+            totalQuantity: 0,
+            totalPrice: 0,
+            message: "Không có sản phẩm trong giỏ hàng"
+          });
+          return;
+        }
+    
+        const totalPrice = combined.reduce((sum, item) => sum + item.itemTotalPrice, 0);
 
-    const cartItems = cartResponse.data.items;
-    if (!cartItems || cartItems.length === 0) {
-      setListCart([]);
-      return;
-    }
-
-    const asins = cartItems.map(item => item.asin).join(',');
-    console.log('Asins:', asins);
-
-    const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
-      params: { asins },
-    });
-    console.log("Chi tiết sản phẩm:", productResponse.data);
-
-    const combined = cartItems.map(item => {
-  const product = productResponse.data.find(p => p.asin === item.asin);
-  const itemTotalPrice = item.quantity * item.price;
-  return {
-    ...item,
-    ...product,
-    itemTotalPrice,
-  };
-});
-
-// Tạo response cuối cùng: gộp full cartResponse.data + items đã merge
 const finalResponse = {
-  ...cartResponse.data,    // giữ message, totalQuantity, totalPrice, cartId
-  items: combined,         // thay items bằng danh sách đã merge
+  ...cartResponse.data,
+  items: combined,
+  totalPrice: parseFloat(totalPrice.toFixed(2)),
 };
 
-// Lưu kết quả cuối cùng vào listCart (hoặc state riêng nếu bạn cần)
-setListCart(finalResponse);
-
-console.log("Kết quả cuối cùng:", finalResponse);
-
-
-  } catch (error) {
-    console.log("Không thể lấy giỏ hàng:", error.response ? error.response.data : error.message);
-    setListCart([]);
-  }
-};
-
-// Xem giá trị listCart khi cập nhật xong:
-useEffect(() => {
-  console.log("listCart updated:", listCart);
-}, [listCart]);
-
-useEffect(() => {
-  getCartProduct();
-}, []);
-  /* WOW.js chỉ 1 lần */
-  useEffect(() => { new WOW.WOW({ live: false }).init(); }, []);
-  const fetchWishlist = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    try {
-      const res = await axios.get("http://localhost:8083/api/wishlist", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setWishlistItems(res.data);
-    } catch (error) {
-      console.error("❌ Lỗi lấy wishlist:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchWishlist();
-
-    // ✅ Lắng nghe sự kiện thêm/xoá từ nơi khác
-    const handleUpdated = () => fetchWishlist();
-    window.addEventListener("wishlistUpdated", handleUpdated);
-
-    return () => window.removeEventListener("wishlistUpdated", handleUpdated);
-  }, [user]);
-
-  const handleRemoveFromWishlist = async (asin) => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    try {
-      await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setWishlistItems(prev => prev.filter(item => item.asin !== asin));
-
-      // ✅ Phát sự kiện ra ngoài
-      window.dispatchEvent(new Event("wishlistUpdated"));
-    } catch (err) {
-      console.error("❌ Lỗi xoá khỏi wishlist:", err);
-    }
-  };
+    
+        setListCart(finalResponse);
+      } catch (error) {
+        console.log("Không thể lấy giỏ hàng:", error.response ? error.response.data : error.message);
+        setListCart({
+          items: [],
+          totalQuantity: 0,
+          totalPrice: 0,
+          message: "Không thể lấy giỏ hàng"
+        });
+      }
+    };
+    const updateCartItemQuantity = async (asin, quantity, unitPrice) => {
+      const cartId = localStorage.getItem("cartId") || '';
+      const token = localStorage.getItem("accessToken") || '';
+      try {
+        const payload = {
+          token,
+          cartId,
+          asin,
+          quantity,
+          price: unitPrice   // ✅ BỔ SUNG GIÁ ĐƠN VỊ CHO BE
+        };
+    
+        await axios.put('http://localhost:8084/api/cart/updateItem', payload);
+        window.dispatchEvent(new Event("cartUpdated"));
+      } catch (err) {
+        console.error("❌ Lỗi cập nhật số lượng sản phẩm:", err);
+      }
+    };
+    
+    const handleRemoveFromCart = async (asin) => {
+      const cartId = localStorage.getItem("cartId") || '';
+      const token = localStorage.getItem("accessToken") || '';
+      try {
+        const payload = { token, cartId, asin };
+        
+        // 🔁 Dùng POST thay vì DELETE
+        await axios.post('http://localhost:8084/api/cart/removeItem', payload);
+    
+        // 🔔 Thông báo cập nhật giỏ hàng
+        window.dispatchEvent(new Event("cartUpdated"));
+      } catch (err) {
+        console.error("❌ Lỗi khi xoá sản phẩm khỏi giỏ hàng:", err);
+      }
+    };
+    
+    useEffect(() => {
+      getCartProduct();
+    }, []);
+  
+    // 🔔 Realtime cập nhật giỏ hàng
+    useEffect(() => {
+      const handleCartUpdate = () => {
+        console.log("📦 Giỏ hàng có thay đổi – đang làm mới...");
+        getCartProduct();
+      };
+  
+      window.addEventListener("cartUpdated", handleCartUpdate);
+      return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+    }, []);
+  
+    useEffect(() => {
+      console.log("listCart updated:", listCart);
+    }, [listCart]);
+  
+    useEffect(() => { new WOW.WOW({ live: false }).init(); }, []);
+  
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const res = await axios.get("http://localhost:8083/api/wishlist", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setWishlistItems(res.data);
+      } catch (error) {
+        console.error("❌ Lỗi lấy wishlist:", error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchWishlist();
+      const handleUpdated = () => fetchWishlist();
+      window.addEventListener("wishlistUpdated", handleUpdated);
+      return () => window.removeEventListener("wishlistUpdated", handleUpdated);
+    }, [user]);
+  
+    const handleRemoveFromWishlist = async (asin) => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setWishlistItems(prev => prev.filter(item => item.asin !== asin));
+        window.dispatchEvent(new Event("wishlistUpdated"));
+      } catch (err) {
+        console.error("❌ Lỗi xoá khỏi wishlist:", err);
+      }
+    };
     return (
         <header className="site-header mo-left header">
   {/* Main Header */}
@@ -1091,111 +1159,106 @@ useEffect(() => {
               tabIndex={0}
             >
               <div className="shop-sidebar-cart">
-                <ul className="sidebar-cart-list">
-{listCart && listCart.items && listCart.items.length > 0 ? (
-                    listCart.items.map((item) => (
-   <li>
-                    <div className="cart-widget">
-                      <div className="dz-media me-3">
-                        <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${item.productThumbnail}`} alt="" />
-                      </div>
-                      <div className="cart-content">
-                        <h6 className="title">
-                          <a href="product-thumbnail.html">
-                            {item.productTitle}
-                          </a>
-                        </h6>
-                        <div className="d-flex align-items-center">
-                          <div className="btn-quantity light quantity-sm me-3">
-  <div
-    className="d-flex align-items-center"
-    style={{ gap: '5px' }}
-  >
-    <input
-      type="text"
-value={quantityMap[item.productId] ?? item.quantity ?? 1}
-      onChange={(e) => handleChange(item.productId, item.quantity)}
-      className="form-control"
-      style={{
-        textAlign: 'center',
-        width: '60px',
-      }}
-    />
-    <div className="d-flex flex-column">
-      <button
-        className="btn btn-outline-secondary py-1 px-2"
- onClick={() =>
-    handleIncrement(item.productId, quantityMap[item.productId] ?? item.quantity ?? 1)
-  }      >
-        <i className="fa-solid fa-plus"></i>
-      </button>
-      <button
-        className="btn btn-outline-secondary py-1 px-2"
-onClick={() =>
-    handleDecrement(item.productId, quantityMap[item.productId] ?? item.quantity ?? 1)
-  }           >
-        <i className="fa-solid fa-minus"></i>
-      </button>
+  <ul className="sidebar-cart-list">
+    {listCart?.items?.length > 0 ? (
+      listCart.items.map((item, index) => (
+        <li key={item.asin || index}>
+          <div className="cart-widget">
+            <div className="dz-media me-3">
+              <img
+                src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${item.productThumbnail}`}
+                alt={item.productTitle}
+              />
+            </div>
+            <div className="cart-content">
+              <h6 className="title">
+                <a href={`/user/productstructure/ProductDetail?asin=${item.asin}`}>
+                  {item.productTitle}
+                </a>
+              </h6>
+              <div className="d-flex align-items-center">
+                <div className="btn-quantity light quantity-sm me-3">
+                  <div className="d-flex align-items-center" style={{ gap: '5px' }}>
+                  <input
+  type="text"
+  value={item.quantity}
+  onChange={(e) => handleChange(item.productId, e.target.value)}
+  className="form-control"
+  style={{ textAlign: 'center', width: '60px' }}
+/>
+                    <div className="d-flex flex-column">
+                      <button
+                        className="btn btn-outline-secondary py-1 px-2"
+                        onClick={() =>
+                          handleIncrement(item.productId, quantityMap[item.productId] ?? item.quantity ?? 1)
+                        }
+                      >
+                        <i className="fa-solid fa-plus"></i>
+                      </button>
+                      <button
+                        className="btn btn-outline-secondary py-1 px-2"
+                        onClick={() =>
+                          handleDecrement(item.productId, quantityMap[item.productId] ?? item.quantity ?? 1)
+                        }
+                      >
+                        <i className="fa-solid fa-minus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <h6 className="dz-price mb-0">${(item.discountedUnitPrice * item.quantity).toFixed(2)}</h6>
+              </div>
+            </div>
+
+            {/* ✅ Nút xoá khỏi giỏ hàng */}
+            <button
+  type="button"
+  className="dz-close btn btn-link p-0"
+  onClick={() => handleRemoveFromCart(item.asin)}
+>
+  <i className="ti-close" />
+</button>
+          </div>
+        </li>
+      ))
+    ) : (
+      <li>🛒 Giỏ hàng trống</li>
+    )}
+  </ul>
+
+  <div className="cart-total">
+  <h5 className="mb-0">Subtotal:</h5>
+  <h5 className="mb-0">${listCart?.totalPrice?.toFixed(2) || '0.00'}</h5>
+</div>
+  <div className="mt-auto">
+    <div className="shipping-time">
+      <div className="dz-icon">
+        <i className="flaticon flaticon-ship" />
+      </div>
+      <div className="shipping-content">
+        <h6 className="title pe-4">
+          Congratulations, you've got free shipping!
+        </h6>
+        <div className="progress">
+          <div
+            className="progress-bar progress-animated border-0"
+            style={{ width: "75%" }}
+            role="progressbar"
+          >
+            <span className="sr-only">75% Complete</span>
+          </div>
+        </div>
+      </div>
     </div>
+    <a href="/checkout" className="btn btn-outline-secondary btn-block m-b20">
+      Checkout
+    </a>
+    <a href="/cart" className="btn btn-secondary btn-block">
+      View Cart
+    </a>
   </div>
 </div>
 
-
-                          <h6 className="dz-price mb-0">${item.price}</h6>
-                        </div>
-                      </div>
-                      <a href="javascript:void(0);" className="dz-close">
-                        <i className="ti-close" />
-                      </a>
-                    </div>
-                  </li>
-                    )
-                    
-                  )
-                ):(
-  <li>Giỏ hàng trống</li>
-                
-                  )}
-            
-        </ul>
-                <div className="cart-total">
-                  <h5 className="mb-0">Subtotal:</h5>
-                  <h5 className="mb-0">{listCart.totalPrice}$</h5>
-                </div>
-                <div className="mt-auto">
-                  <div className="shipping-time">
-                    <div className="dz-icon">
-                      <i className="flaticon flaticon-ship" />
-                    </div>
-                    <div className="shipping-content">
-                      <h6 className="title pe-4">
-                        Congratulations , you've got free shipping!
-                      </h6>
-                      <div className="progress">
-                        <div
-                          className="progress-bar progress-animated border-0"
-                          style={{ width: "75%" }}
-                          role="progressbar"
-                        >
-                          <span className="sr-only">75% Complete</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <a
-                    href="shop-checkout.html"
-                    className="btn btn-outline-secondary btn-block m-b20"
-                  >
-                    Checkout
-                  </a>
-                  <a
-                    href="shop-cart.html"
-                    className="btn btn-secondary btn-block"
-                  >
-                    View Cart
-                  </a>
-                </div>
-              </div>
             </div>
             <div
   className="tab-pane fade"
