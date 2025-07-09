@@ -1,34 +1,143 @@
-// src/pages/common/HomePage.js
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet'; 
-import QuickViewModal from '../../components/home/QuickViewModal'; 
+import axios from 'axios';
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import { Link } from 'react-router-dom'; 
-import WOW from 'wowjs'; // Import WOW.js
+import QuickViewModal from '../../components/home/QuickViewModal';
+import WOW from 'wowjs';
+import { useMemo } from 'react';
 
 function Cart() {
-	const [hasBgClass, setHasBgClass] = useState(true); 
+	const [listCart, setListCart] = useState({ items: [], totalPrice: 0 });
+  const [hasBgClass, setHasBgClass] = useState(true);
+  const [quantityMap, setQuantityMap] = useState({});
+
+  useEffect(() => {
+    if (hasBgClass) {
+      document.body.classList.add('bg');
+    } else {
+      document.body.classList.remove('bg');
+    }
+    return () => document.body.classList.remove('bg');
+  }, [hasBgClass]);
+
+  useEffect(() => {
+    new WOW.WOW().init();
+  }, []);
+  const totalPrice = useMemo(() => {
+    return listCart.items.reduce((sum, item) => {
+      const quantity = quantityMap[item.productId] ?? item.quantity ?? 1;
+      const unitPrice = item.discountedUnitPrice ?? item.price / item.quantity;
+      return sum + unitPrice * quantity;
+    }, 0);
+  }, [listCart.items, quantityMap]);
   
-	useEffect(() => {
-	  if (hasBgClass) {
-		document.body.classList.add('bg');
-	  } else {
-		document.body.classList.remove('bg');
-	  }
+  const getCartProduct = async () => {
+    const cartId = localStorage.getItem("cartId") || '';
+    const token = localStorage.getItem("accessToken") || '';
+    try {
+      const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
+        params: { cartId, token },
+      });
   
-	  return () => {
-		// Dọn dẹp: Xóa class khi component bị unmount
-		document.body.classList.remove('bg');
-	  };
-	}, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-	useEffect(() => { // New useEffect for WOW.js
-		const wow = new WOW.WOW();
-		wow.init();
-	
-		return () => { // Optional cleanup function
-			//wow.sync(); // sync and remove the DOM
-		};
-	  }, []);
+      const cartItems = cartResponse.data.items || [];
+      if (!cartItems.length) {
+        setListCart({ items: [], totalPrice: 0 });
+        return;
+      }
+  
+      const asins = cartItems.map(item => item.asin).join(',');
+      const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
+        params: { asins },
+      });
+  
+      const mergedItems = cartItems.map(item => {
+        const product = productResponse.data.find(p => p.asin === item.asin);
+        if (!product) return item;
+  
+        const unitPrice = product.productPrice;
+        const discount = product.percentDiscount || 0;
+        const discountedUnitPrice = unitPrice - (unitPrice * discount / 100);
+  
+        return {
+          ...item,
+          ...product,
+          unitPrice,
+          discountedUnitPrice,
+        };
+      });
+  
+      setListCart({
+        ...cartResponse.data,
+        items: mergedItems,
+      });
+  
+      const map = {};
+      mergedItems.forEach(item => {
+        map[item.productId] = item.quantity;
+      });
+      setQuantityMap(map);
+    } catch (error) {
+      console.error("❌ Lỗi lấy giỏ hàng:", error);
+      setListCart({ items: [], totalPrice: 0 });
+    }
+  };
+  useEffect(() => {
+    getCartProduct();
+    const handleCartUpdate = () => getCartProduct();
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+  }, []);
+
+  const updateQuantity = async (productId, newQuantity) => {
+    const item = listCart.items.find(i => i.productId === productId);
+    if (!item || newQuantity < 1) return;
+
+    const cartId = localStorage.getItem("cartId") || '';
+    const token = localStorage.getItem("accessToken") || '';
+    const unitPrice = item.price / item.quantity;
+
+    try {
+      await axios.put('http://localhost:8084/api/cart/updateItem', {
+        token,
+        cartId,
+        asin: item.asin,
+        quantity: newQuantity,
+        price: unitPrice,
+      });
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      console.error("❌ Cập nhật số lượng lỗi:", err);
+    }
+  };
+
+  const handleIncrement = (productId) => {
+    const newQty = (quantityMap[productId] || 1) + 1;
+    setQuantityMap(prev => ({ ...prev, [productId]: newQty }));
+    updateQuantity(productId, newQty);
+  };
+
+  const handleDecrement = (productId) => {
+    const newQty = Math.max(1, (quantityMap[productId] || 1) - 1);
+    setQuantityMap(prev => ({ ...prev, [productId]: newQty }));
+    updateQuantity(productId, newQty);
+  };
+
+  const handleRemove = async (asin) => {
+    const cartId = localStorage.getItem("cartId") || '';
+    const token = localStorage.getItem("accessToken") || '';
+    try {
+      await axios.post('http://localhost:8084/api/cart/removeItem', { token, cartId, asin });
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      console.error("❌ Xoá lỗi:", err);
+    }
+  };
+  const handleChange = (productId, value) => {
+    const num = parseInt(value);
+    if (!isNaN(num) && num >= 1) {
+      setQuantityMap(prev => ({ ...prev, [productId]: num }));
+      updateQuantity(productId, num);
+    }
+  };
 
   return (
     <>
@@ -62,199 +171,81 @@ function Cart() {
     {/* Product */}
     <div className="container">
       <div className="row">
-        <div className="col-lg-8">
-          <div className="table-responsive">
-            <table className="table check-tbl">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th />
-                  <th>Price</th>
-                  <th>Quantity</th>
-                  <th>Subtotal</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="product-item-img">
-                    <img src="../../assets/user/images/shop/shop-cart/pic1.jpg" alt="/" />
-                  </td>
-                  <td className="product-item-name">
-                    Sophisticated Swagger Suit
-                  </td>
-                  <td className="product-item-price">$40.00</td>
-                  <td className="product-item-quantity">
-                    <div className="quantity btn-quantity style-1 me-3">
-                      <input
-                        type="text"
-                        defaultValue={1}
-                        name="demo_vertical2"
-                      />
-                    </div>
-                  </td>
-                  <td className="product-item-totle">$160.00</td>
-                  <td className="product-item-close">
-                    <a href="javascript:void(0);">
-                      <i className="ti-close" />
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="product-item-img">
-                    <img src="../../assets/user/images/shop/shop-cart/pic2.jpg" alt="/" />
-                  </td>
-                  <td className="product-item-name">
-                    Cozy Knit Cardigan Sweater
-                  </td>
-                  <td className="product-item-price">$56.00</td>
-                  <td className="product-item-quantity">
-                    <div className="quantity btn-quantity style-1 me-3">
-                      <input
-                        id="demo_vertical3"
-                        type="text"
-                        defaultValue={1}
-                        name="demo_vertical2"
-                      />
-                    </div>
-                  </td>
-                  <td className="product-item-totle">$120.00</td>
-                  <td className="product-item-close">
-                    <a href="javascript:void(0);">
-                      <i className="ti-close" />
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="product-item-img">
-                    <img src="../../assets/user/images/shop/shop-cart/pic3.jpg" alt="/" />
-                  </td>
-                  <td className="product-item-name">
-                    Athletic Mesh Sports Leggings
-                  </td>
-                  <td className="product-item-price">$30.00</td>
-                  <td className="product-item-quantity">
-                    <div className="quantity btn-quantity style-1 me-3">
-                      <input
-                        id="demo_vertical4"
-                        type="text"
-                        defaultValue={1}
-                        name="demo_vertical2"
-                      />
-                    </div>
-                  </td>
-                  <td className="product-item-totle">$40.00</td>
-                  <td className="product-item-close">
-                    <a href="javascript:void(0);">
-                      <i className="ti-close" />
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="product-item-img">
-                    <img src="../../assets/user/images/shop/shop-cart/pic4.jpg" alt="/" />
-                  </td>
-                  <td className="product-item-name">Plaid Wool Winter Coat </td>
-                  <td className="product-item-price">$42.00</td>
-                  <td className="product-item-quantity">
-                    <div className="quantity btn-quantity style-1 me-3">
-                      <input
-                        id="demo_vertical5"
-                        type="text"
-                        defaultValue={1}
-                        name="demo_vertical2"
-                      />
-                    </div>
-                  </td>
-                  <td className="product-item-totle">$160.00</td>
-                  <td className="product-item-close">
-                    <a href="javascript:void(0);">
-                      <i className="ti-close" />
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="product-item-img">
-                    <img src="../../assets/user/images/shop/shop-cart/pic5.jpg" alt="/" />
-                  </td>
-                  <td className="product-item-name">Satin Wrap Party Blouse</td>
-                  <td className="product-item-price">$28.00</td>
-                  <td className="product-item-quantity">
-                    <div className="quantity btn-quantity style-1 me-3">
-                      <input
-                        id="demo_vertical6"
-                        type="text"
-                        defaultValue={1}
-                        name="demo_vertical2"
-                      />
-                    </div>
-                  </td>
-                  <td className="product-item-totle">$45.00</td>
-                  <td className="product-item-close">
-                    <a href="javascript:void(0);">
-                      <i className="ti-close" />
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="product-item-img">
-                    <img src="../../assets/user/images/shop/shop-cart/pic6.jpg" alt="/" />
-                  </td>
-                  <td className="product-item-name">
-                    Suede Ankle Booties Collection
-                  </td>
-                  <td className="product-item-price">$120.00</td>
-                  <td className="product-item-quantity">
-                    <div className="quantity btn-quantity style-1 me-3">
-                      <input
-                        id="demo_vertical7"
-                        type="text"
-                        defaultValue={1}
-                        name="demo_vertical2"
-                      />
-                    </div>
-                  </td>
-                  <td className="product-item-totle">$40.00</td>
-                  <td className="product-item-close">
-                    <a href="javascript:void(0);">
-                      <i className="ti-close" />
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+      <div className="col-lg-8">
+                <div className="table-responsive">
+                  <table className="table check-tbl">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th></th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+  {listCart.items.map(item => {
+    const quantity = quantityMap[item.productId] ?? item.quantity ?? 1;
+    const unitPrice = item.price / item.quantity;
+
+    return (
+      <tr key={item.productId}>
+        <td className="product-item-img">
+        <img
+  src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_80,h_80/imgProduct/IMG/${item.productThumbnail}`}
+  alt={item.productTitle}
+  width={80}
+  height={80}
+/>
+
+        </td>
+        <td className="product-item-name">{item.productTitle}</td>
+        <td className="product-item-price">
+  ${ (item.discountedUnitPrice ?? (item.price / item.quantity)).toFixed(2) }
+</td>
+        <td className="product-item-quantity">
+          <div className="quantity btn-quantity style-1 d-flex align-items-center gap-2">
+            <button
+              className="btn btn-outline-secondary px-2"
+              onClick={() => handleDecrement(item.productId)}
+            >
+              <i className="fa fa-minus" />
+            </button>
+            <input
+              type="text"
+              value={quantity}
+              onChange={(e) => handleChange(item.productId, e.target.value)}
+              className="form-control text-center"
+              style={{ width: '60px' }}
+            />
+            <button
+              className="btn btn-outline-secondary px-2"
+              onClick={() => handleIncrement(item.productId)}
+            >
+              <i className="fa fa-plus" />
+            </button>
           </div>
-          <div className="row shop-form m-t30">
-            <div className="col-md-6">
-              <div className="form-group">
-                <div className="input-group mb-0">
-                  <input
-                    name="dzEmail"
-                    required="required"
-                    type="text"
-                    className="form-control"
-                    placeholder="Coupon Code"
-                  />
-                  <div className="input-group-addon">
-                    <button
-                      name="submit"
-                      value="Submit"
-                      type="submit"
-                      className="btn coupon"
-                    >
-                      Apply Coupon
-                    </button>
-                  </div>
+        </td>
+        <td className="product-item-totle">
+  ${ (quantity * (item.discountedUnitPrice ?? (item.price / item.quantity))).toFixed(2) }
+</td>
+        <td className="product-item-close">
+          <button
+            onClick={() => handleRemove(item.asin)}
+            className="btn btn-sm btn-dark rounded-circle"
+          >
+            ✕
+          </button>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
+                  </table>
                 </div>
               </div>
-            </div>
-            <div className="col-md-6 text-end">
-              <a href="shop-cart.html" className="btn btn-secondary">
-                UPDATE CART
-              </a>
-            </div>
-          </div>
-        </div>
         <div className="col-lg-4">
           <h4 className="title mb15">Cart Total</h4>
           <div className="cart-detail">
@@ -295,7 +286,7 @@ function Cart() {
                   <td>
                     <h6 className="mb-0">Total</h6>
                   </td>
-                  <td className="price">$125.75</td>
+                  <td className="price">${totalPrice.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
