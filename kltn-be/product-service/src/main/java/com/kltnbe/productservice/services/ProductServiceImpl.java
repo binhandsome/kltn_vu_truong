@@ -100,6 +100,9 @@ public class ProductServiceImpl implements ProductService {
     public Page<Product> findProductByProductType(String productType, Pageable pageable ) {
         return productRepository.findProductByProductType(productType, pageable);
     }
+    public Page<Product> findProductByTags(String tags, Pageable pageable ) {
+        return productRepository.findProductByTags(tags, pageable);
+    }
 
     @Override
     public List<String> getAllSalesRanks() {

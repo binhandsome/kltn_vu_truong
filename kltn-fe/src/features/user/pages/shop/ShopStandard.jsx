@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import WOW from 'wowjs'; // Import WOW.js
 import axios from 'axios';
 import { param } from 'jquery';
+import { type } from '@testing-library/user-event/dist/type';
 
 function ShopStandard({products }) {
 	const [hasBgClass, setHasBgClass] = useState(true); 
@@ -19,7 +20,12 @@ function ShopStandard({products }) {
   const [quantity, setQuantity] = useState(1);
   const [priceDiscount, setPriceDiscount] = useState(0);
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [listCart, setListCart] = useState([]);
+  const [listCart, setListCart] = useState([]); // Quản lý priceDiscount bằng state
+  const [salesRankCount, setSalesRankCount] = useState([]);
+  const [productTypeCount, setProductTypeCount] = useState([]);
+  const [tags, setTags] = useState([]);
+
+//  const inputRef = useRef(null);
 
   const fetchProducts = async (page, size) => {
     try {
@@ -32,6 +38,23 @@ function ShopStandard({products }) {
       console.error('khong tim thay product', error);
     }
   };
+  const getAllCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8083/api/products/getAllCategories', {
+      }
+    );
+    setSalesRankCount(response.data.salesRankCount);
+    setProductTypeCount(response.data.productTypeCount);
+    setTags(response.data.tags);
+
+    console.log(response.data.salesRankCount + 'ok data')
+    }catch (error) {
+      console.error('khong co categories nao', error)
+    }
+  }
+ useEffect(() => {
+  getAllCategories();
+}, []); // Thêm mảng phụ thuộc rỗng
 
   useEffect(() => {
     if (selectedProduct) {
@@ -46,7 +69,7 @@ function ShopStandard({products }) {
   }, [selectedProduct, quantity]);
 
   const addCart = async () => {
-    const cartId = localStorage.getItem("cartId") || ''; 
+    const cartId = localStorage.getItem("cartId") || '';
     const token = localStorage.getItem("accessToken") || '';
     try {
       const payload = {
@@ -109,7 +132,7 @@ function ShopStandard({products }) {
   };
   useEffect(() => {
     getCartProduct();
-  
+
     const handleCartUpdate = () => getCartProduct();
     window.addEventListener("cartUpdated", handleCartUpdate);
     return () => window.removeEventListener("cartUpdated", handleCartUpdate);
@@ -138,7 +161,7 @@ function ShopStandard({products }) {
     const handleWishlistUpdated = () => {
       fetchWishlist();
     };
-  
+
     window.addEventListener("wishlistUpdated", handleWishlistUpdated);
     return () => window.removeEventListener("wishlistUpdated", handleWishlistUpdated);
   }, []);
@@ -147,7 +170,7 @@ function ShopStandard({products }) {
     const value = e.target.value;
     const parsed = parseInt(value);
     if (isNaN(parsed) || parsed < 1) {
-      setQuantity(1); 
+      setQuantity(1);
     } else {
       setQuantity(parsed);
     }
@@ -160,19 +183,20 @@ function ShopStandard({products }) {
     }
   };
 
+  // Xử lý chuyển trang và cuộn lên
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 0 && pageNumber < totalPages) {
       setCurrentPage(pageNumber);
       scrollToFilterWrapper(); 
     }
   };
-
   const handlePageChangeProduct = (event) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
     scrollToFilterWrapper();
   }
 
+  // Tính toán phạm vi trang hiển thị
   const getPageRange = () => {
     const startPage = Math.floor(currentPage / maxPagesToShow) * maxPagesToShow;
     const endPage = Math.min(startPage + maxPagesToShow, totalPages);
@@ -209,9 +233,9 @@ function ShopStandard({products }) {
   const handleToggleWishlist = async (asin) => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-  
+
     const isInWishlist = wishlistItems.some(item => item.asin === asin);
-  
+
     try {
       if (isInWishlist) {
         await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
@@ -222,24 +246,24 @@ function ShopStandard({products }) {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
-  
+
       // ✅ Sau khi xử lý xong thì fetch lại danh sách mới:
       const res = await axios.get("http://localhost:8083/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
-  
+
       // 🔁 Bắn event nếu các nơi khác cũng cần
       window.dispatchEvent(new Event("wishlistUpdated"));
     } catch (error) {
       console.error("❌ Lỗi cập nhật wishlist:", error);
     }
   };
-  
+
 
   const isProductInWishlist = (asin) => wishlistItems.some(item => item.asin === asin);
 
-  
+
   return (
     <>
       <div className="page-wraper">
@@ -546,47 +570,39 @@ function ShopStandard({products }) {
                     </label>
                   </div>
                 </div> */}
-                <div className="widget widget_categories">
-                  <h6 className="widget-title">Category</h6>
+                       <div className="widget widget_categories">
+                          <h6 className="widget-title">Category</h6>
                   <ul>
+                {Object.entries(salesRankCount).map(([type, count]) => (
+
                     <li className="cat-item cat-item-26">
-                      <a href="blog-category.html">Dresses</a> (10)
+                      <a href={`/user/shop/shopWithCategory?salesRank=${type}`}>{type}</a> ({count})
                     </li>
-                    <li className="cat-item cat-item-36">
-                      <a href="blog-category.html">Top &amp; Blouses</a> (5)
+
+
+                ))}
+                       </ul>
+                         </div>
+                 <div className="widget widget_categories">
+                  <h6 className="widget-title">Type</h6>
+                  <ul>
+                       {Object.entries(productTypeCount).map(([type, count]) => (
+                    <li className="cat-item cat-item-26">
+                      <a href={`/user/shop/shopWithCategory?productType=${type}`}>{type}</a> ({count})
                     </li>
-                    <li className="cat-item cat-item-43">
-                      <a href="blog-category.html">Boots</a> (17)
-                    </li>
-                    <li className="cat-item cat-item-27">
-                      <a href="blog-category.html">Jewelry</a> (13)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Makeup</a> (06)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Fragrances</a> (17)
-                    </li>
-                    <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Shaving &amp; Grooming</a>{" "}
-                      (13)
-                    </li>
-                    <li className="cat-item cat-item-43">
-                      <a href="blog-category.html">Jacket</a> (06)
-                    </li>
-                    <li className="cat-item cat-item-36">
-                      <a href="blog-category.html">Coat</a> (22)
-                    </li>
+                ))}
+
+
                   </ul>
                 </div>
                 <div className="widget widget_tag_cloud">
                   <h6 className="widget-title">Tags</h6>
                   <div className="tagcloud">
-                    <a href="blog-tag.html">Unisex </a>
-                    <a href="blog-tag.html">Women</a>
-                    <a href="blog-tag.html">Girls</a>
-                    <a href="blog-tag.html">Men</a>
-                    <a href="blog-tag.html">Boys</a>
+                                           {Object.entries(tags).map(([type, count]) => (
+
+                    <a href={`/user/shop/shopWithCategory?tags=${type}`}>{type} </a>
+                                    ))}
+
   
                   </div>
                 </div>
@@ -2299,10 +2315,16 @@ function ShopStandard({products }) {
                     <li>
                       <strong>Tags:</strong>
                     </li>
-                    <li>
-                      <a href="shop-standard.html">Casual</a>
-                    </li>
-                    <li>
+              {Object.entries(tags).map(([tag, count], index, arr) => (
+  <li key={tag}>
+    <a href="shop-standard.html">
+      {tag}{index < arr.length - 1 ? ', ' : ''}
+    </a>
+  </li>
+))}
+
+
+                    {/* <li>
                       <a href="shop-standard.html">Athletic,</a>
                     </li>
                     <li>
@@ -2310,7 +2332,7 @@ function ShopStandard({products }) {
                     </li>
                     <li>
                       <a href="shop-standard.html">Accessories</a>
-                    </li>
+                    </li> */}
                   </ul>
                   <div className="dz-social-icon">
                     <ul>

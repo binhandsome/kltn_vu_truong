@@ -7,8 +7,17 @@ import java.math.BigDecimal;
 public class ProductFilterRequest {
     private String salesRank;
     private String productType;
+    private String tags;
     private int page;
     private int size;
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
 
     public String getSalesRank() {
         return salesRank;
