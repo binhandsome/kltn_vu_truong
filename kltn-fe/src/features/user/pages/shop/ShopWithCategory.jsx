@@ -21,13 +21,13 @@ function ShopWithCategory() {
   const maxPagesToShow = 10; // Hiển thị tối đa 10 trang mỗi lần
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [quantity, setQuantity] = useState(1);
-
+  const tags = searchParams.get('tags');
  const fetchProductsByCategories = async (page, size) => {
   const params = { page, size };
 
   if (salesRank) params.salesRank = salesRank;
   if (productType) params.productType = productType;
-
+  if (tags) params.tags = tags;
   console.log("Gọi API với params:", params);
 
   try {

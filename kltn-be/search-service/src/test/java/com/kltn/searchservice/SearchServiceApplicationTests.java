@@ -1,4 +1,4 @@
-package search.service.search_service;
+package com.kltn.searchservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
