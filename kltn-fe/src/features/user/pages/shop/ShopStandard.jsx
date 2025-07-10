@@ -1,5 +1,5 @@
 // src/pages/common/HomePage.js
-import React, { useEffect,useRef, useState } from 'react';
+import React, { useCallback, useEffect,useRef, useState } from 'react';
 import { Helmet } from 'react-helmet'; 
 // import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
@@ -22,41 +22,137 @@ function ShopStandard({products }) {
   const [salesRankCount, setSalesRankCount] = useState([]);
   const [productTypeCount, setProductTypeCount] = useState([]);
   const [tags, setTags] = useState([]);
+  const[keyword, setKeyword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [minValue, setMinValue] = useState(0);
+  const [maxValue, setMaxValue] = useState(400);
 
-//  const inputRef = useRef(null); 
 
-  const fetchProducts = async (page, size) => {
-    try {
-      const response = await axios.get('http://localhost:8083/api/products/getAllProduct', {
-        params: {
-          page: page,
-          size: size,
-        },
+useEffect(() => {
+  const interval = setInterval(() => {
+    const slider = document.getElementById("slider-tooltips2");
+    if (slider && slider.noUiSlider) {
+      slider.noUiSlider.on("change", async (values) => {
+        const [min, max] = values.map(Number);
+        console.log("🎯 Min Price:", min, "| Max Price:", max);
+        setMinValue(min); // ✅ Gọi hàm setState đúng cách
+        setMaxValue(max);
       });
+
+      clearInterval(interval); // dừng polling sau khi gắn xong
+    }
+  }, 100);
+
+  return () => clearInterval(interval);
+}, []);
+
+
+
+  // Hàm debounce
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const fetchProductsData = useCallback(
+  async (page, size, searchTerm = '') => {
+    setLoading(true);
+    try {
+      let response;
+      const hasKeyword = searchTerm.trim() !== '';
+      const hasPriceFilter = minValue !== 0 || maxValue !== 400;
+
+      if (hasKeyword && hasPriceFilter) {
+        response = await axios.get('http://localhost:8085/api/search/searchPriceAndTitle', {
+          params: {
+            keyword: searchTerm,
+            minPrice: minValue,
+            maxPrice: maxValue,
+            page,
+            size,
+          },
+        });
+      } else if (hasKeyword) {
+        response = await axios.get('http://localhost:8085/api/search/search', {
+          params: {
+            keyword: searchTerm,
+            page,
+            size,
+          },
+        });
+      } else if (hasPriceFilter) {
+        response = await axios.get('http://localhost:8085/api/search/searchPrice', {
+          params: {
+            minPrice: minValue,
+            maxPrice: maxValue,
+            page,
+            size,
+          },
+        });
+      } else {
+        response = await axios.get('http://localhost:8083/api/products/getAllProduct', {
+          params: {
+            page,
+            size,
+          },
+        });
+      }
+
+      console.log("🔍 input value:", searchTerm);
       setProducts(response.data.content);
       setTotalPages(response.data.totalPages);
-    }catch (error) {
-      console.error('khong tim thay product', error);
+    } catch (error) {
+      console.error('❌ Lỗi khi lấy sản phẩm:', error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
     }
-  };
+  },
+  [minValue, maxValue, keyword] // 👈 đúng dependency
+);
+
+
+  const debouncedSetKeyword = useCallback(
+  debounce((value) => {
+    setKeyword(value);
+    setCurrentPage(0); // reset page khi tìm
+  }, 500),
+  []
+);
+
+const handleInputChangeSearch = (e) => {
+  const value = e.target.value;
+  setInputValue(value);         // cập nhật tức thì cho input
+  debouncedSetKeyword(value);   // cập nhật từ khóa sau 500ms
+};
+
+  // Gọi API khi currentPage hoặc pageSize thay đổi (không phụ thuộc keyword)
+  useEffect(() => {
+    fetchProductsData(currentPage, pageSize, keyword);
+  }, [currentPage, pageSize, fetchProductsData, keyword]);
+
+  // Lấy danh mục
   const getAllCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:8083/api/products/getAllCategories', {
-      }
-    );
-    setSalesRankCount(response.data.salesRankCount);
-    setProductTypeCount(response.data.productTypeCount);
-    setTags(response.data.tags);
-
-    console.log(response.data.salesRankCount + 'ok data')
-    }catch (error) {
-      console.error('khong co categories nao', error)
+      const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
+      setSalesRankCount(response.data.salesRankCount);
+      setProductTypeCount(response.data.productTypeCount);
+      setTags(response.data.tags);
+    } catch (error) {
+      console.error('Không lấy được danh mục:', error);
     }
-  }
- useEffect(() => {
-  getAllCategories();
-}, []); // Thêm mảng phụ thuộc rỗng
-useEffect(() => {
+  };
+
+  useEffect(() => {
+    getAllCategories();
+  }, []);
+
+  // Cập nhật priceDiscount
+  useEffect(() => {
     if (selectedProduct) {
       const discountPrice = (
         selectedProduct.productPrice * quantity -
@@ -67,73 +163,62 @@ useEffect(() => {
       setPriceDiscount(0);
     }
   }, [selectedProduct, quantity]);
-const addCart = async () => {
-  const cartId = localStorage.getItem("cartId") || ''; 
-  const token = localStorage.getItem("accessToken") || '';
-  console.log('Cart ID hiện tại:', cartId);
-  try {
-    const payload = {
-      token: token,
-      asin: selectedProduct.asin,
-      quantity,
-      price: parseFloat(priceDiscount),
-      cartId: cartId,
-    };
-    console.log("Dữ liệu gửi lên server:", payload); // Log dữ liệu trước khi gửi
 
-    const response = await axios.post('http://localhost:8084/api/cart/addCart', payload); // Gửi trực tiếp payload
-
-    console.log("Phản hồi từ server:", response.data); // Log phản hồi
-    if (response.data.cartId) {
-      localStorage.setItem("cartId", response.data.cartId); // Cập nhật cartId
-      console.log("Đã cập nhật cartId vào localStorage:", response.data.cartId);
+  // Thêm vào giỏ hàng
+  const addCart = async () => {
+    const cartId = localStorage.getItem('cartId') || '';
+    const token = localStorage.getItem('accessToken') || '';
+    try {
+      const payload = {
+        token,
+        asin: selectedProduct.asin,
+        quantity,
+        price: parseFloat(priceDiscount),
+        cartId,
+      };
+      const response = await axios.post('http://localhost:8084/api/cart/addCart', payload);
+      if (response.data.cartId) {
+        localStorage.setItem('cartId', response.data.cartId);
+      }
+      console.log('Thêm giỏ hàng thành công');
+    } catch (error) {
+      console.error('Không thể thêm giỏ hàng:', error.response ? error.response.data : error.message);
     }
-    console.log("Thêm giỏ hàng thành công");
-  } catch (error) {
-    console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message); // Log lỗi chi tiết
-  }
-};
+  };
 
-const addCartWithQuantity = async (quantity, product) => {
-  const cartId = localStorage.getItem("cartId") || ''; // Lấy cartId từ localStorage
-  const token = localStorage.getItem("accessToken") || ''; // Lấy cartId từ localStorage
-  console.log('Cart ID hiện tại:', cartId); // Log để kiểm tra cartId
-  try {
-    const payload = {
-      token: token,
-      asin: product.asin,
-      quantity,
-      price: parseFloat(product.productPrice),
-      cartId: cartId,
-    };
-    console.log("Dữ liệu gửi lên server:", payload); // Log dữ liệu trước khi gửi
-
-    const response = await axios.post('http://localhost:8084/api/cart/addCart', payload); // Gửi trực tiếp payload
-
-    console.log("Phản hồi từ server:", response.data); // Log phản hồi
-    if (response.data.cartId) {
-      localStorage.setItem("cartId", response.data.cartId); // Cập nhật cartId
-      console.log("Đã cập nhật cartId vào localStorage:", response.data.cartId);
+  const addCartWithQuantity = async (quantity, product) => {
+    const cartId = localStorage.getItem('cartId') || '';
+    const token = localStorage.getItem('accessToken') || '';
+    try {
+      const payload = {
+        token,
+        asin: product.asin,
+        quantity,
+        price: parseFloat(product.productPrice),
+        cartId,
+      };
+      const response = await axios.post('http://localhost:8084/api/cart/addCart', payload);
+      if (response.data.cartId) {
+        localStorage.setItem('cartId', response.data.cartId);
+      }
+      console.log('Thêm giỏ hàng thành công');
+    } catch (error) {
+      console.error('Không thể thêm giỏ hàng:', error.response ? error.response.data : error.message);
     }
-    console.log("Thêm giỏ hàng thành công");
-  } catch (error) {
-    console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message); // Log lỗi chi tiết
-  }
-};
+  };
 
-  useEffect(() => {
-    fetchProducts(currentPage, pageSize);
-  }, [currentPage, pageSize]);
-    const handleChange = (e) => {
-  const value = e.target.value;
-  const parsed = parseInt(value);
-  if (isNaN(parsed) || parsed < 1) {
-    setQuantity(1); 
-  } else {
-    setQuantity(parsed);
-  }
-};
+  // Xử lý input số lượng
+  const handleChange = (e) => {
+    const value = e.target.value;
+    const parsed = parseInt(value);
+    if (isNaN(parsed) || parsed < 1) {
+      setQuantity(1);
+    } else {
+      setQuantity(parsed);
+    }
+  };
 
+  // Cuộn đến filter wrapper
   const scrollToFilterWrapper = () => {
     const filterWrapper = document.querySelector('.filter-wrapper');
     if (filterWrapper) {
@@ -141,60 +226,55 @@ const addCartWithQuantity = async (quantity, product) => {
     }
   };
 
-  // Xử lý chuyển trang và cuộn lên
+  // Xử lý chuyển trang
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 0 && pageNumber < totalPages) {
       setCurrentPage(pageNumber);
-      scrollToFilterWrapper(); 
+      scrollToFilterWrapper();
     }
   };
+
+  // Xử lý thay đổi pageSize
   const handlePageChangeProduct = (event) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
+    setCurrentPage(0); // Reset về trang 0
     scrollToFilterWrapper();
-  }
+  };
 
-  // Tính toán phạm vi trang hiển thị
+  // Tính toán phạm vi trang
   const getPageRange = () => {
     const startPage = Math.floor(currentPage / maxPagesToShow) * maxPagesToShow;
     const endPage = Math.min(startPage + maxPagesToShow, totalPages);
     return [...Array(endPage - startPage).keys()].map((i) => startPage + i);
   };
-	useEffect(() => {
-	  if (hasBgClass) {
-		document.body.classList.add('bg');
-	  } else {
-		document.body.classList.remove('bg');
-	  }
-	  return () => {
-		// Dọn dẹp: Xóa class khi component bị unmount
-		document.body.classList.remove('bg');
-	  };
-	}, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-	useEffect(() => { // New useEffect for WOW.js
-		const wow = new WOW.WOW();
-		wow.init();
-	
-		return () => { // Optional cleanup function
-			//wow.sync(); // sync and remove the DOM
-		};
-	  }, []);
- const imageWrapperStyle = {
-    width: '600px',
-    height: '450px'
-  };
-useEffect(() => {
-    const modalElement = document.getElementById('exampleModal');
-    
-    const handleModalClose = () => {
-      setQuantity(1); // Reset quantity về 1
-      setPriceDiscount(0); // Reset priceDiscount hoặc tính lại nếu cần
+
+  // Thêm class bg cho body
+  useEffect(() => {
+    if (hasBgClass) {
+      document.body.classList.add('bg');
+    } else {
+      document.body.classList.remove('bg');
+    }
+    return () => {
+      document.body.classList.remove('bg');
     };
+  }, [hasBgClass]);
 
-    // Thêm sự kiện hidden.bs.modal
+  // Khởi tạo WOW.js
+  useEffect(() => {
+    const wow = new WOW.WOW();
+    wow.init();
+  }, []);
+
+  // Xử lý modal close
+  useEffect(() => {
+    const modalElement = document.getElementById('exampleModal');
+    const handleModalClose = () => {
+      setQuantity(1);
+      setPriceDiscount(0);
+    };
     modalElement.addEventListener('hidden.bs.modal', handleModalClose);
-
-    // Cleanup sự kiện khi component unmount
     return () => {
       modalElement.removeEventListener('hidden.bs.modal', handleModalClose);
     };
@@ -266,6 +346,8 @@ useEffect(() => {
                     <div className="input-group">
                       <input
                         name="dzSearch"
+                        value={inputValue} // bind giá trị trực tiếp
+                        onChange={handleInputChangeSearch}
                         required="required"
                         type="search"
                         className="form-control"

@@ -60,4 +60,16 @@ public class SearchController {
         response.setLast(resultPage.isLast());
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/searchPriceAndTitle")
+    public ResponseEntity<SearchResponse<ProductDocument>> searchProductsPriceAndTitle(@RequestParam String keyword, @RequestParam BigDecimal minPrice,@RequestParam BigDecimal maxPrice, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductDocument> resultPage = searchService.searchByKeywordAndPrice(keyword,minPrice, maxPrice,pageable);
+        SearchResponse<ProductDocument> response = new SearchResponse<>();
+        response.setContent(resultPage.getContent());
+        response.setPageNumber(resultPage.getNumber());
+        response.setPageSize(resultPage.getSize());
+        response.setTotalPages(resultPage.getTotalPages());
+        response.setLast(resultPage.isLast());
+        return ResponseEntity.ok(response);
+    }
 }

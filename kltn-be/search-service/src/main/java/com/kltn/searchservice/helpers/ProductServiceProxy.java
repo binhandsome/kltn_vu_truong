@@ -12,4 +12,5 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface ProductServiceProxy {
     @PostMapping("/api/products/getAllProduct") // ✅ đổi thành POST
     public Page<ProductDto> getAllProducts(@RequestBody ProductFileterAll productFileterAll);
+
     }

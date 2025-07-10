@@ -13,5 +13,10 @@ public interface SearchService {
     void indexProduct(ProductDto productDto) throws IOException;
     Page<ProductDocument> searchProductByTitle(String keyword, Pageable pageable) throws IOException;
     Page<ProductDocument> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
-
+    Page<ProductDocument> searchByKeywordAndPrice(
+            String keyword,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Pageable pageable
+    );
     }
