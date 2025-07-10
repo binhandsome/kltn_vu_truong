@@ -32,6 +32,12 @@ public class ProductController {
 //        System.out.print(productService.getAllProducts(productFileterAll).get().findFirst().get().getImages().get(0).getProduct());
         return productService.getAllProducts(productFileterAll);
     }
+    @PostMapping("/getAllProduct")
+    public Page<Product> getAllProductsPost(@RequestBody ProductFileterAll productFileterAll) {
+
+        return productService.getAllProducts(productFileterAll);
+    }
+
     @GetMapping("/getAllCategories")
     public CategoryResponse categoryResponse() {
         CategoryResponse categoryResponse = new CategoryResponse();

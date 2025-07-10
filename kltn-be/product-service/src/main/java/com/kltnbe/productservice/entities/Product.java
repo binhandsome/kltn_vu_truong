@@ -70,9 +70,6 @@ public class Product {
     @JsonManagedReference
     private List<Category> category;
 
-//    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-//    private List<ProductVariant> variants;
-
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<ProductSize> sizes;
 
@@ -119,13 +116,6 @@ public class Product {
         this.category = category;
     }
 
-//    public List<ProductVariant> getVariants() {
-//        return variants;
-//    }
-//
-//    public void setVariants(List<ProductVariant> variants) {
-//        this.variants = variants;
-//    }
 
     public List<ProductSize> getSizes() {
         return sizes;
