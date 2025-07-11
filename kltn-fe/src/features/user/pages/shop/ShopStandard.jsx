@@ -107,43 +107,7 @@ const fetchProductsData = useCallback(
     [] // Không cần dependencies vì các state được truyền trực tiếp qua tham số
   );
 
-  const fetchProductsData = useCallback(
-    async (page, size, searchTerm = "") => {
-      setLoading(true);
-      try {
-        let response;
-        const hasKeyword = searchTerm.trim() !== "";
-        const hasPriceFilter = minValue !== 0 || maxValue !== 400;
 
-        if (hasKeyword && hasPriceFilter) {
-          response = await axios.get("http://localhost:8085/api/search/searchPriceAndTitle", {
-            params: { keyword: searchTerm, minPrice: minValue, maxPrice: maxValue, page, size },
-          });
-        } else if (hasKeyword) {
-          response = await axios.get("http://localhost:8085/api/search/search", {
-            params: { keyword: searchTerm, page, size },
-          });
-        } else if (hasPriceFilter) {
-          response = await axios.get("http://localhost:8085/api/search/searchPrice", {
-            params: { minPrice: minValue, maxPrice: maxValue, page, size },
-          });
-        } else {
-          await fetchProducts(page, size);
-          return;
-        }
-
-        console.log("🔍 input value:", searchTerm);
-        setProducts(response.data.content);
-        setTotalPages(response.data.totalPages);
-      } catch (error) {
-        console.error("❌ Lỗi khi lấy sản phẩm:", error);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [minValue, maxValue, keyword]
-  );
 
   const debouncedSetKeyword = useCallback(
     debounce((value) => {
@@ -267,6 +231,18 @@ const handleInputChangeSearch = (e) => {
       setWishlistItems(res.data);
     } catch (error) {
       console.error("❌ Lỗi lấy wishlist:", error);
+    }
+  };
+  const fetchProducts = async (page, size) => {
+    try {
+      const response = await axios.get("http://localhost:8083/api/products/getAllProduct", {
+        params: { page, size },
+      });
+      setProducts(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Lỗi fetchProducts:", error);
+      setProducts([]);
     }
   };
 
