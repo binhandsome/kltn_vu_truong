@@ -912,7 +912,7 @@ const finalResponse = {
                   aria-controls="offcanvasRight"
                 >
                   <i className="iconly-Broken-Buy" />
-                  <span className="badge badge-circle">5</span>
+                  <span className="badge badge-circle">{listCart && listCart.items ? listCart.items.length : 0}</span>
                 </a>
               </li>
               <li className="nav-item filte-link">

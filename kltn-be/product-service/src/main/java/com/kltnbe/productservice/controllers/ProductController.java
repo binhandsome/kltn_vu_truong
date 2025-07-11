@@ -1,6 +1,7 @@
 package com.kltnbe.productservice.controllers;
 
 
+import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
 import com.kltnbe.productservice.dtos.res.CategoryResponse;
@@ -41,35 +42,56 @@ public class ProductController {
     @GetMapping("/getAllCategories")
     public CategoryResponse categoryResponse() {
         CategoryResponse categoryResponse = new CategoryResponse();
+
+        // Lấy danh sách salesRank + count
         List<Object[]> results = productRepository.countProductsBySalesRanks();
         Map<String, Integer> salesRanksCount = new HashMap<>();
+        List<CategoryWithImageAndCount> salesRankCategories = new ArrayList<>();
+
         for (Object[] result : results) {
             String rank = (String) result[0];
             Long count = (Long) result[1];
             salesRanksCount.put(rank, count.intValue());
-            categoryResponse.setSalesRankCount(salesRanksCount);
+
+            // 👉 Lấy ảnh thumbnail ngẫu nhiên tương ứng với rank
+            String thumbnail = productRepository
+                    .findRandomThumbnailBySalesRank(rank, PageRequest.of(0, 1))
+                    .stream().findFirst().orElse(null);
+
+            salesRankCategories.add(new CategoryWithImageAndCount(rank, count.intValue(), thumbnail));
         }
+
+        categoryResponse.setSalesRankCount(salesRanksCount);
+        categoryResponse.setSalesRankCategories(salesRankCategories); // ✅ Thêm danh sách có ảnh
+
+        // Product Type
         List<Object[]> resultsProductType = productRepository.countProductsByProductType();
         Map<String, Integer> productTypeCount = new HashMap<>();
         for (Object[] result : resultsProductType) {
             String type = (String) result[0];
             Long count = (Long) result[1];
             productTypeCount.put(type, count.intValue());
-            categoryResponse.setProductTypeCount(productTypeCount);
         }
+        categoryResponse.setProductTypeCount(productTypeCount);
+
+        // Tags
         List<Object[]> resultsTags = productRepository.countProductsByTags();
         Map<String, Integer> tagsCount = new HashMap<>();
         for (Object[] result : resultsTags) {
-            String tags = (String) result[0];
+            String tag = (String) result[0];
             Long count = (Long) result[1];
-            tagsCount.put(tags, count.intValue());
-            categoryResponse.setTags(tagsCount);
+            tagsCount.put(tag, count.intValue());
         }
+        categoryResponse.setTags(tagsCount);
+
         return categoryResponse;
     }
+
     @GetMapping("/filterCategories")
     public ProductFilterResponse filterProductByCategories(ProductFilterRequest req) {
-        Pageable pageable = PageRequest.of(req.getPage(), req.getSize());
+        int page = req.getPage() < 0 ? 0 : req.getPage();
+        int size = req.getSize() <= 0 ? 10 : req.getSize();
+        Pageable pageable = PageRequest.of(page, size);
         ProductFilterResponse response = new ProductFilterResponse();
         Pageable limit1 = PageRequest.of(0, 1);
 
