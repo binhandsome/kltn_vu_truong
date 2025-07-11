@@ -470,7 +470,7 @@ var Pixio = function () {
 			};
 
 			noUiSlider.create(tooltipSlider, {
-				start: [40, 346],
+				start: [0, 400],
 				connect: true,
 				format: formatForSlider,
 				tooltips: [wNumb({ decimals: 1 }), true],
@@ -501,7 +501,7 @@ var Pixio = function () {
 			};
 
 			noUiSlider.create(tooltipSlider, {
-				start: [40, 346],
+				start: [0, 400],
 				connect: true,
 				format: formatForSlider,
 				tooltips: [wNumb({ decimals: 1 }), true],
