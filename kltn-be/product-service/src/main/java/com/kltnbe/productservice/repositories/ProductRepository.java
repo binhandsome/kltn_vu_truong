@@ -15,9 +15,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 //    @Query("SELECT p FROM Product p WHERE LOWER(p.productTitle) LIKE LOWER(CONCAT('%', :keyword, '%'))")
 //    Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
     Page<Product> findAll(Pageable pageable);
+//    Page<Product> findProductBySalesRank(String salesRank, Pageable pageable);
+//    Page<Product> findProductByProductType(String productType, Pageable pageable);
+//    Page<Product> findProductByTags(String tags, Pageable pageable);
+// Chỉ fetch images để hiển thị lên card sản phẩm
+    @EntityGraph(attributePaths = {"images"})
     Page<Product> findProductBySalesRank(String salesRank, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"images"})
     Page<Product> findProductByProductType(String productType, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"images"})
     Page<Product> findProductByTags(String tags, Pageable pageable);
+
     @Query("SELECT DISTINCT COALESCE(p.salesRank, 'Other') FROM Product p")
     List<String> findAllDistinctSalesRanks();
     @Query("SELECT DISTINCT COALESCE(p.productType, 'Other') FROM Product p")
