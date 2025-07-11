@@ -14,6 +14,7 @@ import axios from 'axios';
     const [quantity, setQuantity] = useState(1);
     const [quantityMap, setQuantityMap] = useState({});
     const [wishlistItems, setWishlistItems] = useState([]);
+    const [selectedItemsCart, setSelectedItemsCart] = useState([]);
     const API_URL = 'http://localhost:8081/api/auth';
   
     const handleIncrement = (productId, quantity) => {
@@ -70,6 +71,26 @@ import axios from 'axios';
         window.removeEventListener('loggedOut', onLogout);
       };
     }, [fetchUser]);
+
+    // ham tick item cart
+  const toggleSelectItemCart = (asin) => {
+    setSelectedItemsCart((prevSelected) =>
+      prevSelected.includes(asin)
+        ? prevSelected.filter(id => id !== asin)
+        : [...prevSelected, asin]
+    );
+  };
+  // ham chom/ bo chon all cart
+  const toggleSelectAllCart = () => {
+  if (!listCart?.items) return;
+
+  const allAsins = listCart.items.map(item => item.asin);
+  const allSelected = allAsins.every(asin => selectedItemsCart.includes(asin));
+
+  setSelectedItemsCart(allSelected ? [] : allAsins);
+};
+
+  
   
     const getCartProduct = async () => {
       const cartId = localStorage.getItem("cartId") || '';
@@ -1159,6 +1180,7 @@ const finalResponse = {
               tabIndex={0}
             >
               <div className="shop-sidebar-cart">
+                
   <ul className="sidebar-cart-list">
     {listCart?.items?.length > 0 ? (
       listCart.items.map((item, index) => (
@@ -1203,12 +1225,18 @@ const finalResponse = {
                       >
                         <i className="fa-solid fa-minus"></i>
                       </button>
-                    </div>
+                    </div>                   
                   </div>
                 </div>
                 <h6 className="dz-price mb-0">${(item.discountedUnitPrice * item.quantity).toFixed(2)}</h6>
               </div>
             </div>
+            <input
+  type="checkbox"
+  checked={selectedItemsCart.includes(item.asin)}
+  onChange={() => toggleSelectItemCart(item.asin)}
+  style={{ marginRight: "10px" }}
+/>
 
             {/* ✅ Nút xoá khỏi giỏ hàng */}
             <button
@@ -1225,7 +1253,19 @@ const finalResponse = {
       <li>🛒 Giỏ hàng trống</li>
     )}
   </ul>
+  <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
+  <input
+  type="checkbox"
+  onChange={toggleSelectAllCart}
+  checked={
+    listCart?.items?.length > 0 &&
+    listCart.items.every(item => selectedItemsCart.includes(item.asin))
+  }
+  style={{ marginRight: "8px" }}
+/>
 
+  <span>Select All</span>
+</div>
   <div className="cart-total">
   <h5 className="mb-0">Subtotal:</h5>
   <h5 className="mb-0">${listCart?.totalPrice?.toFixed(2) || '0.00'}</h5>

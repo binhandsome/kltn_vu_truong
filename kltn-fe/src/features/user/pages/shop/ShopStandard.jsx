@@ -29,6 +29,7 @@ function ShopStandard({products }) {
   const [inputValue, setInputValue] = useState("");
   const [minValue, setMinValue] = useState(0);
   const [maxValue, setMaxValue] = useState(400);
+  
 
   // Slider giá
   useEffect(() => {
@@ -56,7 +57,6 @@ function ShopStandard({products }) {
       timeoutId = setTimeout(() => func(...args), delay);
     };
   };
-
   const fetchProducts = async (page, size) => {
     try {
       const response = await axios.get("http://localhost:8083/api/products/getAllProduct", {
