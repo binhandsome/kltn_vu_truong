@@ -7,7 +7,8 @@ public class CartItemDto implements Serializable {
     private String asin;
     private int quantity;
     private BigDecimal price;
-
+    private String size;
+    private String nameColor;
 
     public CartItemDto() {}
 
@@ -15,6 +16,22 @@ public class CartItemDto implements Serializable {
         this.asin = asin;
         this.quantity = quantity;
         this.price = price;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public String getNameColor() {
+        return nameColor;
+    }
+
+    public void setNameColor(String nameColor) {
+        this.nameColor = nameColor;
     }
 
     public String getAsin() {

@@ -224,8 +224,15 @@ public class CartServiceImpl implements CartService {
 
         // ✅ Cập nhật số lượng (không sửa lại giá)
         CartItemDto item = existingItemOpt.get();
-        item.setQuantity(cartRequest.getQuantity());
-
+        if (cartRequest.getQuantity() != 0) {
+            item.setQuantity(cartRequest.getQuantity());
+        }
+        if (cartRequest.getSize() != null ) {
+            item.setSize(cartRequest.getSize());
+        }
+        if (cartRequest.getNameColor() != null ) {
+            item.setNameColor(cartRequest.getNameColor());
+        }
         // ❌ Không cập nhật lại giá – tránh cộng dồn sai
         // if (cartRequest.getPrice() != null) {
         //     item.setPrice(cartRequest.getPrice());
