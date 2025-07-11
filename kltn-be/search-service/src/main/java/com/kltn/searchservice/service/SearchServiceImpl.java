@@ -1,11 +1,9 @@
 package com.kltn.searchservice.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.json.JsonData;
 import com.kltn.searchservice.dtos.ProductDocument;
 import com.kltn.searchservice.dtos.ProductDto;
@@ -96,23 +94,104 @@ public class SearchServiceImpl implements SearchService {
     }
 
 
-    public Page<ProductDocument> searchProductByTitle(String keyword, Pageable pageable) {
-        // lowercase keyword cho wildcard
+//    public Page<ProductDocument> searchProductByTitle(String keyword, Pageable pageable) {
+//        // lowercase keyword cho wildcard
+//        String loweredKeyword = keyword.toLowerCase();
+//
+//        Query esQuery = Query.of(q -> q.bool(b -> b
+//                .should(s -> s.match(m -> m
+//                        .field("productTitle")
+//                        .query(keyword)
+//                        .fuzziness("AUTO")
+//                ))
+//                .should(s -> s.wildcard(w -> w
+//                        .field("productTitle.keyword")
+//                        .value("*" + loweredKeyword + "*")
+//                ))
+//                .minimumShouldMatch("1")
+//        ));
+//
+//        org.springframework.data.elasticsearch.core.query.Query springQuery = NativeQuery.builder()
+//                .withQuery(esQuery)
+//                .withPageable(pageable)
+//                .build();
+//
+//        SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
+//
+//        List<ProductDocument> results = hits.getSearchHits()
+//                .stream()
+//                .map(SearchHit::getContent)
+//                .toList();
+//
+//        return new PageImpl<>(results, pageable, hits.getTotalHits());
+//    }
+@Override
+public Page<ProductDocument> searchProductByTitle(String keyword, Pageable pageable) {
+    String loweredKeyword = keyword.toLowerCase();
+
+    // Dùng match và wildcard trên productTitle đã được analyzer (ví dụ ngram_analyzer)
+    Query esQuery = Query.of(q -> q.bool(b -> b
+            .should(s -> s.match(m -> m
+                    .field("productTitle")
+                    .query(keyword)
+                    .fuzziness("AUTO") // cho phép tìm gần đúng
+            ))
+            .should(s -> s.wildcard(w -> w
+                    .field("productTitle") // ✅ KHÔNG dùng productTitle.keyword
+                    .value("*" + loweredKeyword + "*")
+            ))
+            .minimumShouldMatch("1")
+    ));
+
+    org.springframework.data.elasticsearch.core.query.Query springQuery = NativeQuery.builder()
+            .withQuery(esQuery)
+            .withPageable(pageable)
+            .build();
+
+    SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
+
+    List<ProductDocument> results = hits.getSearchHits()
+            .stream()
+            .map(SearchHit::getContent)
+            .toList();
+
+    return new PageImpl<>(results, pageable, hits.getTotalHits());
+}
+
+
+    public Page<ProductDocument> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+      return productSearchRepository.findByProductPriceBetween(minPrice, maxPrice, pageable);
+    }
+    public Page<ProductDocument> searchByKeywordAndPrice(
+            String keyword,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Pageable pageable
+    ) {
         String loweredKeyword = keyword.toLowerCase();
 
+        // Build query
         Query esQuery = Query.of(q -> q.bool(b -> b
-                .should(s -> s.match(m -> m
-                        .field("productTitle")
-                        .query(keyword)
-                        .fuzziness("AUTO")
+                .must(m -> m.bool(inner -> inner
+                        .should(s -> s.match(match -> match
+                                .field("productTitle")
+                                .query(keyword)
+                                .fuzziness("AUTO")
+                        ))
+                        .should(s -> s.wildcard(wc -> wc
+                                .field("productTitle.keyword")
+                                .value("*" + loweredKeyword + "*")
+                        ))
+                        .minimumShouldMatch("1")
                 ))
-                .should(s -> s.wildcard(w -> w
-                        .field("productTitle.keyword")
-                        .value("*" + loweredKeyword + "*")
+                .filter(f -> f.range(r -> r
+                        .field("productPrice")
+                        .gte(JsonData.of(minPrice))
+                        .lte(JsonData.of(maxPrice))
                 ))
-                .minimumShouldMatch("1")
         ));
 
+        // Build native query
         org.springframework.data.elasticsearch.core.query.Query springQuery = NativeQuery.builder()
                 .withQuery(esQuery)
                 .withPageable(pageable)
@@ -128,7 +207,4 @@ public class SearchServiceImpl implements SearchService {
         return new PageImpl<>(results, pageable, hits.getTotalHits());
     }
 
-    public Page<ProductDocument> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
-      return productSearchRepository.findByProductPriceBetween(minPrice, maxPrice, pageable);
-    }
 }

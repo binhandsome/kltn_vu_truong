@@ -27,4 +27,11 @@ public class ProductDocument {
 
     @Field(type = FieldType.Double)
     private BigDecimal productPrice;
+    private String productThumbnail;
+    private String salesRank;
+    private String productType;
+    private Double percentDiscount;
+    private String tags;
+
+
 }

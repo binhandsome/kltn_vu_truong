@@ -11,6 +11,51 @@ public class ProductDto {
     private String asin;
     private String productTitle;
     private BigDecimal productPrice;
+    private String productThumbnail;
+    private String salesRank;
+    private String productType;
+    private Double percentDiscount;
+    private String tags;
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public String getProductThumbnail() {
+        return productThumbnail;
+    }
+
+    public void setProductThumbnail(String productThumbnail) {
+        this.productThumbnail = productThumbnail;
+    }
+
+    public String getSalesRank() {
+        return salesRank;
+    }
+
+    public void setSalesRank(String salesRank) {
+        this.salesRank = salesRank;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
+    }
+
+    public Double getPercentDiscount() {
+        return percentDiscount;
+    }
+
+    public void setPercentDiscount(Double percentDiscount) {
+        this.percentDiscount = percentDiscount;
+    }
 
     public Long getProductId() {
         return productId;

@@ -1,5 +1,5 @@
 // src/pages/common/HomePage.js
-import React, { useEffect,useRef, useState } from 'react';
+import React, { useCallback, useEffect,useRef, useState } from 'react';
 import { Helmet } from 'react-helmet'; 
 // import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
@@ -10,57 +10,142 @@ import { param } from 'jquery';
 import { type } from '@testing-library/user-event/dist/type';
 
 function ShopStandard({products }) {
-	const [hasBgClass, setHasBgClass] = useState(true); 
+	 const [hasBgClass, setHasBgClass] = useState(true);
   const [product, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
   const maxPagesToShow = 10;
-  const [selectedProduct, setSelectedProduct] = useState(null); 
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [priceDiscount, setPriceDiscount] = useState(0);
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [listCart, setListCart] = useState([]); // Quản lý priceDiscount bằng state
+  const [listCart, setListCart] = useState([]);
   const [salesRankCount, setSalesRankCount] = useState([]);
   const [productTypeCount, setProductTypeCount] = useState([]);
   const [tags, setTags] = useState([]);
+  const [keyword, setKeyword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [minValue, setMinValue] = useState(0);
+  const [maxValue, setMaxValue] = useState(400);
 
-//  const inputRef = useRef(null);
+  // Slider giá
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const slider = document.getElementById("slider-tooltips2");
+      if (slider && slider.noUiSlider) {
+        slider.noUiSlider.on("change", async (values) => {
+          const [min, max] = values.map(Number);
+          console.log("🎯 Min Price:", min, "| Max Price:", max);
+          setMinValue(min);
+          setMaxValue(max);
+        });
+        clearInterval(interval);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Hàm debounce
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  };
 
   const fetchProducts = async (page, size) => {
     try {
-      const response = await axios.get('http://localhost:8083/api/products/getAllProduct', {
+      const response = await axios.get("http://localhost:8083/api/products/getAllProduct", {
         params: { page, size },
       });
       setProducts(response.data.content);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error('khong tim thay product', error);
+      console.error("Lỗi fetchProducts:", error);
+      setProducts([]);
     }
   };
+
+  const fetchProductsData = useCallback(
+    async (page, size, searchTerm = "") => {
+      setLoading(true);
+      try {
+        let response;
+        const hasKeyword = searchTerm.trim() !== "";
+        const hasPriceFilter = minValue !== 0 || maxValue !== 400;
+
+        if (hasKeyword && hasPriceFilter) {
+          response = await axios.get("http://localhost:8085/api/search/searchPriceAndTitle", {
+            params: { keyword: searchTerm, minPrice: minValue, maxPrice: maxValue, page, size },
+          });
+        } else if (hasKeyword) {
+          response = await axios.get("http://localhost:8085/api/search/search", {
+            params: { keyword: searchTerm, page, size },
+          });
+        } else if (hasPriceFilter) {
+          response = await axios.get("http://localhost:8085/api/search/searchPrice", {
+            params: { minPrice: minValue, maxPrice: maxValue, page, size },
+          });
+        } else {
+          await fetchProducts(page, size);
+          return;
+        }
+
+        console.log("🔍 input value:", searchTerm);
+        setProducts(response.data.content);
+        setTotalPages(response.data.totalPages);
+      } catch (error) {
+        console.error("❌ Lỗi khi lấy sản phẩm:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [minValue, maxValue, keyword]
+  );
+
+  const debouncedSetKeyword = useCallback(
+    debounce((value) => {
+      setKeyword(value);
+      setCurrentPage(0);
+    }, 500),
+    []
+  );
+
+  const handleInputChangeSearch = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    debouncedSetKeyword(value);
+  };
+
+  useEffect(() => {
+    fetchProductsData(currentPage, pageSize, keyword);
+  }, [currentPage, pageSize, fetchProductsData, keyword]);
+
   const getAllCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:8083/api/products/getAllCategories', {
-      }
-    );
-    setSalesRankCount(response.data.salesRankCount);
-    setProductTypeCount(response.data.productTypeCount);
-    setTags(response.data.tags);
-
-    console.log(response.data.salesRankCount + 'ok data')
-    }catch (error) {
-      console.error('khong co categories nao', error)
+      const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
+      setSalesRankCount(response.data.salesRankCount);
+      setProductTypeCount(response.data.productTypeCount);
+      setTags(response.data.tags);
+    } catch (error) {
+      console.error('Không lấy được danh mục:', error);
     }
-  }
- useEffect(() => {
-  getAllCategories();
-}, []); // Thêm mảng phụ thuộc rỗng
+  };
+
+  useEffect(() => {
+    getAllCategories();
+  }, []);
 
   useEffect(() => {
     if (selectedProduct) {
       const discountPrice = (
         selectedProduct.productPrice * quantity -
-        (selectedProduct.productPrice * selectedProduct.percentDiscount / 100) * quantity
+        (selectedProduct.productPrice * selectedProduct.percentDiscount) / 100 * quantity
       ).toFixed(2);
       setPriceDiscount(discountPrice);
     } else {
@@ -69,8 +154,8 @@ function ShopStandard({products }) {
   }, [selectedProduct, quantity]);
 
   const addCart = async () => {
-    const cartId = localStorage.getItem("cartId") || '';
-    const token = localStorage.getItem("accessToken") || '';
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
     try {
       const payload = {
         token,
@@ -80,13 +165,10 @@ function ShopStandard({products }) {
         cartId,
       };
 
-      const response = await axios.post('http://localhost:8084/api/cart/addCart', payload);
-
+      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }
-
-      // 🔔 Realtime trigger
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
       console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message);
@@ -94,8 +176,8 @@ function ShopStandard({products }) {
   };
 
   const addCartWithQuantity = async (quantity, product) => {
-    const cartId = localStorage.getItem("cartId") || '';
-    const token = localStorage.getItem("accessToken") || '';
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
     try {
       const payload = {
         token,
@@ -104,25 +186,22 @@ function ShopStandard({products }) {
         price: parseFloat(product.productPrice),
         cartId,
       };
-
-      const response = await axios.post('http://localhost:8084/api/cart/addCart', payload);
-
+      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }
-
-      // 🔔 Realtime trigger
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
       console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message);
     }
   };
+
   const getCartProduct = async () => {
-    const cartId = localStorage.getItem("cartId") || '';
-    const token = localStorage.getItem("accessToken") || '';
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
     try {
-      const res = await axios.get('http://localhost:8084/api/cart/getCart', {
-        params: { cartId, token }
+      const res = await axios.get("http://localhost:8084/api/cart/getCart", {
+        params: { cartId, token },
       });
       setListCart(res.data.items || []);
     } catch (error) {
@@ -130,16 +209,18 @@ function ShopStandard({products }) {
       setListCart([]);
     }
   };
+
   useEffect(() => {
     getCartProduct();
-
     const handleCartUpdate = () => getCartProduct();
     window.addEventListener("cartUpdated", handleCartUpdate);
     return () => window.removeEventListener("cartUpdated", handleCartUpdate);
   }, []);
+
   const isProductInCart = (asin) => {
-    return listCart.some(item => item.asin === asin);
+    return listCart.some((item) => item.asin === asin);
   };
+
   const fetchWishlist = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
@@ -157,11 +238,11 @@ function ShopStandard({products }) {
     fetchProducts(currentPage, pageSize);
     fetchWishlist();
   }, [currentPage, pageSize]);
+
   useEffect(() => {
     const handleWishlistUpdated = () => {
       fetchWishlist();
     };
-
     window.addEventListener("wishlistUpdated", handleWishlistUpdated);
     return () => window.removeEventListener("wishlistUpdated", handleWishlistUpdated);
   }, []);
@@ -169,34 +250,30 @@ function ShopStandard({products }) {
   const handleChange = (e) => {
     const value = e.target.value;
     const parsed = parseInt(value);
-    if (isNaN(parsed) || parsed < 1) {
-      setQuantity(1);
-    } else {
-      setQuantity(parsed);
-    }
+    setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
   };
 
   const scrollToFilterWrapper = () => {
-    const filterWrapper = document.querySelector('.filter-wrapper');
+    const filterWrapper = document.querySelector(".filter-wrapper");
     if (filterWrapper) {
-      filterWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      filterWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
-  // Xử lý chuyển trang và cuộn lên
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 0 && pageNumber < totalPages) {
       setCurrentPage(pageNumber);
-      scrollToFilterWrapper(); 
+      scrollToFilterWrapper();
     }
   };
+
   const handlePageChangeProduct = (event) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
+    setCurrentPage(0);
     scrollToFilterWrapper();
-  }
+  };
 
-  // Tính toán phạm vi trang hiển thị
   const getPageRange = () => {
     const startPage = Math.floor(currentPage / maxPagesToShow) * maxPagesToShow;
     const endPage = Math.min(startPage + maxPagesToShow, totalPages);
@@ -205,11 +282,13 @@ function ShopStandard({products }) {
 
   useEffect(() => {
     if (hasBgClass) {
-      document.body.classList.add('bg');
+      document.body.classList.add("bg");
     } else {
-      document.body.classList.remove('bg');
+      document.body.classList.remove("bg");
     }
-    return () => document.body.classList.remove('bg');
+    return () => {
+      document.body.classList.remove("bg");
+    };
   }, [hasBgClass]);
 
   useEffect(() => {
@@ -217,52 +296,51 @@ function ShopStandard({products }) {
     wow.init();
   }, []);
 
-  const imageWrapperStyle = { width: '600px', height: '450px' };
-
   useEffect(() => {
-    const modalElement = document.getElementById('exampleModal');
+    const modalElement = document.getElementById("exampleModal");
     const handleModalClose = () => {
       setQuantity(1);
       setPriceDiscount(0);
     };
-
-    modalElement.addEventListener('hidden.bs.modal', handleModalClose);
-    return () => modalElement.removeEventListener('hidden.bs.modal', handleModalClose);
+    if (modalElement) {
+      modalElement.addEventListener("hidden.bs.modal", handleModalClose);
+    }
+    return () => {
+      if (modalElement) {
+        modalElement.removeEventListener("hidden.bs.modal", handleModalClose);
+      }
+    };
   }, []);
 
   const handleToggleWishlist = async (asin) => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
 
-    const isInWishlist = wishlistItems.some(item => item.asin === asin);
-
+    const isInWishlist = wishlistItems.some((item) => item.asin === asin);
     try {
       if (isInWishlist) {
         await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
       } else {
         await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
       }
 
-      // ✅ Sau khi xử lý xong thì fetch lại danh sách mới:
       const res = await axios.get("http://localhost:8083/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
-
-      // 🔁 Bắn event nếu các nơi khác cũng cần
       window.dispatchEvent(new Event("wishlistUpdated"));
     } catch (error) {
       console.error("❌ Lỗi cập nhật wishlist:", error);
     }
   };
 
+  const isProductInWishlist = (asin) => wishlistItems.some((item) => item.asin === asin);
 
-  const isProductInWishlist = (asin) => wishlistItems.some(item => item.asin === asin);
-
+  const imageWrapperStyle = { width: "600px", height: "450px" };
 
   return (
     <>
@@ -331,6 +409,8 @@ function ShopStandard({products }) {
                     <div className="input-group">
                       <input
                         name="dzSearch"
+                        value={inputValue} // bind giá trị trực tiếp
+                        onChange={handleInputChangeSearch}
                         required="required"
                         type="search"
                         className="form-control"
