@@ -178,24 +178,30 @@ const finalResponse = {
         });
       }
     };
-    const updateCartItemQuantity = async (asin, quantity, unitPrice) => {
-      const cartId = localStorage.getItem("cartId") || '';
-      const token = localStorage.getItem("accessToken") || '';
-      try {
-        const payload = {
-          token,
-          cartId,
-          asin,
-          quantity,
-          price: unitPrice   // ✅ BỔ SUNG GIÁ ĐƠN VỊ CHO BE
-        };
-    
-        await axios.put('http://localhost:8084/api/cart/updateItem', payload);
-        window.dispatchEvent(new Event("cartUpdated"));
-      } catch (err) {
-        console.error("❌ Lỗi cập nhật số lượng sản phẩm:", err);
-      }
+   const updateCartItemQuantity = async (asin, quantity, unitPrice, size, nameColor) => {
+  const cartId = localStorage.getItem("cartId") || '';
+  const token = localStorage.getItem("accessToken") || '';
+
+  try {
+    const payload = {
+      token,
+      cartId,
+      asin,
+      quantity,
+      price: unitPrice,
+      size,
+      nameColor,
     };
+
+    await axios.put('http://localhost:8084/api/cart/updateItem', payload);
+    window.dispatchEvent(new Event("cartUpdated"));
+    console.log(size + 'size cua toi');
+  } catch (err) {
+    console.error("❌ Lỗi cập nhật số lượng sản phẩm:", err);
+  }
+};
+
+
     
     const handleRemoveFromCart = async (asin) => {
       const cartId = localStorage.getItem("cartId") || '';
@@ -1255,18 +1261,10 @@ const finalResponse = {
   <div className="d-block">
     <label className="form-label">Size</label>
     <div className="btn-group product-size m-0">
-      <input
-        type="radio"
-        className="btn-check"
-        name={`btnradio-${index}`}
-        id={`btnradiol0-${index}`}
-      />
-      <label className="btn" htmlFor={`btnradiol0-${index}`}>
-        {item.sizes[0].sizeName}
-      </label>
 
-      {item.sizes.slice(1).map((size, sizeIndex) => {
-        const inputId = `btnradiol${sizeIndex + 1}-${index}`;
+      {item.sizes.map((size, sizeIndex) => {
+         const inputId = `btnradiol${sizeIndex}-${index}`;
+  const isChecked = item.size === size.sizeName;
         return (
           <React.Fragment key={sizeIndex}>
             <input
@@ -1274,9 +1272,12 @@ const finalResponse = {
               className="btn-check"
               name={`btnradio-${index}`}
               id={inputId}
+                      checked={isChecked} // ✅ Bật nếu đúng size
+readOnly
             />
-            <label className="btn" htmlFor={inputId}>
+            <label className="btn" htmlFor={inputId} onClick={() => updateCartItemQuantity(item.asin, item.quantity, item.unitPrice, size.sizeName, item.color)}   >
               {size.sizeName}
+              
             </label>
           </React.Fragment>
         );
@@ -1286,27 +1287,31 @@ const finalResponse = {
 )}
 
               <div className="meta-content">
-                <label className="form-label">Color</label>
+                <label className="form-label">Color:</label>
                 <div className="d-flex align-items-center color-filter">
+                   
                   {colors.length > 0 ? (
                     colors.map((color, colorIndex) => (
-                      <div className="form-check" key={colorIndex}>
-                       <input
-        className="form-check-input"
-        type="radio"
-        name="radioNoLabel"
-        id={`radioNoLabel-${colorIndex}`} // id nên unique
-        value={color.code_color}
-        aria-label="..."
-      />
-            <span></span>
-
-                      </div>
+                 <div className="form-check" key={colorIndex} >
+  <input
+    className="form-check-input"
+    type="radio"
+    name="radioNoLabel"
+    id={`radioNoLabel-${colorIndex}`}
+    value={color.code_color}
+    aria-label={color.name_color}
+    onClick={() => updateCartItemQuantity(item.asin, item.quantity, item.unitPrice, item.size, color.name_color)}
+  />
+  <span style={{ backgroundColor: color.code_color}}></span>
+</div>
                     ))
                   ) : (
                     <p>No colors available for this item.</p>
                   )}
+
                 </div>
+                                                  <p className="form-label">Selected: {item.nameColor}</p>
+
               </div>
             </div>
           </div>

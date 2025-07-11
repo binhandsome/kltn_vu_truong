@@ -20,8 +20,30 @@ public class CartRequest {
     @JsonProperty("cartId")
     private String cartId;
 
+    @JsonProperty("nameColor")
+    private String nameColor;
+
+    @JsonProperty("size")
+    private String size;
+
     public String getToken() {
         return token;
+    }
+
+    public String getNameColor() {
+        return nameColor;
+    }
+
+    public void setNameColor(String nameColor) {
+        this.nameColor = nameColor;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
     }
 
     public void setToken(String token) {
@@ -61,6 +83,7 @@ public class CartRequest {
     }
 
     @Override
+
     public String toString() {
         return "CartRequest{" +
                 "token='" + token + '\'' +
@@ -68,6 +91,8 @@ public class CartRequest {
                 ", quantity=" + quantity +
                 ", price=" + price +
                 ", cartId='" + cartId + '\'' +
+                ", nameColor='" + nameColor + '\'' +
+                ", size='" + size + '\'' +
                 '}';
     }
 }
