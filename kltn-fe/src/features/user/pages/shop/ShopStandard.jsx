@@ -27,7 +27,7 @@ function ShopStandard({products }) {
   const [inputValue, setInputValue] = useState('');
   const [minValue, setMinValue] = useState(0);
   const [maxValue, setMaxValue] = useState(400);
-
+  const [selectedTags, setSelectedTags] = useState([]);
 
 useEffect(() => {
   const interval = setInterval(() => {
@@ -47,8 +47,6 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, []);
 
-
-
   // Hàm debounce
   const debounce = (func, delay) => {
     let timeoutId;
@@ -57,63 +55,55 @@ useEffect(() => {
       timeoutId = setTimeout(() => func(...args), delay);
     };
   };
+const handleTagToggle = (tag) => {
+    setSelectedTags((prev) => {
+      const newTags = prev.includes(tag)
+        ? prev.filter((t) => t !== tag) // Xóa tag nếu đã có
+        : [...prev, tag]; // Thêm tag nếu chưa có
+      return newTags;
+    });
+    setCurrentPage(0); // Reset về trang đầu khi thay đổi tag
+  };
+const fetchProductsData = useCallback(
+    async (page, size, searchTerm = '', minPrice = null, maxPrice = null, tags = []) => {
+      setLoading(true);
+      try {
+        const params = {
+          page,
+          size,
+        };
+   
+        // Thêm các tham số nếu có giá trị
+        if (searchTerm.trim() !== '') {
+          params.keyword = searchTerm;
+        }
+        if (minValue !== '' && minValue !== null && !isNaN(minValue)) {
+          params.minPrice = Number(minPrice);
+        }
+        if (maxValue !== '' && maxValue !== null && !isNaN(maxValue)) {
+          params.maxPrice = Number(maxValue);
+        }
+        if (tags.length > 0) {
+          params.tags = tags.join(','); 
+        }
 
-  const fetchProductsData = useCallback(
-  async (page, size, searchTerm = '') => {
-    setLoading(true);
-    try {
-      let response;
-      const hasKeyword = searchTerm.trim() !== '';
-      const hasPriceFilter = minValue !== 0 || maxValue !== 400;
+        const response = await axios.get('http://localhost:8085/api/search/searchAdvance', {
+          params,
+        });
 
-      if (hasKeyword && hasPriceFilter) {
-        response = await axios.get('http://localhost:8085/api/search/searchPriceAndTitle', {
-          params: {
-            keyword: searchTerm,
-            minPrice: minValue,
-            maxPrice: maxValue,
-            page,
-            size,
-          },
-        });
-      } else if (hasKeyword) {
-        response = await axios.get('http://localhost:8085/api/search/search', {
-          params: {
-            keyword: searchTerm,
-            page,
-            size,
-          },
-        });
-      } else if (hasPriceFilter) {
-        response = await axios.get('http://localhost:8085/api/search/searchPrice', {
-          params: {
-            minPrice: minValue,
-            maxPrice: maxValue,
-            page,
-            size,
-          },
-        });
-      } else {
-        response = await axios.get('http://localhost:8083/api/products/getAllProduct', {
-          params: {
-            page,
-            size,
-          },
-        });
+        console.log('🔍 Input:', { searchTerm, minPrice, maxPrice, tags });
+        setProducts(response.data.content);
+        setTotalPages(response.data.totalPages);
+      } catch (error) {
+        console.error('❌ Lỗi khi lấy sản phẩm:', error);
+        setProducts([]);
+        setTotalPages(0);
+      } finally {
+        setLoading(false);
       }
-
-      console.log("🔍 input value:", searchTerm);
-      setProducts(response.data.content);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error('❌ Lỗi khi lấy sản phẩm:', error);
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  },
-  [minValue, maxValue, keyword] // 👈 đúng dependency
-);
+    },
+    [] // Không cần dependencies vì các state được truyền trực tiếp qua tham số
+  );
 
 
   const debouncedSetKeyword = useCallback(
@@ -129,11 +119,9 @@ const handleInputChangeSearch = (e) => {
   setInputValue(value);         // cập nhật tức thì cho input
   debouncedSetKeyword(value);   // cập nhật từ khóa sau 500ms
 };
-
-  // Gọi API khi currentPage hoặc pageSize thay đổi (không phụ thuộc keyword)
   useEffect(() => {
-    fetchProductsData(currentPage, pageSize, keyword);
-  }, [currentPage, pageSize, fetchProductsData, keyword]);
+    fetchProductsData(currentPage, pageSize, keyword, minValue, maxValue, selectedTags);
+  }, [currentPage, pageSize, keyword, minValue, maxValue, selectedTags, fetchProductsData]);
 
   // Lấy danh mục
   const getAllCategories = async () => {
@@ -612,23 +600,60 @@ const handleInputChangeSearch = (e) => {
                   
                   </ul>
                 </div>
-                <div className="widget widget_tag_cloud">
-                  <h6 className="widget-title">Tags</h6>
-                  <div className="tagcloud">
-                                           {Object.entries(tags).map(([type, count]) => (
+              {/* Tag Cloud */}
+      <div className="widget widget_tag_cloud" >
+        <h6 className="widget-title">Tags</h6>
+        <div className="tagcloud">
+          {Object.entries(tags).length > 0 ? (
+            Object.entries(tags).map(([type, count]) => (
+            <span
+  key={type}
+  onClick={() => handleTagToggle(type)}
+  onMouseEnter={(e) => {
+    if (!selectedTags.includes(type)) {
+      e.currentTarget.style.backgroundColor = '#000';
+      e.currentTarget.style.color = '#fff';
+    }
+  }}
+  onMouseLeave={(e) => {
+    if (!selectedTags.includes(type)) {
+      e.currentTarget.style.backgroundColor = '#fff';
+      e.currentTarget.style.color = '#000';
+    }
+  }}
+  style={{
+    cursor: 'pointer',
+    padding: '5px 14px',
+    margin: '5px',
+    border: '1px solid #000',
+    borderRadius: '12px',
+    display: 'inline-block',
+    backgroundColor: selectedTags.includes(type) ? '#000' : '#fff',
+    color: selectedTags.includes(type) ? '#fff' : '#000',
+    transition: 'all 0.2s ease',
+  }}
+>
+  {type}
+</span>
 
-                    <a href={`/user/shop/shopWithCategory?tags=${type}`}>{type} </a>
-                                    ))}
-   
-  
-                  </div>
-                </div>
-                <a
-                  href="javascript:void(0);"
-                  className="btn btn-sm font-14 btn-secondary btn-sharp"
-                >
-                  RESET
-                </a>
+            ))
+          ) : (
+            <p>Đang tải tags...</p>
+          )}
+        </div>
+      </div>
+              <a
+  href="#"
+  className="btn btn-sm font-14 btn-secondary btn-sharp"
+  onClick={(e) => {
+    e.preventDefault();
+    setSelectedTags([]); // xóa toàn bộ tags đã chọn
+    setCurrentPage(0);
+  }}
+>
+  RESET
+</a>
+
               </aside>
             </div>
           </div>
@@ -1966,8 +1991,10 @@ const handleInputChangeSearch = (e) => {
                       className="btn btn-secondary btn-md btn-rounded"
                       data-bs-toggle="modal"
                       data-bs-target="#exampleModal"
-                      onClick={() => setSelectedProduct(product)}
-                    >
+  onClick={() => {
+    console.log("Product clicked:", product);
+    setSelectedProduct(product);
+  }}                    >
                       <i className="fa-solid fa-eye d-md-none d-block" />
                       <span className="d-md-block d-none">Quick View</span>
                     </a>
@@ -2095,14 +2122,13 @@ const handleInputChangeSearch = (e) => {
                 <div className="swiper quick-modal-swiper thumb-swiper-lg thumb-sm swiper-vertical">
                   <div className="swiper-wrapper">
                          {selectedProduct !== null && (
-                          selectedProduct.images.map((image, index) => (
  <div className="swiper-slide">
                       <img
-                        src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`}
+                        src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${selectedProduct.productThumbnail}`}
                         alt="image"
                       />
                     </div>
-                          ))
+                          
 
                    
                          )}
