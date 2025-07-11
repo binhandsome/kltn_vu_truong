@@ -10,21 +10,23 @@ import { param } from 'jquery';
 import { type } from '@testing-library/user-event/dist/type';
 
 function ShopStandard({products }) {
-	const [hasBgClass, setHasBgClass] = useState(true); 
+	 const [hasBgClass, setHasBgClass] = useState(true);
   const [product, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
   const maxPagesToShow = 10;
-  const [selectedProduct, setSelectedProduct] = useState(null); 
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [priceDiscount, setPriceDiscount] = useState(0); // Quản lý priceDiscount bằng state
+  const [priceDiscount, setPriceDiscount] = useState(0);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [listCart, setListCart] = useState([]);
   const [salesRankCount, setSalesRankCount] = useState([]);
   const [productTypeCount, setProductTypeCount] = useState([]);
   const [tags, setTags] = useState([]);
-  const[keyword, setKeyword] = useState('');
+  const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [minValue, setMinValue] = useState(0);
   const [maxValue, setMaxValue] = useState(400);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -105,14 +107,51 @@ const fetchProductsData = useCallback(
     [] // Không cần dependencies vì các state được truyền trực tiếp qua tham số
   );
 
+  const fetchProductsData = useCallback(
+    async (page, size, searchTerm = "") => {
+      setLoading(true);
+      try {
+        let response;
+        const hasKeyword = searchTerm.trim() !== "";
+        const hasPriceFilter = minValue !== 0 || maxValue !== 400;
+
+        if (hasKeyword && hasPriceFilter) {
+          response = await axios.get("http://localhost:8085/api/search/searchPriceAndTitle", {
+            params: { keyword: searchTerm, minPrice: minValue, maxPrice: maxValue, page, size },
+          });
+        } else if (hasKeyword) {
+          response = await axios.get("http://localhost:8085/api/search/search", {
+            params: { keyword: searchTerm, page, size },
+          });
+        } else if (hasPriceFilter) {
+          response = await axios.get("http://localhost:8085/api/search/searchPrice", {
+            params: { minPrice: minValue, maxPrice: maxValue, page, size },
+          });
+        } else {
+          await fetchProducts(page, size);
+          return;
+        }
+
+        console.log("🔍 input value:", searchTerm);
+        setProducts(response.data.content);
+        setTotalPages(response.data.totalPages);
+      } catch (error) {
+        console.error("❌ Lỗi khi lấy sản phẩm:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [minValue, maxValue, keyword]
+  );
 
   const debouncedSetKeyword = useCallback(
-  debounce((value) => {
-    setKeyword(value);
-    setCurrentPage(0); // reset page khi tìm
-  }, 500),
-  []
-);
+    debounce((value) => {
+      setKeyword(value);
+      setCurrentPage(0);
+    }, 500),
+    []
+  );
 
 const handleInputChangeSearch = (e) => {
   const value = e.target.value;
@@ -123,7 +162,6 @@ const handleInputChangeSearch = (e) => {
     fetchProductsData(currentPage, pageSize, keyword, minValue, maxValue, selectedTags);
   }, [currentPage, pageSize, keyword, minValue, maxValue, selectedTags, fetchProductsData]);
 
-  // Lấy danh mục
   const getAllCategories = async () => {
     try {
       const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
@@ -139,12 +177,11 @@ const handleInputChangeSearch = (e) => {
     getAllCategories();
   }, []);
 
-  // Cập nhật priceDiscount
   useEffect(() => {
     if (selectedProduct) {
       const discountPrice = (
         selectedProduct.productPrice * quantity -
-        (selectedProduct.productPrice * selectedProduct.percentDiscount / 100) * quantity
+        (selectedProduct.productPrice * selectedProduct.percentDiscount) / 100 * quantity
       ).toFixed(2);
       setPriceDiscount(discountPrice);
     } else {
@@ -152,10 +189,9 @@ const handleInputChangeSearch = (e) => {
     }
   }, [selectedProduct, quantity]);
 
-  // Thêm vào giỏ hàng
   const addCart = async () => {
-    const cartId = localStorage.getItem('cartId') || '';
-    const token = localStorage.getItem('accessToken') || '';
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
     try {
       const payload = {
         token,
@@ -164,19 +200,20 @@ const handleInputChangeSearch = (e) => {
         price: parseFloat(priceDiscount),
         cartId,
       };
-      const response = await axios.post('http://localhost:8084/api/cart/addCart', payload);
+
+      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
       if (response.data.cartId) {
-        localStorage.setItem('cartId', response.data.cartId);
+        localStorage.setItem("cartId", response.data.cartId);
       }
-      console.log('Thêm giỏ hàng thành công');
+      window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
-      console.error('Không thể thêm giỏ hàng:', error.response ? error.response.data : error.message);
+      console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message);
     }
   };
 
   const addCartWithQuantity = async (quantity, product) => {
-    const cartId = localStorage.getItem('cartId') || '';
-    const token = localStorage.getItem('accessToken') || '';
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
     try {
       const payload = {
         token,
@@ -185,36 +222,80 @@ const handleInputChangeSearch = (e) => {
         price: parseFloat(product.productPrice),
         cartId,
       };
-      const response = await axios.post('http://localhost:8084/api/cart/addCart', payload);
+      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
       if (response.data.cartId) {
-        localStorage.setItem('cartId', response.data.cartId);
+        localStorage.setItem("cartId", response.data.cartId);
       }
-      console.log('Thêm giỏ hàng thành công');
+      window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
-      console.error('Không thể thêm giỏ hàng:', error.response ? error.response.data : error.message);
+      console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message);
     }
   };
 
-  // Xử lý input số lượng
+  const getCartProduct = async () => {
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
+    try {
+      const res = await axios.get("http://localhost:8084/api/cart/getCart", {
+        params: { cartId, token },
+      });
+      setListCart(res.data.items || []);
+    } catch (error) {
+      console.error("❌ Lỗi lấy giỏ hàng:", error);
+      setListCart([]);
+    }
+  };
+
+  useEffect(() => {
+    getCartProduct();
+    const handleCartUpdate = () => getCartProduct();
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+  }, []);
+
+  const isProductInCart = (asin) => {
+    return listCart.some((item) => item.asin === asin);
+  };
+
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    try {
+      const res = await axios.get("http://localhost:8083/api/wishlist", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWishlistItems(res.data);
+    } catch (error) {
+      console.error("❌ Lỗi lấy wishlist:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts(currentPage, pageSize);
+    fetchWishlist();
+  }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    const handleWishlistUpdated = () => {
+      fetchWishlist();
+    };
+    window.addEventListener("wishlistUpdated", handleWishlistUpdated);
+    return () => window.removeEventListener("wishlistUpdated", handleWishlistUpdated);
+  }, []);
+
   const handleChange = (e) => {
     const value = e.target.value;
     const parsed = parseInt(value);
-    if (isNaN(parsed) || parsed < 1) {
-      setQuantity(1);
-    } else {
-      setQuantity(parsed);
-    }
+    setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
   };
 
-  // Cuộn đến filter wrapper
   const scrollToFilterWrapper = () => {
-    const filterWrapper = document.querySelector('.filter-wrapper');
+    const filterWrapper = document.querySelector(".filter-wrapper");
     if (filterWrapper) {
-      filterWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      filterWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
-  // Xử lý chuyển trang
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 0 && pageNumber < totalPages) {
       setCurrentPage(pageNumber);
@@ -222,51 +303,81 @@ const handleInputChangeSearch = (e) => {
     }
   };
 
-  // Xử lý thay đổi pageSize
   const handlePageChangeProduct = (event) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
-    setCurrentPage(0); // Reset về trang 0
+    setCurrentPage(0);
     scrollToFilterWrapper();
   };
 
-  // Tính toán phạm vi trang
   const getPageRange = () => {
     const startPage = Math.floor(currentPage / maxPagesToShow) * maxPagesToShow;
     const endPage = Math.min(startPage + maxPagesToShow, totalPages);
     return [...Array(endPage - startPage).keys()].map((i) => startPage + i);
   };
 
-  // Thêm class bg cho body
   useEffect(() => {
     if (hasBgClass) {
-      document.body.classList.add('bg');
+      document.body.classList.add("bg");
     } else {
-      document.body.classList.remove('bg');
+      document.body.classList.remove("bg");
     }
     return () => {
-      document.body.classList.remove('bg');
+      document.body.classList.remove("bg");
     };
   }, [hasBgClass]);
 
-  // Khởi tạo WOW.js
   useEffect(() => {
     const wow = new WOW.WOW();
     wow.init();
   }, []);
 
-  // Xử lý modal close
   useEffect(() => {
-    const modalElement = document.getElementById('exampleModal');
+    const modalElement = document.getElementById("exampleModal");
     const handleModalClose = () => {
       setQuantity(1);
       setPriceDiscount(0);
     };
-    modalElement.addEventListener('hidden.bs.modal', handleModalClose);
+    if (modalElement) {
+      modalElement.addEventListener("hidden.bs.modal", handleModalClose);
+    }
     return () => {
-      modalElement.removeEventListener('hidden.bs.modal', handleModalClose);
+      if (modalElement) {
+        modalElement.removeEventListener("hidden.bs.modal", handleModalClose);
+      }
     };
   }, []);
+
+  const handleToggleWishlist = async (asin) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    const isInWishlist = wishlistItems.some((item) => item.asin === asin);
+    try {
+      if (isInWishlist) {
+        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+
+      const res = await axios.get("http://localhost:8083/api/wishlist", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWishlistItems(res.data);
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    } catch (error) {
+      console.error("❌ Lỗi cập nhật wishlist:", error);
+    }
+  };
+
+  const isProductInWishlist = (asin) => wishlistItems.some((item) => item.asin === asin);
+
+  const imageWrapperStyle = { width: "600px", height: "450px" };
+
   return (
     <>
       <div className="page-wraper">
@@ -579,12 +690,12 @@ const handleInputChangeSearch = (e) => {
                           <h6 className="widget-title">Category</h6>
                   <ul>
                 {Object.entries(salesRankCount).map(([type, count]) => (
-                
+
                     <li className="cat-item cat-item-26">
                       <a href={`/user/shop/shopWithCategory?salesRank=${type}`}>{type}</a> ({count})
                     </li>
-                
-           
+
+
                 ))}
                        </ul>
                          </div>
@@ -596,8 +707,8 @@ const handleInputChangeSearch = (e) => {
                       <a href={`/user/shop/shopWithCategory?productType=${type}`}>{type}</a> ({count})
                     </li>
                 ))}
-    
-                  
+
+
                   </ul>
                 </div>
               {/* Tag Cloud */}
@@ -1998,19 +2109,47 @@ const handleInputChangeSearch = (e) => {
                       <i className="fa-solid fa-eye d-md-none d-block" />
                       <span className="d-md-block d-none">Quick View</span>
                     </a>
-                    <div className="btn btn-primary meta-icon dz-wishicon">
-                      <i className="icon feather icon-heart dz-heart" />
-                      <i className="icon feather icon-heart-on dz-heart-fill" />
-                    </div>
-                    <div className="btn btn-primary meta-icon dz-carticon" onClick={() => {
-  console.log("Click basket icon!", product);
-  addCartWithQuantity(1, product);
-}}>
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', flexDirection: 'column', gap: '10px', zIndex: 2 }}>
+  {/* Wishlist Icon */}
+  <div
+    onClick={() => handleToggleWishlist(product.asin)}
+    style={{
+      width: '40px',
+      height: '40px',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer'
+    }}
+  >
+    <i
+      className={`icon feather ${isProductInWishlist(product.asin) ? 'icon-heart-on' : 'icon-heart'}`}
+      style={{ fontSize: '20px', color: isProductInWishlist(product.asin) ? 'red' : '#fff' }}
+    />
+  </div>
 
-                  <i className="flaticon flaticon-basket" 
-/>
-                      <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                    </div>
+  {/* Cart Icon */}
+  <div
+    onClick={() => addCartWithQuantity(1, product)}
+    style={{
+      width: '40px',
+      height: '40px',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer'
+    }}
+  >
+    <i
+      className="icon feather icon-shopping-cart"
+      style={{ fontSize: '20px', color: isProductInCart(product.asin) ? 'red' : '#fff' }}
+    />
+  </div>
+</div>
                   </div>
                 </div>
                 <div className="dz-content">
@@ -2338,7 +2477,7 @@ const handleInputChangeSearch = (e) => {
   </li>
 ))}
 
-              
+
                     {/* <li>
                       <a href="shop-standard.html">Athletic,</a>
                     </li>

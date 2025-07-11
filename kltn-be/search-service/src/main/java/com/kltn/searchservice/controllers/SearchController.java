@@ -85,4 +85,5 @@ public class SearchController {
         response.setLast(resultPage.isLast());
         return ResponseEntity.ok(response);
     }
+
 }

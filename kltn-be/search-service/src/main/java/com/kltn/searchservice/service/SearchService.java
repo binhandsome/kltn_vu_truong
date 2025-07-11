@@ -26,4 +26,5 @@ public interface SearchService {
                                             List<String> tags,
                                             Pageable pageable
     );
+
     }

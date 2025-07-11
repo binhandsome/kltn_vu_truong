@@ -3,8 +3,6 @@ package com.kltnbe.productservice.controllers;
 
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
-//import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
-//import com.kltnbe.productservice.dtos.res.ProductSearchResponse;
 import com.kltnbe.productservice.dtos.res.CategoryResponse;
 import com.kltnbe.productservice.dtos.res.CategoryWithImage;
 import com.kltnbe.productservice.dtos.res.ProductFilterResponse;

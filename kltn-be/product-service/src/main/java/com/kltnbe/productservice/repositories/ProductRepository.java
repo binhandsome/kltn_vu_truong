@@ -41,4 +41,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p.tags, COUNT(p) FROM Product p GROUP BY p.tags")
     List<Object[]> countProductsByTags();
     Page<Product> findProductByProductTitleContains(String productTitle, Pageable pageable);
+
+
 }
