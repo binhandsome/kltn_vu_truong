@@ -5,9 +5,12 @@ import QuickViewModal from '../../components/home/QuickViewModal';
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
+import { useLocation } from 'react-router-dom';
 
 function Checkout() {
 	const [hasBgClass, setHasBgClass] = useState(true); 
+  const location = useLocation();
+  const {selectedItemsCart} = location.state || {};
   
 	useEffect(() => {
 	  if (hasBgClass) {
