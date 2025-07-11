@@ -1,7 +1,8 @@
 package com.kltn.searchservice.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.Script;
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.json.JsonData;
@@ -26,6 +27,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -125,43 +127,10 @@ public class SearchServiceImpl implements SearchService {
 //
 //        return new PageImpl<>(results, pageable, hits.getTotalHits());
 //    }
-@Override
-public Page<ProductDocument> searchProductByTitle(String keyword, Pageable pageable) {
-    String loweredKeyword = keyword.toLowerCase();
-
-    // Dùng match và wildcard trên productTitle đã được analyzer (ví dụ ngram_analyzer)
-    Query esQuery = Query.of(q -> q.bool(b -> b
-            .should(s -> s.match(m -> m
-                    .field("productTitle")
-                    .query(keyword)
-                    .fuzziness("AUTO") // cho phép tìm gần đúng
-            ))
-            .should(s -> s.wildcard(w -> w
-                    .field("productTitle") // ✅ KHÔNG dùng productTitle.keyword
-                    .value("*" + loweredKeyword + "*")
-            ))
-            .minimumShouldMatch("1")
-    ));
-
-    org.springframework.data.elasticsearch.core.query.Query springQuery = NativeQuery.builder()
-            .withQuery(esQuery)
-            .withPageable(pageable)
-            .build();
-
-    SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
-
-    List<ProductDocument> results = hits.getSearchHits()
-            .stream()
-            .map(SearchHit::getContent)
-            .toList();
-
-    return new PageImpl<>(results, pageable, hits.getTotalHits());
-}
-
-
-    public Page<ProductDocument> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
-      return productSearchRepository.findByProductPriceBetween(minPrice, maxPrice, pageable);
-    }
+//
+//    public Page<ProductDocument> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+//      return productSearchRepository.findByProductPriceBetween(minPrice, maxPrice, pageable);
+//    }
     public Page<ProductDocument> searchByKeywordAndPrice(
             String keyword,
             BigDecimal minPrice,
@@ -206,5 +175,79 @@ public Page<ProductDocument> searchProductByTitle(String keyword, Pageable pagea
 
         return new PageImpl<>(results, pageable, hits.getTotalHits());
     }
+    public Page<ProductDocument> searchAdvanced(
+            String keyword,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            List<String> tags,
+            Pageable pageable
+    ) {
+
+        Query esQuery = Query.of(q -> q.bool(b -> {
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String loweredKeyword = keyword.toLowerCase();
+                b.must(m -> m.bool(inner -> inner
+                        .should(s -> s.match(match -> match
+                                .field("productTitle")
+                                .query(keyword)
+                                .fuzziness("AUTO")
+                        ))
+                        .should(s -> s.wildcard(wc -> wc
+                                .field("productTitle.keyword")
+                                .value("*" + loweredKeyword + "*")
+                                .caseInsensitive(true) // Ensure case-insensitive wildcard
+                        ))
+                        .minimumShouldMatch("1")
+                ));
+            }
+
+            // Price range filter (only add if at least one bound is non-null)
+            if (minPrice != null || maxPrice != null) {
+                b.filter(f -> f.range(r -> {
+                    r.field("productPrice");
+                    if (minPrice != null) {
+                        r.gte(JsonData.of(minPrice));
+                    }
+                    if (maxPrice != null) {
+                        r.lte(JsonData.of(maxPrice));
+                    }
+                    return r;
+                }));
+            }
+
+            // Tags filter
+            if (tags != null && !tags.isEmpty()) {
+                b.filter(f -> f.terms(t -> t
+                        .field("tags.keyword")
+                        .terms(ts -> ts.value(tags.stream()
+                                .filter(tag -> tag != null) // Avoid null tags
+                                .map(FieldValue::of)
+                                .toList()))
+                ));
+            }
+
+            return b;
+        }));
+
+        org.springframework.data.elasticsearch.core.query.Query springQuery = NativeQuery.builder()
+                .withQuery(esQuery)
+                .withPageable(pageable)
+                .build();
+
+        try {
+            SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
+
+            List<ProductDocument> results = hits.getSearchHits().stream()
+                    .map(SearchHit::getContent)
+                    .toList();
+
+            return new PageImpl<>(results, pageable, hits.getTotalHits());
+        } catch (Exception e) {
+            // Log the error and throw a custom exception or return an empty page
+            log.error("Error executing Elasticsearch query: {}", e.getMessage());
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+    }
+
 
 }

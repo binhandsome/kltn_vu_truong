@@ -37,34 +37,46 @@ public class SearchController {
         searchService.indexProduct(productDto);
         return "index thanh cong";
     }
-    @GetMapping("/search")
-    public ResponseEntity<SearchResponse<ProductDocument>> searchProducts(@RequestParam String keyword, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) throws IOException {
+//    @GetMapping("/search")
+//    public ResponseEntity<SearchResponse<ProductDocument>> searchProducts(@RequestParam String keyword, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) throws IOException {
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<ProductDocument> resultPage = searchService.searchProductByTitle(keyword, pageable);
+//        SearchResponse<ProductDocument> response = new SearchResponse<>();
+//        response.setContent(resultPage.getContent());
+//        response.setPageNumber(resultPage.getNumber());
+//        response.setPageSize(resultPage.getSize());
+//        response.setTotalPages(resultPage.getTotalPages());
+//        response.setLast(resultPage.isLast());
+//        return ResponseEntity.ok(response);
+//    }
+//    @GetMapping("/searchPrice")
+//    public ResponseEntity<SearchResponse<ProductDocument>> searchProductsPrice(@RequestParam BigDecimal minPrice,@RequestParam BigDecimal maxPrice, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<ProductDocument> resultPage = searchService.searchByPriceRange(minPrice, maxPrice,pageable);
+//        SearchResponse<ProductDocument> response = new SearchResponse<>();
+//        response.setContent(resultPage.getContent());
+//        response.setPageNumber(resultPage.getNumber());
+//        response.setPageSize(resultPage.getSize());
+//        response.setTotalPages(resultPage.getTotalPages());
+//        response.setLast(resultPage.isLast());
+//        return ResponseEntity.ok(response);
+//    }
+//    @GetMapping("/searchPriceAndTitle")
+//    public ResponseEntity<SearchResponse<ProductDocument>> searchProductsPriceAndTitle(@RequestParam String keyword, @RequestParam BigDecimal minPrice,@RequestParam BigDecimal maxPrice, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<ProductDocument> resultPage = searchService.searchByKeywordAndPrice(keyword,minPrice, maxPrice,pageable);
+//        SearchResponse<ProductDocument> response = new SearchResponse<>();
+//        response.setContent(resultPage.getContent());
+//        response.setPageNumber(resultPage.getNumber());
+//        response.setPageSize(resultPage.getSize());
+//        response.setTotalPages(resultPage.getTotalPages());
+//        response.setLast(resultPage.isLast());
+//        return ResponseEntity.ok(response);
+//    }
+    @GetMapping("/searchAdvance")
+    public ResponseEntity<SearchResponse<ProductDocument>> searchProductAdvance(@RequestParam(required = false) String keyword, @RequestParam(required = false) BigDecimal minPrice, @RequestParam(required = false) BigDecimal maxPrice,@RequestParam(required = false) List<String> tags,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDocument> resultPage = searchService.searchProductByTitle(keyword, pageable);
-        SearchResponse<ProductDocument> response = new SearchResponse<>();
-        response.setContent(resultPage.getContent());
-        response.setPageNumber(resultPage.getNumber());
-        response.setPageSize(resultPage.getSize());
-        response.setTotalPages(resultPage.getTotalPages());
-        response.setLast(resultPage.isLast());
-        return ResponseEntity.ok(response);
-    }
-    @GetMapping("/searchPrice")
-    public ResponseEntity<SearchResponse<ProductDocument>> searchProductsPrice(@RequestParam BigDecimal minPrice,@RequestParam BigDecimal maxPrice, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDocument> resultPage = searchService.searchByPriceRange(minPrice, maxPrice,pageable);
-        SearchResponse<ProductDocument> response = new SearchResponse<>();
-        response.setContent(resultPage.getContent());
-        response.setPageNumber(resultPage.getNumber());
-        response.setPageSize(resultPage.getSize());
-        response.setTotalPages(resultPage.getTotalPages());
-        response.setLast(resultPage.isLast());
-        return ResponseEntity.ok(response);
-    }
-    @GetMapping("/searchPriceAndTitle")
-    public ResponseEntity<SearchResponse<ProductDocument>> searchProductsPriceAndTitle(@RequestParam String keyword, @RequestParam BigDecimal minPrice,@RequestParam BigDecimal maxPrice, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDocument> resultPage = searchService.searchByKeywordAndPrice(keyword,minPrice, maxPrice,pageable);
+        Page<ProductDocument> resultPage = searchService.searchAdvanced(keyword,minPrice, maxPrice,tags,pageable);
         SearchResponse<ProductDocument> response = new SearchResponse<>();
         response.setContent(resultPage.getContent());
         response.setPageNumber(resultPage.getNumber());
