@@ -9,6 +9,7 @@ function Cart() {
 	const [listCart, setListCart] = useState({ items: [], totalPrice: 0 });
   const [hasBgClass, setHasBgClass] = useState(true);
   const [quantityMap, setQuantityMap] = useState({});
+  const [selectedItemsCart, setSelectedItemsCart] = useState([]);
 
   useEffect(() => {
     if (hasBgClass) {
@@ -29,6 +30,17 @@ function Cart() {
       return sum + unitPrice * quantity;
     }, 0);
   }, [listCart.items, quantityMap]);
+  const toggleSelectItemCart = (asin) => {
+    setSelectedItemsCart((prev) =>
+      prev.includes(asin) ? prev.filter(a => a !== asin) : [...prev, asin]
+    );
+  };
+  
+  const toggleSelectAll = () => {
+    const allAsins = listCart.items.map(item => item.asin);
+    const allSelected = allAsins.every(asin => selectedItemsCart.includes(asin));
+    setSelectedItemsCart(allSelected ? [] : allAsins);
+  };
   
   const getCartProduct = async () => {
     const cartId = localStorage.getItem("cartId") || '';
@@ -230,6 +242,13 @@ function Cart() {
         <td className="product-item-totle">
   ${ (quantity * (item.discountedUnitPrice ?? (item.price / item.quantity))).toFixed(2) }
 </td>
+<td>
+    <input
+      type="checkbox"
+      checked={selectedItemsCart.includes(item.asin)}
+      onChange={() => toggleSelectItemCart(item.asin)}
+    />
+  </td>
         <td className="product-item-close">
           <button
             onClick={() => handleRemove(item.asin)}
@@ -245,6 +264,17 @@ function Cart() {
 
                   </table>
                 </div>
+                <th>
+  <input
+    type="checkbox"
+    checked={
+      listCart.items.length > 0 &&
+      listCart.items.every(item => selectedItemsCart.includes(item.asin))
+    }
+    onChange={toggleSelectAll}
+  />
+   <span>Select All</span>
+</th>
               </div>
         <div className="col-lg-4">
           <h4 className="title mb15">Cart Total</h4>
@@ -290,6 +320,9 @@ function Cart() {
                 </tr>
               </tbody>
             </table>
+            <a style={{marginBottom: '10px'}} href="shop-checkout.html" className="btn btn-secondary w-100">
+              CHECK OUT
+            </a>
             <a href="shop-checkout.html" className="btn btn-secondary w-100">
               PLACE ORDER
             </a>
