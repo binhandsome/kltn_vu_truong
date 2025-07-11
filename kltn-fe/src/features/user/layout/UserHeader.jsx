@@ -6,6 +6,7 @@ import { logout } from '../apiService/authService';
 import WOW from 'wowjs';
 import { authFetch } from '../apiService/authFetch';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
   function UserHeader() {
     const [user, setUser] = useState(null);
@@ -16,7 +17,17 @@ import axios from 'axios';
     const [wishlistItems, setWishlistItems] = useState([]);
     const [selectedItemsCart, setSelectedItemsCart] = useState([]);
     const API_URL = 'http://localhost:8081/api/auth';
-  
+    const navigate = useNavigate();
+  let colorAsinArray = [];
+try {
+  colorAsinArray = typeof listCart.items.colorAsin === 'string'
+    ? JSON.parse(listCart.items.colorAsin)
+    : listCart.items.colorAsin;
+} catch (e) {
+  console.error("Không thể parse colorAsin:", e);
+  colorAsinArray = [];
+}
+
     const handleIncrement = (productId, quantity) => {
       const newQuantity = (quantity || 1) + 1;
       setQuantityMap(prev => ({ ...prev, [productId]: newQuantity }));
@@ -79,6 +90,8 @@ import axios from 'axios';
         ? prevSelected.filter(id => id !== asin)
         : [...prevSelected, asin]
     );
+            console.log(selectedItemsCart + "cart id");
+
   };
   // ham chom/ bo chon all cart
   const toggleSelectAllCart = () => {
@@ -123,7 +136,7 @@ import axios from 'axios';
           const unitPrice = product.productPrice;
           const discount = product.percentDiscount || 0;
           const discountedUnitPrice = unitPrice - (unitPrice * discount / 100);
-          const itemTotalPrice = discountedUnitPrice * item.quantity;
+          const itemTotalPrice = discountedUnitPrice.toFixed(2) * item.quantity;
         
           return {
             ...item,
@@ -254,6 +267,10 @@ const finalResponse = {
         console.error("❌ Lỗi xoá khỏi wishlist:", err);
       }
     };
+      const handleCheckout = () =>  {
+		navigate('/user/shoppages/checkout', {state: {selectedItemsCart}});
+    console.log('selected' + selectedItemsCart);
+	  }
     return (
         <header className="site-header mo-left header">
   {/* Main Header */}
@@ -1182,8 +1199,12 @@ const finalResponse = {
               <div className="shop-sidebar-cart">
                 
   <ul className="sidebar-cart-list">
-    {listCart?.items?.length > 0 ? (
-      listCart.items.map((item, index) => (
+  {listCart?.items?.length > 0 ? (
+    listCart.items.map((item, index) => {
+      // Parse colorAsin JSON string for the current item
+      const colors = item.colorAsin ? JSON.parse(item.colorAsin) : [];
+
+      return (
         <li key={item.asin || index}>
           <div className="cart-widget">
             <div className="dz-media me-3">
@@ -1201,13 +1222,13 @@ const finalResponse = {
               <div className="d-flex align-items-center">
                 <div className="btn-quantity light quantity-sm me-3">
                   <div className="d-flex align-items-center" style={{ gap: '5px' }}>
-                  <input
-  type="text"
-  value={item.quantity}
-  onChange={(e) => handleChange(item.productId, e.target.value)}
-  className="form-control"
-  style={{ textAlign: 'center', width: '60px' }}
-/>
+                    <input
+                      type="text"
+                      value={item.quantity}
+                      onChange={(e) => handleChange(item.productId, e.target.value)}
+                      className="form-control"
+                      style={{ textAlign: 'center', width: '60px' }}
+                    />
                     <div className="d-flex flex-column">
                       <button
                         className="btn btn-outline-secondary py-1 px-2"
@@ -1225,34 +1246,90 @@ const finalResponse = {
                       >
                         <i className="fa-solid fa-minus"></i>
                       </button>
-                    </div>                   
+                    </div>
                   </div>
                 </div>
                 <h6 className="dz-price mb-0">${(item.discountedUnitPrice * item.quantity).toFixed(2)}</h6>
               </div>
-            </div>
-            <input
-  type="checkbox"
-  checked={selectedItemsCart.includes(item.asin)}
-  onChange={() => toggleSelectItemCart(item.asin)}
-  style={{ marginRight: "10px" }}
-/>
+            {item.sizes?.length > 0 && item.sizes[0]?.sizeName && (
+  <div className="d-block">
+    <label className="form-label">Size</label>
+    <div className="btn-group product-size m-0">
+      <input
+        type="radio"
+        className="btn-check"
+        name={`btnradio-${index}`}
+        id={`btnradiol0-${index}`}
+      />
+      <label className="btn" htmlFor={`btnradiol0-${index}`}>
+        {item.sizes[0].sizeName}
+      </label>
 
-            {/* ✅ Nút xoá khỏi giỏ hàng */}
-            <button
-  type="button"
-  className="dz-close btn btn-link p-0"
-  onClick={() => handleRemoveFromCart(item.asin)}
->
-  <i className="ti-close" />
-</button>
+      {item.sizes.slice(1).map((size, sizeIndex) => {
+        const inputId = `btnradiol${sizeIndex + 1}-${index}`;
+        return (
+          <React.Fragment key={sizeIndex}>
+            <input
+              type="radio"
+              className="btn-check"
+              name={`btnradio-${index}`}
+              id={inputId}
+            />
+            <label className="btn" htmlFor={inputId}>
+              {size.sizeName}
+            </label>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  </div>
+)}
+
+              <div className="meta-content">
+                <label className="form-label">Color</label>
+                <div className="d-flex align-items-center color-filter">
+                  {colors.length > 0 ? (
+                    colors.map((color, colorIndex) => (
+                      <div className="form-check" key={colorIndex}>
+                       <input
+        className="form-check-input"
+        type="radio"
+        name="radioNoLabel"
+        id={`radioNoLabel-${colorIndex}`} // id nên unique
+        value={color.code_color}
+        aria-label="..."
+      />
+            <span></span>
+
+                      </div>
+                    ))
+                  ) : (
+                    <p>No colors available for this item.</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
+          <input
+            type="checkbox"
+            checked={selectedItemsCart.includes(item.asin)}
+            onChange={() => toggleSelectItemCart(item.asin)}
+            style={{ marginRight: '50px' }}
+          />
+          <button
+            type="button"
+            className="dz-close btn btn-link p-0"
+            onClick={() => handleRemoveFromCart(item.asin)}
+          >
+            <i className="ti-close" />
+          </button>
         </li>
-      ))
-    ) : (
-      <li>🛒 Giỏ hàng trống</li>
-    )}
-  </ul>
+      );
+    })
+  ) : (
+    <li>🛒 Giỏ hàng trống</li>
+  )}
+</ul>
   <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
   <input
   type="checkbox"
@@ -1290,7 +1367,7 @@ const finalResponse = {
         </div>
       </div>
     </div>
-    <a href="/checkout" className="btn btn-outline-secondary btn-block m-b20">
+    <a href="" onClick={handleCheckout} className="btn btn-outline-secondary btn-block m-b20">
       Checkout
     </a>
     <a href="/cart" className="btn btn-secondary btn-block">

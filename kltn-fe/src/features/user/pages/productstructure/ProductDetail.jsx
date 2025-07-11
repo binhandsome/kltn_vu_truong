@@ -13,6 +13,7 @@ function ProductDetail() {
 	const asin = searchParams.get('asin');
 	const [products, setProducts] = useState([]);
 	const [quantity, setQuantity] = useState(1);
+	
 let colorAsinArray = [];
 try {
   colorAsinArray = typeof products.colorAsin === 'string'
