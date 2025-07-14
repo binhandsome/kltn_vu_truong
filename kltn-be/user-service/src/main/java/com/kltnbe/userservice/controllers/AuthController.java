@@ -2,9 +2,13 @@ package com.kltnbe.userservice.controllers;
 
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
+import com.kltnbe.userservice.dtos.res.UserProfileResponse;
 import com.kltnbe.userservice.entities.Auth;
+import com.kltnbe.userservice.entities.User;
 import com.kltnbe.userservice.helpers.EmailServiceProxy;
+import com.kltnbe.userservice.repositories.UserRepository;
 import com.kltnbe.userservice.services.AuthService;
+import com.kltnbe.userservice.services.UserService;
 import com.kltnbe.userservice.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
@@ -17,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -24,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
+    private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -32,8 +39,10 @@ public class AuthController {
     private EmailServiceProxy emailServiceProxy;
 
     @Autowired
-    public AuthController(AuthService authService, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate) {
+    public AuthController(AuthService authService, UserService userService,UserRepository userRepository,JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate) {
         this.authService = authService;
+        this.userService = userService;
+        this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.redisTemplate = redisTemplate;
     }
@@ -51,21 +60,51 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Auth> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         try {
             if (!jwtUtil.validateToken(token)) {
-                return ResponseEntity.status(401).body(null); // Token hết hạn
+                return ResponseEntity.status(401).body("Token hết hạn");
             }
         } catch (ExpiredJwtException e) {
-            return ResponseEntity.status(401).body(null); // Token hết hạn
+            return ResponseEntity.status(401).body("Token hết hạn");
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null); // Token không hợp lệ
+            return ResponseEntity.badRequest().body("Token không hợp lệ");
         }
+
         String username = jwtUtil.getUsernameFromToken(token);
         Auth auth = authService.getUserByUsername(username);
-        return ResponseEntity.ok(auth);
+
+        // Check if user profile exists, if not, create it
+        Optional<User> userOpt = userRepository.findByAuthId(auth.getAuthId());
+        User user;
+        if (userOpt.isPresent()) {
+            user = userOpt.get();
+        } else {
+            user = new User();
+            user.setAuthId(auth.getAuthId());
+            user.setEmail(auth.getEmail());
+            user.setCreatedAt(new java.util.Date());
+            user.setUpdatedAt(new java.util.Date());
+            userRepository.save(user);
+        }
+
+        // Build response
+        UserProfileResponse profile = new UserProfileResponse();
+        profile.setUsername(auth.getUsername());
+        profile.setEmail(auth.getEmail());
+        profile.setFirstName(user.getFirstName());
+        profile.setLastName(user.getLastName());
+        profile.setPhoneNumber(user.getPhoneNumber());
+        profile.setUserAddress(user.getUserAddress());
+        profile.setGender(user.getGender());
+        profile.setDateOfBirth(user.getDateOfBirth());
+        profile.setProfilePicture(user.getProfilePicture());
+
+        return ResponseEntity.ok(profile);
     }
+
+
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
@@ -134,32 +173,15 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(authService.changePassword(userDetails.getUsername(), request));
     }
-
-//
-//    @PostMapping("/verify-otp")
-//    public String verifyOtp(@RequestParam String username, @RequestParam String otp) {
-//        return authService.verifyOtp(username, otp);
-//    }
-//
-//    @PostMapping("/register-seller")
-//    public String registerSeller(@RequestBody RegisterRequest request) {
-//        return authService.registerSeller(request);
-//    }
-//
-//    @PostMapping("/change-password")
-//    public String changePassword(@RequestBody PasswordChangeRequest request) {
-//        return authService.changePassword(request);
-//    }
-//
-//    @PostMapping("/forgot-password")
-//    public String forgotPassword(@RequestParam String email) {
-//        return authService.sendOtpToResetPassword(email);
-//    }
-//
-//    @PostMapping("/reset-password")
-//    public String resetPassword(@RequestParam String email,
-//                                @RequestParam String otp,
-//                                @RequestParam String newPassword) {
-//        return authService.resetPasswordByOtp(email, otp, newPassword);
-//    }
+    @PutMapping("/profile")
+    public ResponseEntity<String> updateProfile(@RequestBody UpdateProfileRequest request,
+                                                @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        if (!jwtUtil.validateToken(token)) {
+            return ResponseEntity.status(401).body("Token không hợp lệ hoặc đã hết hạn");
+        }
+        String username = jwtUtil.getUsernameFromToken(token);
+        String msg = userService.updateUserProfile(username, request);
+        return ResponseEntity.ok(msg);
+    }
 }

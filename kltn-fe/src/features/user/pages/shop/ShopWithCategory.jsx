@@ -29,6 +29,9 @@ function ShopWithCategory() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const salesRank = searchParams.get('salesRank');
@@ -161,6 +164,40 @@ function ShopWithCategory() {
     }
   };
 
+  const addCart = async () => {
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
+  
+    if (!selectedProduct || !selectedSize || !selectedColor) {
+      alert("Vui lòng chọn đầy đủ size và màu sắc trước khi thêm vào giỏ hàng.");
+      return;
+    }
+  
+    try {
+      const payload = {
+        token,
+        asin: selectedProduct.asin,
+        quantity,
+        price: parseFloat(priceDiscount),
+        cartId,
+        size: selectedSize,
+        nameColor: selectedColor.name_color,
+        colorAsin: JSON.stringify(selectedProduct.colors || []),
+      };
+  
+      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      if (response.data.cartId) {
+        localStorage.setItem("cartId", response.data.cartId);
+      }
+  
+      window.dispatchEvent(new Event("cartUpdated"));
+      window.location.href = "/user/shoppages/cart";
+    } catch (error) {
+      console.error("❌ Không thể thêm vào giỏ hàng:", error.response?.data || error.message);
+    }
+  };
+  
+
   const addCartWithQuantity = async (quantity, product) => {
     const cartId = localStorage.getItem('cartId') || '';
     const token = localStorage.getItem('accessToken') || '';
@@ -211,9 +248,9 @@ function ShopWithCategory() {
         await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        window.location.href = "/user/wishlist";
       }
   
-      // Sau khi thao tác, cập nhật lại state wishlistItems
       const res = await axios.get("http://localhost:8083/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -223,7 +260,7 @@ function ShopWithCategory() {
       console.error("❌ Lỗi cập nhật wishlist:", error);
     }
   };
-  
+   
 
   const isProductInWishlist = (asin) => {
     return wishlistItems.some((item) => item.asin === asin);
@@ -1281,8 +1318,7 @@ function ShopWithCategory() {
         </div>
       </div>
     </div>
-    <div
-  className="modal quick-view-modal fade"
+    <div className="modal quick-view-modal fade"
   id="exampleModal"
   tabIndex={-1}
   aria-hidden="true"
@@ -1299,204 +1335,202 @@ function ShopWithCategory() {
       </button>
       <div className="modal-body">
         <div className="row g-xl-4 g-3">
-          {/* Left: Images */}
           <div className="col-xl-6 col-md-6">
             <div className="dz-product-detail mb-0">
               <div className="swiper-btn-center-lr">
-                {/* Main Swiper */}
                 <div className="swiper quick-modal-swiper2">
                   <div className="swiper-wrapper" id="lightgallery">
-                  {
-  (selectedProduct?.images?.length > 0 ? selectedProduct.images : [{
-    imageData: selectedProduct?.productThumbnail || 'default-thumbnail.jpg',
-  }]).map((image, index) => (
-    <div className="swiper-slide" key={index}>
-      <div className="dz-media DZoomImage">
-        <a
-          className="mfp-link lg-item"
-          href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
-          data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
-        >
-          <i className="feather icon-maximize dz-maximize top-right" />
-        </a>
-        <img
-          src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
-          alt="image"
-        />
-      </div>
-    </div>
-  ))
-}
+                    {selectedProduct !== null && (
+                      <div className="swiper-slide">
+                        <div className="dz-media DZoomImage">
+                          <a
+                            className="mfp-link lg-item"
+                            href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+                            data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+                          >
+                            <i className="feather icon-maximize dz-maximize top-right" />
+                          </a>
+                          <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`} alt="image" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                {/* Thumbnail Swiper */}
                 <div className="swiper quick-modal-swiper thumb-swiper-lg thumb-sm swiper-vertical">
                   <div className="swiper-wrapper">
-                    {selectedProduct?.images?.map((image, index) => (
-                      <div className="swiper-slide" key={index}>
+                    {selectedProduct !== null && (
+                      <div className="swiper-slide">
                         <img
-                          src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`}
-                          alt="thumb"
-                          style={{ width: '100%', height: '50px' }}
+                          src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+                          alt="image"
                         />
                       </div>
-                    ))}
+                    )}                    
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Right: Info */}
           <div className="col-xl-6 col-md-6">
             <div className="dz-product-detail style-2 ps-xl-3 ps-0 pt-2 mb-0">
               <div className="dz-content">
                 <div className="dz-content-footer">
                   <div className="dz-content-start">
-                    <span className="badge bg-secondary mb-2">SALE {selectedProduct?.percentDiscount}% Off</span>
+                    {selectedProduct !== null && (
+                      <span className="badge bg-secondary mb-2">
+                        SALE {selectedProduct.percentDiscount}% Off
+                      </span>
+                    )}
                     <h4 className="title mb-1">
-                      <a href={`/user/productstructure/ProductDetail?asin=${selectedProduct?.asin}`}>
-                        {selectedProduct?.productTitle}
-                      </a>
+                      {selectedProduct !== null && (
+                        <a href={`/user/productstructure/ProductDetail?asin=${selectedProduct.asin}`}>{selectedProduct.productTitle}</a>
+                      )}
                     </h4>
                     <div className="review-num">
                       <ul className="dz-rating me-2">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <li className={i <= 3 ? 'star-fill' : ''} key={i}>
+                        {[...Array(5)].map((_, i) => (
+                          <li className={i < 3 ? "star-fill" : ""} key={i}>
                             <i className="flaticon-star-1" />
                           </li>
                         ))}
                       </ul>
                       <span className="text-secondary me-2">4.7 Rating</span>
-                      <a href="#">(5 customer reviews)</a>
+                      <a href="javascript:void(0);">(5 customer reviews)</a>
                     </div>
                   </div>
                 </div>
-
-                <p className="para-text">{selectedProduct?.productTitle}</p>
-
+                <p className="para-text">
+                  {selectedProduct !== null && selectedProduct.productTitle}
+                </p>
                 <div className="meta-content m-b20 d-flex align-items-end">
                   <div className="me-3">
                     <span className="form-label">Price</span>
-                    {selectedProduct && (
-                      <span className="price">
-                        ${(
-                          selectedProduct.productPrice * quantity -
-                          (selectedProduct.productPrice *
-                            selectedProduct.percentDiscount *
-                            quantity) /
-                            100
-                        ).toFixed(2)}{' '}
-                        <del>${(selectedProduct.productPrice * quantity).toFixed(2)}</del>
-                      </span>
+                    {selectedProduct !== null && (
+                      <span className="price">${priceDiscount} <del>${(selectedProduct.productPrice * quantity).toFixed(2)}</del></span>
                     )}
                   </div>
-
-                  {/* Quantity input */}
                   <div className="btn-quantity light me-0">
                     <label className="form-label fw-bold">Quantity</label>
                     <div className="input-group">
-                      <button
-                        className="btn btn-dark rounded-circle p-0"
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          backgroundColor: '#000',
-                          color: '#fff',
-                          border: 'none',
-                        }}
-                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      >
-                        -
-                      </button>
-                      <input
-                        type="text"
-                        min="1"
-                        value={quantity}
-                        onChange={handleChange}
-                        className="form-control text-center"
-                      />
-                      <button
-                        className="btn btn-dark rounded-circle p-0"
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          backgroundColor: '#000',
-                          color: '#fff',
-                          border: 'none',
-                        }}
-                        onClick={() => setQuantity((q) => q + 1)}
-                      >
-                        +
-                      </button>
+                      <button className="btn btn-dark rounded-circle p-0" style={{ width: '40px', height: '40px' }} onClick={() => setQuantity(q => Math.max(1, q - 1))}>-</button>
+                      <input type="text" min="1" value={quantity} onChange={handleChange} className="form-control text-center" />
+                      <button className="btn btn-dark rounded-circle p-0" style={{ width: '40px', height: '40px' }} onClick={() => setQuantity(q => q + 1)}>+</button>
                     </div>
                   </div>
                 </div>
+                {/* Color */}
+                {selectedProduct?.colorAsin && (() => {
+  let colors = [];
+  try {
+    colors = JSON.parse(selectedProduct.colorAsin);
+  } catch (e) {
+    console.error(e);
+  }
 
+  return colors.length > 0 && (
+    <div className="mb-3">
+      <label className="form-label fw-bold">Color</label>
+      <div className="d-flex flex-wrap gap-2 align-items-center">
+        {colors.map((color, index) => {
+          const inputId = `colorRadio-${index}`;
+          const isSelected = selectedColor?.name_color === color.name_color;
+          return (
+            <div key={index} className="form-check m-0 p-0">
+              <input
+                type="radio"
+                className="visually-hidden"
+                name="colorRadio"
+                id={inputId}
+                checked={isSelected}
+                onChange={() => setSelectedColor(color)}
+              />
+              <label
+                htmlFor={inputId}
+                style={{
+                  backgroundColor: color.code_color,
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  border: isSelected ? '2px solid black' : '1px solid #ccc',
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  boxShadow: isSelected ? '0 0 3px rgba(0,0,0,0.5)' : 'none',
+                  transition: '0.2s ease',
+                }}
+                title={color.name_color}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <p className="form-label mt-1">Selected: {selectedColor?.name_color || 'None'}</p>
+    </div>
+  );
+})()}
+
+                {/* Size */}
+                {selectedProduct?.sizes?.length > 0 && (
+                  <div className="mb-3">
+                    <label className="form-label fw-bold">Size</label>
+                    <div className="btn-group flex-wrap" role="group">
+                      {selectedProduct.sizes.map((size, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`btn btn-outline-dark m-1 ${selectedSize === size.sizeName ? 'active' : ''}`}
+                          onClick={() => setSelectedSize(size.sizeName)}
+                          style={{ minWidth: '60px' }}
+                        >
+                          {size.sizeName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="cart-btn">
-                  <a
-                    href="shop-cart.html"
-                    className="btn btn-secondary text-uppercase"
-                  >
-                    Add To Cart
-                  </a>
-                  <a
-                    href="shop-wishlist.html"
-                    className="btn btn-md btn-outline-secondary btn-icon"
-                  >
-                    ❤️ Add To Wishlist
-                  </a>
+                  <button onClick={addCart} className="btn btn-secondary text-uppercase">Add To Cart</button>
+                  <button className="btn btn-md btn-outline-secondary btn-icon" onClick={() => handleToggleWishlist(selectedProduct.asin)}>
+                    <i className="far fa-heart"></i> Add To Wishlist
+                  </button>
                 </div>
-
                 <div className="dz-info mb-0 mt-3">
-                  <ul>
-                    <li>
-                      <strong>SKU:</strong> {selectedProduct?.asin}
-                    </li>
-                  </ul>
+                  {selectedProduct !== null && (
+                    <ul><li><strong>SKU:</strong></li><li>{selectedProduct.asin}</li></ul>
+                  )}
                   <ul>
                     <li><strong>Categories:</strong></li>
-                    {selectedProduct?.salesRank && (
-                      <li>
-                        <a href={`/user/shop/shopWithCategory?salesRank=${selectedProduct.salesRank}`}>
-                          {selectedProduct.salesRank}
-                          {selectedProduct.productType && ','}
-                        </a>
-                      </li>
-                    )}
-                    {selectedProduct?.productType && (
-                      <li>
-                        <a href={`/user/shop/shopWithCategory?productType=${selectedProduct.productType}`}>
-                          {selectedProduct.productType}
-                        </a>
-                      </li>
+                    {selectedProduct !== null && (
+                      <>
+                        <li><a href={`/user/shop/shopWithCategory?salesRank=${selectedProduct.salesRank}`}>{selectedProduct.salesRank}{selectedProduct.productType && ','}</a></li>
+                        {selectedProduct.productType && (
+                          <li><a href={`/user/shop/shopWithCategory?productType=${selectedProduct.productType}`}>{selectedProduct.productType}</a></li>
+                        )}
+                      </>
                     )}
                   </ul>
-
+                  <ul>
+                    <li><strong>Tags:</strong></li>
+                    {Object.entries(tags).map(([tag, count], index, arr) => (
+                      <li key={tag}><a href="shop-standard.html">{tag}{index < arr.length - 1 ? ', ' : ''}</a></li>
+                    ))}
+                  </ul>
                   <div className="dz-social-icon">
                     <ul>
-                      {['facebook', 'twitter', 'youtube', 'linkedin-in', 'instagram'].map((icon, index) => (
-                        <li key={index}>
-                          <a
-                            href="#"
-                            className="text-dark"
-                            target="_blank"
-                          >
-                            <i className={`fab fa-${icon}`} />
-                          </a>
-                        </li>
-                      ))}
+                      <li><a href="https://www.facebook.com/dexignzone" target="_blank" className="text-dark"><i className="fab fa-facebook-f" /></a></li>
+                      <li><a href="https://twitter.com/dexignzones" target="_blank" className="text-dark"><i className="fab fa-twitter" /></a></li>
+                      <li><a href="https://www.youtube.com/@dexignzone1723" target="_blank" className="text-dark"><i className="fab fa-youtube" /></a></li>
+                      <li><a href="https://www.linkedin.com/showcase/3686700/admin/" target="_blank" className="text-dark"><i className="fab fa-linkedin-in" /></a></li>
+                      <li><a href="https://www.instagram.com/dexignzone/" target="_blank" className="text-dark"><i className="fab fa-instagram" /></a></li>
                     </ul>
                   </div>
                 </div>
-              </div> {/* dz-content */}
+              </div>
             </div>
           </div>
-        </div> {/* row */}
-      </div> {/* modal-body */}
-    </div> {/* modal-content */}
-  </div> {/* modal-dialog */}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
   </section>

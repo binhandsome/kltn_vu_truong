@@ -40,8 +40,10 @@ public class User {
     @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "profile_picture", length = 255)
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String profilePicture;
+
 
     @Column(name = "created_at", nullable = false)
     private Date createdAt;
@@ -155,4 +157,5 @@ public class User {
     public void setUserPreferences(String userPreferences) {
         this.userPreferences = userPreferences;
     }
+
 }
