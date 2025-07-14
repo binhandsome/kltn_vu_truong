@@ -163,40 +163,6 @@ const fetchProductDetailWithAsin = async (asin) => {
 ) : (
   <p>No images available</p>
 )}
-										
-								
-											{/* <div className="swiper-slide">
-											<div className="dz-media DZoomImage rounded">
-												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
-													<i className="feather icon-maximize dz-maximize top-right"></i>
-												</a>
-												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
-											</div>
-										</div>	
-										<div className="swiper-slide">
-											<div className="dz-media DZoomImage rounded">
-												<a className="mfp-link lg-item" href={products.productThumbnail} data-src={products.productThumbnail} >
-													<i className="feather icon-maximize dz-maximize top-right"></i>
-												</a>
-												<img style={{ width: '80%', height: '80%'}} src={products.productThumbnail}  alt="img"/>
-											</div>
-										</div> */}
-										{/* <div className="swiper-slide">
-											<div className="dz-media DZoomImage rounded">
-												<a className="mfp-link lg-item" href="../assets/user/images/products/lady-2.png" data-src="../assets/user/images/products/lady-2.png">
-													<i className="feather icon-maximize dz-maximize top-right"></i>
-												</a>
-												<img src="../../assets/user/images/products/lady-2.png" alt="img"/>
-											</div>
-										</div>
-										<div className="swiper-slide">
-											<div className="dz-media DZoomImage rounded">
-												<a className="mfp-link lg-item" href="../assets/user/images/products/lady-3.png" data-src="../assets/user/images/products/lady-3.png">
-													<i className="feather icon-maximize dz-maximize top-right"></i>
-												</a>
-												<img src="../../assets/user/images/products/lady-3.png" alt="img"/>
-											</div>
-										</div> */}
 									</div>
 								</div>
 								<div className="swiper product-gallery-swiper thumb-swiper-lg swiper-vertical">
@@ -233,18 +199,6 @@ const fetchProductDetailWithAsin = async (asin) => {
 											  <p>No images available</p>
 										
 										)}
-											{/* <div className="swiper-slide">
-											<img src={products.productThumbnail} alt="img"/>
-										</div>	
-										<div className="swiper-slide">
-											<img src={products.productThumbnail} alt="img"/>
-										</div> */}
-										{/* <div className="swiper-slide">
-											<img src="../../assets/user/images/products/thumb-img/lady-3.png" alt="img"/>
-										</div>
-										<div className="swiper-slide">
-											<img src="../../assets/user/images/products/thumb-img/lady-3.png" alt="img"/>
-										</div> */}
 									</div>
 								</div>
 							</div>	
@@ -427,19 +381,8 @@ const fetchProductDetailWithAsin = async (asin) => {
 										<li><a href={`/user/shop/shopWithCategory?salesRank=${products.salesRank}`}>{products.salesRank},</a></li>		
 										{products !== null && (
 									    <li><a href={`/user/shop/shopWithCategory?productType=${products.productType}`}> {products.productType}</a></li>														
-										)}
-										{/* <li><a href="shop-standard.html">Jeans,</a></li>												
-										<li><a href="shop-standard.html">Swimwear,</a></li>												
-										<li><a href="shop-standard.html">Summer,</a></li>												
-										<li><a href="shop-standard.html">Clothing,</a></li>												 */}
+										)}										
 									</ul>
-									{/* <ul>
-										<li><strong>Tags:</strong></li>
-										<li><a href="shop-standard.html">Casual,</a></li>												
-										<li><a href="shop-standard.html">Athletic,</a></li>												
-										<li><a href="shop-standard.html">Workwear,</a></li>												
-										<li><a href="shop-standard.html">Accessories,</a></li>												
-									</ul> */}
 									<ul className="social-icon">
 										<li><strong>Share:</strong></li>
 										<li>

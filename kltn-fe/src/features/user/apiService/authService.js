@@ -124,3 +124,40 @@ export const resetPassword = async ({ email, otp, newPassword }) => {
     throw new Error(error.message || 'Lỗi mạng khi đặt lại mật khẩu');
   }
 };
+export const updateProfile = async (profileData) => {
+  const accessToken = localStorage.getItem('accessToken');
+
+  const res = await fetch(`${API_URL}/profile`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(profileData),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to update profile');
+  }
+
+  return await res.text(); // Hoặc `await res.json()` nếu backend trả JSON
+};
+export const getProfile = async () => {
+  const accessToken = localStorage.getItem('accessToken');
+
+  const res = await fetch(`${API_URL}/me`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to fetch user profile');
+  }
+
+  return await res.json();
+};
