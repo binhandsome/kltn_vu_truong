@@ -30,6 +30,8 @@ function ShopStandard({products }) {
   const [minValue, setMinValue] = useState(0);
   const [maxValue, setMaxValue] = useState(400);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedColor, setSelectedColor] = useState(null);
+const [selectedSize, setSelectedSize] = useState(null);
   // Xu li viec mo productdetail icon 
   useEffect(() => {
     const modalEl = document.getElementById('exampleModal');
@@ -173,6 +175,7 @@ const handleInputChangeSearch = (e) => {
   const addCart = async () => {
     const cartId = localStorage.getItem("cartId") || "";
     const token = localStorage.getItem("accessToken") || "";
+  
     try {
       const payload = {
         token,
@@ -180,21 +183,29 @@ const handleInputChangeSearch = (e) => {
         quantity,
         price: parseFloat(priceDiscount),
         cartId,
+        size: selectedSize,
+        nameColor: selectedColor?.name_color,
+        colorAsin: JSON.stringify(selectedProduct.colors || []),
       };
-
+  
       const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }
+  
       window.dispatchEvent(new Event("cartUpdated"));
+      
+      // 👉 Chuyển sang trang Cart
+      window.location.href = "/user/shoppages/cart";
     } catch (error) {
-      console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message);
+      console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
     }
   };
-
+  
   const addCartWithQuantity = async (quantity, product) => {
     const cartId = localStorage.getItem("cartId") || "";
     const token = localStorage.getItem("accessToken") || "";
+  
     try {
       const payload = {
         token,
@@ -203,15 +214,19 @@ const handleInputChangeSearch = (e) => {
         price: parseFloat(product.productPrice),
         cartId,
       };
+  
       const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+  
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }
+  
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
-      console.error("Không thể thêm giỏ hàng:", error.response ? error.response.data : error.message);
+      console.error("❌ Không thể thêm giỏ hàng (from outside):", error.response?.data || error.message);
     }
   };
+  
 
   const getCartProduct = async () => {
     const cartId = localStorage.getItem("cartId") || "";
@@ -344,7 +359,7 @@ const handleInputChangeSearch = (e) => {
   const handleToggleWishlist = async (asin) => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-
+  
     const isInWishlist = wishlistItems.some((item) => item.asin === asin);
     try {
       if (isInWishlist) {
@@ -355,8 +370,11 @@ const handleInputChangeSearch = (e) => {
         await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
+  
+        // 👉 Nếu thêm thành công thì đẩy sang trang wishlist
+        window.location.href = "/user/shoppages/wishlist";
       }
-
+  
       const res = await axios.get("http://localhost:8083/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -366,7 +384,6 @@ const handleInputChangeSearch = (e) => {
       console.error("❌ Lỗi cập nhật wishlist:", error);
     }
   };
-
   const isProductInWishlist = (asin) => wishlistItems.some((item) => item.asin === asin);
 
   const imageWrapperStyle = { width: "600px", height: "450px" };
@@ -1354,16 +1371,84 @@ const handleInputChangeSearch = (e) => {
     </div>
   </div>
                 </div>
+                {/* --- CHỌN MÀU --- */}
+{selectedProduct?.colorAsin && (() => {
+  let colors = [];
+  try {
+    colors = JSON.parse(selectedProduct.colorAsin);
+  } catch (error) {
+    console.error("❌ Lỗi parse colorAsin:", error);
+  }
+
+  return colors.length > 0 ? (
+    <div className="mb-3">
+      <label className="form-label fw-bold">Color</label>
+      <div className="d-flex align-items-center flex-wrap gap-2">
+        {colors.map((color, index) => {
+          const inputId = `colorRadioModal-${index}`;
+          return (
+            <div className="form-check" key={index}>
+              <input
+                type="radio"
+                className="btn-check"
+                name="colorRadioModal"
+                id={inputId}
+                checked={selectedColor?.name_color === color.name_color}
+                onChange={() => setSelectedColor(color)}
+              />
+              <label
+                className="btn"
+                htmlFor={inputId}
+                style={{
+                  backgroundColor: color.code_color,
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  border: selectedColor?.name_color === color.name_color ? '2px solid black' : '1px solid #ccc',
+                  cursor: 'pointer',
+                  boxShadow: selectedColor?.name_color === color.name_color ? '0 0 3px rgba(0,0,0,0.5)' : 'none',
+                  padding: 0,
+                }}
+                title={color.name_color}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <p className="form-label mt-1">Selected: {selectedColor?.name_color || 'None'}</p>
+    </div>
+  ) : null;
+})()}
+
+{/* --- CHỌN SIZE --- */}
+{selectedProduct?.sizes?.length > 0 && (
+  <div className="mb-3">
+    <label className="form-label fw-bold">Size</label>
+    <div className="btn-group flex-wrap" role="group">
+      {selectedProduct.sizes.map((size, idx) => (
+        <button
+          key={idx}
+          type="button"
+          className={`btn btn-outline-dark m-1 ${selectedSize === size.sizeName ? 'active' : ''}`}
+          onClick={() => setSelectedSize(size.sizeName)}
+          style={{ minWidth: '60px' }}
+        >
+          {size.sizeName}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
                 <div className=" cart-btn">
                   <button  onClick={addCart}
                     className="btn btn-secondary text-uppercase"
                   >
                     Add To Cart
                   </button>
-                  <a
-                    href="shop-wishlist.html"
-                    className="btn btn-md btn-outline-secondary btn-icon"
-                  >
+                  <button
+  className="btn btn-md btn-outline-secondary btn-icon"
+  onClick={() => handleToggleWishlist(selectedProduct.asin)}
+>
                     <svg
                       width={19}
                       height={17}
@@ -1377,7 +1462,7 @@ const handleInputChangeSearch = (e) => {
                       />
                     </svg>
                     Add To Wishlist
-                  </a>
+                  </button>
                 </div>
                 <div className="dz-info mb-0">
                                 {selectedProduct !== null && (

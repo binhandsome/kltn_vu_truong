@@ -35,7 +35,7 @@ try {
       const product = listCart.items.find(item => item.productId === productId);
       if (product) {
         const unitPrice = product.price / product.quantity; // ✅ tính giá đơn vị
-        updateCartItemQuantity(product.asin, newQuantity, unitPrice);
+        updateCartItemQuantity(product.asin, newQuantity, unitPrice, product.size, product.nameColor);
       }
     };
     const handleDecrement = (productId, quantity) => {
@@ -45,7 +45,7 @@ try {
       const product = listCart.items.find(item => item.productId === productId);
       if (product) {
         const unitPrice = product.price / product.quantity;
-        updateCartItemQuantity(product.asin, newQuantity, unitPrice);
+        updateCartItemQuantity(product.asin, newQuantity, unitPrice, product.size, product.nameColor);
       }
     };
     const handleChange = (productId, value) => {
@@ -56,32 +56,47 @@ try {
         const product = listCart.items.find(item => item.productId === productId);
         if (product) {
           const unitPrice = product.price / product.quantity;
-          updateCartItemQuantity(product.asin, num, unitPrice);
+          updateCartItemQuantity(product.asin, num, unitPrice, product.size, product.nameColor);
         }
       }
     };
     
-    const fetchUser = useCallback(async () => {
-      try {
-        const res = await authFetch(`${API_URL}/me`);
-        const data = await res.json();
-        setUser(data);
-      } catch {
-        setUser(null);
-      }
-    }, []);
+    // const fetchUser = useCallback(async () => {
+    //   try {
+    //     const res = await authFetch(`${API_URL}/me`);
+    //     const data = await res.json();
+    //     setUser(data);
+    //   } catch {
+    //     setUser(null);
+    //   }
+    // }, []);
   
     useEffect(() => {
-      fetchUser();
-      const onRefresh = () => fetchUser();
-      const onLogout = () => setUser(null);
-      window.addEventListener('tokenRefreshed', onRefresh);
-      window.addEventListener('loggedOut', onLogout);
-      return () => {
-        window.removeEventListener('tokenRefreshed', onRefresh);
-        window.removeEventListener('loggedOut', onLogout);
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        setUser({ username: storedUsername }); // chỉ cần object có field username
+      } else {
+        setUser(null);
+      }
+    
+      const onRefresh = () => {
+        const newUsername = localStorage.getItem("username");
+        setUser(newUsername ? { username: newUsername } : null);
       };
-    }, [fetchUser]);
+    
+      const onLogout = () => {
+        setUser(null);
+      };
+    
+      window.addEventListener("tokenRefreshed", onRefresh);
+      window.addEventListener("loggedOut", onLogout);
+    
+      return () => {
+        window.removeEventListener("tokenRefreshed", onRefresh);
+        window.removeEventListener("loggedOut", onLogout);
+      };
+    }, []);
+    
 
     // ham tick item cart
   const toggleSelectItemCart = (asin) => {
@@ -194,9 +209,10 @@ const finalResponse = {
       nameColor,
     };
 
-    await axios.put('http://localhost:8084/api/cart/updateItem', payload);
+    return axios.put('http://localhost:8084/api/cart/updateItem', payload)
+  .then(() => {
     window.dispatchEvent(new Event("cartUpdated"));
-    console.log(size + 'size cua toi');
+  });
   } catch (err) {
     console.error("❌ Lỗi cập nhật số lượng sản phẩm:", err);
   }
@@ -1224,7 +1240,7 @@ const finalResponse = {
               <h6 className="title">
                 <a href={`/user/productstructure/ProductDetail?asin=${item.asin}`}>
                   {item.productTitle}
-                </a>
+                </a>=====
               </h6>
               <div className="d-flex align-items-center">
                 <div className="btn-quantity light quantity-sm me-3">
@@ -1276,10 +1292,16 @@ const finalResponse = {
                       checked={isChecked} // ✅ Bật nếu đúng size
 readOnly
             />
-            <label className="btn" htmlFor={inputId} onClick={() => updateCartItemQuantity(item.asin, item.quantity, item.unitPrice, size.sizeName, item.color)}   >
-              {size.sizeName}
-              
-            </label>
+           <label
+  className="btn"
+  htmlFor={inputId}
+  onClick={() => {
+    updateCartItemQuantity(item.asin, item.quantity, item.unitPrice, size.sizeName, item.nameColor)
+      .then(() => getCartProduct());
+  }}
+>
+  {size.sizeName}
+</label>
           </React.Fragment>
         );
       })}
@@ -1294,15 +1316,18 @@ readOnly
                   {colors.length > 0 ? (
                     colors.map((color, colorIndex) => (
                  <div className="form-check" key={colorIndex} >
-  <input
-    className="form-check-input"
-    type="radio"
-    name="radioNoLabel"
-    id={`radioNoLabel-${colorIndex}`}
-    value={color.code_color}
-    aria-label={color.name_color}
-    onClick={() => updateCartItemQuantity(item.asin, item.quantity, item.unitPrice, item.size, color.name_color)}
-  />
+ <input
+  className="form-check-input"
+  type="radio"
+  name={`colorRadio-${index}`} // dùng tên riêng cho từng sản phẩm
+  id={`radioNoLabel-${colorIndex}`}
+  value={color.name_color}
+  checked={item.nameColor === color.name_color} // ✅ phản ánh đúng trạng thái đã chọn
+  onChange={() => {
+    updateCartItemQuantity(item.asin, item.quantity, item.unitPrice, item.size, color.name_color)
+      .then(() => getCartProduct());
+  }}
+/>
   <span style={{ backgroundColor: color.code_color}}></span>
 </div>
                     ))
@@ -1376,7 +1401,7 @@ readOnly
     <a href="" onClick={handleCheckout} className="btn btn-outline-secondary btn-block m-b20">
       Checkout
     </a>
-    <a href="/cart" className="btn btn-secondary btn-block">
+    <a onClick={() => window.location.href = '/user/shoppages/cart'} className="btn btn-secondary btn-block">
       View Cart
     </a>
   </div>
@@ -1448,7 +1473,7 @@ readOnly
 
 
     <div className="mt-auto">
-      <a href="/shop-wishlist" className="btn btn-secondary btn-block">
+      <a href="#" onClick={() => window.location.href = '/user/shoppages/wishList'} className="btn btn-secondary btn-block">
         Check Your Favourite
       </a>
     </div>

@@ -1,6 +1,7 @@
 package com.kltnbe.userservice.services;
 
 import com.kltnbe.userservice.dtos.req.AddressRequest;
+import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
 import com.kltnbe.userservice.entities.Address;
@@ -16,7 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -120,5 +123,43 @@ public class UserServiceImpl implements UserService{
         return auth.get().getUser().getUserId();
     }
 
+    @Override
+    public String updateUserProfile(String username, UpdateProfileRequest request) {
+        Auth auth = authRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        Optional<User> optionalUser = Optional.ofNullable(auth.getUser());
+        User user = optionalUser.orElseGet(User::new);
+
+        user.setAuth(auth);
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setUserAddress(request.getUserAddress());
+        user.setGender(request.getGender());
+        user.setProfilePicture(request.getProfilePicture());
+        user.setUserPreferences(request.getUserPreferences());
+
+        // Xử lý ngày sinh
+        if (request.getDateOfBirth() != null && !request.getDateOfBirth().isEmpty()) {
+            try {
+                Date dob = new SimpleDateFormat("yyyy-MM-dd").parse(request.getDateOfBirth());
+                user.setDateOfBirth(dob);
+            } catch (Exception e) {
+                throw new RuntimeException("Sai định dạng ngày sinh (yyyy-MM-dd)");
+            }
+        }
+
+        // set createdAt nếu là user mới
+        if (user.getUserId() == null) {
+            user.setCreatedAt(new Date());
+        }
+
+        user.setUpdatedAt(new Date());
+
+        userRepository.save(user);
+        return "Cập nhật thông tin thành công";
+    }
 
 }

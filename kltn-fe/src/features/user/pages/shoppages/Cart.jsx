@@ -74,6 +74,8 @@ function Cart() {
           ...product,
           unitPrice,
           discountedUnitPrice,
+          size: item.size,
+        nameColor: item.nameColor, 
         };
       });
   
@@ -114,6 +116,8 @@ function Cart() {
         asin: item.asin,
         quantity: newQuantity,
         price: unitPrice,
+        size: item.size,
+        nameColor: item.nameColor
       });
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
@@ -150,7 +154,23 @@ function Cart() {
       updateQuantity(productId, num);
     }
   };
-
+  const updateCartItemVariant = async (asin, quantity, price, size, nameColor) => {
+    const token = localStorage.getItem("accessToken") || '';
+    const cartId = localStorage.getItem("cartId") || '';
+  
+    return axios.put("http://localhost:8084/api/cart/updateItem", {
+      token,
+      cartId,
+      asin,
+      quantity,
+      price,
+      size,
+      nameColor
+    }).then(() => {
+      window.dispatchEvent(new Event("cartUpdated"));
+    });
+  };
+  
   return (
     <>
       <div className="page-wraper">
@@ -216,6 +236,80 @@ function Cart() {
         <td className="product-item-price">
   ${ (item.discountedUnitPrice ?? (item.price / item.quantity)).toFixed(2) }
 </td>
+<td className="product-item-variant">
+  {item.sizes?.length > 0 && item.sizes[0]?.sizeName && (
+    <div className="mb-2">
+      <strong>Size:</strong>
+      <div className="btn-group product-size m-0">
+      {item.sizes.map((size, sizeIndex) => {
+  const inputId = `size-radio-${item.asin}-${sizeIndex}`;
+  const isChecked = item.size === size.sizeName;
+
+  return (
+    <React.Fragment key={sizeIndex}>
+      <input
+        type="radio"
+        className="btn-check"
+        name={`size-group-${item.asin}`}
+        id={inputId}
+        checked={isChecked}
+        readOnly
+      />
+      <label
+        className="btn btn-outline-secondary btn-sm"
+        htmlFor={inputId}
+        style={isChecked ? { backgroundColor: '#000', color: '#fff' } : {}}
+        onClick={() =>
+          updateCartItemVariant(
+            item.asin,
+            quantityMap[item.productId] ?? item.quantity ?? 1,
+            item.unitPrice,
+            size.sizeName,
+            item.nameColor
+          ).then(() => getCartProduct())
+        }
+      >
+        {size.sizeName}
+      </label>
+    </React.Fragment>
+  );
+})}
+      </div>
+    </div>
+  )}
+
+  {/* Color selection */}
+  {item.colorAsin && JSON.parse(item.colorAsin).length > 0 && (
+    <div>
+      <strong>Color:</strong>
+      <div className="d-flex gap-2 mt-1">
+        {JSON.parse(item.colorAsin).map((color, index) => {
+          const isSelected = item.nameColor === color.name_color;
+          return (
+            <div
+              key={index}
+              onClick={() =>
+                updateCartItemVariant(item.asin, quantity, item.unitPrice, item.size, color.name_color)
+                  .then(() => getCartProduct())
+              }
+              
+              style={{
+                width: '20px',
+                height: '20px',
+                backgroundColor: color.code_color,
+                borderRadius: '50%',
+                border: isSelected ? '2px solid black' : '1px solid #ccc',
+                cursor: 'pointer',
+              }}
+              title={color.name_color}
+            />
+          );
+        })}
+      </div>
+    </div>
+  )}
+</td>
+
         <td className="product-item-quantity">
           <div className="quantity btn-quantity style-1 d-flex align-items-center gap-2">
             <button
@@ -320,10 +414,10 @@ function Cart() {
                 </tr>
               </tbody>
             </table>
-            <a style={{marginBottom: '10px'}} href="shop-checkout.html" className="btn btn-secondary w-100">
+            <a href="#" onClick={() => window.location.href = '/user/shoppages/checkout'} className="btn btn-secondary w-100">
               CHECK OUT
             </a>
-            <a href="shop-checkout.html" className="btn btn-secondary w-100">
+            <a href="#" onClick={() => window.location.href = '/user/shoppages/shopWithCategory'} className="btn btn-secondary w-100">
               PLACE ORDER
             </a>
           </div>

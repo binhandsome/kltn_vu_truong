@@ -3,8 +3,10 @@ package com.kltnbe.userservice.services;
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.entities.Auth;
+import com.kltnbe.userservice.entities.User;
 import com.kltnbe.userservice.helpers.EmailServiceProxy;
 import com.kltnbe.userservice.repositories.AuthRepository;
+import com.kltnbe.userservice.repositories.UserRepository;
 import com.kltnbe.userservice.utils.JwtUtil;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +15,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthServiceImpl implements AuthService {
     private final AuthRepository authRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
     private final RedisTemplate<String, Auth> authRedisTemplate;
     private final EmailServiceProxy emailServiceProxy;
     @Autowired
-    public AuthServiceImpl(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate, RedisTemplate<String, Auth> authRedisTemplate, EmailServiceProxy emailServiceProxy) {
+    public AuthServiceImpl(AuthRepository authRepository,UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate, RedisTemplate<String, Auth> authRedisTemplate, EmailServiceProxy emailServiceProxy) {
         this.authRepository = authRepository;
+        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.redisTemplate = redisTemplate;
@@ -69,6 +76,13 @@ public class AuthServiceImpl implements AuthService {
             auth.setEmail(request.getEmail());
             auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             authRepository.save(auth);
+
+            User user = new User();
+            user.setAuth(auth);
+            user.setEmail(auth.getEmail());
+            user.setCreatedAt(new Date());
+            user.setUpdatedAt(new Date());
+            userRepository.save(user);
             return "Đăng ký tài khoản thành công";
         } catch (FeignException.ServiceUnavailable e) {
             return "Dịch vụ email không khả dụng. Vui lòng thử lại sau.";
@@ -141,7 +155,5 @@ public class AuthServiceImpl implements AuthService {
         authRepository.save(auth);
         return "Đổi mật khẩu thành công";
     }
-
-
 
 }

@@ -1,9 +1,6 @@
 package com.kltnbe.userservice.services;
 
-import com.kltnbe.userservice.dtos.req.ChangePasswordRequest;
-import com.kltnbe.userservice.dtos.req.LoginRequest;
-import com.kltnbe.userservice.dtos.req.RegisterRequest;
-import com.kltnbe.userservice.dtos.req.ResetPasswordRequest;
+import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.entities.Auth;
 

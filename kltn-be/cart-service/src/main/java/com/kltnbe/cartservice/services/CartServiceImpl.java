@@ -79,6 +79,8 @@ public class CartServiceImpl implements CartService {
             cartItemDto.setAsin(cartRequest.getAsin());
             cartItemDto.setQuantity(cartRequest.getQuantity());
             cartItemDto.setPrice(cartRequest.getPrice());
+            cartItemDto.setSize(cartRequest.getSize());
+            cartItemDto.setNameColor(cartRequest.getNameColor());
             cartRedisDto.getItems().add(cartItemDto);
             System.out.println("Thêm item mới: " + cartItemDto);
         }
