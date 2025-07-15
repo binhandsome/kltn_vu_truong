@@ -20,13 +20,11 @@ function ShippingMethods() {
 		// Dọn dẹp: Xóa class khi component bị unmount
 		document.body.classList.remove('bg');
 	  };
-	}, [hasBgClass]); // Chạy lại useEffect khi hasBgClass thay đổi
-	useEffect(() => { // New useEffect for WOW.js
+	}, [hasBgClass]); 
+	useEffect(() => { 
 		const wow = new WOW.WOW();
 		wow.init();
-	
-		return () => { // Optional cleanup function
-			//wow.sync(); // sync and remove the DOM
+		return () => { 
 		};
 	  }, []);
 

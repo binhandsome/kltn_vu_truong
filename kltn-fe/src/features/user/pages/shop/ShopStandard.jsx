@@ -265,23 +265,23 @@ const handleInputChangeSearch = (e) => {
       console.error("❌ Lỗi lấy wishlist:", error);
     }
   };
-  const fetchProducts = async (page, size) => {
-    try {
-      const response = await axios.get("http://localhost:8083/api/products/getAllProduct", {
-        params: { page, size },
-      });
-      setProducts(response.data.content);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error("Lỗi fetchProducts:", error);
-      setProducts([]);
-    }
-  };
+  // const fetchProducts = async (page, size) => {
+  //   try {
+  //     const response = await axios.get("http://localhost:8083/api/products/getAllProduct", {
+  //       params: { page, size },
+  //     });
+  //     setProducts(response.data.content);
+  //     setTotalPages(response.data.totalPages);
+  //   } catch (error) {
+  //     console.error("Lỗi fetchProducts:", error);
+  //     setProducts([]);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchProducts(currentPage, pageSize);
-    fetchWishlist();
-  }, [currentPage, pageSize]);
+  // useEffect(() => {
+  //   fetchProducts(currentPage, pageSize);
+  //   fetchWishlist();
+  // }, [currentPage, pageSize]);
 
   useEffect(() => {
     const handleWishlistUpdated = () => {
