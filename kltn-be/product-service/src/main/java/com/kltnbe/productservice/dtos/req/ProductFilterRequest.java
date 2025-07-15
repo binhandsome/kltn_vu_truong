@@ -8,8 +8,8 @@ public class ProductFilterRequest {
     private String salesRank;
     private String productType;
     private String tags;
-    private int page;
-    private int size;
+    private int page = 0;
+    private int size = 20;
 
     public String getTags() {
         return tags;

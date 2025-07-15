@@ -89,9 +89,9 @@ public class ProductController {
 
     @GetMapping("/filterCategories")
     public ProductFilterResponse filterProductByCategories(ProductFilterRequest req) {
-        int page = req.getPage() < 0 ? 0 : req.getPage();
-        int size = req.getSize() <= 0 ? 10 : req.getSize();
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(req.getPage(), req.getSize());
+
+
         ProductFilterResponse response = new ProductFilterResponse();
         Pageable limit1 = PageRequest.of(0, 1);
 
