@@ -1,15 +1,19 @@
 package com.kltnbe.orderservice.entities;
 
-import com.kltnbe.orderservice.enums.OrderStatus;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "orders")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
@@ -18,25 +22,23 @@ public class Order {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "delivery_id", nullable = false)
-    private Long deliveryId;
+    @Column(name = "address_id", nullable = false)
+    private Long addressId;
 
-    @Column(name = "total_amount", nullable = false)
-    private BigDecimal totalAmount;
+    @Column(name = "order_notes", columnDefinition = "TEXT")
+    private String orderNotes;
 
-    @Column(name = "order_status", length = 20)
-    @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus;
+    @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalPrice;
 
-    @Column(name = "created_at", nullable = false)
-    private Date createdAt;
+    @Column(name = "status", nullable = false)
+    private String status;
 
-    @Column(name = "updated_at", nullable = false)
-    private Date updatedAt;
+    @Column(name = "created_at", updatable = false)
+    private Timestamp createdAt;
 
-    @Column(name = "promotion_id")
-    private Long promotionId;
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
 
-    @Column(name = "coupon_id")
-    private Long couponId;
+
 }

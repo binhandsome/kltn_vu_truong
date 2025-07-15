@@ -104,10 +104,13 @@ try {
       prevSelected.includes(asin)
         ? prevSelected.filter(id => id !== asin)
         : [...prevSelected, asin]
+        
     );
-            console.log(selectedItemsCart + "cart id");
-
   };
+  useEffect(() => {
+  console.log("Selected items updated:", selectedItemsCart);
+}, [selectedItemsCart]);
+
   // ham chom/ bo chon all cart
   const toggleSelectAllCart = () => {
   if (!listCart?.items) return;
@@ -180,8 +183,6 @@ const finalResponse = {
   items: combined,
   totalPrice: parseFloat(totalPrice.toFixed(2)),
 };
-
-    
         setListCart(finalResponse);
       } catch (error) {
         console.log("Không thể lấy giỏ hàng:", error.response ? error.response.data : error.message);
@@ -1343,7 +1344,7 @@ readOnly
           <input
             type="checkbox"
             checked={selectedItemsCart.includes(item.asin)}
-            onChange={() => toggleSelectItemCart(item.asin)}
+            onClick={() => toggleSelectItemCart(item.asin)}
             style={{ marginRight: '50px' }}
           />
           <button

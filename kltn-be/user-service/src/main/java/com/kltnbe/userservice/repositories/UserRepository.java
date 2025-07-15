@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByAuthId(Long authId);
+    Optional<User> findUserByUserId(Long id);
+//    Optional<User> findByAuthId(Long authId);
 
 }

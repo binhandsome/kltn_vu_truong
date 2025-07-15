@@ -28,7 +28,6 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
     private final RedisTemplate<String, Auth> authRedisTemplate;
-
     private final EmailServiceProxy emailServiceProxy;
     @Autowired
     public AuthServiceImpl(AuthRepository authRepository,UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate, RedisTemplate<String, Auth> authRedisTemplate, EmailServiceProxy emailServiceProxy) {
@@ -79,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
             authRepository.save(auth);
 
             User user = new User();
-            user.setAuthId(auth.getAuthId());
+            user.setAuth(auth);
             user.setEmail(auth.getEmail());
             user.setCreatedAt(new Date());
             user.setUpdatedAt(new Date());
@@ -108,18 +107,18 @@ public class AuthServiceImpl implements AuthService {
         return new LoginResponse(accessToken, refreshToken, auth.getUsername());
     }
 
-    @Override
-    public Auth getUserByUsername(String username) {
-        String cacheKey = "user:" + username;
-        Auth cachedUser = authRedisTemplate.opsForValue().get(cacheKey);
-        if (cachedUser != null) {
-            return cachedUser;
+        @Override
+        public Auth getUserByUsername(String username) {
+            String cacheKey = "user:" + username;
+            Auth cachedUser = authRedisTemplate.opsForValue().get(cacheKey);
+            if (cachedUser != null) {
+                return cachedUser;
+            }
+            Auth auth = authRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+            authRedisTemplate.opsForValue().set(cacheKey, auth, 1L, TimeUnit.HOURS);
+            return auth;
         }
-        Auth auth = authRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
-        authRedisTemplate.opsForValue().set(cacheKey, auth, 1L, TimeUnit.HOURS);
-        return auth;
-    }
 
     @Override
     public String resetPassword(ResetPasswordRequest request) {
@@ -156,4 +155,5 @@ public class AuthServiceImpl implements AuthService {
         authRepository.save(auth);
         return "Đổi mật khẩu thành công";
     }
+
 }

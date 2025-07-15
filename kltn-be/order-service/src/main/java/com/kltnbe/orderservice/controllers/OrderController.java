@@ -16,21 +16,9 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
-        OrderResponse response = orderService.createOrder(orderRequest);
-        return ResponseEntity.ok(response);
+    @PostMapping("/placeOrder")
+    ResponseEntity<?> savePlaceOrder(@RequestBody OrderRequest orderRequest) {
+        return orderService.saveOrder(orderRequest);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByUserId(@PathVariable Long userId) {
-        List<OrderResponse> orders = orderService.getOrdersByUserId(userId);
-        return ResponseEntity.ok(orders);
-    }
-
-    @GetMapping("/revenue/{authId}")
-    public ResponseEntity<BigDecimal> getRevenueBySeller(@PathVariable Long authId) {
-        BigDecimal revenue = orderService.getRevenueBySeller(authId);
-        return ResponseEntity.ok(revenue);
-    }
 }

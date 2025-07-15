@@ -6,6 +6,8 @@ import com.kltnbe.cartservice.services.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
@@ -31,6 +33,15 @@ public class CartController {
         System.out.println("Trả về response: " + cartResponse);
         return cartResponse;
     }
+    @GetMapping("/getCartByID")
+    public CartResponse getItemCartByID(@RequestParam String cartID, @RequestParam List<String> asin) {
+        System.out.println("Gọi endpoint /getCart với request: " + cartID);
+        CartResponse cartResponse = cartService.getCartByID(cartID, asin);
+        System.out.print(cartID + "cartid cua toi la") ;
+        System.out.println("Trả về response: " + cartResponse);
+        return cartResponse;
+    }
+
 
     @PostMapping("/removeItem")
     public CartResponse removeItemFromCart(@RequestBody CartRequest cartRequest) {
