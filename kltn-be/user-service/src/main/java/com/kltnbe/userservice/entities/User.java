@@ -1,21 +1,29 @@
 package com.kltnbe.userservice.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.kltnbe.userservice.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
 @Data
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "userId"
+)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
-
-    @Column(name = "auth_id", nullable = false, unique = true)
-    private Long authId;
 
     @Column(name = "first_name", length = 50)
     private String firstName;
@@ -52,20 +60,21 @@ public class User {
     @Column(name = "user_preferences", length = 255)
     private String userPreferences;
 
+    @OneToOne
+    @JoinColumn(name = "auth_id", referencedColumnName = "auth_id")
+    @ToString.Exclude
+    private Auth auth;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Address> addresses = new ArrayList<>();
+
     public Long getUserId() {
         return userId;
     }
 
     public void setUserId(Long userId) {
         this.userId = userId;
-    }
-
-    public Long getAuthId() {
-        return authId;
-    }
-
-    public void setAuthId(Long authId) {
-        this.authId = authId;
     }
 
     public String getFirstName() {
@@ -154,5 +163,21 @@ public class User {
 
     public void setUserPreferences(String userPreferences) {
         this.userPreferences = userPreferences;
+    }
+
+    public Auth getAuth() {
+        return auth;
+    }
+
+    public void setAuth(Auth auth) {
+        this.auth = auth;
+    }
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -136,6 +137,7 @@ public class CartServiceImpl implements CartService {
         emptyResponse.setItems(new ArrayList<>());
         return emptyResponse;
     }
+
 
     private CartResponse buildCartResponse(CartRedisDto cartRedisDto, String message, String cartId) {
         CartResponse cartResponse = new CartResponse();
@@ -268,6 +270,25 @@ public class CartServiceImpl implements CartService {
         return response;
     }
 
+    @Override
+    public CartResponse getCartByID(String cartId, List<String> asin) {
+        String username = jwtUtil.getUsernameFromToken(cartId);
+        String key = "";
 
+        if (username != null) {
+            key = "cart:" + username;
+        }else{
+            key = "cart:" + cartId;
 
+        }
+        CartRedisDto cartRedisDto = null;
+        cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
+        List<CartItemDto> cartItemDtos = cartRedisDto.getItems().stream()
+                .filter(item -> asin.contains(item.getAsin()))
+                .collect(Collectors.toList());
+        CartResponse response = new CartResponse();
+        response.setCartId(cartId);
+        response.setItems(cartItemDtos);
+        return response;
+    }
 }

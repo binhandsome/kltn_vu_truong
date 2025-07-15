@@ -3,7 +3,9 @@ package com.kltnbe.userservice.controllers;
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.entities.Auth;
+import com.kltnbe.userservice.entities.User;
 import com.kltnbe.userservice.helpers.EmailServiceProxy;
+import com.kltnbe.userservice.repositories.UserRepository;
 import com.kltnbe.userservice.services.AuthService;
 import com.kltnbe.userservice.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -17,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -27,7 +30,8 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-
+    @Autowired
+    UserRepository userRepository;
     @Autowired
     private EmailServiceProxy emailServiceProxy;
 
@@ -65,6 +69,10 @@ public class AuthController {
         String username = jwtUtil.getUsernameFromToken(token);
         Auth auth = authService.getUserByUsername(username);
         return ResponseEntity.ok(auth);
+    }
+    @GetMapping("/getUserByUsername")
+    public Auth getUserByUsername(@RequestParam String username) {
+        return authService.getUserByUsername(username);
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -135,6 +143,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.changePassword(userDetails.getUsername(), request));
     }
 
+
 //
 //    @PostMapping("/verify-otp")
 //    public String verifyOtp(@RequestParam String username, @RequestParam String otp) {
@@ -162,4 +171,9 @@ public class AuthController {
 //                                @RequestParam String newPassword) {
 //        return authService.resetPasswordByOtp(email, otp, newPassword);
 //    }
+//@GetMapping("/findUserById")
+//public Optional<User> findUserById(@RequestParam Long idUser) {
+//    return userRepository.findById(idUser); // có sẵn trong JpaRepository
+//}
+
 }

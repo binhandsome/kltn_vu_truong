@@ -6,12 +6,15 @@ import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; 
 import { login } from '../../apiService/authService';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
 	const [hasBgClass, setHasBgClass] = useState(true); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+      const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -25,6 +28,7 @@ function Login() {
             setMessage('Đăng nhập thành công');
             setEmail('');
             setPassword('');
+            window.location.href = '/user';
         } catch (error) {
             setMessage(`Error: ${error.message}`);
         }

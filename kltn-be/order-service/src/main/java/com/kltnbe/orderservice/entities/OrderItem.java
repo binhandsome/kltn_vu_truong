@@ -1,39 +1,40 @@
 package com.kltnbe.orderservice.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_items")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class OrderItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_item_id")
     private Long orderItemId;
 
-    @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Order order;
 
-    @Column(name = "product_variant_id", nullable = false)
-    private Long productVariantId;
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
 
-    @Column(name = "store_id", nullable = false)
-    private Long storeId;
+    @Column(nullable = false)
+    private Integer quantity;
 
-    @Column(name = "quantity", nullable = false)
-    private int quantity;
-
-    @Column(name = "size_id")
-    private Long sizeId;
-
-    @Column(name = "unit_price", nullable = false)
+    @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal unitPrice;
 
-    @Column(name = "total_price", nullable = false)
-    private BigDecimal totalPrice;
+    @Column(length = 50)
+    private String color;
 
-    @Column(name = "promotion_id")
-    private Long promotionId;
+    @Column(length = 20)
+    private String size;
 }

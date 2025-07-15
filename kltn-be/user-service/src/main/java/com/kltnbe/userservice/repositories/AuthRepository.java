@@ -1,7 +1,9 @@
 package com.kltnbe.userservice.repositories;
 
 import com.kltnbe.userservice.entities.Auth;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
