@@ -370,13 +370,14 @@ const finalResponse = {
                   <ul>
                                                     <li><a href="/user/shop/shopWithCategory" className="menu-title">Shop</a>
                                                         <ul>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopJustForYou'}>Shop Just For You</a></li>
+
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStandard'}>Shop Standard</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopList'}>Shop List</a></li>
+                                                            {/* <li><a href="#" onClick={() => window.location.href = '/user/shop/shopList'}>Shop List</a></li> */}
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopFiltersTopBar'}>Shop Filters Top Bar</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopSideBar'}>Shop Sidebar</a></li>
+                                                            {/* <li><a href="#" onClick={() => window.location.href = '/user/shop/shopSideBar'}>Shop Sidebar</a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStyle1'}>Shop Style 1</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStyle2'}>Shop Style 2</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStyle2'}>Shop Style 2</a></li> */}
                                                         </ul>
                                                     </li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'} className="menu-title">Product Structure</a>

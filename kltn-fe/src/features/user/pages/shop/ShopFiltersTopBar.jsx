@@ -5,10 +5,60 @@ import QuickViewModal from '../../components/home/QuickViewModal';
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
+import axios from 'axios';
 
 function ShopFiltersTopBar() {
 	const [hasBgClass, setHasBgClass] = useState(true); 
-  
+    const [products, setProducts] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
+    const [totalPages, setTotalPages] = useState(0);
+      const maxPagesToShow = 10;
+
+    useEffect(() => {
+         const getRecommendationByUser = async () => {
+          const accessToken = localStorage.getItem("accessToken");
+          try {
+            const response = await axios.get("http://localhost:8085/api/search/getJustForYou", {
+              params: {
+                accessToken: accessToken,
+                size: pageSize,
+                page: currentPage,
+              }
+            })
+            setProducts(response.data.content);
+            console.log('fasfasfas' + response.data.content);
+            setTotalPages(response.data.totalPages);
+
+            console.log(response.data.pageSize + 'console cua toi');
+          }catch (error) {
+            console.log(error);
+          }
+         };
+           getRecommendationByUser(); // 🔥 gọi hàm
+
+    }, [pageSize, currentPage])
+const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 0 && pageNumber < totalPages) {
+      setCurrentPage(pageNumber);
+      scrollToFilterWrapper();
+    }
+  };
+    const getPageRange = () => {
+    const startPage = Math.floor(currentPage / maxPagesToShow) * maxPagesToShow;
+    const endPage = Math.min(startPage + maxPagesToShow, totalPages);
+    return [...Array(endPage - startPage).keys()].map((i) => startPage + i);
+  };
+
+  const scrollToFilterWrapper = () => {
+    const filterWrapper = document.querySelector(".filter-wrapper");
+    if (filterWrapper) {
+      filterWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+    useEffect(() => {
+      console.log('fasfasfasfasfas' + products);
+    })
 	useEffect(() => {
 	  if (hasBgClass) {
 		document.body.classList.add('bg');
@@ -33,9 +83,7 @@ function ShopFiltersTopBar() {
   return (
     <>
       <div className="page-wraper">
-
         {/* Header (đã được xử lý trong App.js) */}
-
         <div className="page-content bg-light">
   {/*Banner Start*/}
   <div
@@ -44,13 +92,13 @@ function ShopFiltersTopBar() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shop Filters Top</h1>
+        <h1>Shop Just For You</h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
               <a href="index.html"> Home</a>
             </li>
-            <li className="breadcrumb-item">Shop Filters Top</li>
+            <li className="breadcrumb-item">Shop Just For You</li>
           </ul>
         </nav>
       </div>
@@ -87,7 +135,7 @@ function ShopFiltersTopBar() {
             </div>
             <div className="filter-right-area">
               <div className="form-group border-0">
-                <a
+                {/* <a
                   href="javascript:void(0);"
                   className="filter-top-btn"
                   id="filterTopBtn"
@@ -106,17 +154,17 @@ function ShopFiltersTopBar() {
                     </g>
                   </svg>
                   Filter
-                </a>
+                </a> */}
               </div>
               <div className="form-group">
-                <select className="default-select">
+                {/* <select className="default-select">
                   <option>Latest</option>
                   <option>Popularity</option>
                   <option>Average rating</option>
                   <option>Latest</option>
                   <option>Low to high</option>
                   <option>high to Low</option>
-                </select>
+                </select> */}
               </div>
               <div className="form-group Category">
                 <select className="default-select">
@@ -1421,7 +1469,7 @@ function ShopFiltersTopBar() {
                       <div className="dz-content">
                         <h5 className="title">
                           <a href="shop-list.html">
-                            Cozy Knit Cardigan Sweater
+                            {/* Cozy Knit Cardigan Sweater */}
                           </a>
                         </h5>
                         <h5 className="price">$80</h5>
@@ -1746,10 +1794,11 @@ function ShopFiltersTopBar() {
                 aria-labelledby="tab-list-grid-btn"
               >
                 <div className="row gx-xl-4 g-3">
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
+                  {products.map((product, index) => (
+         <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
                     <div className="shop-card style-1">
                       <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/1.png" alt="image" />
+                        <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_400,h_400/imgProduct/IMG/${product.productThumbnail}`} alt="image" />
                         <div className="shop-meta">
                           <a
                             href="javascript:void(0);"
@@ -1785,7 +1834,9 @@ function ShopFiltersTopBar() {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
+                  ))}
+         
+                  {/* <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
                     <div className="shop-card style-1">
                       <div className="dz-media">
                         <img src="../../assets/user/images/shop/product/2.png" alt="image" />
@@ -2207,7 +2258,7 @@ function ShopFiltersTopBar() {
                         <span className="badge ">Get 20% Off</span>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div
@@ -2620,36 +2671,46 @@ function ShopFiltersTopBar() {
               </div>
             </div>
           </div>
-          <div className="row page mt-0">
+        <div className="row page mt-0">
             <div className="col-md-6">
               <p className="page-text">Showing 1–5 Of 50 Results</p>
             </div>
-            <div className="col-md-6">
-              <nav aria-label="Blog Pagination">
-                <ul className="pagination style-1">
-                  <li className="page-item">
-                    <a className="page-link active" href="javascript:void(0);">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="javascript:void(0);">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="javascript:void(0);">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link next" href="javascript:void(0);">
-                      Next
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
+          <div className="col-md-6">
+        <nav aria-label="Product Pagination">
+          <ul className="pagination style-1">
+            {/* Nút Previous */}
+            <li className="page-item">
+              <a
+                className={`page-link ${currentPage === 0 ? 'disabled' : ''}`}
+               
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </a>
+            </li>
+            {/* Các số trang trong phạm vi */}
+            {getPageRange().map((page) => (
+              <li className="page-item" key={page}>
+                <a
+                  className={`page-link ${page === currentPage ? 'active' : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page + 1}
+                </a>
+              </li>
+            ))}
+            {/* Nút Next */}
+            <li className="page-item">
+              <a
+                className={`page-link next ${currentPage >= totalPages - 1 ? 'disabled' : ''}`}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
           </div>
         </div>
       </div>

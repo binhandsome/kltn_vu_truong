@@ -9,6 +9,7 @@ import WOW from 'wowjs'; // Import WOW.js
 function ShopSideBar() {
 	const [hasBgClass, setHasBgClass] = useState(true); 
   
+  
 	useEffect(() => {
 	  if (hasBgClass) {
 		document.body.classList.add('bg');
