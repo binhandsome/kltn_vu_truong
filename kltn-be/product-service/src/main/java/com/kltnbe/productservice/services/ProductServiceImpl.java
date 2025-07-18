@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,6 +58,10 @@ public class ProductServiceImpl implements ProductService {
         System.out.print(asin + "asin cua tao la");
         List<Product> productList = productRepository.findAllByAsinIn(asin);
         return productList;
+    }
+    @Override
+    public List<Product> getProductsByIds(List<Long> ids) {
+        return productRepository.findAllById(ids);
     }
 
 

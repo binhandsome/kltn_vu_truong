@@ -21,4 +21,5 @@ public interface ProductService {
     Optional<Product> findProductDetail(String asin);
     List<Product> getListProductByListAsin(List<String> asin);
 
+    List<Product> getProductsByIds(List<Long> ids);
 }

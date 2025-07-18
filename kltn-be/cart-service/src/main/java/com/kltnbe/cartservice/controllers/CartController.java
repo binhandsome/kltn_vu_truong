@@ -28,12 +28,18 @@ public class CartController {
     }
 
     @GetMapping("/getCart")
-    public CartResponse getItemCart(CartRequest cartRequest) {
+    public CartResponse getItemCart(@RequestParam(required = false) String token,
+                                    @RequestParam(required = false) String cartId) {
+        CartRequest cartRequest = new CartRequest();
+        cartRequest.setToken(token);
+        cartRequest.setCartId(cartId);
+
         System.out.println("Gọi endpoint /getCart với request: " + cartRequest);
         CartResponse cartResponse = cartService.getItemCart(cartRequest);
         System.out.println("Trả về response: " + cartResponse);
         return cartResponse;
     }
+
     @GetMapping("/getCartByID")
     public CartResponse getItemCartByID(@RequestParam String cartID, @RequestParam List<String> asin) {
         System.out.println("Gọi endpoint /getCart với request: " + cartID);

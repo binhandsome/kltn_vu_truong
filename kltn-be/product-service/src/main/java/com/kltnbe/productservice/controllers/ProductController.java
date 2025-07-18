@@ -143,6 +143,11 @@ public class ProductController {
         List<Product> products = productService.getListProductByListAsin(asinList);
         return ResponseEntity.ok(products);
     }
+    @PostMapping("/listByIds")
+    public ResponseEntity<List<Product>> getProductsByIds(@RequestBody List<Long> ids) {
+        List<Product> products = productService.getProductsByIds(ids);
+        return ResponseEntity.ok(products);
+    }
 
 
 }
