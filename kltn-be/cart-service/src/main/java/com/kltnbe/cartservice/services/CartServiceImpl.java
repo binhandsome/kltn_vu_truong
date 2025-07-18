@@ -109,36 +109,41 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartResponse getItemCart(CartRequest cartRequest) {
-        String key;
+        String key = null;
         CartRedisDto cartRedisDto = null;
 
+        // ✅ Ưu tiên theo token
         if (cartRequest.getToken() != null && !cartRequest.getToken().isEmpty()) {
-            String username = jwtUtil.getUsernameFromToken(cartRequest.getToken());
-            key = "cart:" + username;
-            cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
-
-            if (cartRedisDto != null && cartRedisDto.getItems() != null && !cartRedisDto.getItems().isEmpty()) {
-                return buildCartResponse(cartRedisDto, "Hiển thị giỏ hàng thành công với Token", cartRequest.getCartId());
+            try {
+                String username = jwtUtil.getUsernameFromToken(cartRequest.getToken());
+                key = "cart:" + username;
+                cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
+                if (cartRedisDto != null && cartRedisDto.getItems() != null && !cartRedisDto.getItems().isEmpty()) {
+                    return buildCartResponse(cartRedisDto, "Lấy giỏ hàng theo token thành công", null);
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Token không hợp lệ: " + e.getMessage());
             }
         }
 
+        // ✅ Nếu không có token hoặc không tìm thấy, thử cartId
         if (cartRequest.getCartId() != null && !cartRequest.getCartId().isEmpty()) {
             key = "cart:" + cartRequest.getCartId();
             cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
-
             if (cartRedisDto != null && cartRedisDto.getItems() != null && !cartRedisDto.getItems().isEmpty()) {
-                return buildCartResponse(cartRedisDto, "Hiển thị giỏ hàng thành công với Cart ID", cartRequest.getCartId());
+                return buildCartResponse(cartRedisDto, "Lấy giỏ hàng theo cartId thành công", cartRequest.getCartId());
             }
         }
 
-        // Không tìm thấy giỏ hàng hoặc giỏ hàng trống
-        CartResponse emptyResponse = new CartResponse();
-        emptyResponse.setTotalQuantity(0);
-        emptyResponse.setTotalPrice(BigDecimal.ZERO);
-        emptyResponse.setMessage("Không có sản phẩm trong giỏ hàng");
-        emptyResponse.setItems(new ArrayList<>());
-        return emptyResponse;
+        // ❌ Không có giỏ hàng nào
+        CartResponse empty = new CartResponse();
+        empty.setItems(new ArrayList<>());
+        empty.setTotalPrice(BigDecimal.ZERO);
+        empty.setTotalQuantity(0);
+        empty.setMessage("Không tìm thấy giỏ hàng");
+        return empty;
     }
+
 
 
     private CartResponse buildCartResponse(CartRedisDto cartRedisDto, String message, String cartId) {
