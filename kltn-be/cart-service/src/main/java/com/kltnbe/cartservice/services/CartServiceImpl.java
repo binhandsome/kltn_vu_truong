@@ -237,10 +237,6 @@ public class CartServiceImpl implements CartService {
         if (cartRequest.getNameColor() != null ) {
             item.setNameColor(cartRequest.getNameColor());
         }
-        // ❌ Không cập nhật lại giá – tránh cộng dồn sai
-        // if (cartRequest.getPrice() != null) {
-        //     item.setPrice(cartRequest.getPrice());
-        // }
 
         // ✅ Lưu lại giỏ hàng vào Redis
         cartRedisDtoRedisTemplate.opsForValue().set(key, cartRedisDto);
@@ -273,24 +269,83 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponse getCartByID(String cartId, List<String> asin) {
-        String username = jwtUtil.getUsernameFromToken(cartId);
-        String key = "";
+    public CartResponse getCartByID(String tokenOrCartId, List<String> asin) {
+        String key;
 
-        if (username != null) {
+        // 🔐 Kiểm tra có đúng định dạng JWT không (phải có 2 dấu chấm)
+        boolean isJwt = tokenOrCartId != null && tokenOrCartId.split("\\.").length == 3;
+
+        if (isJwt && jwtUtil.validateToken(tokenOrCartId)) {
+            String username = jwtUtil.getUsernameFromToken(tokenOrCartId);
             key = "cart:" + username;
-        }else{
-            key = "cart:" + cartId;
-
+        } else {
+            key = "cart:" + tokenOrCartId;
         }
-        CartRedisDto cartRedisDto = null;
-        cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
-        List<CartItemDto> cartItemDtos = cartRedisDto.getItems().stream()
+
+        CartRedisDto cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
+        if (cartRedisDto == null) {
+            CartResponse empty = new CartResponse();
+            empty.setItems(new ArrayList<>());
+            empty.setMessage("Không tìm thấy giỏ hàng");
+            return empty;
+        }
+
+        List<CartItemDto> filteredItems = cartRedisDto.getItems().stream()
                 .filter(item -> asin.contains(item.getAsin()))
                 .collect(Collectors.toList());
+
+        BigDecimal totalPrice = filteredItems.stream()
+                .filter(i -> i.getPrice() != null)
+                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         CartResponse response = new CartResponse();
-        response.setCartId(cartId);
-        response.setItems(cartItemDtos);
+        response.setItems(filteredItems);
+        response.setCartId(tokenOrCartId);
+        response.setTotalPrice(totalPrice);
+        response.setTotalQuantity(filteredItems.stream().mapToInt(CartItemDto::getQuantity).sum());
+        response.setMessage("Lấy giỏ hàng thành công");
+
         return response;
     }
+
+
+    @Override
+    public CartResponse removeMultipleItemsFromCart(CartRequest cartRequest, List<String> asinList) {
+        String key;
+        if (cartRequest.getToken() != null && !cartRequest.getToken().isEmpty()) {
+            String username = jwtUtil.getUsernameFromToken(cartRequest.getToken());
+            key = "cart:" + username;
+        } else if (cartRequest.getCartId() != null && !cartRequest.getCartId().isEmpty()) {
+            key = "cart:" + cartRequest.getCartId();
+        } else {
+            throw new IllegalArgumentException("Không thể xác định người dùng hoặc giỏ hàng");
+        }
+
+        CartRedisDto cartRedisDto = cartRedisDtoRedisTemplate.opsForValue().get(key);
+        if (cartRedisDto == null) {
+            throw new NoSuchElementException("Không tìm thấy giỏ hàng");
+        }
+
+        // ❌ Nếu không còn item nào thì xoá luôn khỏi Redis
+        boolean removed = cartRedisDto.getItems().removeIf(item -> asinList.contains(item.getAsin()));
+        if (!removed) {
+            throw new NoSuchElementException("Không có sản phẩm nào để xoá");
+        }
+
+        if (cartRedisDto.getItems().isEmpty()) {
+            cartRedisDtoRedisTemplate.delete(key);
+
+            CartResponse emptyResponse = new CartResponse();
+            emptyResponse.setMessage("Giỏ hàng hiện tại không còn sản phẩm sau khi xoá");
+            emptyResponse.setTotalQuantity(0);
+            emptyResponse.setTotalPrice(BigDecimal.ZERO);
+            emptyResponse.setItems(new ArrayList<>());
+            return emptyResponse;
+        }
+
+        cartRedisDtoRedisTemplate.opsForValue().set(key, cartRedisDto);
+        return buildCartResponse(cartRedisDto, "Đã xoá danh sách sản phẩm khỏi giỏ hàng", cartRequest.getCartId());
+    }
+
 }

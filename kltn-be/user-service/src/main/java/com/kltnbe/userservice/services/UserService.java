@@ -1,6 +1,7 @@
 package com.kltnbe.userservice.services;
 
 import com.kltnbe.userservice.dtos.req.AddressRequest;
+import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
 import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
@@ -16,4 +17,6 @@ public interface UserService {
     List<AddressInfo> findAddressAllByUser(String accessToken);
     Long getIdUserByAccessToken(String accessToken);
     String updateUserProfile(String username, UpdateProfileRequest request);
+    String deleteAddress(Long addressId, String accessToken);
+    Long createGuestAddressFromRequest(GuestAddressRequest request);
 }

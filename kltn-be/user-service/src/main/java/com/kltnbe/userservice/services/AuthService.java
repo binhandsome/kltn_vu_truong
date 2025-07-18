@@ -11,6 +11,7 @@ public interface AuthService {
     Auth getUserByUsername(String username);
     String resetPassword(ResetPasswordRequest request);
     String changePassword(String email, ChangePasswordRequest request);
+    boolean emailExists(String email);
 
 //    String verifyOtp(String username, String inputOtp);
 //    String registerSeller(RegisterRequest registerRequest);

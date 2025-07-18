@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface OrderService {
     ResponseEntity<?> saveOrder(OrderRequest orderRequest);
+    ResponseEntity<?> placeGuestOrder(OrderRequest orderRequest);
 }

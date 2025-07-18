@@ -385,9 +385,6 @@ const handleInputChangeSearch = (e) => {
         await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
-        // 👉 Nếu thêm thành công thì đẩy sang trang wishlist
-        window.location.href = "/user/shoppages/wishlist";
       }
   
       const res = await axios.get("http://localhost:8083/api/wishlist", {

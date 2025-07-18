@@ -1,6 +1,7 @@
 package com.kltnbe.cartservice.controllers;
 
 import com.kltnbe.cartservice.dtos.req.CartRequest;
+import com.kltnbe.cartservice.dtos.req.RemoveSelectedItemsRequest;
 import com.kltnbe.cartservice.dtos.res.CartResponse;
 import com.kltnbe.cartservice.services.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,4 +67,18 @@ public class CartController {
         System.out.println("Trả về response: " + cartResponse);
         return cartResponse;
     }
+    @PostMapping("/removeSelectedItems")
+    public CartResponse removeSelectedItemsFromCart(@RequestBody RemoveSelectedItemsRequest request) {
+        System.out.println("Gọi endpoint /removeSelectedItems với request: " + request);
+
+        CartRequest cartRequest = new CartRequest();
+        cartRequest.setToken(request.getToken());
+        cartRequest.setCartId(request.getCartId());
+
+        CartResponse cartResponse = cartService.removeMultipleItemsFromCart(cartRequest, request.getAsinList());
+
+        System.out.println("Trả về response: " + cartResponse);
+        return cartResponse;
+    }
+
 }

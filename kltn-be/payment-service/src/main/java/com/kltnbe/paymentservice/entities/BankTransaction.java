@@ -20,10 +20,10 @@ public class BankTransaction {
     @JoinColumn(name = "transaction_id")
     private Transaction transaction;
 
-    @Column(name = "card_number", nullable = false)
+    @Column(name = "card_number", nullable = true)
     private String cardNumber;
 
-    @Column(name = "cardholder_name", nullable = false)
+    @Column(name = "cardholder_name", nullable = true)
     private String cardholderName;
 
     @Column(name = "bank_name")

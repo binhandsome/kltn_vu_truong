@@ -20,5 +20,9 @@ public class OrderController {
     ResponseEntity<?> savePlaceOrder(@RequestBody OrderRequest orderRequest) {
         return orderService.saveOrder(orderRequest);
     }
+    @PostMapping("/placeGuestOrder")
+    public ResponseEntity<?> placeOrderForGuest(@RequestBody OrderRequest orderRequest) {
+        return orderService.placeGuestOrder(orderRequest);
+    }
 
 }

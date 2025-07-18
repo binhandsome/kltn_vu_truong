@@ -3,16 +3,17 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet'; 
 import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import { Link } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import qs from 'qs';
 import { data, get } from 'jquery';
+import { deleteAddress } from '../../apiService/userService';
 function Checkout() {
 	const [hasBgClass, setHasBgClass] = useState(true); 
   const location = useLocation();
-  const {selectedItemsCart} = location.state || {};
+  const { selectedItemsCart, cartId: passedCartId } = location.state || {};
   const [listCartById, setListCartById] = useState([]);
   const [totalPrice, setTotalPrice] = useState(listCartById?.totalPrice || 0);
   const isLogin = localStorage.getItem("accessToken") !== null;
@@ -35,100 +36,175 @@ function Checkout() {
   const [selectBank, setSelectBank] = useState('');
    const [selectedShipping, setSelectedShipping] = useState(0); // mặc định là Free shipping
 
+   const [editingItem, setEditingItem] = useState(null);
+const [editQuantity, setEditQuantity] = useState(1);
+const [editSize, setEditSize] = useState('');
+const [editColor, setEditColor] = useState('');
+   const navigate = useNavigate();
+  
+
   const handleShippingChangeShip = (e) => {
     setSelectedShipping(Number(e.target.value)); // đảm bảo là số
   };
-  useEffect(() => {
-    console.log(selectBank + 'selectbank');
-  })
-const saveOrder = async () => {
-  try {
-    const tokenAccess = localStorage.getItem("accessToken");
-    if (!tokenAccess) {
-      throw new Error("Access token is missing. Please log in.");
-    }
-
-    if (!listCartById?.items || !Array.isArray(listCartById.items)) {
-      throw new Error("Cart items are invalid or empty.");
-    }
-
-    if (!addressMain) {
-      throw new Error("Please select a delivery address.");
-    }
-
-    if (!totalPrice || isNaN(totalPrice)) {
-      throw new Error("Total price is invalid.");
-    }
-
-    if (!selectBank) {
-      throw new Error("Please select a payment method.");
-    }
-
-    const orderItemRequests = listCartById.items.map(item => {
-      if (!item.productId || !item.quantity || !item.itemTotalPrice) {
-        throw new Error("Invalid cart item data.");
+  const saveOrder = async () => {
+    try {
+      const tokenAccess = localStorage.getItem("accessToken");
+      const cartId = localStorage.getItem("cartId") || '';
+  
+      if (!listCartById?.items || listCartById.items.length === 0) {
+        alert("Không có sản phẩm nào trong đơn hàng.");
+        return;
       }
-      return {
-        productId: item.productId,
-        quantity: item.quantity,
-        unitPrice: item.itemTotalPrice,
-        color: item.nameColor || "", // Xử lý nếu color là undefined
-        size: item.size || "" // Xử lý nếu size là undefined
+  
+      if (!totalPrice || isNaN(totalPrice)) {
+        alert("Giá trị đơn hàng không hợp lệ.");
+        return;
+      }
+  
+      if (!selectBank) {
+        alert("Vui lòng chọn phương thức thanh toán.");
+        return;
+      }
+      for (const item of listCartById.items) {
+        if (item.hasColor && !item.nameColor) {
+          alert(`Sản phẩm "${item.productName}" yêu cầu chọn màu`);
+          return;
+        }
+        if (item.hasSize && !item.size) {
+          alert(`Sản phẩm "${item.productName}" yêu cầu chọn size`);
+          return;
+        }
+      }
+  
+      const orderItemRequests = listCartById.items.map(item => {
+        const req = {
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.itemTotalPrice,
+        };
+        if (item.nameColor) req.color = item.nameColor;
+        if (item.size) req.size = item.size;
+        return req;
+      });
+  
+      const ip = await fetch("https://api.ipify.org?format=json")
+        .then(res => res.json())
+        .then(data => data.ip);
+  
+      let payload = {
+        orderNotes: orderNote || "",
+        totalPrice,
+        orderItemRequests,
+        selectBank,
+        ipAddress: ip
       };
-    });
-
-    const payload = {
-      accessToken:tokenAccess,
-      addressId: addressMain,
-      orderNotes: orderNote || "", // Xử lý nếu orderNote là undefined
-      totalPrice,
-      orderItemRequests,
-      selectBank
-    };
-console.log("Sending payload:", payload);
-    const response = await axios.post("http://localhost:8086/api/orders/placeOrder", payload);
-    console.log(response.data.message);
-    // Hiển thị thông báo thành công cho người dùng
-    alert(response.data.message);
-
-  } catch (error) {
-    console.error("Error saving order:", error.response?.data || error.message);
-    // Hiển thị thông báo lỗi cho người dùng
-    alert("Đã có lỗi khi đặt hàng: " + (error.response?.data?.error || error.message));
-  }
-};
+  
+      let endpoint = "";
+  
+      if (tokenAccess) {
+        if (!addressMain) {
+          alert("Vui lòng chọn địa chỉ giao hàng.");
+          return;
+        }
+  
+        payload = {
+          ...payload,
+          accessToken: tokenAccess,
+          addressId: addressMain
+        };
+        endpoint = "http://localhost:8086/api/orders/placeOrder";
+      } else {
+        if (!firstName || !lastName || !phone || !email || !selectedProvince || !selectedDistrict || !ward || !street) {
+          alert("Vui lòng nhập đầy đủ thông tin giao hàng.");
+          return;
+        }
+  
+        const guestAddress = `${street}, ${ward}, ${selectedDistrict}, ${selectedProvince}`;
+  
+        payload = {
+          ...payload,
+          cartId,
+          guestName: `${firstName} ${lastName}`,
+          guestPhone: phone,
+          guestEmail: email,
+          guestAddress
+        };
+        endpoint = "http://localhost:8086/api/orders/placeGuestOrder";
+      }
+  
+      const response = await axios.post(endpoint, payload);
+      const { message, paymentUrl } = response.data;
+  
+      // Nếu thanh toán qua ngân hàng → chuyển hướng luôn
+      if (selectBank === "BANK" && paymentUrl) {
+        window.location.href = paymentUrl;
+        return;
+      }
+  
+      alert(message || "Đặt hàng thành công!");
+  
+      // ✅ Gọi API xoá toàn bộ giỏ hàng BE (nếu có)
+      try {
+        await axios.delete("http://localhost:8084/api/cart/clearCart", {
+          token: tokenAccess || '',
+          cartId
+        });
+      } catch (e) {
+        console.warn("❌ Không gọi được clearCart từ backend:", e);
+      }
+  
+      // ✅ Gọi lại FE cập nhật realtime
+      await getCartProductById();
+  
+      // ✅ Reset UI (giỏ trống)
+      setListCartById({ items: [], totalPrice: 0 });
+  
+      // Điều hướng
+      navigate("/user/myaccount/orders");
+    } catch (error) {
+      console.error("❌ Lỗi khi đặt hàng:", error);
+      alert(error.response?.data?.error || error.message);
+    }
+  };
+  
+    
+  // Update OrderItem
+  const openEditModal = (item) => {
+    setEditingItem(item);
+    setEditQuantity(item.quantity || 1);
+    setEditSize(item.size || '');
+    setEditColor(item.nameColor || '');
+  };  
 useEffect(() => { 
   if (listCartById?.totalPrice) {
     setTotalPrice(listCartById.totalPrice);
   }
 }, [listCartById]);
-useEffect(() => {
-  console.log(selectOption + 'country cua toi la');
-})
-    useEffect(() => {
-        console.log('cc gi vay thang ngu' + addressMain);
-      })
-useEffect(() => {
-  const tokenGetAddress = localStorage.getItem("accessToken");
-  const getAddressWithUser = async () => {
-    try {
-      const response = await axios.get("http://localhost:8081/api/user/addressAllByUser", {
-        params: {
-          accessToken: tokenGetAddress,
-        }
-      });
-  
- const addresses = response.data;
-      setAddressList(addresses);
-      console.log(response.data + 'data address');
-      const main = addresses.find(address => address.isPrimaryAddress === 1);
-      setAddressMain(main.addressId);
-    }catch(error) {
-      console.log(error);
-    }
-  };
-  getAddressWithUser();
-}, []);
+// Remove Address 
+const removeAddress = async (addressId) => {
+  try {
+    await deleteAddress(addressId); // Gọi hàm từ service
+    setAddressList(prev => prev.filter(addr => addr.addressId !== addressId)); // Cập nhật lại UI
+    alert("Xóa địa chỉ thành công!");
+  } catch (err) {
+    console.error("❌ Lỗi khi xóa địa chỉ:", err);
+    alert(err.message || "Xóa địa chỉ thất bại!");
+  }
+};
+// Remove Item To Cart sau Checkout
+const removeItemFromCart = async (asin) => {
+  const cartId = localStorage.getItem("cartId") || '';
+  const token = localStorage.getItem("accessToken") || '';
+  try {
+    await axios.post('http://localhost:8084/api/cart/removeItem', {
+      token,
+      cartId,
+      asin,
+    });
+  } catch (err) {
+    console.error(`❌ Xoá sản phẩm ${asin} khỏi giỏ hàng thất bại`, err);
+  }
+};
 const handleShippingChange = (e) => {
   const shippingFee = parseFloat(e.target.value);
   const basePrice = listCartById?.totalPrice || 0;
@@ -152,28 +228,65 @@ useEffect(() => {
 
   fetchProvinces();
 }, []);
- const sendInfoAddress = async () => {
+const sendInfoAddress = async () => {
   try {
     const accessToken = localStorage.getItem("accessToken");
-   const payload = {
-    accessToken: accessToken,
-    address: {
-        recipientName: firstName + " " + lastName,
+
+    const payload = {
+      accessToken,
+      address: {
+        recipientName: `${firstName} ${lastName}`,
         recipientPhone: phone,
         recipientEmail: email,
-        addressDetails: selectedProvince + ", " + selectedDistrict + ", " + ward,
-        deliveryAddress: street + " / " + optionalStreet,
+        addressDetails: `${selectedProvince}, ${selectedDistrict}, ${ward}`,
+        deliveryAddress: `${street} / ${optionalStreet}`,
         isPrimaryAddress: selectOption,
-    }
-};
+      },
+    };
+
     const response = await axios.post("http://localhost:8081/api/user/addAdressWithUser", payload);
-    console.log(response.data);
-    console.log(payload + 'payload');
-  }catch (error) {
-    console.log(error)
+    console.log("✅ Đã thêm địa chỉ:", response.data);
+
+    // Reset form
+    setFirstName('');
+    setLastName('');
+    setPhone('');
+    setEmail('');
+    setStreet('');
+    setOptionalStreet('');
+    setSelectedProvince('');
+    setSelectedDistrict('');
+    setWard('');
+    setSelectOption('');
+
+    // Tắt modal và gọi lại API lấy danh sách địa chỉ
+    setShowModal(false);
+    await getAddressWithUser(); // cập nhật lại danh sách và set lại địa chỉ mặc định
+
+    alert("Địa chỉ đã được thêm thành công!");
+  } catch (error) {
+    console.error("❌ Lỗi khi thêm địa chỉ:", error);
+    alert("Không thể thêm địa chỉ");
   }
-  
- }
+};
+const getAddressWithUser = async () => {
+  const token = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.get("http://localhost:8081/api/user/addressAllByUser", {
+      params: { accessToken: token }
+    });
+    const addresses = response.data;
+    setAddressList(addresses);
+    const main = addresses.find(address => address.isPrimaryAddress === 1);
+    if (main) setAddressMain(main.addressId);
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy địa chỉ:", error);
+  }
+};
+
+useEffect(() => {
+  getAddressWithUser();
+}, []);
 
 // Update districts when a province is selected
 useEffect(() => {
@@ -194,22 +307,20 @@ useEffect(() => {
     console.log("Đã chọn quận:", selectedDistrict);
   }
 }, [selectedDistrict, districts]);
-useEffect(() => {
-  console.log(listCartById + 'list cart me ');
-})
 const getCartProductById = async () => {
-  const cartId = localStorage.getItem('cartId') || '';
   const token = localStorage.getItem('accessToken') || '';
-  const cartSelect = token || cartId || '';
-    console.log(cartSelect + 'token cua toi');
+const cartId = passedCartId || localStorage.getItem('cartId') || '';
+const cartSelect = token || cartId || '';
 
   const totalPrice = 0;
-
-
+  if (!selectedItemsCart || selectedItemsCart.length === 0) {
+    console.warn("Không có sản phẩm nào được chọn để thanh toán.");
+    return;
+  }
   try {
     const cartResponse = await axios.get('http://localhost:8084/api/cart/getCartByID', {
       params: { cartID: cartSelect, asin: selectedItemsCart },
-      paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
+paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
     });
 
     const cartItems = cartResponse.data.items || [];
@@ -218,26 +329,28 @@ const getCartProductById = async () => {
     const { data: products } = await axios.get('http://localhost:8083/api/products/listByAsin', {
       params: { asins }
     });
-
     const combined = cartItems
-      .map(item => {
-        const product = products.find(p => p.asin === item.asin);
-        if (!product) return null;
-
-        const unitPrice = product.productPrice;
-        const discount = product.percentDiscount || 0;
-        const discountedUnitPrice = unitPrice * (1 - discount / 100);
-        const itemTotalPrice = (discountedUnitPrice * item.quantity).toFixed(2);
-
-        return {
-          ...item,
-          ...product,
-          unitPrice,
-          discountedUnitPrice,
-          itemTotalPrice: parseFloat(itemTotalPrice)
-        };
-      })
-      .filter(Boolean);
+    .map(item => {
+      const product = products.find(p => p.asin === item.asin);
+      if (!product) return null;
+  
+      const unitPrice = product.productPrice;
+      const discount = product.percentDiscount || 0;
+      const discountedUnitPrice = unitPrice * (1 - discount / 100);
+      const itemTotalPrice = (discountedUnitPrice * item.quantity).toFixed(2);
+  
+      return {
+        ...item,
+        ...product,
+        unitPrice,
+        discountedUnitPrice,
+        itemTotalPrice: parseFloat(itemTotalPrice),
+        hasSize: !!(product.sizes && product.sizes.length > 0),
+        hasColor: !!(product.colors && product.colors.length > 0)
+      };
+    })
+    .filter(Boolean);
+  
 
     const totalPrice = combined
       .reduce((sum, item) => sum + item.itemTotalPrice, 0)
@@ -258,16 +371,13 @@ const getCartProductById = async () => {
     });
   }
 };
-        useEffect(() => {
-      getCartProductById();
-  }, []);
-  useEffect(() => {
-  console.log("✅ listCartById updated:", listCartById);
-}, [listCartById]);
 
-  useEffect(() => {
-    console.log(selectedItemsCart);
-  })
+useEffect(() => {
+  if (selectedItemsCart && selectedItemsCart.length > 0) {
+    getCartProductById();
+  }
+}, [selectedItemsCart]);
+
 	useEffect(() => {
 	  if (hasBgClass) {
 		document.body.classList.add('bg');
@@ -395,155 +505,96 @@ const getCartProductById = async () => {
    
             {isLogin ? (
               <>         
-                        {
-                addressList.filter(address => address.isPrimaryAddress === 1)
-                .map((address, index) => (
-      <div className="col-md-6 m-b30">
-              <div className="address-card">
+{
+  addressList.filter(address => address.isPrimaryAddress === 1)
+    .map((address, index) => (
+      <div className="col-md-6 m-b30" key={index}>
+        <div
+          className="address-card"
+          style={{
+            border: addressMain === address.addressId ? '2px solid #d63384' : '1px solid #ccc',
+            backgroundColor: addressMain === address.addressId ? '#fff0f5' : '#fff',
+            borderRadius: '8px',
+            padding: '16px',
+            cursor: 'pointer'
+          }}
+          onClick={() => setAddressMain(address.addressId)} // ✅ Cho phép chọn địa chỉ
+        >
+          <div className="account-address-box">
+            <h6 className="mb-3">{address.recipientName}</h6>
+            <ul>
+              <li>{address.recipientPhone}</li>
+              <li>{address.recipientEmail}</li>
+              <li>{address.deliveryAddress}</li>
+              <li>{address.addressDetails}</li>
+            </ul>
+          </div>
 
-                <div className="account-address-box">
-                  <h6 className="mb-3">{address.recipientName}</h6>
-                  <ul>
-                    <li>{address.recipientPhone}</li>
-                    <li>{address.recipientEmail}</li>
-                    <li>{address.deliveryAddress}</li>
-                    <li>{address.addressDetails}</li>
-                  </ul>
-                </div>
-                
-                <div className="account-address-bottom">
-                  <a
-                    href="account-billing-address.html"
-                    className="d-block me-3"
-                  >
-                    <i className="fa-solid fa-pen me-2" />
-                    Edit
-                  </a>
-                  <a href="javascript:void(0);" className="d-block me-3">
-                    <i className="fa-solid fa-trash-can me-2" />
-                    Remove
-                  </a>
-                </div>
-              </div>
-              
-            </div>
-                ))
-              }
-              {
-                addressList.filter(address => address.isPrimaryAddress === 0)
-                .map((address, index) => (
-      <div className="col-md-6 m-b30">
-              <div className="address-card">
+          <div className="account-address-bottom">
+            <a href="#" className="d-block me-3">
+              <i className="fa-solid fa-pen me-2" />
+              Edit
+            </a>
+            <button
+              className="d-block me-3 btn btn-link p-0"
+              onClick={(e) => {
+                e.stopPropagation(); // tránh xung đột click chọn
+                removeAddress(address.addressId);
+              }}
+            >
+              <i className="fa-solid fa-trash-can me-2" />
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    ))
+}
+{
+  addressList.filter(address => address.isPrimaryAddress === 0)
+    .map((address, index) => (
+      <div className="col-md-6 m-b30" key={index}>
+        <div
+          className="address-card"
+          style={{
+            border: addressMain === address.addressId ? '2px solid #198754' : '1px solid #ccc',
+            backgroundColor: addressMain === address.addressId ? '#e6fff2' : '#fff',
+            borderRadius: '8px',
+            padding: '16px',
+            cursor: 'pointer'
+          }}
+          onClick={() => setAddressMain(address.addressId)} // ✅ cho phép chọn
+        >
+          <div className="account-address-box">
+            <h6 className="mb-3">{address.recipientName}</h6>
+            <ul>
+              <li>{address.recipientPhone}</li>
+              <li>{address.recipientEmail}</li>
+              <li>{address.deliveryAddress}</li>
+              <li>{address.addressDetails}</li>
+            </ul>
+          </div>
 
-                <div className="account-address-box">
-                  <h6 className="mb-3">{address.recipientName}</h6>
-                  <ul>
-                    <li>{address.recipientPhone}</li>
-                    <li>{address.recipientEmail}</li>
-                    <li>{address.deliveryAddress}</li>
-                    <li>{address.addressDetails}</li>
-                  </ul>
-                </div>
-                
-                <div className="account-address-bottom">
-                  <a
-                    href="account-billing-address.html"
-                    className="d-block me-3"
-                  >
-                    <i className="fa-solid fa-pen me-2" />
-                    Edit
-                  </a>
-                  <a href="javascript:void(0);" className="d-block me-3">
-                    <i className="fa-solid fa-trash-can me-2" />
-                    Remove
-                  </a>
-                </div>
-              </div>
-              
-            </div>
-                ))
-              }
- 
-       
-            
-                 {/* <div className="col-md-6 m-b30">
-              <div className="address-card">
-                <div className="account-address-box">
-                  <h6 className="mb-3">Billing address</h6>
-                  <ul>
-                    <li>John Doe</li>
-                    <li>Londan</li>
-                    <li>Mo. 012-345-6789</li>
-                    <li>johndoe@example.com</li>
-                  </ul>
-                </div>
-                <div className="account-address-bottom">
-                  <a
-                    href="account-billing-address.html"
-                    className="d-block me-3"
-                  >
-                    <i className="fa-solid fa-pen me-2" />
-                    Edit
-                  </a>
-                  <a href="javascript:void(0);" className="d-block me-3">
-                    <i className="fa-solid fa-trash-can me-2" />
-                    Remove
-                  </a>
-                </div>
-              </div>
-            </div>
-                 <div className="col-md-6 m-b30">
-              <div className="address-card">
-                <div className="account-address-box">
-                  <h6 className="mb-3">Billing address</h6>
-                  <ul>
-                    <li>John Doe</li>
-                    <li>Londan</li>
-                    <li>Mo. 012-345-6789</li>
-                    <li>johndoe@example.com</li>
-                  </ul>
-                </div>
-                <div className="account-address-bottom">
-                  <a
-                    href="account-billing-address.html"
-                    className="d-block me-3"
-                  >
-                    <i className="fa-solid fa-pen me-2" />
-                    Edit
-                  </a>
-                  <a href="javascript:void(0);" className="d-block me-3">
-                    <i className="fa-solid fa-trash-can me-2" />
-                    Remove
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6 m-b30">
-              <div className="address-card">
-                <div className="account-address-box">
-                  <h6 className="mb-3">Shipping address</h6>
-                  <ul>
-                    <li>John Doe</li>
-                    <li>Londan</li>
-                    <li>Mo. 012-345-6789</li>
-                    <li>johndoe@example.com</li>
-                  </ul>
-                </div>
-                <div className="account-address-bottom">
-                  <a
-                    href="account-shipping-address.html"
-                    className="d-block me-3"
-                  >
-                    <i className="fa-solid fa-pen me-2" />
-                    Edit
-                  </a>
-                  <a href="javascript:void(0);" className="d-block me-3">
-                    <i className="fa-solid fa-trash-can me-2" />
-                    Remove
-                  </a>
-                </div>
-              </div>
-            </div> */}
+          <div className="account-address-bottom">
+            <a href="#" className="d-block me-3">
+              <i className="fa-solid fa-pen me-2" />
+              Edit
+            </a>
+            <button
+              className="d-block me-3 btn btn-link p-0"
+              onClick={(e) => {
+                e.stopPropagation(); // tránh trigger chọn khi bấm "remove"
+                removeAddress(address.addressId);
+              }}
+            >
+              <i className="fa-solid fa-trash-can me-2" />
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    ))
+}
             <div className="col-12">
               <div className="account-card-add">
                 <div className="account-address-add">
@@ -579,12 +630,6 @@ const getCartProductById = async () => {
                 <input name="dzName" required="" className="form-control" value={lastName} onChange={(e) => setLastName(e.target.value)} />
               </div>
             </div>
-            {/* <div className="col-md-12">
-              <div className="form-group m-b25">
-                <label className="label-title">Company name (optional)</label>
-                <input name="dzName" required="" className="form-control" />
-              </div>
-            </div> */}
           <div className="col-md-12">
               <div className="m-b25">
                 <label className="label-title">Country / Region *</label>
@@ -696,15 +741,7 @@ const getCartProductById = async () => {
             </div>
         </>
             )}
-       
-     
-          
-     
             <div className="col-md-12">
-              {/* <div className="form-group m-b25">
-                <label className="label-title">ZIP Code *</label>
-                <input name="dzName" required="" className="form-control" />
-              </div> */}
             </div>
     <>
       {showModal && (
@@ -740,25 +777,16 @@ const getCartProductById = async () => {
                 <input name="dzName" required="" className="form-control" value={lastName} onChange={(e) => setLastName(e.target.value)} />
               </div>
             </div>
-            {/* <div className="col-md-12">
-              <div className="form-group m-b25">
-                <label className="label-title">Company name (optional)</label>
-                <input name="dzName" required="" className="form-control" />
-              </div>
-            </div> */}
           <div className="col-md-12">
               <div className="m-b25">
                 <label className="label-title">Country / Region *</label>
                 <select className="default-select form-select w-100" value={selectedProvince || ""} onChange={(e)  => {
-                 setSelectedProvince(e.target.value);
-                 
+                 setSelectedProvince(e.target.value);               
                 }}>
-
                   <option selected="" value="">Select Province</option>
                   {provinces.map((province) => (
                   <option key={province.code} value={province.name}>{province.name}</option>
-                  ))}
-            
+                  ))}  
                 </select>
               </div>
             </div>
@@ -770,14 +798,11 @@ const getCartProductById = async () => {
                   <option selected="">Select Districs</option>
                   {districts.map((district) => (
                   <option key={district.code} value={district.name}>{district.name}</option>
-
                   ))}
-          
                 </select>
               </div>
             </div>
-            )}
-               
+            )}  
                 {wards.length > 0 && (
     <div className="col-md-12">
               <div className="m-b25">
@@ -789,9 +814,7 @@ console.log(ward)}
                   <option selected="">Select Ward</option>
                   {wards.map((ward) => (
                   <option key={ward.code} value={ward.name}> {ward.name}</option>
-
-                  ))}
-                
+                  ))}     
                 </select>
               </div>
             </div>
@@ -833,18 +856,14 @@ console.log(ward)}
               <div className="m-b25">
                 <label className="label-title">Address Setup *</label>
                 <select className=" form-select w-100" value={selectOption} onChange={(e) => setSelectOption(e.target.value)}  
-
                 >
                   <option> Select Option Address </option>
                   <option value={1}> Mặc Định </option>
-                  <option value={0}> Phụ </option>
-                
+                  <option value={0}> Phụ </option>  
                 </select>
               </div>
             </div>
-            
               </div>
-
               <div className="modal-footer">
                 <button
                   type="button"
@@ -861,8 +880,7 @@ console.log(ward)}
           </div>
         </div>
       )}
-    </>
-       
+    </>   
             <div className="col-md-12 m-b25">
               <div className="form-group">
                 <label className="label-title">Order notes (optional)</label>
@@ -885,10 +903,8 @@ console.log(ward)}
         <div className="col-xl-4 side-bar">
           <h4 className="title m-b15">Your Order</h4>
           <div className="order-detail sticky-top">
-           {listCartById?.items?.length > 0 ? (
-            
-  listCartById.items.map((item, index) => (
-    
+           {listCartById?.items?.length > 0 ? (          
+  listCartById.items.map((item, index) => ( 
     <div key={item.asin || index} className="cart-item style-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div className="dz-media">
@@ -905,37 +921,24 @@ console.log(ward)}
         </div>
       </div>
       <button
-        className="edit-cart-btn"
-        style={{
-          padding: '5px 10px',
-          backgroundColor: '#065084ff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-        }}
-        // onClick={() => handleEditCart(item)}
-      >
-        <i className="fa fa-pencil-alt" aria-hidden="true"></i>
-      </button>
+  className="edit-cart-btn"
+  onClick={() => openEditModal(item)}
+  style={{
+    padding: '5px 10px',
+    backgroundColor: '#065084ff',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  }}
+>
+  <i className="fa fa-pencil-alt" aria-hidden="true"></i>
+</button>
     </div>
   ))
 ) : (
   <li>🛒 Giỏ hàng trống</li>
 )}
-          
-
-
-            
-            {/* <div className="cart-item style-1 mb-0">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/shop-cart/pic2.jpg" alt="/" />
-              </div>
-              <div className="dz-content">
-                <h6 className="title mb-0">Cozy Knit Cardigan Sweater</h6>
-                <span className="price">$36.00</span>
-              </div>
-            </div> */}
             <table>
               <tbody>
                 <tr className="subtotal">
@@ -958,8 +961,7 @@ console.log(ward)}
         id="flexRadioDefault1"
         value={0}
         defaultChecked 
-        onChange={handleShippingChange}
-        
+        onChange={handleShippingChange}    
       />
       <label className="form-check-label" htmlFor="flexRadioDefault1">
         Free shipping
@@ -1137,7 +1139,7 @@ console.log(ward)}
                 </label>
               </div>
             </div>
-            <button href="shop-checkout.html" className="btn btn-secondary w-100" onClick={saveOrder}>
+            <button href="/user/shop/shopStandard" className="btn btn-secondary w-100" onClick={saveOrder}>
               PLACE ORDER
             </button>
           </div>
@@ -1146,6 +1148,137 @@ console.log(ward)}
     </div>
   </div>
 </div>
+{/* Phan Modal Update */}
+{editingItem && (
+  <div className="modal show fade d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
+    <div className="modal-dialog modal-lg" role="document">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Chỉnh sửa sản phẩm</h5>
+          <button type="button" className="btn-close" onClick={() => setEditingItem(null)} />
+        </div>
+        <div className="modal-body">
+          <div className="d-flex gap-4">
+            <img
+              src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_150,h_150/imgProduct/IMG/${editingItem.productThumbnail}`}
+              alt={editingItem.productTitle}
+              style={{ borderRadius: 8 }}
+            />
+            <div>
+              <h6>{editingItem.productTitle}</h6>
+
+              {/* Size */}
+              {editingItem.sizes?.length > 0 && (
+                <>
+                  <label>Chọn size:</label>
+                  <div className="mb-3">
+  <div style={{
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginTop: '8px'
+  }}>
+    {editingItem.sizes.map((size, idx) => (
+      <label
+        key={idx}
+        className={`btn btn-sm ${editSize === size.sizeName ? 'btn-dark' : 'btn-outline-dark'}`}
+        style={{
+          minWidth: '42px',
+          textAlign: 'center',
+          padding: '6px 10px',
+          borderRadius: '4px',
+          fontSize: '14px',
+          cursor: 'pointer'
+        }}
+      >
+        <input
+          type="radio"
+          className="d-none"
+          name="sizeOptions"
+          value={size.sizeName}
+          checked={editSize === size.sizeName}
+          onChange={() => setEditSize(size.sizeName)}
+        />
+        {size.sizeName}
+      </label>
+    ))}
+  </div>
+</div>
+
+                </>
+              )}
+
+              {/* Color */}
+              {editingItem.colorAsin && (
+                <>
+                  <label>Chọn màu:</label>
+                  <div className="d-flex gap-2 mb-3">
+                    {JSON.parse(editingItem.colorAsin).map((color, i) => (
+                      <div
+                        key={i}
+                        onClick={() => setEditColor(color.name_color)}
+                        title={color.name_color}
+                        style={{
+                          width: '25px',
+                          height: '25px',
+                          borderRadius: '50%',
+                          backgroundColor: color.code_color,
+                          border: editColor === color.name_color ? '2px solid black' : '1px solid #ccc',
+                          cursor: 'pointer'
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Quantity */}
+              <label>Số lượng:</label>
+              <input
+                type="number"
+                value={editQuantity}
+                onChange={(e) => setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="form-control"
+                style={{ width: '100px' }}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={() => setEditingItem(null)}>Huỷ</button>
+          <button
+            className="btn btn-primary"
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem("accessToken") || '';
+                const cartId = localStorage.getItem("cartId") || '';
+                const price = editingItem.unitPrice;
+
+                await axios.put("http://localhost:8084/api/cart/updateItem", {
+                  token,
+                  cartId,
+                  asin: editingItem.asin,
+                  quantity: editQuantity,
+                  price,
+                  size: editSize,
+                  nameColor: editColor
+                });
+                await getCartProductById();
+                setEditingItem(null);
+                await getCartProductById(); // gọi lại để cập nhật UI
+              } catch (err) {
+                console.error("❌ Lỗi cập nhật:", err);
+                alert("Không thể cập nhật sản phẩm.");
+              }
+            }}
+          >
+            Lưu thay đổi
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>

@@ -31,6 +31,7 @@ public class ProductDocument {
     private String salesRank;
     private String productType;
     private Double percentDiscount;
+    private Integer stockQuantity;
     private String tags;
 
 
