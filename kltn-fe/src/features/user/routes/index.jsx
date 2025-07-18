@@ -79,7 +79,7 @@ const UserRoutes = () => {
         <Route path="portfolio/portfolioDetails" element={<PortfolioDetails />} />
         <Route path="portfolio/portfolioTiles" element={<PortfolioTiles />} />
         <Route path="about/aboutUs" element={<AboutUs />} />
-        <Route path="shop/shopFiltersTopBar" element={<ShopFiltersTopBar />} />
+        <Route path="shop/shopJustForYou" element={<ShopFiltersTopBar />} />
         <Route path="shop/shopList" element={<ShopList />} />
         <Route path="shop/shopSidebar" element={<ShopSideBar />} />
         <Route path="shop/shopStyle1" element={<ShopStyle1/>} />

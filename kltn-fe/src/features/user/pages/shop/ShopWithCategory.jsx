@@ -20,7 +20,7 @@ function ShopWithCategory() {
 
   const [categoryProductType, setCategoryProductType] = useState([]);
   const [productTypeCategories, setProductTypeCategories] = useState([]);
-  const [salesRankCount, setSalesRankCount] = useState({}); // ✅ Thay đổi: đúng dữ liệu hiển thị
+  const [salesRankCount, setSalesRankCount] = useState({}); 
 
   const [inputValue, setInputValue] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -40,6 +40,7 @@ function ShopWithCategory() {
   const [salesRankCategories, setSalesRankCategories] = useState([]);
   const [tags, setTags] = useState({});
   const [productTypeCount, setProductTypeCount] = useState({});
+
   useEffect(() => {
     const modal = document.getElementById("exampleModal");
     if (modal) {
@@ -49,7 +50,6 @@ function ShopWithCategory() {
       });
     }
   }, []);
-  
 
   const debounce = (func, delay) => {
     let timeoutId;

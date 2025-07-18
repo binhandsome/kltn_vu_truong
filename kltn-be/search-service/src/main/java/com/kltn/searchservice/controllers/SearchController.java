@@ -2,6 +2,7 @@ package com.kltn.searchservice.controllers;
 
 import com.kltn.searchservice.dtos.ProductDocument;
 import com.kltn.searchservice.dtos.ProductDto;
+import com.kltn.searchservice.dtos.req.RequestRecommend;
 import com.kltn.searchservice.dtos.res.SearchResponse;
 import com.kltn.searchservice.helpers.ProductServiceProxy;
 import com.kltn.searchservice.service.SearchService;
@@ -49,5 +50,21 @@ public class SearchController {
         response.setLast(resultPage.isLast());
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/getJustForYou")
+    public ResponseEntity<SearchResponse<ProductDocument>> getJustForYou(RequestRecommend requestRecommend) {
+        Page<ProductDocument> productDocuments = searchService.searchProductRecommend(requestRecommend);
+        SearchResponse<ProductDocument> response = new SearchResponse<>();
+        response.setContent(productDocuments.getContent());
+        response.setPageNumber(productDocuments.getNumber());
+        response.setPageSize(productDocuments.getSize());
+        response.setTotalPages(productDocuments.getTotalPages());
+        response.setLast(productDocuments.isLast());
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/getRecommendByAsin")
+    public List<ProductDocument> getRecommendByAsin(String asin) {
+        List<ProductDocument> documents = searchService.getRecommendByAsin(asin);
+        return  documents;
+    }
 
-}
+    }

@@ -1,14 +1,163 @@
 // src/pages/common/HomePage.js
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect,useRef, useState } from 'react';
 import { Helmet } from 'react-helmet'; 
-import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs'; // Import WOW.js
-
+import axios from 'axios';
+import { param } from 'jquery';
+import { type } from '@testing-library/user-event/dist/type';
 function ShopFiltersTopBar() {
 	const [hasBgClass, setHasBgClass] = useState(true); 
+    const [products, setProducts] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
+    const [totalPages, setTotalPages] = useState(0);
+      const maxPagesToShow = 10;
+        const [selectedProduct, setSelectedProduct] = useState(null);
+       const [quantity, setQuantity] = useState(1);
+        const [priceDiscount, setPriceDiscount] = useState(0);
+        const [wishlistItems, setWishlistItems] = useState([]);
+        const [listCart, setListCart] = useState([]);
+        const [salesRankCount, setSalesRankCount] = useState([]);
+        const [productTypeCount, setProductTypeCount] = useState([]);
+        const [tags, setTags] = useState([]);
+        const [keyword, setKeyword] = useState("");
+        const [loading, setLoading] = useState(false);
+        const [inputValue, setInputValue] = useState("");
+        const [minValue, setMinValue] = useState(0);
+        const [maxValue, setMaxValue] = useState(400);
+        const [selectedTags, setSelectedTags] = useState([]);
+        const [selectedColor, setSelectedColor] = useState(null);
+        const [selectedSize, setSelectedSize] = useState(null);
+        const [searchAsin, setSearchAsin] = useState([]);
+
+          useEffect(() => {
+            if (selectedProduct) {
+              const discountPrice = (
+                selectedProduct.productPrice * quantity -
+                (selectedProduct.productPrice * selectedProduct.percentDiscount) / 100 * quantity
+              ).toFixed(2);
+              setPriceDiscount(discountPrice);
+            } else {
+              setPriceDiscount(0);
+            }
+          }, [selectedProduct, quantity]);
+        
+          const handleChange = (e) => {
+    const value = e.target.value;
+    const parsed = parseInt(value);
+    setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
+  };
+
+
+    const addCart = async () => {
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
   
+    try {
+      const payload = {
+        token,
+        asin: selectedProduct.asin,
+        quantity,
+        price: parseFloat(priceDiscount),
+        cartId,
+        size: selectedSize,
+        nameColor: selectedColor?.name_color,
+        colorAsin: JSON.stringify(selectedProduct.colors || []),
+      };
+  
+      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      if (response.data.cartId) {
+        localStorage.setItem("cartId", response.data.cartId);
+      }
+  
+      window.dispatchEvent(new Event("cartUpdated"));
+      
+      // 👉 Chuyển sang trang Cart
+      window.location.href = "/user/shoppages/cart";
+    } catch (error) {
+      console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
+    }
+  };
+    const handleToggleWishlist = async (asin) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+  
+    const isInWishlist = wishlistItems.some((item) => item.asin === asin);
+    try {
+      if (isInWishlist) {
+        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        // 👉 Nếu thêm thành công thì đẩy sang trang wishlist
+        window.location.href = "/user/shoppages/wishlist";
+      }
+  
+      const res = await axios.get("http://localhost:8083/api/wishlist", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWishlistItems(res.data);
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    } catch (error) {
+      console.error("❌ Lỗi cập nhật wishlist:", error);
+    }
+  };
+  const handlePageChangeProduct = (event) => {
+    const newSize = parseInt(event.target.value);
+    setPageSize(newSize);
+    setCurrentPage(0);
+    scrollToFilterWrapper();
+  };
+    useEffect(() => {
+         const getRecommendationByUser = async () => {
+          const accessToken = localStorage.getItem("accessToken");
+          try {
+            const response = await axios.get("http://localhost:8085/api/search/getJustForYou", {
+              params: {
+                accessToken: accessToken,
+                size: pageSize,
+                page: currentPage,
+              }
+            })
+            setProducts(response.data.content);
+            console.log('fasfasfas' + response.data.content);
+            setTotalPages(response.data.totalPages);
+
+            console.log(response.data.pageSize + 'console cua toi');
+          }catch (error) {
+            console.log(error);
+          }
+         };
+           getRecommendationByUser(); // 🔥 gọi hàm
+
+    }, [pageSize, currentPage])
+const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 0 && pageNumber < totalPages) {
+      setCurrentPage(pageNumber);
+      scrollToFilterWrapper();
+    }
+  };
+    const getPageRange = () => {
+    const startPage = Math.floor(currentPage / maxPagesToShow) * maxPagesToShow;
+    const endPage = Math.min(startPage + maxPagesToShow, totalPages);
+    return [...Array(endPage - startPage).keys()].map((i) => startPage + i);
+  };
+
+  const scrollToFilterWrapper = () => {
+    const filterWrapper = document.querySelector(".filter-wrapper");
+    if (filterWrapper) {
+      filterWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+    useEffect(() => {
+      console.log('fasfasfasfasfas' + products);
+    })
 	useEffect(() => {
 	  if (hasBgClass) {
 		document.body.classList.add('bg');
@@ -33,9 +182,7 @@ function ShopFiltersTopBar() {
   return (
     <>
       <div className="page-wraper">
-
         {/* Header (đã được xử lý trong App.js) */}
-
         <div className="page-content bg-light">
   {/*Banner Start*/}
   <div
@@ -44,13 +191,13 @@ function ShopFiltersTopBar() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shop Filters Top</h1>
+        <h1>Shop Just For You</h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
               <a href="index.html"> Home</a>
             </li>
-            <li className="breadcrumb-item">Shop Filters Top</li>
+            <li className="breadcrumb-item">Shop Just For You</li>
           </ul>
         </nav>
       </div>
@@ -87,7 +234,7 @@ function ShopFiltersTopBar() {
             </div>
             <div className="filter-right-area">
               <div className="form-group border-0">
-                <a
+                {/* <a
                   href="javascript:void(0);"
                   className="filter-top-btn"
                   id="filterTopBtn"
@@ -106,26 +253,26 @@ function ShopFiltersTopBar() {
                     </g>
                   </svg>
                   Filter
-                </a>
+                </a> */}
               </div>
               <div className="form-group">
-                <select className="default-select">
+                {/* <select className="default-select">
                   <option>Latest</option>
                   <option>Popularity</option>
                   <option>Average rating</option>
                   <option>Latest</option>
                   <option>Low to high</option>
                   <option>high to Low</option>
-                </select>
+                </select> */}
               </div>
-              <div className="form-group Category">
-                <select className="default-select">
-                  <option>Products</option>
-                  <option>9 Products</option>
-                  <option>12 Products</option>
-                  <option>14 Products</option>
-                  <option>18 Products</option>
-                  <option>24 Products</option>
+             <div className="form-group Category">
+                <select className="default-select" value={pageSize} onChange={handlePageChangeProduct}>
+                  <option value={20}>Products</option>
+                  <option value={32}>32 Products</option>
+                  <option value={44}>44 Products</option>
+                  <option value={60}>60 Products</option>
+                  <option value={72}>72 Products</option>
+                  <option value={84}>84 Products</option>
                 </select>
               </div>
               <div className="shop-tab">
@@ -1421,7 +1568,7 @@ function ShopFiltersTopBar() {
                       <div className="dz-content">
                         <h5 className="title">
                           <a href="shop-list.html">
-                            Cozy Knit Cardigan Sweater
+                            {/* Cozy Knit Cardigan Sweater */}
                           </a>
                         </h5>
                         <h5 className="price">$80</h5>
@@ -1746,22 +1893,29 @@ function ShopFiltersTopBar() {
                 aria-labelledby="tab-list-grid-btn"
               >
                 <div className="row gx-xl-4 g-3">
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
+                  {products.map((product, index) => (
+         <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
                     <div className="shop-card style-1">
                       <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/1.png" alt="image" />
+                        <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_400,h_400/imgProduct/IMG/${product.productThumbnail}`} alt="image" />
                         <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
+                         <div
+                  className="btn btn-secondary btn-md btn-rounded"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                   setSelectedProduct(product);
+                    setTimeout(() => {
+                      const modal = new window.bootstrap.Modal(
+                        document.getElementById('exampleModal')
+                      );
+                      modal.show();
+                    }, 100);
+                  }}
+                >
+                  <i className="fa-solid fa-eye d-md-none d-block" />
+                  <span className="d-md-block d-none" >Quick View</span>
+                </div>
+
                           <div className="btn btn-primary meta-icon dz-wishicon">
                             <i className="icon feather icon-heart dz-heart" />
                             <i className="icon feather icon-heart-on dz-heart-fill" />
@@ -1774,440 +1928,24 @@ function ShopFiltersTopBar() {
                       </div>
                       <div className="dz-content">
                         <h5 className="title">
-                          <a href="shop-list.html">
-                            Cozy Knit Cardigan Sweater
-                          </a>
+                         <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>
+                  {product.productTitle}
+                </a>
                         </h5>
-                        <h5 className="price">$80</h5>
+                        <h5 className="price"> ${(
+                      product.productPrice -
+                      product.productPrice * product.percentDiscount / 100
+                    ).toFixed(2)}</h5>
                       </div>
                       <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
+                        <span className="badge ">                      Get {product.percentDiscount}% Off
+</span>
                       </div>
                     </div>
                   </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/2.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Sophisticated Swagger Suit
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/3.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Classic Denim Skinny Jeans
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/4.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Athletic Mesh Sports Leggings
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/5.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Vintage Denim Overalls Shorts
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/6.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">Satin Wrap Party Blouse</a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/7.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">Plaid Wool Winter Coat</a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/8.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Water-Resistant Windbreaker Jacket
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/9.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">Comfy Lounge Jogger Pants</a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/10.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Stylish Fedora Hat Collection
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/11.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Suede Ankle Booties Collection
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-xl-3 col-lg-4 col-md-4 col-sm-6 m-md-b15 m-b30">
-                    <div className="shop-card style-1">
-                      <div className="dz-media">
-                        <img src="../../assets/user/images/shop/product/12.png" alt="image" />
-                        <div className="shop-meta">
-                          <a
-                            href="javascript:void(0);"
-                            className="btn btn-secondary btn-md btn-rounded"
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                          >
-                            <i className="fa-solid fa-eye d-md-none d-block" />
-                            <span className="d-md-block d-none">
-                              Quick View
-                            </span>
-                          </a>
-                          <div className="btn btn-primary meta-icon dz-wishicon">
-                            <i className="icon feather icon-heart dz-heart" />
-                            <i className="icon feather icon-heart-on dz-heart-fill" />
-                          </div>
-                          <div className="btn btn-primary meta-icon dz-carticon">
-                            <i className="flaticon flaticon-basket" />
-                            <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="dz-content">
-                        <h5 className="title">
-                          <a href="shop-list.html">
-                            Hiking Outdoor Gear Collection
-                          </a>
-                        </h5>
-                        <h5 className="price">$80</h5>
-                      </div>
-                      <div className="product-tag">
-                        <span className="badge ">Get 20% Off</span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
+         
+              
                 </div>
               </div>
               <div
@@ -2620,35 +2358,385 @@ function ShopFiltersTopBar() {
               </div>
             </div>
           </div>
-          <div className="row page mt-0">
+        <div className="row page mt-0">
             <div className="col-md-6">
               <p className="page-text">Showing 1–5 Of 50 Results</p>
             </div>
-            <div className="col-md-6">
-              <nav aria-label="Blog Pagination">
-                <ul className="pagination style-1">
-                  <li className="page-item">
-                    <a className="page-link active" href="javascript:void(0);">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="javascript:void(0);">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="javascript:void(0);">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link next" href="javascript:void(0);">
-                      Next
-                    </a>
-                  </li>
-                </ul>
-              </nav>
+          <div className="col-md-6">
+        <nav aria-label="Product Pagination">
+          <ul className="pagination style-1">
+            {/* Nút Previous */}
+            <li className="page-item">
+              <a
+                className={`page-link ${currentPage === 0 ? 'disabled' : ''}`}
+               
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </a>
+            </li>
+            {/* Các số trang trong phạm vi */}
+            {getPageRange().map((page) => (
+              <li className="page-item" key={page}>
+                <a
+                  className={`page-link ${page === currentPage ? 'active' : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page + 1}
+                </a>
+              </li>
+            ))}
+            {/* Nút Next */}
+            <li className="page-item">
+              <a
+                className={`page-link next ${currentPage >= totalPages - 1 ? 'disabled' : ''}`}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+        <div className="modal quick-view-modal fade"
+      id="exampleModal"
+      tabIndex={-1}
+      aria-hidden="true"
+    >
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content">
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            <i className="icon feather icon-x" />
+          </button>
+          <div className="modal-body">
+            <div className="row g-xl-4 g-3">
+              <div className="col-xl-6 col-md-6">
+                <div className="dz-product-detail mb-0">
+                  <div className="swiper-btn-center-lr">
+                    <div className="swiper quick-modal-swiper2">
+                      <div className="swiper-wrapper" id="lightgallery">
+                        
+                        {selectedProduct !== null && (
+         <div className="swiper-slide">
+                          <div className="dz-media DZoomImage">
+                            <a
+                              className="mfp-link lg-item"
+                              href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+                              data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+                            >
+                              <i className="feather icon-maximize dz-maximize top-right" />
+                            </a>
+                            <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`} alt="image" />
+                          </div>
+                        </div>
+    )}
+                      </div>
+                    </div>
+                    <div className="swiper quick-modal-swiper thumb-swiper-lg thumb-sm swiper-vertical">
+                      <div className="swiper-wrapper">
+                             {selectedProduct !== null && (
+     <div className="swiper-slide">
+                          <img
+                            src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+                            alt="image"
+                          />
+                        </div>
+                             )}                    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="col-xl-6 col-md-6">
+                <div className="dz-product-detail style-2 ps-xl-3 ps-0 pt-2 mb-0">
+                  
+                  <div className="dz-content">
+               
+    
+                    <div className="dz-content-footer">
+                      <div className="dz-content-start">
+                                                    {selectedProduct !== null && (
+    
+                        <span className="badge bg-secondary mb-2">
+                          SALE {selectedProduct.percentDiscount}% Off
+                        </span>
+                           )}
+                        <h4 className="title mb-1">
+                                {selectedProduct !== null && (
+                          <a href=  {`/user/productstructure/ProductDetail?asin=${selectedProduct.asin}`}>{selectedProduct.productTitle}</a>
+                                )}
+                        </h4>
+                        <div className="review-num">
+                          <ul className="dz-rating me-2">
+                            <li className="star-fill">
+                              <i className="flaticon-star-1" />
+                            </li>
+                            <li className="star-fill">
+                              <i className="flaticon-star-1" />
+                            </li>
+                            <li className="star-fill">
+                              <i className="flaticon-star-1" />
+                            </li>
+                            <li>
+                              <i className="flaticon-star-1" />
+                            </li>
+                            <li>
+                              <i className="flaticon-star-1" />
+                            </li>
+                          </ul>
+                          <span className="text-secondary me-2">4.7 Rating</span>
+                          <a href="javascript:void(0);">(5 customer reviews)</a>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="para-text">
+                        {selectedProduct !== null && (
+                          selectedProduct.productTitle
+             )}
+                    </p>
+                    <div className="meta-content m-b20 d-flex align-items-end">
+                      <div className="me-3">
+                        <span className="form-label">Price</span>
+                                                {selectedProduct !== null && (
+    
+                                        <span className="price">${priceDiscount} <del>${(selectedProduct.productPrice * quantity).toFixed(2)}</del></span>
+    
+                                                )}
+                      </div>
+           <div className="btn-quantity light me-0">
+        <label className="form-label fw-bold">Quantity</label>
+        <div className="input-group">
+    <button
+      className="btn btn-dark rounded-circle p-0"
+      style={{
+        width: '40px',
+        height: '40px',
+        backgroundColor: '#000',
+        color: '#fff',
+        border: 'none',
+        minWidth: 'unset',      // ép bỏ min-width của Bootstrap
+        flex: '0 0 auto'         // ngăn input-group ép dãn
+      }}
+      onClick={() => setQuantity(q => Math.max(1, q - 1))}
+    >
+      -
+    </button>
+          <input
+            type="text"
+            min="1"
+            value={quantity}
+            onChange={handleChange}
+            className="form-control text-center"
+          />
+          <button
+      className="btn btn-dark rounded-circle p-0"
+      style={{
+        width: '40px',
+        height: '40px',
+        backgroundColor: '#000',
+        color: '#fff',
+        border: 'none',
+        minWidth: 'unset',      // ép bỏ min-width của Bootstrap
+        flex: '0 0 auto'         // ngăn input-group ép dãn
+      }}
+      onClick={() => setQuantity(q => Math.max(1, q + 1))}
+    >+</button>
+        </div>
+      </div>
+                    </div>
+                    {/* --- CHỌN MÀU --- */}
+    {selectedProduct?.colorAsin && (() => {
+      let colors = [];
+      try {
+        colors = JSON.parse(selectedProduct.colorAsin);
+      } catch (error) {
+        console.error("❌ Lỗi parse colorAsin:", error);
+      }
+    
+      return colors.length > 0 ? (
+        <div className="mb-3">
+          <label className="form-label fw-bold">Color</label>
+          <div className="d-flex align-items-center flex-wrap gap-2">
+            {colors.map((color, index) => {
+              const inputId = `colorRadioModal-${index}`;
+              return (
+                <div className="form-check" key={index}>
+                  <input
+                    type="radio"
+                    className="btn-check"
+                    name="colorRadioModal"
+                    id={inputId}
+                    checked={selectedColor?.name_color === color.name_color}
+                    onChange={() => setSelectedColor(color)}
+                  />
+                  <label
+                    className="btn"
+                    htmlFor={inputId}
+                    style={{
+                      backgroundColor: color.code_color,
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      border: selectedColor?.name_color === color.name_color ? '2px solid black' : '1px solid #ccc',
+                      cursor: 'pointer',
+                      boxShadow: selectedColor?.name_color === color.name_color ? '0 0 3px rgba(0,0,0,0.5)' : 'none',
+                      padding: 0,
+                    }}
+                    title={color.name_color}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <p className="form-label mt-1">Selected: {selectedColor?.name_color || 'None'}</p>
+        </div>
+      ) : null;
+    })()}
+    
+    {/* --- CHỌN SIZE --- */}
+    {selectedProduct?.sizes?.length > 0 && (
+      <div className="mb-3">
+        <label className="form-label fw-bold">Size</label>
+        <div className="btn-group flex-wrap" role="group">
+          {selectedProduct.sizes.map((size, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`btn btn-outline-dark m-1 ${selectedSize === size.sizeName ? 'active' : ''}`}
+              onClick={() => setSelectedSize(size.sizeName)}
+              style={{ minWidth: '60px' }}
+            >
+              {size.sizeName}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+                    <div className=" cart-btn">
+                      <button  onClick={addCart}
+                        className="btn btn-secondary text-uppercase"
+                      >
+                        Add To Cart
+                      </button>
+                      <button
+      className="btn btn-md btn-outline-secondary btn-icon"
+      onClick={() => handleToggleWishlist(selectedProduct.asin)}
+    >
+                        <svg
+                          width={19}
+                          height={17}
+                          viewBox="0 0 19 17"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M9.24805 16.9986C8.99179 16.9986 8.74474 16.9058 8.5522 16.7371C7.82504 16.1013 7.12398 15.5038 6.50545 14.9767L6.50229 14.974C4.68886 13.4286 3.12289 12.094 2.03333 10.7794C0.815353 9.30968 0.248047 7.9162 0.248047 6.39391C0.248047 4.91487 0.755203 3.55037 1.67599 2.55157C2.60777 1.54097 3.88631 0.984375 5.27649 0.984375C6.31552 0.984375 7.26707 1.31287 8.10464 1.96065C8.52734 2.28763 8.91049 2.68781 9.24805 3.15459C9.58574 2.68781 9.96875 2.28763 10.3916 1.96065C11.2292 1.31287 12.1807 0.984375 13.2197 0.984375C14.6098 0.984375 15.8885 1.54097 16.8202 2.55157C17.741 3.55037 18.248 4.91487 18.248 6.39391C18.248 7.9162 17.6809 9.30968 16.4629 10.7792C15.3733 12.094 13.8075 13.4285 11.9944 14.9737C11.3747 15.5016 10.6726 16.1001 9.94376 16.7374C9.75136 16.9058 9.50417 16.9986 9.24805 16.9986ZM5.27649 2.03879C4.18431 2.03879 3.18098 2.47467 2.45108 3.26624C1.71033 4.06975 1.30232 5.18047 1.30232 6.39391C1.30232 7.67422 1.77817 8.81927 2.84508 10.1066C3.87628 11.3509 5.41011 12.658 7.18605 14.1715L7.18935 14.1743C7.81021 14.7034 8.51402 15.3033 9.24654 15.9438C9.98344 15.302 10.6884 14.7012 11.3105 14.1713C13.0863 12.6578 14.6199 11.3509 15.6512 10.1066C16.7179 8.81927 17.1938 7.67422 17.1938 6.39391C17.1938 5.18047 16.7858 4.06975 16.045 3.26624C15.3152 2.47467 14.3118 2.03879 13.2197 2.03879C12.4197 2.03879 11.6851 2.29312 11.0365 2.79465C10.4585 3.24179 10.0558 3.80704 9.81975 4.20255C9.69835 4.40593 9.48466 4.52733 9.24805 4.52733C9.01143 4.52733 8.79774 4.40593 8.67635 4.20255C8.44041 3.80704 8.03777 3.24179 7.45961 2.79465C6.811 2.29312 6.07643 2.03879 5.27649 2.03879Z"
+                            fill="black"
+                          />
+                        </svg>
+                        Add To Wishlist
+                      </button>
+                    </div>
+                    <div className="dz-info mb-0">
+                                    {selectedProduct !== null && (
+    
+                      <ul><li><strong>SKU:</strong></li><li>{selectedProduct.asin}</li></ul>
+                          )}
+                      <ul>
+                        <li>
+                          <strong>Categories:</strong>
+                        </li>
+            {selectedProduct !== null && (
+      <>
+        <li>
+          <a href={`/user/shop/shopWithCategory?salesRank=${selectedProduct.salesRank}`}>
+            {selectedProduct.salesRank}
+            {selectedProduct.productType && ','}
+          </a>
+        </li>
+    
+        {selectedProduct.productType && (
+          <li>
+            <a href={`/user/shop/shopWithCategory?productType=${selectedProduct.productType}`}>{selectedProduct.productType}</a>
+          </li>
+        )}
+      </>
+    )}
+                      </ul>
+                      <ul>
+                        <li>
+                          <strong>Tags:</strong>
+                        </li>
+                  {Object.entries(tags).map(([tag, count], index, arr) => (
+      <li key={tag}>
+        <a href="shop-standard.html">
+          {tag}{index < arr.length - 1 ? ', ' : ''}
+        </a>
+      </li>
+    ))}
+                      </ul>
+                      <div className="dz-social-icon">
+                        <ul>
+                          <li>
+                            <a
+                              target="_blank"
+                              className="text-dark"
+                              href="https://www.facebook.com/dexignzone"
+                            >
+                              <i className="fab fa-facebook-f" />
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              target="_blank"
+                              className="text-dark"
+                              href="https://twitter.com/dexignzones"
+                            >
+                              <i className="fab fa-twitter" />
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              target="_blank"
+                              className="text-dark"
+                              href="https://www.youtube.com/@dexignzone1723"
+                            >
+                              <i className="fa-brands fa-youtube" />
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              target="_blank"
+                              className="text-dark"
+                              href="https://www.linkedin.com/showcase/3686700/admin/"
+                            >
+                              <i className="fa-brands fa-linkedin-in" />
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              target="_blank"
+                              className="text-dark"
+                              href="https://www.instagram.com/dexignzone/"
+                            >
+                              <i className="fab fa-instagram" />
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2659,7 +2747,6 @@ function ShopFiltersTopBar() {
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
-        <QuickViewModal />
       </div>
     </>
   );

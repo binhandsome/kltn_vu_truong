@@ -31,8 +31,10 @@ function ShopStandard({products }) {
   const [maxValue, setMaxValue] = useState(400);
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedColor, setSelectedColor] = useState(null);
-const [selectedSize, setSelectedSize] = useState(null);
-  // Xu li viec mo productdetail icon 
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [searchAsin, setSearchAsin] = useState([]);
+
+
   useEffect(() => {
     const modalEl = document.getElementById('exampleModal');
   
@@ -41,14 +43,20 @@ const [selectedSize, setSelectedSize] = useState(null);
       const backdrop = document.querySelector('.modal-backdrop');
       if (backdrop) backdrop.remove();
     };
-  
     modalEl?.addEventListener('hidden.bs.modal', handleHidden);
-  
     return () => {
       modalEl?.removeEventListener('hidden.bs.modal', handleHidden);
     };
   }, []);
-  
+const toggleClickSearchAsin = (asin) => {
+  setSearchAsin((prev) => {
+    if (!prev.includes(asin)) {
+      return [...prev, asin];
+    }
+    return prev;
+  });
+};
+
 
 useEffect(() => {
   const interval = setInterval(() => {
@@ -125,9 +133,6 @@ const fetchProductsData = useCallback(
     },
     [] // Không cần dependencies vì các state được truyền trực tiếp qua tham số
   );
-
-
-
   const debouncedSetKeyword = useCallback(
     debounce((value) => {
       setKeyword(value);
@@ -135,7 +140,6 @@ const fetchProductsData = useCallback(
     }, 500),
     []
   );
-
 const handleInputChangeSearch = (e) => {
   const value = e.target.value;
   setInputValue(value);         // cập nhật tức thì cho input
@@ -144,6 +148,17 @@ const handleInputChangeSearch = (e) => {
   useEffect(() => {
     fetchProductsData(currentPage, pageSize, keyword, minValue, maxValue, selectedTags);
   }, [currentPage, pageSize, keyword, minValue, maxValue, selectedTags, fetchProductsData]);
+  const handleSearchAsin = async (asin) => {
+    const accessToken = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.post('http://localhost:8088/api/recommend/saveRecommendHistory', {
+           accessToken: accessToken,
+          asin: asin,
+      });
+    }catch (error) {
+      console.error(error);
+    }
+  }
 
   const getAllCategories = async () => {
     try {
@@ -577,7 +592,22 @@ const handleInputChangeSearch = (e) => {
         <div className="col-80 col-xl-9">
           <div className="filter-wrapper">
             <div className="filter-left-area">
-              <span>Showing 1–5 Of 50 Results</span>
+  <a
+    href="/user/shop/shopJustForYou"
+    style={{
+      display: 'inline-block',
+      backgroundColor: '#007bff',
+      color: 'white',
+      padding: '10px 20px',
+      borderRadius: '8px',
+      textDecoration: 'none',
+      fontWeight: 500,
+      transition: 'background-color 0.3s ease',
+    }}
+  >
+    <span role="img" aria-label="shopping">🛍️</span> Go To Shop For You
+  </a>
+        
             </div>
             <div className="filter-right-area">
               <a href="javascript:void(0);" className="panel-btn me-2">
@@ -1058,7 +1088,8 @@ const handleInputChangeSearch = (e) => {
                   className="btn btn-secondary btn-md btn-rounded"
                   style={{ cursor: 'pointer' }}
                   onClick={() => {
-                    setSelectedProduct(product);
+                   setSelectedProduct(product);
+                   handleSearchAsin(product.asin);
                     setTimeout(() => {
                       const modal = new window.bootstrap.Modal(
                         document.getElementById('exampleModal')
@@ -1068,7 +1099,7 @@ const handleInputChangeSearch = (e) => {
                   }}
                 >
                   <i className="fa-solid fa-eye d-md-none d-block" />
-                  <span className="d-md-block d-none">Quick View</span>
+                  <span className="d-md-block d-none" >Quick View</span>
                 </div>
 
                 {/* Wishlist + Cart icons */}
