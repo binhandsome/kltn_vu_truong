@@ -94,43 +94,6 @@ public class SearchServiceImpl implements SearchService {
                 .id(productDto.getProductId().toString()).document(productDto));
         elasticsearchClient.index(request);
     }
-
-
-//    public Page<ProductDocument> searchProductByTitle(String keyword, Pageable pageable) {
-//        // lowercase keyword cho wildcard
-//        String loweredKeyword = keyword.toLowerCase();
-//
-//        Query esQuery = Query.of(q -> q.bool(b -> b
-//                .should(s -> s.match(m -> m
-//                        .field("productTitle")
-//                        .query(keyword)
-//                        .fuzziness("AUTO")
-//                ))
-//                .should(s -> s.wildcard(w -> w
-//                        .field("productTitle.keyword")
-//                        .value("*" + loweredKeyword + "*")
-//                ))
-//                .minimumShouldMatch("1")
-//        ));
-//
-//        org.springframework.data.elasticsearch.core.query.Query springQuery = NativeQuery.builder()
-//                .withQuery(esQuery)
-//                .withPageable(pageable)
-//                .build();
-//
-//        SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
-//
-//        List<ProductDocument> results = hits.getSearchHits()
-//                .stream()
-//                .map(SearchHit::getContent)
-//                .toList();
-//
-//        return new PageImpl<>(results, pageable, hits.getTotalHits());
-//    }
-//
-//    public Page<ProductDocument> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
-//      return productSearchRepository.findByProductPriceBetween(minPrice, maxPrice, pageable);
-//    }
     public Page<ProductDocument> searchByKeywordAndPrice(
             String keyword,
             BigDecimal minPrice,

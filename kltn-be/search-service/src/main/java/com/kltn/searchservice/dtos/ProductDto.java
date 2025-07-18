@@ -15,6 +15,7 @@ public class ProductDto {
     private String salesRank;
     private String productType;
     private Double percentDiscount;
+    private Integer stockQuantity;
     private String tags;
 
     public String getTags() {
@@ -87,5 +88,13 @@ public class ProductDto {
 
     public void setProductPrice(BigDecimal productPrice) {
         this.productPrice = productPrice;
+    }
+
+    public Integer getStockQuantity() {
+        return stockQuantity;
+    }
+
+    public void setStock_quantity(Integer stockQuantity) {
+        this.stockQuantity = stockQuantity;
     }
 }

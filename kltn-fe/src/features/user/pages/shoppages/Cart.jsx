@@ -4,12 +4,14 @@ import ScrollTopButton from '../../layout/ScrollTopButton';
 import QuickViewModal from '../../components/home/QuickViewModal';
 import WOW from 'wowjs';
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Cart() {
 	const [listCart, setListCart] = useState({ items: [], totalPrice: 0 });
   const [hasBgClass, setHasBgClass] = useState(true);
   const [quantityMap, setQuantityMap] = useState({});
-  const [selectedItemsCart, setSelectedItemsCart] = useState([]);
+  const [selectedItemsCart, setSelectedItemsCart] = useState([]);  
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (hasBgClass) {
@@ -64,25 +66,32 @@ function Cart() {
       const mergedItems = cartItems.map(item => {
         const product = productResponse.data.find(p => p.asin === item.asin);
         if (!product) return item;
-  
+      
         const unitPrice = product.productPrice;
         const discount = product.percentDiscount || 0;
         const discountedUnitPrice = unitPrice - (unitPrice * discount / 100);
-  
+      
+        const hasSize = product?.sizes?.length > 0;
+        const hasColor = product?.colorAsin && JSON.parse(product.colorAsin).length > 0;
+      
         return {
           ...item,
           ...product,
           unitPrice,
           discountedUnitPrice,
           size: item.size,
-        nameColor: item.nameColor, 
+          nameColor: item.nameColor,
+          hasSize,
+          hasColor, // ✅ THÊM VÀO ĐÂY
         };
       });
+      
   
       setListCart({
         ...cartResponse.data,
         items: mergedItems,
       });
+      console.log("Merged items with size/color flags:", mergedItems);
   
       const map = {};
       mergedItems.forEach(item => {
@@ -414,9 +423,35 @@ function Cart() {
                 </tr>
               </tbody>
             </table>
-            <a href="#" onClick={() => window.location.href = '/user/shoppages/checkout'} className="btn btn-secondary w-100">
-              CHECK OUT
-            </a>
+            <button
+  onClick={() => {
+    if (selectedItemsCart.length === 0) {
+      alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
+      return;
+    }
+
+    const invalidItems = listCart.items.filter(item =>
+      selectedItemsCart.includes(item.asin) &&
+      (
+        (item.hasSize && !item.size) || 
+        (item.hasColor && !item.nameColor)
+      )
+    );
+
+    if (invalidItems.length > 0) {
+      alert("Vui lòng chọn đúng size và màu sắc cho các sản phẩm yêu cầu.");
+      return;
+    }
+
+    navigate('/user/shoppages/checkout', {
+      state: { selectedItemsCart }
+    });
+  }}
+  className="btn btn-secondary w-100"
+>
+  CHECK OUT
+</button>
+
             <a href="#" onClick={() => window.location.href = '/user/shoppages/shopWithCategory'} className="btn btn-secondary w-100">
               PLACE ORDER
             </a>

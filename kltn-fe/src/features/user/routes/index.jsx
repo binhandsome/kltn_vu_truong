@@ -39,6 +39,8 @@ import ShopSideBar from '../pages/shop/ShopSideBar';
 import ShopStyle1 from '../pages/shop/ShopStyle1';
 import ShopStyle2 from '../pages/shop/ShopStyle2';
 import ShopStandard from '../pages/shop/ShopStandard';
+import ChangePassword from '../pages/auth/ChangePassword';
+import PaymentReturn from '../pages/shoppages/PaymentReturn';
 
 const UserRoutes = () => {
   return (
@@ -48,6 +50,7 @@ const UserRoutes = () => {
         <Route path="auth/login" element={<Login />} />
         <Route path="auth/registration" element={<Registration />} />
         <Route path="auth/forgetPassword" element={<ForgetPassword />} />
+        <Route path="auth/changePassword" element={<ChangePassword />} />
         <Route path="productstructure/productDetail" element={<ProductDetail />} />
         <Route path="shop/shopWithCategory" element={<ShopWithCategory />} />
         <Route path="myaccount/address" element={<Address />} />
@@ -71,6 +74,7 @@ const UserRoutes = () => {
         <Route path="shoppages/compare" element={<Compare />} />
         <Route path="shoppages/orderTracking" element={<OrderTracking />} />
         <Route path="shoppages/wishList" element={<WishList />} />
+        <Route path="shoppages/paymentReturn" element={<PaymentReturn />} />
         <Route path="blog/blogdetails/postStandard" element={<PostStandard />} />
         <Route path="portfolio/portfolioDetails" element={<PortfolioDetails />} />
         <Route path="portfolio/portfolioTiles" element={<PortfolioTiles />} />

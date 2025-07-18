@@ -1,10 +1,14 @@
 package com.kltnbe.userservice.dtos.req;
 
+import java.util.Date;
+
 public class RegisterRequest {
     private String username;
     private String password;
     private String email;
     private String otp; // thêm dòng này
+    private String confirmPassword;
+    private Date dateOfBirth;
 
     // Getters và Setters
     public String getUsername() {
@@ -37,5 +41,21 @@ public class RegisterRequest {
 
     public void setOtp(String otp) {
         this.otp = otp;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 }

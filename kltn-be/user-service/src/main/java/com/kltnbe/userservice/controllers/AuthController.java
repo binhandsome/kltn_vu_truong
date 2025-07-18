@@ -20,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -178,38 +179,6 @@ public class AuthController {
         return ResponseEntity.ok(authService.changePassword(userDetails.getUsername(), request));
     }
 
-//
-//    @PostMapping("/verify-otp")
-//    public String verifyOtp(@RequestParam String username, @RequestParam String otp) {
-//        return authService.verifyOtp(username, otp);
-//    }
-//
-//    @PostMapping("/register-seller")
-//    public String registerSeller(@RequestBody RegisterRequest request) {
-//        return authService.registerSeller(request);
-//    }
-//
-//    @PostMapping("/change-password")
-//    public String changePassword(@RequestBody PasswordChangeRequest request) {
-//        return authService.changePassword(request);
-//    }
-//
-//    @PostMapping("/forgot-password")
-//    public String forgotPassword(@RequestParam String email) {
-//        return authService.sendOtpToResetPassword(email);
-//    }
-//
-//    @PostMapping("/reset-password")
-//    public String resetPassword(@RequestParam String email,
-//                                @RequestParam String otp,
-//                                @RequestParam String newPassword) {
-//        return authService.resetPasswordByOtp(email, otp, newPassword);
-//    }
-//@GetMapping("/findUserById")
-//public Optional<User> findUserById(@RequestParam Long idUser) {
-//    return userRepository.findById(idUser); // có sẵn trong JpaRepository
-//}
-
     @PutMapping("/profile")
     public ResponseEntity<String> updateProfile(@RequestBody UpdateProfileRequest request,
                                                 @RequestHeader("Authorization") String authHeader) {
@@ -221,4 +190,13 @@ public class AuthController {
         String msg = userService.updateUserProfile(username, request);
         return ResponseEntity.ok(msg);
     }
+    @PostMapping("/checkEmailExists")
+    public ResponseEntity<Map<String, Boolean>> checkEmailExists(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        boolean exists = authService.emailExists(email);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", exists);
+        return ResponseEntity.ok(response);
+    }
+
 }

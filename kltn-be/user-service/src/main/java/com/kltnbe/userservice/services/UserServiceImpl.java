@@ -1,6 +1,7 @@
 package com.kltnbe.userservice.services;
 
 import com.kltnbe.userservice.dtos.req.AddressRequest;
+import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
 import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
@@ -161,5 +162,73 @@ public class UserServiceImpl implements UserService{
         userRepository.save(user);
         return "Cập nhật thông tin thành công";
     }
+    @Override
+    public String deleteAddress(Long addressId, String accessToken) {
+        // Bước 1: Kiểm tra token hợp lệ
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new IllegalArgumentException("Access token is missing or empty");
+        }
+
+        String username;
+        try {
+            username = jwtUtil.getUsernameFromToken(accessToken);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid or expired token", e);
+        }
+
+        // Bước 2: Xác thực người dùng
+        Optional<Auth> auth = authRepository.findByUsername(username);
+        if (auth.isEmpty()) {
+            throw new RuntimeException("Auth not found for username: " + username);
+        }
+
+        User user = auth.get().getUser();
+
+        // Bước 3: Tìm địa chỉ và kiểm tra quyền sở hữu
+        Optional<Address> addressOptional = addressRepository.findById(addressId);
+        if (addressOptional.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy địa chỉ với ID: " + addressId);
+        }
+
+        Address address = addressOptional.get();
+
+        if (!address.getUser().getUserId().equals(user.getUserId())) {
+            throw new RuntimeException("Bạn không có quyền xoá địa chỉ này");
+        }
+
+        // Bước 4: Xoá địa chỉ
+        addressRepository.delete(address);
+
+        return "Xoá địa chỉ thành công";
+    }
+    @Override
+    public Long createGuestAddressFromRequest(GuestAddressRequest request) {
+        // Kiểm tra thông tin đầu vào
+        if (request.getRecipientName() == null || request.getRecipientName().isBlank()
+                || request.getRecipientPhone() == null || request.getRecipientPhone().isBlank()
+                || request.getDeliveryAddress() == null || request.getDeliveryAddress().isBlank()) {
+            throw new IllegalArgumentException("Tên, số điện thoại và địa chỉ giao hàng là bắt buộc");
+        }
+
+        try {
+            Address address = Address.builder()
+                    .recipientName(request.getRecipientName())
+                    .recipientPhone(request.getRecipientPhone())
+                    .recipientEmail(request.getRecipientEmail())
+                    .deliveryAddress(request.getDeliveryAddress())
+                    .addressDetails("") // nếu cần có thêm chi tiết địa chỉ
+                    .isPrimaryAddress(0) // địa chỉ của khách vãng lai không cần là chính
+                    .user(null) // KHÔNG liên kết với user
+                    .build();
+
+            addressRepository.save(address);
+            return address.getAddressId();
+        } catch (Exception e) {
+            log.error("Lỗi khi lưu địa chỉ khách vãng lai: {}", e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi lưu địa chỉ khách");
+        }
+    }
+
+
 
 }

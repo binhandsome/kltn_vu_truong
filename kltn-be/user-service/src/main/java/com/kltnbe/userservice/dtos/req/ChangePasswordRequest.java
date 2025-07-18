@@ -3,8 +3,16 @@ package com.kltnbe.userservice.dtos.req;
 public class ChangePasswordRequest {
     private String currentPassword;
     private String newPassword;
+    private String confirmPassword;
 
-    // Getters và Setters
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
     public String getCurrentPassword() {
         return currentPassword;
     }

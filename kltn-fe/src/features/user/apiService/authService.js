@@ -161,3 +161,47 @@ export const getProfile = async () => {
 
   return await res.json();
 };
+
+/* ------------------ KIỂM TRA EMAIL CÓ TỒN TẠI ------------------ */
+export const checkEmailExists = async (email) => {
+  try {
+    const res = await fetch(`${API_URL}/checkEmailExists`, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ email }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Không thể kiểm tra email');
+    }
+
+    const data = await res.json(); // Trả về { exists: true | false }
+    return data.exists;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi mạng khi kiểm tra email');
+  }
+};
+export const changePassword = async (currentPassword, newPassword) => {
+  const accessToken = localStorage.getItem('accessToken');
+
+  const res = await fetch(`${API_URL}/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      currentPassword,
+      newPassword,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Không thể đổi mật khẩu');
+  }
+
+  return await res.text(); // "Đổi mật khẩu thành công"
+};
+
