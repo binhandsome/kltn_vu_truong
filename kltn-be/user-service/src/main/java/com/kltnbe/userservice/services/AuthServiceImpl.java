@@ -50,11 +50,25 @@ public class AuthServiceImpl implements AuthService {
         if (authRepository.findByEmail(request.getEmail()).isPresent()) {
             return "Email đã được sử dụng";
         }
-        // Kiểm tra OTP có được cung cấp không
+
+        // Kiểm tra OTP
         if (request.getOtp() == null || request.getOtp().isEmpty()) {
             return "Mã OTP là bắt buộc";
         }
-        // Gọi email-service để kiểm tra OTP
+
+        // Kiểm tra xác nhận mật khẩu
+        if (request.getConfirmPassword() == null || !request.getPassword().equals(request.getConfirmPassword())) {
+            return "Mật khẩu và xác nhận mật khẩu không trùng khớp";
+        }
+
+        // Validate độ mạnh mật khẩu
+        String password = request.getPassword();
+        String pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        if (!password.matches(pattern)) {
+            return "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt";
+        }
+
+        // Gọi email-service kiểm tra OTP
         RequestInfomation info = new RequestInfomation();
         info.setEmail(request.getEmail());
         info.setOtp(request.getOtp());
@@ -74,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
             Auth auth = new Auth();
             auth.setUsername(request.getUsername());
             auth.setEmail(request.getEmail());
-            auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            auth.setPasswordHash(passwordEncoder.encode(password));
             authRepository.save(auth);
 
             User user = new User();
@@ -82,6 +96,12 @@ public class AuthServiceImpl implements AuthService {
             user.setEmail(auth.getEmail());
             user.setCreatedAt(new Date());
             user.setUpdatedAt(new Date());
+
+            // Nếu có ngày sinh
+            if (request.getDateOfBirth() != null) {
+                user.setDateOfBirth(request.getDateOfBirth());
+            }
+
             userRepository.save(user);
             return "Đăng ký tài khoản thành công";
         } catch (FeignException.ServiceUnavailable e) {
@@ -92,6 +112,7 @@ public class AuthServiceImpl implements AuthService {
             return "Lỗi hệ thống khi đăng ký: " + e.getMessage();
         }
     }
+
 
 
     @Override
@@ -151,9 +172,32 @@ public class AuthServiceImpl implements AuthService {
             return "Mật khẩu hiện tại không chính xác";
         }
 
-        auth.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        // Kiểm tra confirmPassword
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return "Mật khẩu xác nhận không khớp với mật khẩu mới";
+        }
+
+        // Kiểm tra mật khẩu mới khác mật khẩu hiện tại
+        if (passwordEncoder.matches(request.getNewPassword(), auth.getPasswordHash())) {
+            return "Mật khẩu mới phải khác mật khẩu hiện tại";
+        }
+
+        // Kiểm tra độ mạnh mật khẩu
+        String password = request.getNewPassword();
+        String pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        if (!password.matches(pattern)) {
+            return "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt";
+        }
+
+        auth.setPasswordHash(passwordEncoder.encode(password));
         authRepository.save(auth);
         return "Đổi mật khẩu thành công";
+    }
+
+
+    @Override
+    public boolean emailExists(String email) {
+        return authRepository.findByEmail(email).isPresent();
     }
 
 }

@@ -123,77 +123,83 @@ try {
 
   
   
-    const getCartProduct = async () => {
-      const cartId = localStorage.getItem("cartId") || '';
-      const token = localStorage.getItem("accessToken") || '';
-      try {
-        const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
-          params: { cartId, token },
-        });
-    
-        const cartItems = cartResponse.data.items || [];
-        if (!cartItems.length) {
-          setListCart({
-            items: [],
-            totalQuantity: 0,
-            totalPrice: 0,
-            message: "Không có sản phẩm trong giỏ hàng"
-          });
-          return;
-        }
-    
-        const asins = cartItems.map(item => item.asin).join(',');
-        const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
-          params: { asins },
-        });
-    
-        const combined = cartItems.map(item => {
-          const product = productResponse.data.find(p => p.asin === item.asin);
-          if (!product) return null;
-        
-          const unitPrice = product.productPrice;
-          const discount = product.percentDiscount || 0;
-          const discountedUnitPrice = unitPrice - (unitPrice * discount / 100);
-          const itemTotalPrice = discountedUnitPrice.toFixed(2) * item.quantity;
-        
-          return {
-            ...item,
-            ...product,
-            unitPrice,
-            discountedUnitPrice,
-            itemTotalPrice,
-          };
-        }).filter(Boolean);
-        
-    
-        if (combined.length === 0) {
-          setListCart({
-            items: [],
-            totalQuantity: 0,
-            totalPrice: 0,
-            message: "Không có sản phẩm trong giỏ hàng"
-          });
-          return;
-        }
-    
-        const totalPrice = combined.reduce((sum, item) => sum + item.itemTotalPrice, 0);
+const getCartProduct = async () => {
+  const cartId = localStorage.getItem("cartId") || '';
+  const token = localStorage.getItem("accessToken") || '';
 
-const finalResponse = {
-  ...cartResponse.data,
-  items: combined,
-  totalPrice: parseFloat(totalPrice.toFixed(2)),
-};
-        setListCart(finalResponse);
-      } catch (error) {
-        console.log("Không thể lấy giỏ hàng:", error.response ? error.response.data : error.message);
-        setListCart({
-          items: [],
-          totalQuantity: 0,
-          totalPrice: 0,
-          message: "Không thể lấy giỏ hàng"
-        });
-      }
+  try {
+    const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
+      params: { cartId, token },
+    });
+
+    const cartItems = cartResponse.data.items || [];
+    if (!cartItems.length) {
+      setListCart({
+        items: [],
+        totalQuantity: 0,
+        totalPrice: 0,
+        message: "Không có sản phẩm trong giỏ hàng"
+      });
+      return;
+    }
+
+    const asins = cartItems.map(item => item.asin).join(',');
+    const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
+      params: { asins },
+    });
+
+    const combined = cartItems.map(item => {
+      const product = productResponse.data.find(p => p.asin === item.asin);
+      if (!product) return null;
+
+      const unitPrice = product.productPrice;
+      const discount = product.percentDiscount || 0;
+      const discountedUnitPrice = unitPrice - (unitPrice * discount / 100);
+
+      const hasSize = product?.sizes?.length > 0;
+      const hasColor = !!product?.colorAsin && JSON.parse(product.colorAsin).length > 0;
+
+      return {
+        ...product,              // product info
+        ...item,                 // item info from Redis (size, nameColor)
+        unitPrice,
+        discountedUnitPrice,
+        itemTotalPrice: +(discountedUnitPrice * item.quantity).toFixed(2),
+        hasSize,
+        hasColor,
+      };
+    }).filter(Boolean);
+
+    if (combined.length === 0) {
+      setListCart({
+        items: [],
+        totalQuantity: 0,
+        totalPrice: 0,
+        message: "Không có sản phẩm trong giỏ hàng"
+      });
+      return;
+    }
+
+    const totalPrice = combined.reduce((sum, item) => sum + item.itemTotalPrice, 0);
+
+    const finalResponse = {
+      ...cartResponse.data,
+      items: combined,
+      totalPrice: parseFloat(totalPrice.toFixed(2)),
     };
+
+    setListCart(finalResponse);
+  } catch (error) {
+    console.log("❌ Không thể lấy giỏ hàng:", error.response ? error.response.data : error.message);
+    setListCart({
+      items: [],
+      totalQuantity: 0,
+      totalPrice: 0,
+      message: "Không thể lấy giỏ hàng"
+    });
+  }
+};
+
    const updateCartItemQuantity = async (asin, quantity, unitPrice, size, nameColor) => {
   const cartId = localStorage.getItem("cartId") || '';
   const token = localStorage.getItem("accessToken") || '';
@@ -290,10 +296,36 @@ const finalResponse = {
         console.error("❌ Lỗi xoá khỏi wishlist:", err);
       }
     };
-      const handleCheckout = () =>  {
-		navigate('/user/shoppages/checkout', {state: {selectedItemsCart}});
-    console.log('selected' + selectedItemsCart);
-	  }
+    const handleCheckout = () => {
+      if (selectedItemsCart.length === 0) {
+        alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
+        return;
+      }
+    
+      const invalidItems = listCart.items.filter(item =>
+        selectedItemsCart.includes(item.asin) && (
+          (item.hasSize && !item.size) ||
+          (item.hasColor && !item.nameColor)
+        )
+      );
+    
+      if (invalidItems.length > 0) {
+        alert("Vui lòng chọn đúng size và màu sắc cho các sản phẩm yêu cầu.");
+        return;
+      }
+    
+      const cartId = localStorage.getItem("cartId") || null;
+    
+      console.log('selected:', selectedItemsCart, 'cartId:', cartId);
+    
+      navigate('/user/shoppages/checkout', {
+        state: {
+          selectedItemsCart,
+          cartId
+        }
+      });
+    };
+       
     return (
         <header className="site-header mo-left header">
   {/* Main Header */}
@@ -893,24 +925,20 @@ const finalResponse = {
             <ul className="header-right">
             {user ? (
   <>
+    {/* Nút mở Offcanvas */}
     <li className="nav-item login-link">
-      <a className="nav-link" href="/user/myaccount/dashboard">
-        {user.username}
-      </a>
-    </li>
-    <li className="nav-item">
-      <a
-        className="nav-link"
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          logout(); // gọi API logout
-          window.dispatchEvent(new Event('loggedOut')); // cập nhật state
-        }}
-      >
-        Logout
-      </a>
-    </li>
+  <button
+    className="nav-link btn btn-link p-0 d-flex align-items-center"
+    data-bs-toggle="offcanvas"
+    data-bs-target="#userOffcanvas"
+    aria-controls="userOffcanvas"
+    style={{ textDecoration: 'none', gap: '5px' }}
+  >
+    <i className="fa fa-user-circle" style={{ fontSize: '1.2rem' }}></i>
+    {user.username}
+  </button>
+</li>
+
   </>
 ) : (
   <li className="nav-item login-link">
@@ -918,9 +946,7 @@ const finalResponse = {
       Login / Register
     </a>
   </li>
-)}
-
-             
+)}             
               <li className="nav-item search-link">
                 <a
                   className="nav-link"
@@ -982,6 +1008,65 @@ const finalResponse = {
     </div>
   </div>
   {/* Main Header End */}
+  {/* Search Information */}
+  <div
+  className="offcanvas offcanvas-end"
+  tabIndex={-1}
+  id="userOffcanvas"
+  style={{ width: '320px', backgroundColor: '#fffdf7' }}
+>
+  <button
+    type="button"
+    className="btn-close"
+    data-bs-dismiss="offcanvas"
+    aria-label="Close"
+    style={{ margin: '1rem' }}
+  ></button>
+
+  <div className="offcanvas-body d-flex flex-column align-items-center px-3 pt-0">
+    <h5 className="fw-bold mt-2 mb-4">Tài khoản của bạn</h5>
+    <div className="w-100 d-flex flex-column gap-2">
+
+      <a
+        href="/user/myaccount/profile"
+        className="btn d-flex align-items-center justify-content-start px-3 py-3 bg-white text-start shadow-sm w-100"
+        style={{ border: 'none', borderRadius: '0', fontWeight: '500' }}
+      >
+        <i className="fa fa-user me-2"></i> Cập nhật thông tin
+      </a>
+
+      <a
+        href="/user/myaccount/orders"
+        className="btn d-flex align-items-center justify-content-start px-3 py-3 bg-white text-start shadow-sm w-100"
+        style={{ border: 'none', borderRadius: '0', fontWeight: '500' }}
+      >
+        <i className="fa fa-briefcase me-2"></i> Xem đơn hàng
+      </a>
+
+      <a
+        href="/user/auth/changePassword"
+        className="btn d-flex align-items-center justify-content-start px-3 py-3 bg-white text-start shadow-sm w-100"
+        style={{ border: 'none', borderRadius: '0', fontWeight: '500' }}
+      >
+        <i className="fa fa-lock me-2"></i> Đổi mật khẩu
+      </a>
+
+      <button
+        onClick={() => {
+          logout();
+          window.dispatchEvent(new Event('loggedOut'));
+          window.location.href = '/';
+        }}
+        className="btn d-flex align-items-center justify-content-start px-3 py-3 bg-white text-start text-danger shadow-sm w-100"
+        style={{ border: 'none', borderRadius: '0', fontWeight: '500' }}
+      >
+        <i className="fa fa-sign-out-alt me-2"></i> Đăng Xuất
+      </button>
+    </div>
+  </div>
+</div>
+
+  {/* Search Information */}
   {/* SearchBar */}
   <div
     className="dz-search-area dz-offcanvas offcanvas offcanvas-top"
@@ -1398,9 +1483,13 @@ readOnly
         </div>
       </div>
     </div>
-    <a href="" onClick={handleCheckout} className="btn btn-outline-secondary btn-block m-b20">
-      Checkout
-    </a>
+    <a
+  href=""
+  onClick={handleCheckout}
+  className="btn btn-outline-secondary btn-block m-b20"
+>
+  Checkout
+</a>
     <a onClick={() => window.location.href = '/user/shoppages/cart'} className="btn btn-secondary btn-block">
       View Cart
     </a>

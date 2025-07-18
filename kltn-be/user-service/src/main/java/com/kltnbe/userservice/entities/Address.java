@@ -24,7 +24,7 @@ public class Address {
     private Long addressId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     @JsonBackReference
     private User user;
 

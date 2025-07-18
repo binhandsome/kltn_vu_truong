@@ -12,4 +12,5 @@ public interface CartService {
     CartResponse updateItemQuantity(CartRequest cartRequest);
     CartResponse clearCart(CartRequest cartRequest);
     CartResponse getCartByID(String cartId, List<String> asin);
+    CartResponse removeMultipleItemsFromCart(CartRequest cartRequest, List<String> asinList);
 }

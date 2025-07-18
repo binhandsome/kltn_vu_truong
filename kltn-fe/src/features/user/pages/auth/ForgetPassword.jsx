@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import WOW from 'wowjs';
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import QuickViewModal from '../../components/home/QuickViewModal';
-import { requestOtpResetPassword, resetPassword } from '../../apiService/authService';
+import { requestOtpResetPassword, resetPassword,checkEmailExists} from '../../apiService/authService';
+
 import { useNavigate } from 'react-router-dom';
 
 function ForgetPassword() {
@@ -15,12 +16,26 @@ function ForgetPassword() {
   const [isOtpInputVisible, setIsOtpInputVisible] = useState(false);
   const [isSendingDisabled, setIsSendingDisabled] = useState(false);
   const [countdown, setCountdown] = useState(60);
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  
 
   const handleSendVerification = async () => {
+    // Kiểm tra định dạng email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage("❌ Email không hợp lệ. Vui lòng nhập đúng định dạng email.");
+      return;
+    }
+    const exists = await checkEmailExists(email);
+        if (!exists) {
+        setMessage("❌ Email này không tồn tại trong hệ thống.");
+        return;
+        }
+  
     setIsSendingDisabled(true);
     setIsOtpInputVisible(true);
     setCountdown(60);
-
+  
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
@@ -31,29 +46,45 @@ function ForgetPassword() {
         return prev - 1;
       });
     }, 1000);
-
+  
     try {
       await requestOtpResetPassword(email);
-      setMessage("Mã OTP đã được gửi đến email của bạn.");
+      setMessage("✅ Mã OTP đã được gửi đến email của bạn.");
     } catch (error) {
-      setMessage(`Lỗi gửi mã OTP: ${error.message}`);
+      setMessage(`❌ Lỗi gửi mã OTP: ${error.message}`);
     }
   };
+  
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
+  
+    const passwordErrors = [];
+    if (newPassword.length < 8) passwordErrors.push("Ít nhất 8 ký tự");
+    if (!/[A-Z]/.test(newPassword)) passwordErrors.push("Ít nhất 1 chữ hoa");
+    if (!/[a-z]/.test(newPassword)) passwordErrors.push("Ít nhất 1 chữ thường");
+    if (!/[0-9]/.test(newPassword)) passwordErrors.push("Ít nhất 1 số");
+    if (!/[!@#$%^&*(),.?\":{}|<>]/.test(newPassword)) passwordErrors.push("Ít nhất 1 ký tự đặc biệt");
+  
+    if (passwordErrors.length > 0) {
+      setMessage("❌ Mật khẩu không hợp lệ:\n" + passwordErrors.join('\n'));
+      return;
+    }
+  
+    if (newPassword !== confirmNewPassword) {
+      setMessage("❌ Mật khẩu xác nhận không khớp.");
+      return;
+    }
+  
     try {
       await resetPassword({ email, otp, newPassword });
-
-      // Lưu thông báo vào localStorage hoặc state toàn cục
       localStorage.setItem('resetSuccess', 'Đổi mật khẩu thành công');
-
-      // Chuyển về login page
       navigate('/user/auth/login');
     } catch (error) {
       setMessage(error.message || 'Có lỗi xảy ra khi đặt lại mật khẩu');
     }
   };
+  
 
   useEffect(() => {
     if (hasBgClass) document.body.classList.add('bg');
@@ -122,23 +153,39 @@ function ForgetPassword() {
                         />
                       </div>
                       <div className="m-b25">
-                        <label className="label-title">New Password</label>
-                        <input
-                          type="password"
-                          className="form-control"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Nhập mật khẩu mới"
-                          required
-                        />
-                      </div>
+  <label className="label-title">New Password</label>
+  <input
+    type="password"
+    className="form-control"
+    value={newPassword}
+    onChange={(e) => setNewPassword(e.target.value)}
+    placeholder="Nhập mật khẩu mới"
+    required
+  />
+</div>
+
+<div className="m-b25">
+  <label className="label-title">Confirm New Password</label>
+  <input
+    type="password"
+    className="form-control"
+    value={confirmNewPassword}
+    onChange={(e) => setConfirmNewPassword(e.target.value)}
+    placeholder="Xác nhận mật khẩu mới"
+    required
+  />
+</div>
                       <div className="text-center">
                         <button type="submit" className="btn btn-secondary">Reset Password</button>
                       </div>
                     </>
                   )}
                 </form>
-                {message && <p className="text-center mt-3">{message}</p>}
+                {message && (
+  <div className="alert alert-info text-center mt-3" style={{ whiteSpace: 'pre-wrap' }}>
+    {message}
+  </div>
+)}
               </div>
             </div>
           </div>
