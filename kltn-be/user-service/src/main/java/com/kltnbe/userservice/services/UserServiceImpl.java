@@ -228,7 +228,22 @@ public class UserServiceImpl implements UserService{
             throw new RuntimeException("Lỗi khi lưu địa chỉ khách");
         }
     }
+    @Override
+    public AddressInfo getAddressById(Long addressId) {
+        Optional<Address> addressOpt = addressRepository.findById(addressId);
+        if (addressOpt.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy địa chỉ với ID: " + addressId);
+        }
 
-
-
+        Address address = addressOpt.get();
+        return new AddressInfo(
+                address.getAddressId(),
+                address.getRecipientName(),
+                address.getRecipientEmail(),
+                address.getRecipientPhone(),
+                address.getAddressDetails(),
+                address.getDeliveryAddress(),
+                address.getIsPrimaryAddress()
+        );
+    }
 }

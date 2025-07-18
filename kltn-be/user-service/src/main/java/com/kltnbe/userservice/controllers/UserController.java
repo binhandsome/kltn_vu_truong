@@ -55,5 +55,10 @@ public class UserController {
             return ResponseEntity.internalServerError().body("Lỗi khi lưu địa chỉ khách");
         }
     }
+    @GetMapping("/address/{id}")
+    public ResponseEntity<?> getAddressById(@PathVariable Long id) {
+        AddressInfo address = userService.getAddressById(id);
+        return ResponseEntity.ok(address);
+    }
 
 }

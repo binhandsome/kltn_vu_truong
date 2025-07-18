@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.*;
 public interface CartClient {
     @GetMapping("/api/cart")
     CartResponse getCart(@RequestParam("username") String username);
-
-    @PostMapping("/api/cart/getCartItems")
-    CartResponse getCart(@RequestBody CartRequest request);
+    @GetMapping("/api/cart/getCart")
+    CartResponse getItemCart(@RequestParam(required = false) String token,
+                             @RequestParam(required = false) String cartId);
 
     @DeleteMapping("/api/cart/clearCart")
     void clearCart(@RequestBody CartRequest request);

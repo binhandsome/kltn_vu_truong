@@ -19,4 +19,5 @@ public interface UserService {
     String updateUserProfile(String username, UpdateProfileRequest request);
     String deleteAddress(Long addressId, String accessToken);
     Long createGuestAddressFromRequest(GuestAddressRequest request);
+    AddressInfo getAddressById(Long addressId);
 }

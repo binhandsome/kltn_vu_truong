@@ -1,12 +1,10 @@
 package com.kltnbe.orderservice.helpers;
 
+import com.kltnbe.orderservice.dtos.DeliveryAddressDTO;
 import com.kltnbe.orderservice.dtos.req.GuestAddressRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "user-service")
 public interface UserServiceProxy {
@@ -15,5 +13,8 @@ public interface UserServiceProxy {
 
     @PostMapping("/api/user/guest-address")
     ResponseEntity<Long> createGuestAddress(@RequestBody GuestAddressRequest request);
+
+    @GetMapping("/api/user/address/{id}")
+    DeliveryAddressDTO getAddressById(@PathVariable("id") Long id);
 
 }
