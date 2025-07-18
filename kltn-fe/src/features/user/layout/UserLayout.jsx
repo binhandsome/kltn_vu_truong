@@ -43,7 +43,7 @@ const jsFiles = [
   '/assets/user/vendor/nouislider/nouislider.min.js',
   '/assets/user/vendor/slick/slick.min.js',
   // Use CDN for UMD version to define global lightGallery and plugins
-    '/assets/user/vendor/lightgallery/dist/lightgallery.min.js',
+  '/assets/user/vendor/lightgallery/dist/lightgallery.min.js',
   '/assets/user/vendor/lightgallery/dist/plugins/thumbnail/lg-thumbnail.min.js',
   '/assets/user/vendor/lightgallery/dist/plugins/zoom/lg-zoom.min.js',
   'https://cdn.jsdelivr.net/npm/apexcharts',
@@ -105,6 +105,28 @@ const UserLayout = () => {
       if (element.swiper && typeof element.swiper.destroy === 'function') {
         return element.swiper;
       }
+
+      // Dynamically remove pagination config if el doesn't exist
+      if (options.pagination && options.pagination.el) {
+        if (!document.querySelector(options.pagination.el)) {
+          delete options.pagination;
+        }
+      }
+
+      // Dynamically remove navigation config if nextEl or prevEl doesn't exist
+      if (options.navigation) {
+        const next = document.querySelector(options.navigation.nextEl);
+        const prev = document.querySelector(options.navigation.prevEl);
+        if (!next || !prev) {
+          delete options.navigation;
+        }
+      }
+
+      // Dynamically remove thumbs if swiper is null (though already handled in calls)
+      if (options.thumbs && options.thumbs.swiper === null) {
+        delete options.thumbs;
+      }
+
       const swiperInstance = new window.Swiper(element, options);
       element.swiper = swiperInstance;
       return swiperInstance;
@@ -120,100 +142,100 @@ const UserLayout = () => {
         await loadScript(src);
       }
 
-      setTimeout(() => {
-        // Initialize .category-swiper if present
-        initSwiper('.category-swiper', {
-          slidesPerView: 4,
-          spaceBetween: 30,
-          loop: true,
-          autoplay: { delay: 2000, disableOnInteraction: false },
-          pagination: { el: '.swiper-pagination', clickable: true },
-          navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-          breakpoints: {
-            576: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-            992: { slidesPerView: 4 },
-            1200: { slidesPerView: 5 },
-            1500: { slidesPerView: 6 },
-            2000: { slidesPerView: 7 },
-          },
-        });
+      // Removed unnecessary setTimeout; useEffect runs after DOM render
+      // Initialize .category-swiper if present
+      initSwiper('.category-swiper', {
+        slidesPerView: 4,
+        spaceBetween: 30,
+        loop: true,
+        autoplay: { delay: 2000, disableOnInteraction: false },
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        breakpoints: {
+          576: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          992: { slidesPerView: 4 },
+          1200: { slidesPerView: 5 },
+          1500: { slidesPerView: 6 },
+          2000: { slidesPerView: 7 },
+        },
+      });
 
-        // Thumb config (horizontal to avoid stacking)
-        const thumbConfig = {
-          slidesPerView: 4,
-          spaceBetween:-8,
-          direction: 'horizontal',
-          loop: true,
-          freeMode: true,
-          watchSlidesProgress: true,
-          breakpoints: {
-            576: { slidesPerView: 3 },
-            768: { slidesPerView: 4 },
-            992: { direction: 'vertical', slidesPerView: 4 },
-          },
-        };
+      // Thumb config (horizontal to avoid stacking)
+      const thumbConfig = {
+        slidesPerView: 4,
+        spaceBetween: -8, // Assuming this is intentional for overlap; adjust if needed
+        direction: 'horizontal',
+        loop: true,
+        freeMode: true,
+        watchSlidesProgress: true,
+        breakpoints: {
+          576: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          992: { slidesPerView: 4 },
+          1200: { slidesPerView: 5 },
+          1500: { slidesPerView: 6 },
+          2000: { slidesPerView: 7 },
+        },
+      };
 
-        const mainConfig = {
-          slidesPerView: 1,
-          spaceBetween: 10,
-          loop: true,
-          zoomedSlideClass: 'swiper-slide-zoomed',
-          pagination: { el: '.swiper-pagination', clickable: true },
-          navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        };
+      const mainConfig = {
+        slidesPerView: 1,
+        spaceBetween: 10,
+        loop: true,
+        zoomedSlideClass: 'swiper-slide-zoomed',
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+      };
 
-        // Product Gallery Thumb and Main
-        const productThumb = initSwiper('.product-gallery-swiper.thumb-swiper-lg', thumbConfig);
-        if (productThumb) {
-          initSwiper('.product-gallery-swiper2', {
-            ...mainConfig,
-            thumbs: { swiper: productThumb },
-          });
-        }
+      // Product Gallery Thumb and Main
+      // Initialize main even if thumb is missing, but without thumbs
+      const productThumb = initSwiper('.product-gallery-swiper.thumb-swiper-lg', thumbConfig);
+      initSwiper('.product-gallery-swiper2', {
+        ...mainConfig,
+        thumbs: productThumb ? { swiper: productThumb } : undefined,
+      });
 
-        // Quick Modal Thumb and Main
-        const quickThumb = initSwiper('.quick-modal-swiper.thumb-swiper-lg', thumbConfig);
-        if (quickThumb) {
-          initSwiper('.quick-modal-swiper2', {
-            ...mainConfig,
-            thumbs: { swiper: quickThumb },
-          });
-        }
+      // Quick Modal Thumb and Main
+      // Initialize main even if thumb is missing, but without thumbs
+      const quickThumb = initSwiper('.quick-modal-swiper.thumb-swiper-lg', thumbConfig);
+      initSwiper('.quick-modal-swiper2', {
+        ...mainConfig,
+        thumbs: quickThumb ? { swiper: quickThumb } : undefined,
+      });
 
-        // Category Swiper 2
-        initSwiper('.category-swiper2', {
-          slidesPerView: 3,
-          spaceBetween: 20,
-          loop: true,
-          autoplay: { delay: 3000, disableOnInteraction: false },
-          pagination: { el: '.swiper-pagination', clickable: true },
-          navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-          breakpoints: {
-            576: { slidesPerView: 3 },
-            768: { slidesPerView: 4 },
-            992: { slidesPerView: 5 },
-            1200: { slidesPerView: 6 },
-          },
-        });
+      // Category Swiper 2
+      initSwiper('.category-swiper2', {
+        slidesPerView: 3,
+        spaceBetween: 20,
+        loop: true,
+        autoplay: { delay: 3000, disableOnInteraction: false },
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        breakpoints: {
+          576: { slidesPerView: 3 },
+          768: { slidesPerView: 4 },
+          992: { slidesPerView: 5 },
+          1200: { slidesPerView: 6 },
+        },
+      });
 
-        // Swiper Four (likely related products carousel)
-        initSwiper('.swiper-four', {
-          slidesPerView: 2,
-          spaceBetween: 15,
-          loop: true,
-          autoplay: { delay: 2500, disableOnInteraction: false },
-          pagination: { el: '.swiper-pagination', clickable: true },
-          navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-          breakpoints: {
-            576: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-            992: { slidesPerView: 4 },
-          },
-        });
+      // Swiper Four (likely related products carousel)
+      initSwiper('.swiper-four', {
+        slidesPerView: 2,
+        spaceBetween: 15,
+        loop: true,
+        autoplay: { delay: 2500, disableOnInteraction: false },
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        breakpoints: {
+          576: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          992: { slidesPerView: 4 },
+        },
+      });
 
-        isInitializing.current = false;
-      }, 1000);
+      isInitializing.current = false;
     };
 
     loadScriptsAndInitSwiper();
