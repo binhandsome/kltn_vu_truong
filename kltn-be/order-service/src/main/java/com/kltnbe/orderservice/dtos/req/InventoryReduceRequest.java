@@ -1,25 +1,21 @@
 package com.kltnbe.orderservice.dtos.req;
 
-import com.kltnbe.orderservice.entities.Order;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.math.BigDecimal;
+import lombok.NoArgsConstructor;
 
 @Data
-public class OrderItemRequest {
+public class InventoryReduceRequest {
     private Long productId;
-    private int quantity;
-    private BigDecimal unitPrice;
-    private String color;
-    private String size;
     private Long colorId;
     private Long sizeId;
+    private int quantity;
 
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
+    public InventoryReduceRequest(Long productId,Long colorId, Long sizeId, int quantity) {
+        this.productId = productId;
+        this.colorId = colorId;
+        this.sizeId = sizeId;
+        this.quantity = quantity;
     }
 
     public Long getColorId() {
@@ -46,27 +42,11 @@ public class OrderItemRequest {
         this.quantity = quantity;
     }
 
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-    }
-
     public Long getSizeId() {
         return sizeId;
     }
 
     public void setSizeId(Long sizeId) {
         this.sizeId = sizeId;
-    }
-
-    public BigDecimal getUnitPrice() {
-        return unitPrice;
-    }
-
-    public void setUnitPrice(BigDecimal unitPrice) {
-        this.unitPrice = unitPrice;
     }
 }

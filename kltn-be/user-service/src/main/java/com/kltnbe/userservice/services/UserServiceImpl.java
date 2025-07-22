@@ -1,10 +1,12 @@
 package com.kltnbe.userservice.services;
 
+import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.AddressRequest;
 import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
 import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
+import com.kltnbe.userservice.dtos.res.UserProfileResponse;
 import com.kltnbe.userservice.entities.Address;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
@@ -16,13 +18,11 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -246,4 +246,41 @@ public class UserServiceImpl implements UserService{
                 address.getIsPrimaryAddress()
         );
     }
+    @Override
+    public ResponseEntity<?> getUserProfileById(Long userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+
+        User user = userOpt.get();
+
+        UserProfileResponse profile = new UserProfileResponse();
+        profile.setUsername(user.getAuth().getUsername());
+        profile.setEmail(user.getEmail());
+        profile.setFirstName(user.getFirstName());
+        profile.setLastName(user.getLastName());
+        profile.setPhoneNumber(user.getPhoneNumber());
+        profile.setUserAddress(user.getUserAddress());
+        profile.setGender(user.getGender());
+        profile.setDateOfBirth(user.getDateOfBirth());
+        profile.setProfilePicture(user.getProfilePicture());
+
+        return ResponseEntity.ok(profile);
+    }
+    @Override
+    public UserDTO getUserInfoById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        Auth auth = user.getAuth();
+
+        return new UserDTO(
+                user.getUserId(),
+                auth.getUsername(),
+                auth.getEmail(),
+                user.getProfilePicture()
+        );
+    }
+
 }

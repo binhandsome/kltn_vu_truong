@@ -15,27 +15,50 @@ function Login() {
   const [message, setMessage] = useState('');
       const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    if (form.checkValidity()) {
-        try {
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        if (form.checkValidity()) {
+          try {
             const credentials = { email, password };
             const response = await login(credentials);
+      
+            // 🌟 Lưu thông tin cơ bản từ login API
             localStorage.setItem('accessToken', response.accessToken);
             localStorage.setItem('refreshToken', response.refreshToken);
             localStorage.setItem('username', response.username); 
+      
+            // 🌟 Gọi /me để lấy thông tin đầy đủ (userId, avatar,...)
+            const meRes = await fetch("http://localhost:8081/api/auth/me", {
+              headers: {
+                Authorization: `Bearer ${response.accessToken}`
+              }
+            });
+            if (meRes.ok) {
+              const meData = await meRes.json();
+      
+              // Lưu userId và avatar nếu có
+              if (meData?.userId) {
+                localStorage.setItem("userId", meData.userId);
+              }
+              if (meData?.profilePicture) {
+                localStorage.setItem("avatar", meData.profilePicture);
+              }
+            }
+      
+            // ✅ Thành công: reset form và điều hướng
             setMessage('Đăng nhập thành công');
             setEmail('');
             setPassword('');
             window.location.href = '/user';
-        } catch (error) {
+          } catch (error) {
             setMessage(`Error: ${error.message}`);
+          }
+        } else {
+          form.reportValidity();
         }
-    } else {
-        form.reportValidity();
-    }
-};
+      };
+      
 
 	useEffect(() => {
 	  if (hasBgClass) {

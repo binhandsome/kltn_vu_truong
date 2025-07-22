@@ -34,18 +34,103 @@ function Checkout() {
   const [addressMain, setAddressMain] = useState();
   const [orderNote, setOrderNote] = useState('');
   const [selectBank, setSelectBank] = useState('');
-   const [selectedShipping, setSelectedShipping] = useState(0); // mặc định là Free shipping
-
-   const [editingItem, setEditingItem] = useState(null);
-const [editQuantity, setEditQuantity] = useState(1);
-const [editSize, setEditSize] = useState('');
-const [editColor, setEditColor] = useState('');
-   const navigate = useNavigate();
-  
-
-  const handleShippingChangeShip = (e) => {
-    setSelectedShipping(Number(e.target.value)); // đảm bảo là số
+  const [shippingMethods, setShippingMethods] = useState([]);
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState(null);
+  const navigate = useNavigate();
+  const [editingItem, setEditingItem] = useState(null);
+  const [editSize, setEditSize] = useState('');
+  const [editColor, setEditColor] = useState('');
+  const [editQuantity, setEditQuantity] = useState(1);
+  const [availableStock, setAvailableStock] = useState(null);
+  const [prevQuantity, setPrevQuantity] = useState(1);
+  const [stockStatus, setStockStatus] = useState('in_stock');
+  // Lấy số lượng tồn kho
+  const fetchAvailableStock = async (productId, sizeId, colorId) => {
+    if (!productId || !sizeId || !colorId) {
+      console.warn("⚠️ Thiếu thông tin productId, sizeId hoặc colorId:", { productId, sizeId, colorId });
+      setAvailableStock(0);
+      setStockStatus('out_of_stock');
+      return;
+    }
+    try {
+      const response = await axios.get("http://localhost:8083/api/product-variants/available-stock", {
+        params: { productId, sizeId, colorId }
+      });
+      console.log("✅ API response:", response.data);
+      let qty, status;
+      if (typeof response.data === 'number') {
+        qty = response.data; // Nếu API trả về số thô (2)
+        status = qty > 0 ? 'in_stock' : 'out_of_stock';
+      } else {
+        qty = response.data.quantityInStock || response.data.quantity || 0;
+        status = response.data.status || (qty > 0 ? 'in_stock' : 'out_of_stock');
+      }
+      setAvailableStock(qty);
+      setStockStatus(status);
+      if (editQuantity > qty) setEditQuantity(qty);
+    } catch (err) {
+      console.error("❌ Không fetch được tồn kho:", err.response?.data || err.message);
+      setAvailableStock(0);
+      setStockStatus('out_of_stock');
+      alert("Lỗi khi lấy số lượng tồn kho. Vui lòng thử lại.");
+    }
   };
+  useEffect(() => {
+    if (editingItem && editSize && editColor) {
+      const sizeObj = editingItem.sizes?.find(s => s.sizeName?.toString() === editSize.toString());
+      const sizeId = sizeObj?.sizeId;
+      const colorId = parseInt(editColor);
+      console.log("🔍 Debug:", { editSize, sizeId, editColor, colorId, sizes: editingItem.sizes, colorAsin: editingItem.colorAsin });
+      if (sizeId && !isNaN(colorId)) {
+        fetchAvailableStock(editingItem.productId, sizeId, colorId);
+      } else {
+        console.warn("⚠️ sizeId hoặc colorId không hợp lệ:", { sizeId, colorId });
+        setAvailableStock(0);
+        setStockStatus('out_of_stock');
+      }
+    }
+  }, [editingItem, editSize, editColor]);
+  // Xử lý tăng số lượng
+  const handleIncrease = () => {
+    if (availableStock !== null && editQuantity >= availableStock) {
+      alert(`Chỉ còn tối đa ${availableStock} sản phẩm.`);
+      return;
+    }
+    setEditQuantity(prev => prev + 1);
+  };
+
+  // Xử lý giảm số lượng
+  const handleDecrease = () => {
+    if (editQuantity > 1) {
+      setEditQuantity(prev => prev - 1);
+    } else {
+      alert("Số lượng không được nhỏ hơn 1.");
+    }
+  };
+
+  // Xử lý thay đổi số lượng
+  const handleInputChange = (e) => {
+    const val = parseInt(e.target.value);
+    if (isNaN(val) || val < 1) {
+      alert("Số lượng không được nhỏ hơn 1.");
+      setEditQuantity(1);
+      return;
+    }
+    if (availableStock !== null && val > availableStock) {
+      alert(`Chỉ còn tối đa ${availableStock} sản phẩm.`);
+      setEditQuantity(availableStock);
+      return;
+    }
+    setEditQuantity(val);
+  };
+   useEffect(() => {
+    axios.get('http://localhost:8086/api/shippingMethods')
+      .then(res => {
+        setShippingMethods(res.data);
+        setSelectedShippingMethod(res.data[0]); // mặc định chọn phương thức đầu tiên
+      })
+      .catch(err => console.error('Shipping method error:', err));
+  }, []);
   const saveOrder = async () => {
     try {
       const tokenAccess = localStorage.getItem("accessToken");
@@ -65,6 +150,7 @@ const [editColor, setEditColor] = useState('');
         alert("Vui lòng chọn phương thức thanh toán.");
         return;
       }
+  
       for (const item of listCartById.items) {
         if (item.hasColor && !item.nameColor) {
           alert(`Sản phẩm "${item.productName}" yêu cầu chọn màu`);
@@ -76,16 +162,39 @@ const [editColor, setEditColor] = useState('');
         }
       }
   
-      const orderItemRequests = listCartById.items.map(item => {
+      // ✅ Convert colorName → colorId
+      const convertColorNameToId = async (colorName) => {
+        try {
+          const res = await axios.get("http://localhost:8083/api/products/color-id", {
+            params: { nameColor: colorName }
+          });
+          return res.data; // colorId
+        } catch (err) {
+          console.error(`❌ Không tìm thấy colorId cho "${colorName}"`, err);
+          throw new Error(`Không tìm thấy mã màu: ${colorName}`);
+        }
+      };
+  
+      // ✅ Tạo orderItemRequests async
+      const orderItemRequests = await Promise.all(listCartById.items.map(async (item) => {
         const req = {
           productId: item.productId,
           quantity: item.quantity,
           unitPrice: item.itemTotalPrice,
+          size: item.size,
+          color: item.nameColor,
         };
-        if (item.nameColor) req.color = item.nameColor;
-        if (item.size) req.size = item.size;
+      
+        // ✅ Tìm ID tương ứng nếu chưa có
+        const sizeObj = item.sizes?.find(s => s.sizeName === item.size);
+        req.sizeId = sizeObj?.sizeId || null;
+      
+        const colorList = item.colorAsin ? JSON.parse(item.colorAsin) : [];
+        const colorId = colorList.find(c => c.name_color === item.nameColor)?.color_id;
+        req.colorId = colorId || null;
+      
         return req;
-      });
+      }));
   
       const ip = await fetch("https://api.ipify.org?format=json")
         .then(res => res.json())
@@ -96,7 +205,9 @@ const [editColor, setEditColor] = useState('');
         totalPrice,
         orderItemRequests,
         selectBank,
-        ipAddress: ip
+        ipAddress: ip,
+        shippingMethodId: selectedShippingMethod?.id,
+        shippingFee: selectedShippingMethod?.cost || 0
       };
   
       let endpoint = "";
@@ -135,7 +246,6 @@ const [editColor, setEditColor] = useState('');
       const response = await axios.post(endpoint, payload);
       const { message, paymentUrl } = response.data;
   
-      // Nếu thanh toán qua ngân hàng → chuyển hướng luôn
       if (selectBank === "BANK" && paymentUrl) {
         window.location.href = paymentUrl;
         return;
@@ -143,7 +253,6 @@ const [editColor, setEditColor] = useState('');
   
       alert(message || "Đặt hàng thành công!");
   
-      // ✅ Gọi API xoá toàn bộ giỏ hàng BE (nếu có)
       try {
         await axios.delete("http://localhost:8084/api/cart/clearCart", {
           token: tokenAccess || '',
@@ -153,13 +262,8 @@ const [editColor, setEditColor] = useState('');
         console.warn("❌ Không gọi được clearCart từ backend:", e);
       }
   
-      // ✅ Gọi lại FE cập nhật realtime
       await getCartProductById();
-  
-      // ✅ Reset UI (giỏ trống)
       setListCartById({ items: [], totalPrice: 0 });
-  
-      // Điều hướng
       navigate("/user/myaccount/orders");
     } catch (error) {
       console.error("❌ Lỗi khi đặt hàng:", error);
@@ -167,14 +271,16 @@ const [editColor, setEditColor] = useState('');
     }
   };
   
-    
-  // Update OrderItem
-  const openEditModal = (item) => {
-    setEditingItem(item);
-    setEditQuantity(item.quantity || 1);
-    setEditSize(item.size || '');
-    setEditColor(item.nameColor || '');
-  };  
+// Xử lý mở modal chỉnh sửa
+const openEditModal = (item) => {
+  setEditingItem(item);
+  setEditQuantity(item.quantity || 1);
+  setEditSize(item.size || '');
+  const colors = item.colorAsin ? JSON.parse(item.colorAsin) : [];
+  const colorId = item.nameColor ? colors.find(c => c.name_color === item.nameColor)?.color_id : '';
+  setEditColor(colorId || '');
+  setAvailableStock(null);
+};   
 useEffect(() => { 
   if (listCartById?.totalPrice) {
     setTotalPrice(listCartById.totalPrice);
@@ -206,9 +312,13 @@ const removeItemFromCart = async (asin) => {
   }
 };
 const handleShippingChange = (e) => {
-  const shippingFee = parseFloat(e.target.value);
-  const basePrice = listCartById?.totalPrice || 0;
-  setTotalPrice(basePrice + shippingFee);
+  const methodId = e.target.value;
+  const method = shippingMethods.find(m => m.id.toString() === methodId);
+  if (method) {
+    setSelectedShippingMethod(method);
+    const basePrice = listCartById?.totalPrice || 0;
+    setTotalPrice(basePrice + parseFloat(method.cost));
+  }
 };
 const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -399,7 +509,7 @@ useEffect(() => {
 			//wow.sync(); // sync and remove the DOM
 		};
 	  }, []);
-
+    
   return (
     <>
     
@@ -952,35 +1062,26 @@ console.log(ward)}
                   <td />
                 </tr>
         <tr className="shipping">
-  <td>
-    <div className="custom-control custom-checkbox">
+        <td>
+  {shippingMethods.map((method, index) => (
+    <div className="custom-control custom-checkbox" key={method.id}>
       <input
         className="form-check-input radio"
         type="radio"
-        name="flexRadioDefault"
-        id="flexRadioDefault1"
-        value={0}
-        defaultChecked 
-        onChange={handleShippingChange}    
-      />
-      <label className="form-check-label" htmlFor="flexRadioDefault1">
-        Free shipping
-      </label>
-    </div>
-    <div className="custom-control custom-checkbox">
-      <input
-        className="form-check-input radio"
-        type="radio"
-        name="flexRadioDefault"
-        id="flexRadioDefault2"
-        value={25.75}
+        name="shippingMethod"
+        id={`shipping-${method.id}`}
+        value={method.id}
+        checked={selectedShippingMethod?.id === method.id}
         onChange={handleShippingChange}
       />
-      <label className="form-check-label" htmlFor="flexRadioDefault2">
-        Flat Rate:
+      <label className="form-check-label" htmlFor={`shipping-${method.id}`}>
+        {method.methodName} ({method.estimatedDays} ngày) - 
+        {parseFloat(method.cost) === 0 ? "Miễn phí" : `$${method.cost}`}
       </label>
     </div>
-  </td>
+  ))}
+</td>
+
   <td className="price">25.75</td>
 </tr>
 
@@ -1150,135 +1251,175 @@ console.log(ward)}
 </div>
 {/* Phan Modal Update */}
 {editingItem && (
-  <div className="modal show fade d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
-    <div className="modal-dialog modal-lg" role="document">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">Chỉnh sửa sản phẩm</h5>
-          <button type="button" className="btn-close" onClick={() => setEditingItem(null)} />
-        </div>
-        <div className="modal-body">
-          <div className="d-flex gap-4">
-            <img
-              src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_150,h_150/imgProduct/IMG/${editingItem.productThumbnail}`}
-              alt={editingItem.productTitle}
-              style={{ borderRadius: 8 }}
-            />
-            <div>
-              <h6>{editingItem.productTitle}</h6>
-
-              {/* Size */}
-              {editingItem.sizes?.length > 0 && (
-                <>
-                  <label>Chọn size:</label>
-                  <div className="mb-3">
-  <div style={{
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '8px',
-    marginTop: '8px'
-  }}>
-    {editingItem.sizes.map((size, idx) => (
-      <label
-        key={idx}
-        className={`btn btn-sm ${editSize === size.sizeName ? 'btn-dark' : 'btn-outline-dark'}`}
-        style={{
-          minWidth: '42px',
-          textAlign: 'center',
-          padding: '6px 10px',
-          borderRadius: '4px',
-          fontSize: '14px',
-          cursor: 'pointer'
-        }}
-      >
-        <input
-          type="radio"
-          className="d-none"
-          name="sizeOptions"
-          value={size.sizeName}
-          checked={editSize === size.sizeName}
-          onChange={() => setEditSize(size.sizeName)}
-        />
-        {size.sizeName}
-      </label>
-    ))}
-  </div>
-</div>
-
-                </>
-              )}
-
-              {/* Color */}
-              {editingItem.colorAsin && (
-                <>
-                  <label>Chọn màu:</label>
-                  <div className="d-flex gap-2 mb-3">
-                    {JSON.parse(editingItem.colorAsin).map((color, i) => (
-                      <div
-                        key={i}
-                        onClick={() => setEditColor(color.name_color)}
-                        title={color.name_color}
-                        style={{
-                          width: '25px',
-                          height: '25px',
-                          borderRadius: '50%',
-                          backgroundColor: color.code_color,
-                          border: editColor === color.name_color ? '2px solid black' : '1px solid #ccc',
-                          cursor: 'pointer'
-                        }}
-                      />
-                    ))}
+            <div className="modal show fade d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
+              <div className="modal-dialog modal-lg" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Chỉnh sửa sản phẩm</h5>
+                    <button type="button" className="btn-close" onClick={() => setEditingItem(null)} />
                   </div>
-                </>
-              )}
-
-              {/* Quantity */}
-              <label>Số lượng:</label>
-              <input
-                type="number"
-                value={editQuantity}
-                onChange={(e) => setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="form-control"
-                style={{ width: '100px' }}
-              />
+                  <div className="modal-body">
+                    <div className="d-flex gap-4">
+                      <img
+                        src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_150,h_150/imgProduct/IMG/${editingItem.productThumbnail}`}
+                        alt={editingItem.productTitle}
+                        style={{ borderRadius: 8 }}
+                      />
+                      <div>
+                        <h6>{editingItem.productTitle}</h6>
+                        {/* Size */}
+                        {editingItem.sizes?.length > 0 && (
+                          <>
+                            <label>Chọn size:</label>
+                            <div className="mb-3">
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+                                {editingItem.sizes.map((size, idx) => (
+                                  <label
+                                    key={idx}
+                                    className={`btn btn-sm ${editSize === size.sizeName ? 'btn-dark' : 'btn-outline-dark'}`}
+                                    style={{
+                                      minWidth: '42px',
+                                      textAlign: 'center',
+                                      padding: '6px 10px',
+                                      borderRadius: '4px',
+                                      fontSize: '14px',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    <input
+                                      type="radio"
+                                      className="d-none"
+                                      name="sizeOptions"
+                                      value={size.sizeName}
+                                      checked={editSize === size.sizeName}
+                                      onChange={() => setEditSize(size.sizeName)}
+                                    />
+                                    {size.sizeName}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                        {/* Color */}
+                        {editingItem.colorAsin && (
+                          <>
+                            <label>Chọn màu:</label>
+                            <div className="d-flex gap-2 mb-3">
+                              {JSON.parse(editingItem.colorAsin).map((color, i) => (
+                                <div
+                                  key={i}
+                                  onClick={() => setEditColor(color.color_id)}
+                                  title={color.name_color}
+                                  style={{
+                                    width: '25px',
+                                    height: '25px',
+                                    borderRadius: '50%',
+                                    backgroundColor: color.code_color,
+                                    border: editColor === color.color_id ? '2px solid black' : '1px solid #ccc',
+                                    cursor: 'pointer'
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+                        {/* Quantity */}
+                        <label>Số lượng:</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <button
+                              onClick={handleDecrease}
+                              style={{
+                                minWidth: '36px',
+                                height: '36px',
+                                border: '1px solid #ccc',
+                                borderRadius: '4px',
+                                background: '#fff',
+                                fontWeight: 'bold',
+                                fontSize: '18px',
+                                lineHeight: '1',
+                                cursor: 'pointer'
+                              }}
+                              disabled={editQuantity <= 1}
+                            >
+                              −
+                            </button>
+                            <input
+                              type="text"
+                              value={editQuantity}
+                              onChange={handleInputChange}
+                              style={{
+                                width: '42px',
+                                height: '36px',
+                                textAlign: 'center',
+                                border: '1px solid #ccc',
+                                borderRadius: '4px',
+                                fontSize: '16px'
+                              }}
+                            />
+                            <button
+                              onClick={handleIncrease}
+                              style={{
+                                minWidth: '36px',
+                                height: '36px',
+                                border: '1px solid #ccc',
+                                borderRadius: '4px',
+                                background: '#fff',
+                                fontWeight: 'bold',
+                                fontSize: '18px',
+                                lineHeight: '1',
+                                cursor: 'pointer'
+                              }}
+                              disabled={availableStock !== null && editQuantity >= availableStock}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <div style={{ marginTop: '4px', fontSize: '14px', color: availableStock !== null ? (stockStatus === 'in_stock' ? 'green' : 'red') : 'gray' }}>
+  {availableStock !== null
+    ? stockStatus === 'in_stock'
+      ? `✅ Số lượng tồn kho: ${availableStock}`
+      : '⏳ Hết hàng'
+    : '⏳ Vui lòng chọn kích thước và màu sắc'}
+</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button className="btn btn-secondary" onClick={() => setEditingItem(null)}>Huỷ</button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={async () => {
+                        try {
+                          const token = localStorage.getItem("accessToken") || '';
+                          const cartId = localStorage.getItem("cartId") || '';
+                          const price = editingItem.unitPrice;
+                          await axios.put("http://localhost:8084/api/cart/updateItem", {
+                            token,
+                            cartId,
+                            asin: editingItem.asin,
+                            quantity: editQuantity,
+                            price,
+                            size: editSize,
+                            nameColor: JSON.parse(editingItem.colorAsin).find(c => c.color_id === editColor)?.name_color
+                          });
+                          await getCartProductById();
+                          setEditingItem(null);
+                        } catch (err) {
+                          console.error("❌ Lỗi cập nhật:", err);
+                          alert("Không thể cập nhật sản phẩm.");
+                        }
+                      }}
+                    >
+                      Lưu thay đổi
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={() => setEditingItem(null)}>Huỷ</button>
-          <button
-            className="btn btn-primary"
-            onClick={async () => {
-              try {
-                const token = localStorage.getItem("accessToken") || '';
-                const cartId = localStorage.getItem("cartId") || '';
-                const price = editingItem.unitPrice;
-
-                await axios.put("http://localhost:8084/api/cart/updateItem", {
-                  token,
-                  cartId,
-                  asin: editingItem.asin,
-                  quantity: editQuantity,
-                  price,
-                  size: editSize,
-                  nameColor: editColor
-                });
-                await getCartProductById();
-                setEditingItem(null);
-                await getCartProductById(); // gọi lại để cập nhật UI
-              } catch (err) {
-                console.error("❌ Lỗi cập nhật:", err);
-                alert("Không thể cập nhật sản phẩm.");
-              }
-            }}
-          >
-            Lưu thay đổi
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+          )}
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>

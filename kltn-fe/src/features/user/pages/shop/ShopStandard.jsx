@@ -33,6 +33,7 @@ function ShopStandard({products }) {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [searchAsin, setSearchAsin] = useState([]);
+  const [availableStock, setAvailableStock] = useState(null);
 
 
   useEffect(() => {
@@ -57,7 +58,7 @@ const toggleClickSearchAsin = (asin) => {
   });
 };
 
-
+// API Thanh search tiền
 useEffect(() => {
   const interval = setInterval(() => {
     const slider = document.getElementById("slider-tooltips2");
@@ -198,7 +199,7 @@ const handleInputChangeSearch = (e) => {
         quantity,
         price: parseFloat(priceDiscount),
         cartId,
-        size: selectedSize,
+        size: selectedSize?.sizeName,
         nameColor: selectedColor?.name_color,
         colorAsin: JSON.stringify(selectedProduct.colors || []),
       };
@@ -280,24 +281,6 @@ const handleInputChangeSearch = (e) => {
       console.error("❌ Lỗi lấy wishlist:", error);
     }
   };
-  // const fetchProducts = async (page, size) => {
-  //   try {
-  //     const response = await axios.get("http://localhost:8083/api/products/getAllProduct", {
-  //       params: { page, size },
-  //     });
-  //     setProducts(response.data.content);
-  //     setTotalPages(response.data.totalPages);
-  //   } catch (error) {
-  //     console.error("Lỗi fetchProducts:", error);
-  //     setProducts([]);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchProducts(currentPage, pageSize);
-  //   fetchWishlist();
-  // }, [currentPage, pageSize]);
-
   useEffect(() => {
     const handleWishlistUpdated = () => {
       fetchWishlist();
@@ -307,10 +290,21 @@ const handleInputChangeSearch = (e) => {
   }, []);
 
   const handleChange = (e) => {
-    const value = e.target.value;
-    const parsed = parseInt(value);
-    setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
+    let value = parseInt(e.target.value);
+  
+    if (isNaN(value) || value < 1) {
+      alert("❌ Số lượng phải lớn hơn hoặc bằng 1.");
+      value = 1;
+    }
+  
+    if (availableStock !== null && value > availableStock) {
+      alert(`⚠️ Chỉ còn tối đa ${availableStock} sản phẩm trong kho.`);
+      value = availableStock;
+    }
+  
+    setQuantity(value);
   };
+  
 
   const scrollToFilterWrapper = () => {
     const filterWrapper = document.querySelector(".filter-wrapper");
@@ -399,6 +393,46 @@ const handleInputChangeSearch = (e) => {
   const isProductInWishlist = (asin) => wishlistItems.some((item) => item.asin === asin);
 
   const imageWrapperStyle = { width: "600px", height: "450px" };
+  // Api gọi số lượng dựa vào màu và size
+  useEffect(() => {
+    if (!selectedProduct) return;
+  
+    // Nếu chưa chọn cả size hoặc color → hiển thị tồn kho tổng từ bảng product
+    if (!selectedSize || !selectedColor) {
+      setAvailableStock(selectedProduct.stockQuantity || 0);
+      return;
+    }
+  
+    // Nếu đã chọn đầy đủ → gọi API để lấy tồn kho variant
+    const fetchAvailableStock = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}&sizeId=${selectedSize.sizeId}&colorId=${selectedColor.colorId}`
+        );
+  
+        if (!res.ok) throw new Error("Failed to fetch variant stock");
+  
+        const quantity = await res.json();
+        setAvailableStock(quantity);
+        setQuantity((q) => Math.min(q, quantity)); // Không cho nhập vượt
+      } catch (err) {
+        console.error("❌ Error fetching variant stock:", err);
+        setAvailableStock(null);
+      }
+    };
+  
+    fetchAvailableStock();
+  }, [selectedProduct, selectedSize, selectedColor]);
+  
+  // Xem chi tiết sp
+  const fetchProductDetail = async (asin) => {
+    try {
+      const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+      setSelectedProduct(res.data);
+    } catch (err) {
+      console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);
+    }
+  };
 
   return (
     <>
@@ -962,7 +996,8 @@ const handleInputChangeSearch = (e) => {
                       {/* Quick View */}
                       <div
   onClick={() => {
-    setSelectedProduct(product);
+    // setSelectedProduct(product);
+    fetchProductDetail(product.asin);
     const modal = new window.bootstrap.Modal(document.getElementById('exampleModal'));
     modal.show();
   }}  
@@ -1088,7 +1123,8 @@ const handleInputChangeSearch = (e) => {
                   className="btn btn-secondary btn-md btn-rounded"
                   style={{ cursor: 'pointer' }}
                   onClick={() => {
-                   setSelectedProduct(product);
+                  //  setSelectedProduct(product);
+                  fetchProductDetail(product.asin);
                    handleSearchAsin(product.asin);
                     setTimeout(() => {
                       const modal = new window.bootstrap.Modal(
@@ -1272,6 +1308,7 @@ const handleInputChangeSearch = (e) => {
                   <div className="swiper-wrapper" id="lightgallery">
                     
                     {selectedProduct !== null && (
+                      
      <div className="swiper-slide">
                       <div className="dz-media DZoomImage">
                         <a
@@ -1306,8 +1343,6 @@ const handleInputChangeSearch = (e) => {
             <div className="dz-product-detail style-2 ps-xl-3 ps-0 pt-2 mb-0">
               
               <div className="dz-content">
-           
-
                 <div className="dz-content-footer">
                   <div className="dz-content-start">
                                                 {selectedProduct !== null && (
@@ -1394,12 +1429,16 @@ const handleInputChangeSearch = (e) => {
     minWidth: 'unset',      // ép bỏ min-width của Bootstrap
     flex: '0 0 auto'         // ngăn input-group ép dãn
   }}
-  onClick={() => setQuantity(q => Math.max(1, q + 1))}
+  onClick={() =>
+    setQuantity(q =>
+      availableStock !== null ? Math.min(availableStock, q + 1) : q + 1
+    )
+  }
 >+</button>
     </div>
   </div>
                 </div>
-                {/* --- CHỌN MÀU --- */}
+{/* --- CHỌN MÀU --- */}
 {selectedProduct?.colorAsin && (() => {
   let colors = [];
   try {
@@ -1413,6 +1452,10 @@ const handleInputChangeSearch = (e) => {
       <label className="form-label fw-bold">Color</label>
       <div className="d-flex align-items-center flex-wrap gap-2">
         {colors.map((color, index) => {
+          const parsedColor = {
+            ...color,
+            colorId: parseInt(color.color_id), // chuyển string => number
+          };
           const inputId = `colorRadioModal-${index}`;
           return (
             <div className="form-check" key={index}>
@@ -1421,8 +1464,8 @@ const handleInputChangeSearch = (e) => {
                 className="btn-check"
                 name="colorRadioModal"
                 id={inputId}
-                checked={selectedColor?.name_color === color.name_color}
-                onChange={() => setSelectedColor(color)}
+                checked={selectedColor?.colorId === parsedColor.colorId}
+                onChange={() => setSelectedColor(parsedColor)}
               />
               <label
                 className="btn"
@@ -1432,9 +1475,9 @@ const handleInputChangeSearch = (e) => {
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  border: selectedColor?.name_color === color.name_color ? '2px solid black' : '1px solid #ccc',
+                  border: selectedColor?.colorId === parsedColor.colorId ? '2px solid black' : '1px solid #ccc',
                   cursor: 'pointer',
-                  boxShadow: selectedColor?.name_color === color.name_color ? '0 0 3px rgba(0,0,0,0.5)' : 'none',
+                  boxShadow: selectedColor?.colorId === parsedColor.colorId ? '0 0 3px rgba(0,0,0,0.5)' : 'none',
                   padding: 0,
                 }}
                 title={color.name_color}
@@ -1457,8 +1500,8 @@ const handleInputChangeSearch = (e) => {
         <button
           key={idx}
           type="button"
-          className={`btn btn-outline-dark m-1 ${selectedSize === size.sizeName ? 'active' : ''}`}
-          onClick={() => setSelectedSize(size.sizeName)}
+          className={`btn btn-outline-dark m-1 ${selectedSize?.sizeId === size.sizeId ? 'active' : ''}`}
+          onClick={() => setSelectedSize(size)} // 👈 lưu toàn bộ object size
           style={{ minWidth: '60px' }}
         >
           {size.sizeName}
@@ -1467,6 +1510,16 @@ const handleInputChangeSearch = (e) => {
     </div>
   </div>
 )}
+
+{/* --- HIỂN THỊ SỐ LƯỢNG CÒN LẠI --- */}
+<div className="mb-3">
+  <label className="form-label fw-bold d-flex align-items-center">
+    Quantity:
+    {availableStock !== null && (
+      <span className="ms-2">({availableStock} item{availableStock > 1 ? 's' : ''} available)</span>
+    )}
+  </label>
+</div>
                 <div className=" cart-btn">
                   <button  onClick={addCart}
                     className="btn btn-secondary text-uppercase"

@@ -200,4 +200,5 @@ public class AuthServiceImpl implements AuthService {
         return authRepository.findByEmail(email).isPresent();
     }
 
+
 }

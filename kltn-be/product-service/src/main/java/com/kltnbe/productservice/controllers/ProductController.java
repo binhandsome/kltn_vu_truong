@@ -2,20 +2,28 @@ package com.kltnbe.productservice.controllers;
 
 
 import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
+import com.kltnbe.productservice.dtos.req.InventoryReduceRequest;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
 import com.kltnbe.productservice.dtos.res.CategoryResponse;
 import com.kltnbe.productservice.dtos.res.CategoryWithImage;
 import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
 import com.kltnbe.productservice.entities.Product;
+import com.kltnbe.productservice.entities.ProductVariant;
+import com.kltnbe.productservice.repositories.ColorRepository;
 import com.kltnbe.productservice.repositories.ProductRepository;
+import com.kltnbe.productservice.repositories.ProductSizeRepository;
+import com.kltnbe.productservice.repositories.ProductVariantRepository;
 import com.kltnbe.productservice.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.kltnbe.productservice.entities.Color;
+import com.kltnbe.productservice.entities.ProductSize;
 
 import java.util.*;
 
@@ -28,6 +36,12 @@ public class ProductController {
     private ProductService productService;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private ColorRepository colorRepository;
+    @Autowired
+    private ProductSizeRepository productSizeRepository;
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
     @GetMapping("/getAllProduct")
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
 //        System.out.print(productService.getAllProducts(productFileterAll).get().findFirst().get().getImages().get(0).getProduct());
@@ -148,6 +162,46 @@ public class ProductController {
         List<Product> products = productService.getProductsByIds(ids);
         return ResponseEntity.ok(products);
     }
+    @GetMapping("/color-id")
+    public Long getColorIdByName(@RequestParam("nameColor") String nameColor) {
+        return colorRepository.findByNameColor(nameColor)
+                .map(Color::getColorId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy màu: " + nameColor));
+    }
 
+    @GetMapping("/size-id")
+    public Long getSizeIdByName(@RequestParam("sizeName") String sizeName) {
+        return productSizeRepository.findBySizeName(sizeName)
+                .map(ProductSize::getSizeId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy size: " + sizeName));
+    }
+    @GetMapping("/color-name")
+    public ResponseEntity<String> getColorNameById(@RequestParam("id") Long colorId) {
+        return colorRepository.findById(colorId)
+                .map(color -> ResponseEntity.ok(color.getNameColor()))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Không tìm thấy màu với ID: " + colorId));
+    }
+    @PostMapping("/reduce-inventory")
+    public ResponseEntity<?> reduceInventory(@RequestBody List<InventoryReduceRequest> requests) {
+        for (InventoryReduceRequest req : requests) {
+            Optional<ProductVariant> variantOpt = productVariantRepository
+                    .findByProductVariant(req.getProductId(), req.getSizeId(), req.getColorId());
 
+            if (variantOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Không tìm thấy sản phẩm với size và màu tương ứng");
+            }
+
+            ProductVariant variant = variantOpt.get();
+            if (variant.getQuantityInStock() < req.getQuantity()) {
+                return ResponseEntity.badRequest().body("Sản phẩm " + req.getProductId() + " không đủ tồn kho");
+            }
+
+            variant.setQuantityInStock(variant.getQuantityInStock() - req.getQuantity());
+            variant.setQuantitySold(variant.getQuantitySold() + req.getQuantity());
+            productVariantRepository.save(variant);
+        }
+
+        return ResponseEntity.ok("Đã trừ tồn kho");
+    }
 }

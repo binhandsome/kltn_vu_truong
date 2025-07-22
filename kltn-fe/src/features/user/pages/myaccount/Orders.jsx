@@ -44,6 +44,53 @@ function Orders() {
 		if (newPage >= 0 && newPage < totalPages) setCurrentPage(newPage);
 	};
 
+	const handleCancelOrder = (orderId) => {
+		const token = localStorage.getItem("accessToken");
+		if (!token) return;
+
+		if (!window.confirm("Bạn có chắc muốn huỷ đơn hàng này?")) return;
+
+		fetch(`http://localhost:8086/api/orders/${orderId}/cancel`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${token}`
+			}
+		})
+			.then(res => res.json())
+			.then(() => {
+				alert("Huỷ đơn hàng thành công");
+				setOrders(prev =>
+					prev.map(o => o.orderId === orderId ? { ...o, orderStatus: "cancelled", canCancel: false } : o)
+				);
+			})
+			.catch(err => console.error("Cancel error:", err));
+	};
+
+	const handleReturnOrder = (orderId) => {
+		const token = localStorage.getItem("accessToken");
+		if (!token) return;
+
+		const reason = prompt("Nhập lý do trả hàng:");
+		if (!reason) return;
+
+		fetch(`http://localhost:8086/api/orders/${orderId}/return`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`
+			},
+			body: JSON.stringify({ reason })
+		})
+			.then(res => res.json())
+			.then(() => {
+				alert("Yêu cầu trả hàng đã được gửi");
+				setOrders(prev =>
+					prev.map(o => o.orderId === orderId ? { ...o, canReturn: false } : o)
+				);
+			})
+			.catch(err => console.error("Return error:", err));
+	};
+
 	return (
 		<>
 			<div className="page-wraper">
@@ -102,53 +149,65 @@ function Orders() {
 
 								<div className="col-xl-9 account-wrapper">
 									<div className="account-card">
-										<div className="table-responsive table-style-1">
+										<div className="table-responsive">
 											<table className="table table-hover mb-3">
 												<thead>
-  <tr>
-    <th>Order #</th>
-    <th>Date</th>
-    <th>Status</th>
-    <th>Total</th>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Phone</th>
-    <th>Address</th>
-    <th>Items</th>
-    <th>Action</th>
-  </tr>
-</thead>
-
-<tbody>
-  {orders.length > 0 ? (
-    orders.map((order) => (
-      <tr key={order.orderId}>
-        <td><span className="fw-medium">#{order.orderId}</span></td>
-        <td>{formatDate(order.createdAt)}</td>
-        <td>
-          <span className={`badge bg-${order.orderStatus === 'delivered' ? 'success' : order.orderStatus === 'canceled' ? 'danger' : 'info'} m-0`}>
-            {order.orderStatus}
-          </span>
-        </td>
-        <td>${order.totalAmount?.toFixed(2)}</td>
-        <td>{order.recipientName || '—'}</td>
-        <td>{order.recipientEmail || '—'}</td>
-        <td>{order.recipientPhone || '—'}</td>
-        <td>{order.deliveryAddress || '—'}</td>
-        <td>{order.items?.length || 0}</td>
-        <td>
-          <Link to={`/myaccount/orders/${order.orderId}`} className="btn-link text-underline p-0">View</Link>
-        </td>
-      </tr>
-    ))
-  ) : (
-    <tr><td colSpan="10" className="text-center">Không có đơn hàng nào</td></tr>
-  )}
-</tbody>
+													<tr>
+														<th>Order #</th>
+														<th>Date</th>
+														<th>Status</th>
+														<th>Total</th>
+														<th>Name</th>
+														<th>Email</th>
+														<th>Phone</th>
+														<th>Address</th>
+														<th>Items</th>
+														<th>Action</th>
+													</tr>
+												</thead>
+												<tbody>
+													{orders.length > 0 ? (
+														orders.map((order) => (
+															<tr key={order.orderId}>
+																<td><span className="fw-medium">#{order.orderId}</span></td>
+																<td>{formatDate(order.createdAt)}</td>
+																<td>
+																	<span className={`badge bg-${order.orderStatus === 'delivered' ? 'success' : order.orderStatus === 'cancelled' ? 'danger' : 'info'} m-0`}>
+																		{order.orderStatus}
+																	</span>
+																</td>
+																<td>${order.totalAmount?.toFixed(2)}</td>
+																<td>{order.recipientName || '—'}</td>
+																<td>{order.recipientEmail || '—'}</td>
+																<td>{order.recipientPhone || '—'}</td>
+																<td>{order.deliveryAddress || '—'}</td>
+																<td>{order.items?.length || 0}</td>
+																<td>
+																	<div className="d-flex flex-column gap-1">
+																		<Link to={`/user/myaccount/orders/${order.orderId}`} className="btn btn-sm btn-outline-primary">
+																			View
+																		</Link>
+																		{order.canCancel && (
+																			<button className="btn btn-sm btn-outline-danger" onClick={() => handleCancelOrder(order.orderId)}>
+																				Huỷ đơn
+																			</button>
+																		)}
+																		{order.canReturn && (
+																			<button className="btn btn-sm btn-outline-warning" onClick={() => handleReturnOrder(order.orderId)}>
+																				Trả hàng
+																			</button>
+																		)}
+																	</div>
+																</td>
+															</tr>
+														))
+													) : (
+														<tr><td colSpan="10" className="text-center">Không có đơn hàng nào</td></tr>
+													)}
+												</tbody>
 											</table>
 										</div>
 
-										{/* Pagination */}
 										<div className="d-flex justify-content-center">
 											<nav aria-label="Orders Pagination">
 												<ul className="pagination style-1">

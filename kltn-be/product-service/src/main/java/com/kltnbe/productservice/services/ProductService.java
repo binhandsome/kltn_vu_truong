@@ -22,4 +22,5 @@ public interface ProductService {
     List<Product> getListProductByListAsin(List<String> asin);
 
     List<Product> getProductsByIds(List<Long> ids);
+
 }

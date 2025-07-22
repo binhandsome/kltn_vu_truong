@@ -7,86 +7,198 @@ import WOW from 'wowjs';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom'; // Ensure react-router-dom is installed
 function ProductDetail() {
-    const [hasBgClass, setHasBgClass] = useState(true); 
+	const [hasBgClass, setHasBgClass] = useState(true);
 	const location = useLocation();
 	const searchParams = new URLSearchParams(location.search);
 	const asin = searchParams.get('asin');
+	
 	const [products, setProducts] = useState([]);
 	const [quantity, setQuantity] = useState(1);
 	const [relatedProducts, setRelatedProducts] = useState([]);
-
+	const [reviews, setReviews] = useState([]);
+	const [newReview, setNewReview] = useState('');
+	const [user, setUser] = useState(null);
+	const [rating, setRating] = useState(0);
+	const [replyTo, setReplyTo] = useState(null);
+	const [newReply, setNewReply] = useState('');
+	
+	// ✅ Load sản phẩm liên quan
 	useEffect(() => {
-	const getRecommendByAsin = async () => {
+	  const getRecommendByAsin = async () => {
 		try {
-			const response = await axios.get("http://localhost:8085/api/search/getRecommendByAsin", {
-				params: { asin }
-			});
-			setRelatedProducts(response.data);
-			console.log('datacuatao la', response.data);
+		  const response = await axios.get("http://localhost:8085/api/search/getRecommendByAsin", {
+			params: { asin }
+		  });
+		  setRelatedProducts(response.data);
 		} catch (error) {
-			console.log(error);
+		  console.log(error);
 		}
+	  };
+	  getRecommendByAsin();
+	}, [asin]);
+	
+	// ✅ Load review
+	useEffect(() => {
+	  if (asin) {
+		axios.get(`http://localhost:8083/api/reviews/${asin}`)
+		  .then(res => setReviews(res.data))
+		  .catch(err => console.error("Lỗi khi fetch reviews:", err));
+	  }
+	}, [asin]);
+	
+	// ✅ Gọi /me để lấy đúng userId và lưu localStorage (nếu cần)
+	useEffect(() => {
+		const token = localStorage.getItem('accessToken');
+		if (!token) return;
+	  
+		axios.get('http://localhost:8081/api/auth/me', {
+		  headers: { Authorization: `Bearer ${token}` }
+		})
+		  .then(res => {
+			const data = res.data;
+			const userData = {
+			  userId: data.userId || data.id,  // fallback nếu field khác
+			  username: data.username,
+			  avatar: data.profilePicture || ''
+			};
+			setUser(userData);
+	  
+			// Optional: lưu lại nếu cần dùng chỗ khác
+			localStorage.setItem('userId', userData.userId);
+			localStorage.setItem('username', userData.username);
+			localStorage.setItem('avatar', userData.avatar);
+		  })
+		  .catch(err => {
+			console.error("Không lấy được user từ /me:", err);
+			setUser(null);
+		  });
+	  }, []);
+
+	  const fetchReviews = async () => {
+		try {
+		  const res = await axios.get(`http://localhost:8083/api/reviews/${asin}`);
+		  setReviews(res.data);
+		} catch (err) {
+		  console.error("Lỗi khi fetch reviews:", err);
+		}
+	  };
+	  
+	// ✅ Gửi đánh giá
+	const handleSubmitReview = async () => {
+		if (!newReview.trim()) return;
+	  
+		const token = localStorage.getItem('accessToken');
+		if (!token || !user?.userId) {
+		  alert("Vui lòng đăng nhập để bình luận.");
+		  return;
+		}
+	  
+		if (!rating || rating < 1 || rating > 5) {
+		  alert("Vui lòng chọn số sao đánh giá.");
+		  return;
+		}
+	  
+		try {
+		  const res = await axios.post(`http://localhost:8083/api/reviews/create`, {
+			productAsin: asin,
+			comment: newReview,
+			rating,
+			userId: user.userId,
+			parentId: replyTo // gửi kèm parentId nếu có
+		  }, {
+			headers: { Authorization: `Bearer ${token}` }
+		  });
+	  
+		  await fetchReviews();
+		  setNewReview('');
+		  setReplyTo(null);
+		  setRating(0);
+		} catch (err) {
+		  console.error("Lỗi khi gửi đánh giá:", err);
+		}
+	  };
+	  const handleSubmitReply = async (parentId) => {
+		const token = localStorage.getItem('accessToken');
+		if (!newReply.trim() || !token || !user?.userId) return;
+	  
+		try {
+		  const res = await axios.post(`http://localhost:8083/api/reviews/create`, {
+			productAsin: asin,
+			comment: newReply,
+			userId: user.userId,
+			parentId: parentId
+		  }, {
+			headers: {
+			  Authorization: `Bearer ${token}`
+			}
+		  });
+	  
+		  await fetchReviews();
+		  setNewReply('');
+		  setReplyTo(null);
+		} catch (err) {
+		  console.error("Lỗi khi gửi phản hồi:", err);
+		}
+	  };
+	  
+	// ✅ Parse colorAsin
+	let colorAsinArray = [];
+	try {
+	  colorAsinArray = typeof products.colorAsin === 'string'
+		? JSON.parse(products.colorAsin)
+		: products.colorAsin || [];
+	} catch (e) {
+	  console.error("Không thể parse colorAsin:", e);
+	  colorAsinArray = [];
+	}
+	
+	// ✅ Load chi tiết sản phẩm
+	const fetchProductDetailWithAsin = async (asin) => {
+	  if (!asin) {
+		console.error('ASIN is missing or null');
+		return;
+	  }
+	  try {
+		const response = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+		setProducts(response.data);
+	  } catch (error) {
+		console.error('Lỗi khi gọi API:', error);
+	  }
 	};
-
-	getRecommendByAsin(); // ← PHẢI GỌI NÓ
-}, [asin]); // ← Nên thêm dependency nếu asin thay đổi
-
-let colorAsinArray = [];
-try {
-  colorAsinArray = typeof products.colorAsin === 'string'
-    ? JSON.parse(products.colorAsin)
-    : products.colorAsin;
-} catch (e) {
-  console.error("Không thể parse colorAsin:", e);
-  colorAsinArray = [];
-}
-
-const fetchProductDetailWithAsin = async (asin) => {
-    if (!asin) {
-      console.error('ASIN is missing or null');
-      return;
-    }
-    try {
-      const response = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
-      setProducts(response.data);
-      console.log(response.data);
-    } catch (error) {
-      console.error('Lỗi khi gọi API:', error);
-    }
-  };
-  const handleChange = (e) => {
-  const value = e.target.value;
-  const parsed = parseInt(value);
-  if (isNaN(parsed) || parsed < 1) {
-    setQuantity(1); 
-  } else {
-    setQuantity(parsed);
-  }
-};
-  useEffect(() => {
-    if (asin) {
-      fetchProductDetailWithAsin(asin);
-    }
-  }, [asin]);
-
-    useEffect(() => {
-      if (hasBgClass) {
-        document.body.classList.add('bg');
-      } else {
-        document.body.classList.remove('bg');
-      }
-      return () => {
-        document.body.classList.remove('bg');
-      };
-    }, [hasBgClass]); 
-
-    useEffect(() => {
-        const wow = new WOW.WOW();
-        wow.init();
-    
-        return () => { 
-        };
-      }, []);
+	
+	// ✅ Xử lý số lượng
+	const handleChange = (e) => {
+	  const value = e.target.value;
+	  const parsed = parseInt(value);
+	  setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
+	};
+	
+	// ✅ Load sản phẩm khi asin thay đổi
+	useEffect(() => {
+	  if (asin) {
+		fetchProductDetailWithAsin(asin);
+	  }
+	}, [asin]);
+	
+	// ✅ Class nền
+	useEffect(() => {
+	  if (hasBgClass) {
+		document.body.classList.add('bg');
+	  } else {
+		document.body.classList.remove('bg');
+	  }
+	  return () => {
+		document.body.classList.remove('bg');
+	  };
+	}, [hasBgClass]);
+	
+	// ✅ WOW animation
+	useEffect(() => {
+	  const wow = new WOW.WOW();
+	  wow.init();
+	}, []);
+	
+	
 
   return (
     <>
@@ -228,38 +340,23 @@ const fetchProductDetailWithAsin = async (asin) => {
 									<div className="dz-content-start">
 										<span className="badge bg-purple mb-2">SALE {products.percentDiscount}% Off</span>
 										<h4 className="title mb-1">{products.productTitle}</h4>
-										<div className="review-num">
-											<ul className="dz-rating me-2">
-												<li>
-													<svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-														<path d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z" fill="#FF8A00"></path>
-													</svg>
-												</li>	
-												<li>
-													<svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-														<path d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z" fill="#FF8A00"></path>
-													</svg>
-												</li>
-												<li>
-													<svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-														<path d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z" fill="#FF8A00"></path>
-													</svg>
-												</li>
-												<li>
-													<svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-														<path opacity="0.2" d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z" fill="#5E626F"></path>
-													</svg>
+										<div className="review-num d-flex align-items-center">
+  <ul className="dz-rating me-2">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <li key={i}>
+        <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z"
+            fill={i < 4 ? "#FF8A00" : "#5E626F"} opacity={i < 4 ? "1" : "0.2"}
+          />
+        </svg>
+      </li>
+    ))}
+  </ul>
+  <span className="text-secondary me-2">4.0 Rating</span>
+  <a href="#reviews">({reviews.length} customer reviews)</a>
+</div>
 
-												</li>
-												<li>
-													<svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-														<path opacity="0.2" d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z" fill="#5E626F"></path>
-													</svg>
-												</li>	
-											</ul>
-											<span className="text-secondary me-2">4.7 Rating</span>
-											<a href="javascript:void(0);">(5 customer reviews)</a>
-										</div>
 									</div>
 								</div>
 								<p className="para-text">
@@ -389,40 +486,10 @@ const fetchProductDetailWithAsin = async (asin) => {
 									</a>
 								</div>
 								<div className="dz-info">
-									<ul>
-										<li><strong>SKU:</strong></li>
-										<li>{products.asin}</li>
-									</ul>
-									<ul>
-										<li><strong>Category:</strong></li>
-										<li><a href={`/user/shop/shopWithCategory?salesRank=${products.salesRank}`}>{products.salesRank},</a></li>		
-										{products !== null && (
-									    <li><a href={`/user/shop/shopWithCategory?productType=${products.productType}`}> {products.productType}</a></li>														
-										)}										
-									</ul>
-									<ul className="social-icon">
-										<li><strong>Share:</strong></li>
-										<li>
-											<a href="https://www.facebook.com/dexignzone" target="_blank" rel="noreferrer">
-												<i className="fa-brands fa-facebook-f"></i>
-											</a>
-										</li>
-										<li>
-											<a href="https://www.linkedin.com/showcase/3686700/admin/" target="_blank" rel="noreferrer">
-												<i className="fa-brands fa-linkedin-in"></i>
-											</a>
-										</li>
-										<li>
-											<a href="https://www.instagram.com/dexignzone/" target="_blank" rel="noreferrer">
-												<i className="fa-brands fa-instagram"></i>
-											</a>
-										</li>
-										<li>
-											<a href="https://twitter.com/dexignzones" target="_blank" rel="noreferrer">
-												<i className="fa-brands fa-twitter"></i>
-											</a>
-										</li>
-									</ul>
+								<div id="reviews" className="mt-4">
+  <h5 className="mb-3">ƯU ĐÃI SẢN PHẨM</h5>
+</div>
+
 								</div>
 								<ul className="d-md-flex d-none align-items-center">
 									<li className="icon-bx-wraper style-3 me-xl-4 me-2">
@@ -472,7 +539,7 @@ const fetchProductDetailWithAsin = async (asin) => {
 								<button className="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Description</button>
 							</li>
 							<li className="nav-item" role="presentation">
-								<button className="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Reviews (12)</button>
+								<button className="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Reviews ({reviews.length})</button>
 							</li>
 						</ul>
 						<div className="tab-content" id="myTabContent">
@@ -574,102 +641,175 @@ const fetchProductDetailWithAsin = async (asin) => {
 									</div>
 								</div>
 							</div>
-							<div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-								<div className="clear" id="comment-list">
-									<div className="post-comments comments-area style-1 clearfix">
-										<h4 className="comments-title mb-2">Comments (02)</h4>
-										<p className="dz-title-text">There are many variations of passages of Lorem Ipsum available.</p>
-										<div id="comment">
-											<ol className="comment-list">
-												<li className="comment even thread-even depth-1 comment" id="comment-2">
-													<div className="comment-body">
-													  <div className="comment-author vcard">
-															<img src="../../assets/user/images/profile4.jpg" alt="/" className="avatar"/>
-															<cite className="fn">Michel Poe</cite> 
-													  </div>
-												  <div className="comment-content dz-page-text">
-													 <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
-												  </div>
-												  <div className="reply">
-													 <a rel="nofollow" className="comment-reply-link" href="javascript:void(0);">Reply</a>
-												  </div>
-											   </div>
-											   <ol className="children">
-												  <li className="comment byuser comment-author-w3itexpertsuser bypostauthor odd alt depth-2 comment" id="comment-3">
-													 <div className="comment-body" id="div-comment-3">
-														<div className="comment-author vcard">
-														   <img src="../../assets/user/images/profile3.jpg" alt="/" className="avatar"/>
-														   <cite className="fn">Celesto Anderson</cite>
-														</div>
-														<div className="comment-content dz-page-text">
-														   <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
-														</div>
-														<div className="reply">
-														   <a className="comment-reply-link" href="javascript:void(0);"> Reply</a>
-														</div>
-													 </div>
-												  </li>
-											   </ol>
-											</li>
-											<li className="comment even thread-odd thread-alt depth-1 comment" id="comment-4">
-												<div className="comment-body" id="div-comment-4">
-													<div className="comment-author vcard">
-														<img src="../../assets/user/images/profile2.jpg" alt="/" className="avatar"/>
-														<cite className="fn">Monsur Rahman Lito</cite>
-													</div>
-													<div className="comment-content dz-page-text">
-														<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
-													</div>
-													<div className="reply">
-														<a className="comment-reply-link" href="javascript:void(0);"> Reply</a>
-													</div>
-												</div>
-											</li>
-										 </ol>
-									  </div>
-									<div className="default-form comment-respond style-1" id="respond">
-										<h4 className="comment-reply-title mb-2" id="reply-title">Good Comments</h4>
-										<p className="dz-title-text">There are many variations of passages of Lorem Ipsum available.</p>
-										<div className="comment-form-rating d-flex">
-											<label className="pull-left m-r10 m-b20  text-secondary">Your Rating</label>
-											<div className="rating-widget">
-												<div  className="rating-stars">
-													<ul id="stars">
-														<li className="star" title="Poor" data-value="1">
-															<i className="fas fa-star fa-fw"></i>
-														</li>
-														<li className="star" title="Fair" data-value="2">
-															<i className="fas fa-star fa-fw"></i>
-														</li>
-														<li className="star" title="Good" data-value="3">
-															<i className="fas fa-star fa-fw"></i>
-														</li>
-														<li className="star" title="Excellent" data-value="4">
-															<i className="fas fa-star fa-fw"></i>
-														</li>
-														<li className="star" title="WOW!!!" data-value="5">
-															<i className="fas fa-star fa-fw"></i>
-														</li>
-													</ul>
-												</div>
-											</div>
-										</div>
-										<div className="clearfix">
-											<form method="post" id="comments_form" className="comment-form" novalidate>
-											   <p className="comment-form-author"><input id="name" placeholder="Author" name="author" type="text" value="" /></p>
-											   <p className="comment-form-email"><input id="email" required="required" placeholder="Email" name="email" type="email" value="" /></p>
-											   <p className="comment-form-comment"><textarea id="comments" placeholder="Type Comment Here" className="form-control4" name="comment" cols="45" rows="3" required="required"></textarea></p>
-											   <p className="col-md-12 col-sm-12 col-xs-12 form-submit">
-												  <button id="submit" type="submit" className="submit btn btn-secondary btnhover3 filled">
-												  Submit Now
-												  </button>
-											   </p>
-											</form>
-										</div>
-									  </div>
-								   </div>
-								</div>
-							</div>
+							<div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex="0">
+  <div className="clear" id="comment-list">
+    <div className="post-comments comments-area style-1 clearfix">
+      <h4 className="comments-title mb-2">Comments ({reviews.length})</h4>
+      <p className="dz-title-text">There are many variations of passages of Lorem Ipsum available.</p>
+	  <div id="comment">
+  <ol className="comment-list">
+    {reviews
+      .filter((review) => !review.parentId)
+      .map((parent) => (
+        <li className="comment depth-1" key={parent.reviewId}>
+          <div className="comment-body">
+            <div className="comment-author vcard">
+              <img
+                src={parent.avatar || "/assets/user/images/default-avatar.png"}
+                alt="/"
+                className="avatar"
+              />
+              <cite className="fn">{parent.username}</cite>
+            </div>
+
+            <div className="comment-content dz-page-text">
+              <p>{parent.comment}</p>
+
+              {/* ✅ Nút reply đặt ngay sau nội dung */}
+              <div className="mt-2">
+                <button
+                  type="button"
+                  className="comment-reply-link btn btn-link p-0"
+                  onClick={() => setReplyTo(parent.reviewId)}
+                >
+                  Reply
+                </button>
+              </div>
+
+              {/* ⭐ Hiển thị sao */}
+              <div className="text-warning mt-1">
+                {Array.from({ length: parent.rating }, (_, i) => (
+                  <i key={i} className="fas fa-star" />
+                ))}
+              </div>
+            </div>
+
+            {/* ✅ Form reply nếu đang reply comment này */}
+            {replyTo === parent.reviewId && (
+              <div className="reply-form mt-3">
+                <textarea
+                  className="form-control mb-2"
+                  placeholder="Type your reply..."
+                  value={newReply}
+                  onChange={(e) => setNewReply(e.target.value)}
+                  rows="3"
+                />
+
+                {/* ⭐ Không chọn rating khi reply */}
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => handleSubmitReply(parent.reviewId)}
+                  >
+                    Submit Reply
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm ms-2"
+                    onClick={() => {
+                      setReplyTo(null);
+                      setNewReply('');
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ✅ Danh sách reply con */}
+          <ol className="children">
+            {reviews
+              .filter((r) => r.parentId === parent.reviewId)
+              .map((reply) => (
+                <li className="comment depth-2" key={reply.reviewId}>
+                  <div className="comment-body">
+                    <div className="comment-author vcard">
+                      <img
+                        src={reply.avatar || "/assets/user/images/default-avatar.png"}
+                        alt="/"
+                        className="avatar"
+                      />
+                      <cite className="fn">{reply.username}</cite>
+                    </div>
+                    <div className="comment-content dz-page-text">
+                      <p>{reply.comment}</p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+          </ol>
+        </li>
+      ))}
+  </ol>
+</div>
+
+      <div className="default-form comment-respond style-1" id="respond">
+        <h4 className="comment-reply-title mb-2" id="reply-title">Good Comments</h4>
+        <p className="dz-title-text">There are many variations of passages of Lorem Ipsum available.</p>
+
+        <div className="comment-form-rating d-flex">
+          <label className="pull-left m-r10 m-b20 text-secondary">Your Rating</label>
+          <div className="rating-widget">
+            <div className="rating-stars">
+			<ul id="stars">
+  {[1, 2, 3, 4, 5].map((value) => (
+    <li
+      key={value}
+      className={`star ${rating >= value ? 'selected' : ''}`}
+      onClick={() => setRating(value)}
+      style={{ cursor: 'pointer' }}
+    >
+      <i className="fas fa-star fa-fw"></i>
+    </li>
+  ))}
+</ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="clearfix">
+          {user ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitReview();
+              }}
+              className="comment-form"
+              noValidate
+            >
+              <p className="comment-form-author">
+                <input type="text" value={user.username} readOnly />
+              </p>
+              <p className="comment-form-comment">
+                <textarea
+                  className="form-control4"
+                  placeholder="Type Comment Here"
+                  value={newReview}
+                  onChange={(e) => setNewReview(e.target.value)}
+                  required
+                  rows="3"
+                ></textarea>
+              </p>
+              <p className="col-md-12 col-sm-12 col-xs-12 form-submit">
+                <button type="submit" className="submit btn btn-secondary btnhover3 filled">
+                  Submit Now
+                </button>
+              </p>
+            </form>
+          ) : (
+            <p className="text-danger">
+              Please <a href="/user/auth/login">login</a> to post a review.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 						</div>
 					</div>
 				</div>

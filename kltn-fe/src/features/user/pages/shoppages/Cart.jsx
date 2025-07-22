@@ -12,6 +12,34 @@ function Cart() {
   const [quantityMap, setQuantityMap] = useState({});
   const [selectedItemsCart, setSelectedItemsCart] = useState([]);  
   const navigate = useNavigate();
+  const [availableStockMap, setAvailableStockMap] = useState({});
+
+  // Xu li gioi han san pham: 
+  const fetchStockVariant = async (productId, sizeName, colorName, asin) => {
+  try {
+    const sizeId = listCart.items
+      .find(item => item.productId === productId)
+      ?.sizes.find(s => s.sizeName === sizeName)?.sizeId;
+
+    const colorId = JSON.parse(
+      listCart.items.find(item => item.asin === asin)?.colorAsin || '[]'
+    ).find(c => c.name_color === colorName)?.color_id;
+
+    if (!sizeId || !colorId || !productId) return;
+
+    const res = await axios.get(
+      `http://localhost:8083/api/product-variants/available-stock`,
+      { params: { productId, sizeId, colorId } }
+    );
+
+    setAvailableStockMap(prev => ({
+      ...prev,
+      [asin]: res.data,
+    }));
+  } catch (err) {
+    console.error("❌ Lỗi lấy tồn kho biến thể:", err);
+  }
+};
 
   useEffect(() => {
     if (hasBgClass) {
@@ -113,11 +141,11 @@ function Cart() {
   const updateQuantity = async (productId, newQuantity) => {
     const item = listCart.items.find(i => i.productId === productId);
     if (!item || newQuantity < 1) return;
-
+  
     const cartId = localStorage.getItem("cartId") || '';
     const token = localStorage.getItem("accessToken") || '';
     const unitPrice = item.price / item.quantity;
-
+  
     try {
       await axios.put('http://localhost:8084/api/cart/updateItem', {
         token,
@@ -128,23 +156,43 @@ function Cart() {
         size: item.size,
         nameColor: item.nameColor
       });
+  
+      // ✅ Sửa chỗ này:
+      await fetchStockVariant(item.productId, item.size, item.nameColor, item.asin);
+  
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
       console.error("❌ Cập nhật số lượng lỗi:", err);
     }
   };
-
   const handleIncrement = (productId) => {
-    const newQty = (quantityMap[productId] || 1) + 1;
+    const item = listCart.items.find(i => i.productId === productId);
+    const asin = item?.asin;
+    const current = quantityMap[productId] || 1;
+    const maxStock = availableStockMap[asin] ?? 1000;
+  
+    if (current >= maxStock) {
+      alert("Đã đạt giới hạn tồn kho cho biến thể này.");
+      return;
+    }
+  
+    const newQty = current + 1;
     setQuantityMap(prev => ({ ...prev, [productId]: newQty }));
     updateQuantity(productId, newQty);
   };
+  
 
   const handleDecrement = (productId) => {
-    const newQty = Math.max(1, (quantityMap[productId] || 1) - 1);
+    const current = quantityMap[productId] || 1;
+    if (current <= 1) {
+      alert("Số lượng tối thiểu là 1.");
+      return;
+    }
+    const newQty = current - 1;
     setQuantityMap(prev => ({ ...prev, [productId]: newQty }));
     updateQuantity(productId, newQty);
   };
+  
 
   const handleRemove = async (asin) => {
     const cartId = localStorage.getItem("cartId") || '';
@@ -157,29 +205,47 @@ function Cart() {
     }
   };
   const handleChange = (productId, value) => {
-    const num = parseInt(value);
-    if (!isNaN(num) && num >= 1) {
-      setQuantityMap(prev => ({ ...prev, [productId]: num }));
-      updateQuantity(productId, num);
+    const item = listCart.items.find(i => i.productId === productId);
+    const asin = item?.asin;
+    let num = parseInt(value);
+    if (isNaN(num)) num = 1;
+    if (num < 1) {
+      alert("Số lượng tối thiểu là 1.");
+      num = 1;
     }
+    const maxStock = availableStockMap[asin] ?? 1000;
+    if (num > maxStock) {
+      alert("Vượt quá số lượng tồn kho.");
+      num = maxStock;
+    }
+  
+    setQuantityMap(prev => ({ ...prev, [productId]: num }));
+    updateQuantity(productId, num);
   };
-  const updateCartItemVariant = async (asin, quantity, price, size, nameColor) => {
+  
+  const updateCartItemVariant = async (asin, quantity, price, size, nameColor, productId) => {
     const token = localStorage.getItem("accessToken") || '';
     const cartId = localStorage.getItem("cartId") || '';
   
-    return axios.put("http://localhost:8084/api/cart/updateItem", {
-      token,
-      cartId,
-      asin,
-      quantity,
-      price,
-      size,
-      nameColor
-    }).then(() => {
-      window.dispatchEvent(new Event("cartUpdated"));
-    });
-  };
+    try {
+      await axios.put("http://localhost:8084/api/cart/updateItem", {
+        token,
+        cartId,
+        asin,                        // đúng biến đã truyền vào
+        quantity,
+        price,
+        size: size?.sizeName || size, // nếu size là object thì lấy sizeName
+        nameColor
+      });
   
+      // Gọi fetch tồn kho sau khi cập nhật
+      await fetchStockVariant(productId, size, nameColor, asin); 
+  
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      console.error("❌ updateCartItemVariant failed:", err);
+    }
+  }; 
   return (
     <>
       <div className="page-wraper">
@@ -268,15 +334,17 @@ function Cart() {
         className="btn btn-outline-secondary btn-sm"
         htmlFor={inputId}
         style={isChecked ? { backgroundColor: '#000', color: '#fff' } : {}}
-        onClick={() =>
-          updateCartItemVariant(
+        onClick={async () => {
+          await updateCartItemVariant(
             item.asin,
-            quantityMap[item.productId] ?? item.quantity ?? 1,
+            quantity,
             item.unitPrice,
             size.sizeName,
-            item.nameColor
-          ).then(() => getCartProduct())
-        }
+            item.nameColor,
+            item.productId
+          );
+          getCartProduct();
+        }}
       >
         {size.sizeName}
       </label>
@@ -297,11 +365,17 @@ function Cart() {
           return (
             <div
               key={index}
-              onClick={() =>
-                updateCartItemVariant(item.asin, quantity, item.unitPrice, item.size, color.name_color)
-                  .then(() => getCartProduct())
-              }
-              
+              onClick={async () => {
+                await updateCartItemVariant(
+                  item.asin,
+                  quantity,
+                  item.unitPrice,
+                  item.size,
+                  color.name_color,
+                  item.productId
+                );
+                getCartProduct();
+              }}             
               style={{
                 width: '20px',
                 height: '20px',
