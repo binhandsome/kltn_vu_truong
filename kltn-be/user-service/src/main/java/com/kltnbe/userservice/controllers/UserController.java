@@ -1,5 +1,6 @@
 package com.kltnbe.userservice.controllers;
 
+import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.AddressRequest;
 import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
@@ -60,5 +61,14 @@ public class UserController {
         AddressInfo address = userService.getAddressById(id);
         return ResponseEntity.ok(address);
     }
+    @GetMapping("/getUserById/{userId}")
+    public ResponseEntity<?> getUserById(@PathVariable Long userId) {
+        return userService.getUserProfileById(userId);
+    }
+    @GetMapping("/userInfo/id")
+    public ResponseEntity<UserDTO> getUserInfoById(@RequestParam Long userId) {
+        return ResponseEntity.ok(userService.getUserInfoById(userId));
+    }
+
 
 }

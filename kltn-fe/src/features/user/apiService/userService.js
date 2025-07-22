@@ -1,4 +1,6 @@
+import axios from "axios";
 const USER_API_URL = 'http://localhost:8081/api/user';
+
 
 /**
  * Xóa địa chỉ người dùng
@@ -22,4 +24,9 @@ export const deleteAddress = async (addressId) => {
   }
 
   return await res.text(); // "Xóa địa chỉ thành công"
+};
+
+export const getUserProfileById = async (userId) => {
+  const res = await axios.get(`${USER_API_URL}/getUserById/${userId}`);
+  return res.data;
 };

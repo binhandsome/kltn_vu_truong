@@ -46,66 +46,69 @@ public class PaymentServiceImpl implements PaymentService {
                 .orderId(paymentRequest.getOrderId())
                 .paymentMethod(method)
                 .amount(paymentRequest.getAmount())
-                .status(method == PaymentMethod.BANK ? "PENDING" : "SUCCESS") // Initial status
+                .status(method == PaymentMethod.BANK ? "PENDING" : "SUCCESS") // BANK thì pending
                 .build();
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         switch (method) {
             case COD:
-                // For COD, create and save CodTransaction
+                // COD: save chi tiết COD
                 CodTransaction codTransaction = CodTransaction.builder()
                         .transaction(savedTransaction)
                         .build();
                 codTransactionRepository.save(codTransaction);
-                return ResponseEntity.ok(Map.of("message", "Thanh toán COD thành công"));
+
+                return ResponseEntity.ok(Map.of(
+                        "message", "Thanh toán COD thành công",
+                        "orderId", savedTransaction.getOrderId()
+                ));
 
             case BANK:
-                // Convert USD amount to VND for VNPAY
-                BigDecimal usdToVndRate = BigDecimal.valueOf(25000); // Example rate
+                // BANK: chuyển sang VND
+                BigDecimal usdToVndRate = BigDecimal.valueOf(25000); // hardcoded rate
                 BigDecimal amountVND = paymentRequest.getAmount().multiply(usdToVndRate);
 
-                // Create and save BankTransaction
+                // Tạo BankTransaction
                 BankTransaction bankTransaction = BankTransaction.builder()
                         .transaction(savedTransaction)
-                        .bankTransactionCode("BANK_" + System.currentTimeMillis()) // Generate a unique bank transaction code
+                        .bankTransactionCode("BANK_" + System.currentTimeMillis())
                         .build();
                 bankTransactionRepository.save(bankTransaction);
 
-                // Get IP address from request or default to localhost
-                String ipAddress = paymentRequest.getIpAddress() != null ? paymentRequest.getIpAddress() : "127.0.0.1";
+                String ipAddress = paymentRequest.getIpAddress() != null
+                        ? paymentRequest.getIpAddress()
+                        : "127.0.0.1";
 
-                // Update the saved transaction with the VND amount (important for VNPAY)
-                // Note: Consider if you want to store the original USD amount and a separate VND amount,
-                // or just update the 'amount' field to reflect the VND value for VNPAY.
-                // For simplicity here, we update the existing 'amount' field.
+                // Cập nhật lại transaction với amount VND
                 savedTransaction.setAmount(amountVND);
-                transactionRepository.save(savedTransaction); // Save the updated amount
+                transactionRepository.save(savedTransaction);
 
                 try {
-                    // Build the VNPAY URL
                     String vnpayUrl = buildVnpayUrl(savedTransaction, ipAddress, amountVND);
                     System.out.println("✅ VNPay URL generated: " + vnpayUrl);
+
                     return ResponseEntity.ok(Map.of(
-                            "message", "Redirect to VNPay",
-                            "paymentUrl", vnpayUrl
+                            "message", "Redirect đến VNPay",
+                            "paymentUrl", vnpayUrl,
+                            "orderId", savedTransaction.getOrderId()
                     ));
                 } catch (UnsupportedEncodingException e) {
-                    // Handle encoding errors
                     System.err.println("Error creating VNPAY URL: " + e.getMessage());
-                    return ResponseEntity.internalServerError().body("Error creating VNPAY URL: " + e.getMessage());
+                    return ResponseEntity.internalServerError().body(Map.of("error", "Không tạo được VNPAY URL"));
                 }
 
-
             case PAYPAL:
-                // For PayPal, return success message (assuming PayPal integration is handled elsewhere)
-                return ResponseEntity.ok(Map.of("message", "Thanh toán PayPal thành công"));
+                return ResponseEntity.ok(Map.of(
+                        "message", "Thanh toán PayPal thành công",
+                        "orderId", savedTransaction.getOrderId()
+                ));
 
             default:
-                // Handle invalid payment methods
-                return ResponseEntity.badRequest().body("Phương thức thanh toán không hợp lệ");
+                return ResponseEntity.badRequest().body(Map.of("error", "Phương thức thanh toán không hợp lệ"));
         }
     }
+
 
     public String buildVnpayUrl(Transaction transaction, String ipAddr, BigDecimal amountVND) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";

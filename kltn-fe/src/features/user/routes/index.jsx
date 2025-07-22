@@ -60,7 +60,7 @@ const UserRoutes = () => {
         <Route path="myaccount/download" element={<Download />} />
         <Route path="myaccount/orders" element={<Orders />} />
         <Route path="myaccount/ordersConfimation" element={<OrdersConfimation />} />
-        <Route path="myaccount/ordersDetails" element={<OrdersDetails />} />
+        <Route path="myaccount/orders/:orderId" element={<OrdersDetails />} />
         <Route path="myaccount/paymentMethods" element={<PaymentMethods />} />
         <Route path="myaccount/profile" element={<Profile />} />
         <Route path="myaccount/returnRequest" element={<ReturnRequest />} />

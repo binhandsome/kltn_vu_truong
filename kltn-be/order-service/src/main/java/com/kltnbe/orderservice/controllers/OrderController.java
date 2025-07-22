@@ -32,5 +32,30 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int size) {
         return orderService.getOrdersByAccessToken(token, page, size);
     }
+    // ✅ 1. Xem chi tiết đơn hàng
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrderDetail(
+            @PathVariable Long orderId,
+            @RequestHeader("Authorization") String token) {
+        return orderService.getOrderDetail(orderId, token);
+    }
+
+    @PostMapping("/cancel/{orderId}")
+    public ResponseEntity<?> cancelOrder(
+            @PathVariable Long orderId,
+            @RequestHeader("Authorization") String accessToken
+    ) {
+        return orderService.cancelOrder(orderId, accessToken);
+    }
+
+    // 📌 Trả hàng với lý do
+    @PostMapping("/return/{orderId}")
+    public ResponseEntity<?> returnOrder(
+            @PathVariable Long orderId,
+            @RequestParam("reason") String reason,
+            @RequestHeader("Authorization") String accessToken
+    ) {
+        return orderService.requestReturn(orderId, reason, accessToken);
+    }
 
 }

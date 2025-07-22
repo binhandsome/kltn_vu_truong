@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
+
 public class OrderResponse {
     private Long orderId;
     private Long userId;
@@ -20,4 +21,6 @@ public class OrderResponse {
     private String recipientName;
     private String recipientPhone;
     private String recipientEmail;
+    private boolean canCancel;
+    private boolean canReturn;
 }

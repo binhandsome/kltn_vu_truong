@@ -18,15 +18,18 @@ import { useNavigate } from 'react-router-dom';
     const [selectedItemsCart, setSelectedItemsCart] = useState([]);
     const API_URL = 'http://localhost:8081/api/auth';
     const navigate = useNavigate();
-  let colorAsinArray = [];
-try {
-  colorAsinArray = typeof listCart.items.colorAsin === 'string'
-    ? JSON.parse(listCart.items.colorAsin)
-    : listCart.items.colorAsin;
-} catch (e) {
-  console.error("Không thể parse colorAsin:", e);
-  colorAsinArray = [];
-}
+    let colorAsinArray = [];
+    try {
+      if (Array.isArray(listCart.items)) {
+        colorAsinArray = listCart.items.flatMap(item =>
+          typeof item.colorAsin === 'string' ? JSON.parse(item.colorAsin) : item.colorAsin || []
+        );
+      }
+    } catch (e) {
+      console.error("Không thể parse colorAsin:", e);
+      colorAsinArray = [];
+    }
+    
 
     const handleIncrement = (productId, quantity) => {
       const newQuantity = (quantity || 1) + 1;
@@ -73,15 +76,25 @@ try {
   
     useEffect(() => {
       const storedUsername = localStorage.getItem("username");
-      if (storedUsername) {
-        setUser({ username: storedUsername }); // chỉ cần object có field username
+      const token = localStorage.getItem("accessToken");
+    
+      if (storedUsername && token) {
+        setUser({ username: storedUsername });
+        localStorage.removeItem("cartId"); // 🧹 xoá cartId nếu đã đăng nhập
       } else {
         setUser(null);
       }
     
       const onRefresh = () => {
         const newUsername = localStorage.getItem("username");
-        setUser(newUsername ? { username: newUsername } : null);
+        const newToken = localStorage.getItem("accessToken");
+    
+        if (newUsername && newToken) {
+          setUser({ username: newUsername });
+          localStorage.removeItem("cartId");
+        } else {
+          setUser(null);
+        }
       };
     
       const onLogout = () => {
@@ -96,6 +109,7 @@ try {
         window.removeEventListener("loggedOut", onLogout);
       };
     }, []);
+    
     
 
     // ham tick item cart
@@ -124,12 +138,12 @@ try {
   
   
 const getCartProduct = async () => {
-  const cartId = localStorage.getItem("cartId") || '';
-  const token = localStorage.getItem("accessToken") || '';
+  const token = localStorage.getItem("accessToken");
+  const cartId = token ? null : localStorage.getItem("cartId");
 
   try {
     const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
-      params: { cartId, token },
+      params: { token, cartId }
     });
 
     const cartItems = cartResponse.data.items || [];
@@ -145,7 +159,7 @@ const getCartProduct = async () => {
 
     const asins = cartItems.map(item => item.asin).join(',');
     const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
-      params: { asins },
+      params: { asins }
     });
 
     const combined = cartItems.map(item => {
@@ -160,8 +174,8 @@ const getCartProduct = async () => {
       const hasColor = !!product?.colorAsin && JSON.parse(product.colorAsin).length > 0;
 
       return {
-        ...product,              // product info
-        ...item,                 // item info from Redis (size, nameColor)
+        ...product,
+        ...item,
         unitPrice,
         discountedUnitPrice,
         itemTotalPrice: +(discountedUnitPrice * item.quantity).toFixed(2),
@@ -200,6 +214,7 @@ const getCartProduct = async () => {
   }
 };
 
+
    const updateCartItemQuantity = async (asin, quantity, unitPrice, size, nameColor) => {
   const cartId = localStorage.getItem("cartId") || '';
   const token = localStorage.getItem("accessToken") || '';
@@ -235,7 +250,6 @@ const getCartProduct = async () => {
         // 🔁 Dùng POST thay vì DELETE
         await axios.post('http://localhost:8084/api/cart/removeItem', payload);
     
-        // 🔔 Thông báo cập nhật giỏ hàng
         window.dispatchEvent(new Event("cartUpdated"));
       } catch (err) {
         console.error("❌ Lỗi khi xoá sản phẩm khỏi giỏ hàng:", err);
