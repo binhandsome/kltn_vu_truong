@@ -1,8 +1,7 @@
 // src/pages/common/HomePage.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import {handleChange} from '../../apiService/productService'
 import WOW from 'wowjs'; 
 import axios from 'axios';
 import { useLocation } from 'react-router-dom'; // Ensure react-router-dom is installed
@@ -20,7 +19,20 @@ function ProductDetail() {
 	const [user, setUser] = useState(null);
 	const [rating, setRating] = useState(0);
 	const [replyTo, setReplyTo] = useState(null);
-	const [newReply, setNewReply] = useState('');
+	const [newReply, setNewReply] = useState('');	
+	const [selectedSize, setSelectedSize] = useState(null);
+	const [selectedColor, setSelectedColor] = useState(null);
+	const [toastMessage, setToastMessage] = useState('');
+	const [showToast, setShowToast] = useState(false);
+	const originalPrice = products.productPrice || 0;
+const discount = products.percentDiscount || 0;
+const discountedPrice = originalPrice - (originalPrice * discount / 100);
+
+const showToastMsg = (msg) => {
+  setToastMessage(msg);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 2000);
+};
 	
 	// ✅ Load sản phẩm liên quan
 	useEffect(() => {
@@ -82,7 +94,144 @@ function ProductDetail() {
 		  console.error("Lỗi khi fetch reviews:", err);
 		}
 	  };
-	  
+	// ✅ Kiểm tra tồn kho khi thay đổi số lượng
+const checkQuantityAgainstStock = async (newQuantity) => {
+	const hasSize = products?.sizes?.length > 0;
+	const hasColor = colorAsinArray?.length > 0;
+  
+	const sizeId = hasSize
+	  ? products.sizes.find((s) => s.sizeName === selectedSize)?.sizeId
+	  : null;
+  
+	const colorId = hasColor
+	  ? colorAsinArray.find((c) => c.name_color === selectedColor)?.color_id
+	  : null;
+  
+	// ❗ Nếu chưa chọn đủ size/color, không kiểm kho
+	if ((hasSize && !sizeId) || (hasColor && !colorId)) {
+	  setQuantity(newQuantity); // vẫn cho thay đổi số lượng
+	  return;
+	}
+  
+	try {
+	  const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, {
+		params: {
+		  productId: products.productId,
+		  ...(sizeId && { sizeId }),
+		  ...(colorId && { colorId }),
+		},
+	  });
+  
+	  const stock = res.data;
+  
+	  if (newQuantity > stock) {
+		setQuantity(stock);
+		showToastMsg(`⚠️ Chỉ còn ${stock} sản phẩm có sẵn.`);
+	  } else {
+		setQuantity(newQuantity);
+	  }
+	} catch (err) {
+	  console.error("❌ Lỗi kiểm tra tồn kho:", err);
+	  showToastMsg("❌ Không kiểm tra được tồn kho.");
+	  setQuantity(newQuantity); // fallback nếu lỗi API
+	}
+  };
+  
+  // ✅ Thêm sản phẩm vào giỏ hàng
+  const handleAddToCart = async () => {
+	const hasSize = products?.sizes?.length > 0;
+	const hasColor = colorAsinArray?.length > 0;
+  
+	if (hasSize && !selectedSize) {
+	  showToastMsg("⚠️ Vui lòng chọn size.");
+	  return;
+	}
+  
+	if (hasColor && !selectedColor) {
+	  showToastMsg("⚠️ Vui lòng chọn màu.");
+	  return;
+	}
+  
+	if (!Number.isInteger(quantity) || quantity < 1) {
+	  showToastMsg("⚠️ Số lượng không hợp lệ.");
+	  return;
+	}
+  
+	try {
+	  const token = localStorage.getItem("accessToken") || "";
+	  const cartId = localStorage.getItem("cartId") || "";
+  
+	  const sizeId = hasSize
+		? products.sizes.find((s) => s.sizeName === selectedSize)?.sizeId
+		: null;
+  
+	  const colorId = hasColor
+		? colorAsinArray.find((c) => c.name_color === selectedColor)?.color_id
+		: null;
+  
+	  // 👉 Lấy giỏ hàng hiện tại
+	  const cartRes = await axios.get("http://localhost:8084/api/cart/getCart", {
+		params: { token, cartId },
+	  });
+  
+	  const cartItems = cartRes.data?.items || [];
+  
+	  // ✅ Tìm sản phẩm trùng asin/size/color
+	  const existingItem = cartItems.find((item) => {
+		const matchAsin = item.asin === products.asin;
+		const matchSize = hasSize ? item.size === selectedSize : true;
+		const matchColor = hasColor ? item.nameColor === selectedColor : true;
+		return matchAsin && matchSize && matchColor;
+	  });
+  
+	  const currentQuantityInCart = existingItem?.quantity || 0;
+	  const totalDesired = currentQuantityInCart + quantity;
+  
+	  // 🔍 Kiểm tra tồn kho
+	  const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, {
+		params: {
+		  productId: products.productId,
+		  ...(sizeId && { sizeId }),
+		  ...(colorId && { colorId }),
+		},
+	  });
+  
+	  const stock = res.data;
+  
+	  if (totalDesired > stock) {
+		showToastMsg(`⚠️ Trong giỏ đã có ${currentQuantityInCart}. Tổng vượt quá tồn kho (${stock}).`);
+		return;
+	  }
+  
+	  const unitPrice = products.productPrice;
+	  const discount = products.percentDiscount || 0;
+	  const discountedPrice = unitPrice - (unitPrice * discount / 100);
+  
+	  const payload = {
+		token,
+		asin: products.asin,
+		quantity,
+		price: parseFloat(discountedPrice),
+		cartId,
+		size: hasSize ? selectedSize : null,
+		nameColor: hasColor ? selectedColor : null,
+		colorAsin: JSON.stringify(colorAsinArray || []),
+	  };
+  
+	  const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+  
+	  if (response.data.cartId) {
+		localStorage.setItem("cartId", response.data.cartId);
+	  }
+  
+	  window.dispatchEvent(new Event("cartUpdated"));
+	  showToastMsg("✅ Đã thêm vào giỏ hàng!");
+	} catch (error) {
+	  console.error("❌ Lỗi khi thêm vào giỏ:", error);
+	  showToastMsg("❌ Có lỗi xảy ra. Vui lòng thử lại.");
+	}
+  };
+			   
 	// ✅ Gửi đánh giá
 	const handleSubmitReview = async () => {
 		if (!newReview.trim()) return;
@@ -142,15 +291,17 @@ function ProductDetail() {
 	  };
 	  
 	// ✅ Parse colorAsin
-	let colorAsinArray = [];
-	try {
-	  colorAsinArray = typeof products.colorAsin === 'string'
-		? JSON.parse(products.colorAsin)
-		: products.colorAsin || [];
-	} catch (e) {
-	  console.error("Không thể parse colorAsin:", e);
-	  colorAsinArray = [];
-	}
+	const colorAsinArray = useMemo(() => {
+		try {
+		  if (!products?.colorAsin) return [];
+		  return typeof products.colorAsin === 'string'
+			? JSON.parse(products.colorAsin)
+			: products.colorAsin;
+		} catch (e) {
+		  console.error("Không thể parse colorAsin:", e);
+		  return [];
+		}
+	  }, [products]);
 	
 	// ✅ Load chi tiết sản phẩm
 	const fetchProductDetailWithAsin = async (asin) => {
@@ -168,11 +319,14 @@ function ProductDetail() {
 	
 	// ✅ Xử lý số lượng
 	const handleChange = (e) => {
-	  const value = e.target.value;
-	  const parsed = parseInt(value);
-	  setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
-	};
-	
+		const value = parseInt(e.target.value);
+		if (isNaN(value) || value < 1) {
+		  setQuantity(1);
+		  showToastMsg("⚠️ Số lượng phải từ 1 trở lên.");
+		} else {
+		  checkQuantityAgainstStock(value);
+		}
+	  };	
 	// ✅ Load sản phẩm khi asin thay đổi
 	useEffect(() => {
 	  if (asin) {
@@ -364,9 +518,12 @@ function ProductDetail() {
 								</p>
 								
 								<div className="meta-content m-b20">
-									<span className="price-name">Price</span>
-									<span className="price">${((products.productPrice * quantity) - ((products.productPrice * products.percentDiscount / 100) * quantity) ) .toFixed(2)} <del>${(products.productPrice * quantity).toFixed(2)}</del></span>
-								</div>
+  <span className="price-name">Price</span>
+  <span className="price">
+    ${discountedPrice.toFixed(2)}{" "}
+    <del>${originalPrice.toFixed(2)}</del>
+  </span>
+</div>
 								<div className="product-num gap-md-2 gap-xl-0">
 									   <div className="btn-quantity light">
     <label className="form-label fw-bold">Quantity</label>
@@ -383,7 +540,10 @@ function ProductDetail() {
       flex: '0 0 auto',
       marginRight: '8px' // tạo khoảng cách bên phải nút -
     }}
-    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+    onClick={() => {
+		const newQty = Math.max(1, quantity - 1);
+		checkQuantityAgainstStock(newQty);
+	  }}
   >
     -
   </button>
@@ -407,7 +567,10 @@ function ProductDetail() {
       flex: '0 0 auto',
       marginLeft: '8px' // tạo khoảng cách bên trái nút +
     }}
-    onClick={() => setQuantity(q => q + 1)}
+    onClick={() => {
+		const newQty = quantity + 1;
+		checkQuantityAgainstStock(newQty);
+	  }}
   >
     +
   </button>
@@ -417,37 +580,25 @@ function ProductDetail() {
 									<div className="d-block">
 										<label className="form-label">Size</label>
 										<div className="btn-group product-size m-0">
-  {products.sizes && products.sizes.length > 0 ? (
-    <>
-      {/* Hiển thị size đầu tiên */}
-      <input
-        type="radio"
-        className="btn-check"
-        name="btnradio2"
-        id="btnradiol0"
-      />
-      <label className="btn" htmlFor="btnradiol0">
-        {products.sizes[0].sizeName}
-      </label>
-
-      {/* Hiển thị các size tiếp theo */}
-      {products.sizes.slice(1).map((size, index) => {
-        const inputId = `btnradiol${index + 1}`;
-        return (
-          <React.Fragment key={index}>
-            <input
-              type="radio"
-              className="btn-check"
-              name="btnradio2"
-              id={inputId}
-            />
-            <label className="btn" htmlFor={inputId}>
-              {size.sizeName}
-            </label>
-          </React.Fragment>
-        );
-      })}
-    </>
+  {products.sizes?.length > 0 ? (
+    products.sizes.map((size, index) => {
+      const inputId = `btnradiol${index}`;
+      return (
+        <React.Fragment key={index}>
+          <input
+            type="radio"
+            className="btn-check"
+            name="btnradio2"
+            id={inputId}
+            checked={selectedSize === size.sizeName}
+            onChange={() => setSelectedSize(size.sizeName)}
+          />
+          <label className="btn" htmlFor={inputId}>
+            {size.sizeName}
+          </label>
+        </React.Fragment>
+      );
+    })
   ) : (
     <p>No size available</p>
   )}
@@ -460,13 +611,14 @@ function ProductDetail() {
   colorAsinArray.map((item, index) => (
     <div className="form-check" key={index}>
       <input
-        className="form-check-input"
-        type="radio"
-        name="radioNoLabel"
-        id={`radioNoLabel-${index}`} // id nên unique
-        value={item.code_color}
-        aria-label="..."
-      />
+  className="form-check-input"
+  type="radio"
+  name="radioColor"
+  id={`radioColor-${index}`}
+  value={item.name_color}
+  checked={selectedColor === item.name_color}
+  onChange={() => setSelectedColor(item.name_color)}
+/>
       <span></span>
     </div>
   ))
@@ -479,7 +631,9 @@ function ProductDetail() {
 									</div>
 								</div>
 								<div className="btn-group cart-btn">
-									<a href="shop-cart.html" className="btn btn-secondary text-uppercase">Add To Cart</a>
+								<a onClick={handleAddToCart} className="btn btn-secondary text-uppercase">
+  Add To Cart
+</a>
 									<a href="shop-wishlist.html" className="btn btn-outline-secondary btn-icon">
 										<i className="icon feather icon-heart"></i>
 										Add To Wishlist
@@ -887,6 +1041,20 @@ function ProductDetail() {
 		
          <ScrollTopButton/>
         <QuickViewModal />
+		{showToast && (
+  <div style={{
+    position: 'fixed',
+    bottom: '30px',
+    right: '30px',
+    background: '#333',
+    color: '#fff',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    zIndex: 9999
+  }}>
+    {toastMessage}
+  </div>
+)}
     </>
   );
 }
