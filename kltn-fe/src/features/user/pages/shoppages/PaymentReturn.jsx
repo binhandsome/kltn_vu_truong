@@ -45,4 +45,4 @@ import queryString from "query-string";
 };
 
 
-// export default PaymentReturn;
+export default PaymentReturn;

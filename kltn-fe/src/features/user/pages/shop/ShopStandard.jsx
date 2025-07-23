@@ -187,19 +187,41 @@ const handleInputChangeSearch = (e) => {
 
   useEffect(() => {
     if (selectedProduct) {
-      const discountPrice = (
-        selectedProduct.productPrice * quantity -
-        (selectedProduct.productPrice * selectedProduct.percentDiscount) / 100 * quantity
-      ).toFixed(2);
-      setPriceDiscount(discountPrice);
+      const discount = selectedProduct.percentDiscount || 0;
+      const unitPrice = selectedProduct.productPrice || 0;
+      const discountedPrice = unitPrice - (unitPrice * discount / 100);
+  
+      setPriceDiscount(discountedPrice.toFixed(2));
     } else {
-      setPriceDiscount(0);
+      setPriceDiscount("0.00");
     }
-  }, [selectedProduct, quantity]);
+  }, [selectedProduct]);
 
   const addCart = async () => {
     const cartId = localStorage.getItem("cartId") || "";
     const token = localStorage.getItem("accessToken") || "";
+  
+    // ⚠️ Kiểm tra lựa chọn
+    if (selectedProduct?.sizes?.length > 0 && !selectedSize) {
+      triggerToast("⚠️ Vui lòng chọn size.", "error");
+      return;
+    }
+  
+    if (selectedProduct?.colorAsin && !selectedColor) {
+      triggerToast("⚠️ Vui lòng chọn màu.", "error");
+      return;
+    }
+  
+    // ❗ Kiểm tra tồn kho
+    if (availableStock === 0) {
+      triggerToast("❌ Sản phẩm này đã hết hàng.", "error");
+      return;
+    }
+  
+    if (quantity > availableStock) {
+      triggerToast(`⚠️ Chỉ còn ${availableStock} sản phẩm có sẵn.`, "error");
+      return;
+    }
   
     try {
       const payload = {
@@ -208,26 +230,27 @@ const handleInputChangeSearch = (e) => {
         quantity,
         price: parseFloat(priceDiscount),
         cartId,
-        size: selectedSize?.sizeName,
-        nameColor: selectedColor?.name_color,
+        size: selectedSize?.sizeName || null,
+        nameColor: selectedColor?.name_color || null,
         colorAsin: JSON.stringify(selectedProduct.colors || []),
       };
   
       const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+  
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }
   
       window.dispatchEvent(new Event("cartUpdated"));
-      triggerToast("✅ Thêm vào giỏ hàng thành công!");   
-      // 👉 Chuyển sang trang Cart
+      triggerToast("✅ Thêm vào giỏ hàng thành công!", "success");
+  
+      // 👉 Chuyển sang giỏ hàng
       window.location.href = "/user/shoppages/cart";
     } catch (error) {
       console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
       triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
     }
-  };
-  
+  }; 
   const addCartWithQuantity = async (quantity, product) => {
     const cartId = localStorage.getItem("cartId") || "";
     const token = localStorage.getItem("accessToken") || "";
@@ -1397,57 +1420,71 @@ const handleInputChangeSearch = (e) => {
          )}
                 </p>
                 <div className="meta-content m-b20 d-flex align-items-end">
-                  <div className="me-3">
-                    <span className="form-label">Price</span>
-                                            {selectedProduct !== null && (
-
-                   									<span className="price">${priceDiscount} <del>${(selectedProduct.productPrice * quantity).toFixed(2)}</del></span>
-
-                                            )}
-                  </div>
+                <div className="me-3">
+  <span className="form-label">Price</span>
+  {selectedProduct ? (
+    <span className="price">
+      ${priceDiscount} <del>${selectedProduct.productPrice}</del>
+    </span>
+  ) : (
+    <span className="price">N/A</span>
+  )}
+</div>
        <div className="btn-quantity light me-0">
     <label className="form-label fw-bold">Quantity</label>
     <div className="input-group">
-<button
-  className="btn btn-dark rounded-circle p-0"
-  style={{
-    width: '40px',
-    height: '40px',
-    backgroundColor: '#000',
-    color: '#fff',
-    border: 'none',
-    minWidth: 'unset',      // ép bỏ min-width của Bootstrap
-    flex: '0 0 auto'         // ngăn input-group ép dãn
-  }}
-  onClick={() => setQuantity(q => Math.max(1, q - 1))}
->
-  -
-</button>
-      <input
-        type="text"
-        min="1"
-        value={quantity}
-        onChange={handleChange}
-        className="form-control text-center"
-      />
-      <button
-  className="btn btn-dark rounded-circle p-0"
-  style={{
-    width: '40px',
-    height: '40px',
-    backgroundColor: '#000',
-    color: '#fff',
-    border: 'none',
-    minWidth: 'unset',      // ép bỏ min-width của Bootstrap
-    flex: '0 0 auto'         // ngăn input-group ép dãn
-  }}
-  onClick={() =>
-    setQuantity(q =>
-      availableStock !== null ? Math.min(availableStock, q + 1) : q + 1
-    )
-  }
->+</button>
-    </div>
+  <button
+    className="btn btn-dark rounded-circle p-0"
+    style={{
+      width: '40px',
+      height: '40px',
+      backgroundColor: '#000',
+      color: '#fff',
+      border: 'none',
+      minWidth: 'unset',
+      flex: '0 0 auto',
+    }}
+    onClick={() => {
+      if (quantity > 1) {
+        setQuantity(q => q - 1);
+      } else {
+        triggerToast("⚠️ Số lượng tối thiểu là 1", "error");
+      }
+    }}
+  >
+    -
+  </button>
+
+  <input
+    type="text"
+    min="1"
+    value={quantity}
+    onChange={handleChange}
+    className="form-control text-center"
+  />
+
+  <button
+    className="btn btn-dark rounded-circle p-0"
+    style={{
+      width: '40px',
+      height: '40px',
+      backgroundColor: '#000',
+      color: '#fff',
+      border: 'none',
+      minWidth: 'unset',
+      flex: '0 0 auto',
+    }}
+    onClick={() => {
+      if (availableStock !== null && quantity >= availableStock) {
+        triggerToast(`❌ Chỉ còn ${availableStock} sản phẩm có sẵn`, "error");
+      } else {
+        setQuantity(q => q + 1);
+      }
+    }}
+  >
+    +
+  </button>
+</div>
   </div>
                 </div>
 {/* --- CHỌN MÀU --- */}
@@ -1528,7 +1565,7 @@ const handleInputChangeSearch = (e) => {
   <label className="form-label fw-bold d-flex align-items-center">
     Quantity:
     {availableStock !== null && (
-      <span className="ms-2">({availableStock} item{availableStock > 1 ? 's' : ''} available)</span>
+      <span className="ms-2">({availableStock} sản phẩm)</span>
     )}
   </label>
 </div>
