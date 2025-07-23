@@ -8,12 +8,14 @@ import com.kltnbe.orderservice.dtos.req.*;
 import com.kltnbe.orderservice.dtos.res.CartResponse;
 import com.kltnbe.orderservice.dtos.res.OrderItemResponse;
 import com.kltnbe.orderservice.dtos.res.OrderResponse;
+import com.kltnbe.orderservice.dtos.res.UserProfileResponse;
 import com.kltnbe.orderservice.entities.DeliveryInfo;
 import com.kltnbe.orderservice.entities.Order;
 import com.kltnbe.orderservice.entities.OrderItem;
 import com.kltnbe.orderservice.entities.ShippingMethod;
 import com.kltnbe.orderservice.enums.DeliveryStatus;
 import com.kltnbe.orderservice.enums.OrderStatus;
+import com.kltnbe.orderservice.helpers.AuthServiceProxy;
 import com.kltnbe.orderservice.helpers.PaymentServiceProxy;
 import com.kltnbe.orderservice.helpers.ProductServiceProxy;
 import com.kltnbe.orderservice.helpers.UserServiceProxy;
@@ -50,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentServiceProxy paymentServiceProxy;
     private final OrderItemRepository orderItemRepository;
     private final ProductServiceProxy productServiceProxy;
+    private final AuthServiceProxy authServiceProxy;
     @Autowired
     private CartClient cartClient;
     @Autowired
@@ -78,8 +81,10 @@ public class OrderServiceImpl implements OrderService {
             Order order;
             Long userId = null;
             Timestamp now = new Timestamp(System.currentTimeMillis());
+            String paypalEmail = null;
 
             if (isGuest) {
+                paypalEmail = orderRequest.getGuestEmail();
                 String guestInfo = String.format(
                         "[GUEST ORDER] Name: %s, Phone: %s, Email: %s, Address: %s. Note: %s",
                         orderRequest.getGuestName(),
@@ -93,6 +98,11 @@ public class OrderServiceImpl implements OrderService {
                         orderRequest.getTotalPrice(), OrderStatus.pending.name(), now, now);
             } else {
                 userId = userServiceProxy.findUserIdByAccessToken(orderRequest.getAccessToken());
+                ResponseEntity<UserProfileResponse> meRes =
+                        authServiceProxy.getUserInfo("Bearer " + orderRequest.getAccessToken());
+                if (meRes.getStatusCode().is2xxSuccessful() && meRes.getBody() != null) {
+                    paypalEmail = meRes.getBody().getEmail();
+                }
                 DeliveryAddressDTO addressDTO = userServiceProxy.getAddressById(orderRequest.getAddressId());
 
                 String fullAddress = (addressDTO.getAddressDetails() != null ? addressDTO.getAddressDetails() + ", " : "")
@@ -152,6 +162,7 @@ public class OrderServiceImpl implements OrderService {
             paymentRequest.setMethodPayment(orderRequest.getSelectBank());
             paymentRequest.setAmount(orderRequest.getTotalPrice());
             paymentRequest.setIpAddress(orderRequest.getIpAddress());
+            paymentRequest.setPaypalEmail(paypalEmail);
 
             ResponseEntity<?> paymentResp = paymentServiceProxy.savePayment(paymentRequest);
             if (!paymentResp.getStatusCode().is2xxSuccessful()) {

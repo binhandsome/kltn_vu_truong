@@ -5,6 +5,9 @@ import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom'; 
 import WOW from 'wowjs';
 import { getProfile, updateProfile } from '../../apiService/authService';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { parse, format,isValid} from 'date-fns';
 
 function Profile() {
   const [hasBgClass, setHasBgClass] = useState(true); 
@@ -19,6 +22,31 @@ function Profile() {
     dateOfBirth: '',
     profilePicture: ''
   });
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const parseDate = (dateString) => {
+    if (!dateString) return null;
+    const parsed = parse(dateString, 'dd-MM-yyyy', new Date());
+    return isValid(parsed) ? parsed : null;
+  };
+  
+  const formatDate = (dateObj) => {
+    return isValid(dateObj) ? format(dateObj, 'dd-MM-yyyy') : '';
+  };
+  const formatDateFromAPI = (isoDate) => {
+    try {
+      const date = new Date(isoDate);
+      return isValid(date) ? format(date, 'dd-MM-yyyy') : '';
+    } catch {
+      return '';
+    }
+  };
+  
+const showToastMessage = (msg) => {
+  setToastMessage(msg);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 2000);
+};
 
   useEffect(() => {
     if (hasBgClass) {
@@ -37,6 +65,7 @@ function Profile() {
   useEffect(() => {
     getProfile()
       .then(data => {
+        console.log('📦 Profile từ API:', data); 
         setFormData({
           firstName: data.firstName || '',
           lastName: data.lastName || '',
@@ -44,7 +73,7 @@ function Profile() {
           phoneNumber: data.phoneNumber || '',
           userAddress: data.userAddress || '',
           gender: data.gender || '',
-          dateOfBirth: data.dateOfBirth ? data.dateOfBirth.slice(0, 10) : '',
+          dateOfBirth: data.dateOfBirth ? formatDateFromAPI(data.dateOfBirth) : '',
           profilePicture: data.profilePicture || ''
         });
         if (data.profilePicture) {
@@ -61,6 +90,46 @@ function Profile() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+  const handleValidation = () => {
+    if (!formData.firstName.trim()) {
+      showToastMessage("❌ Vui lòng nhập Họ.");
+      return false;
+    }
+    if (!formData.lastName.trim()) {
+      showToastMessage("❌ Vui lòng nhập Tên.");
+      return false;
+    }
+    if (!formData.phoneNumber.trim()) {
+      showToastMessage("❌ Vui lòng nhập Số điện thoại.");
+      return false;
+    }
+    const phoneRegex = /^[0-9]{9,12}$/;
+    if (!phoneRegex.test(formData.phoneNumber)) {
+      showToastMessage("❌ Số điện thoại không hợp lệ.");
+      return false;
+    }
+    if (!formData.userAddress.trim()) {
+      showToastMessage("❌ Vui lòng nhập Địa chỉ.");
+      return false;
+    }
+    if (!formData.gender) {
+      showToastMessage("❌ Vui lòng chọn Giới tính.");
+      return false;
+    }
+    if (!formData.dateOfBirth) {
+      showToastMessage("❌ Vui lòng chọn Ngày sinh.");
+      return false;
+    }
+    const selectedDate = new Date(formData.dateOfBirth);
+    const today = new Date();
+    if (selectedDate > today) {
+      showToastMessage("❌ Ngày sinh không được lớn hơn hôm nay.");
+      return false;
+    }
+  
+    return true;
+  };
+  
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -73,14 +142,22 @@ function Profile() {
       reader.readAsDataURL(file);
     }
   };
-
+  const formatToISO = (ddmmyyyy) => {
+    const [day, month, year] = ddmmyyyy.split('-');
+    return `${year}-${month}-${day}`;
+  };
+  
   const handleSubmit = async () => {
     try {
-      await updateProfile(formData);
-      alert('Cập nhật thành công');
+      const formattedData = {
+        ...formData,
+        dateOfBirth: formatToISO(formData.dateOfBirth),
+      };
+      if (!handleValidation()) return;
+      await updateProfile(formattedData);
+      showToastMessage('✅ Cập nhật thành công');
     } catch (err) {
-      console.error(err);
-      alert(err.message || 'Cập nhật thất bại');
+      showToastMessage(err.message || '❌ Cập nhật thất bại');
     }
   };
 
@@ -203,8 +280,17 @@ function Profile() {
                       </div>
                       <div className="col-lg-6">
                         <div className="form-group m-b25">
-                          <label className="label-title">Date of Birth</label>
-                          <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleInputChange} className="form-control" />
+                          <label className="label-title">Date of Birth</label><br />
+                          <DatePicker
+  selected={parseDate(formData.dateOfBirth)}
+  onChange={(date) => {
+    const formatted = formatDate(date);
+    setFormData(prev => ({ ...prev, dateOfBirth: formatted }));
+  }}
+  dateFormat="dd-MM-yyyy"
+  className="form-control"
+  placeholderText="dd-MM-yyyy"
+/>
                         </div>
                       </div>
                     </form>
@@ -229,6 +315,22 @@ function Profile() {
         </div>
         <ScrollTopButton />
         <QuickViewModal />
+        {showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor: '#4caf50',
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    whiteSpace: 'pre-wrap'
+  }}>
+    {toastMessage}
+  </div>
+)}
       </div>
     </>
   );

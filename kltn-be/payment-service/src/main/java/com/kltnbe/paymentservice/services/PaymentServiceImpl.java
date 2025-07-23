@@ -1,15 +1,17 @@
 package com.kltnbe.paymentservice.services;
 
+import com.kltnbe.paymentservice.configs.PayPalConfig;
 import com.kltnbe.paymentservice.configs.VnpayConfig;
 import com.kltnbe.paymentservice.dtos.req.PaymentRequest;
-import com.kltnbe.paymentservice.entities.BankTransaction;
-import com.kltnbe.paymentservice.entities.CodTransaction;
-import com.kltnbe.paymentservice.entities.PaymentMethod;
+import com.kltnbe.paymentservice.entities.*;
 import com.kltnbe.paymentservice.entities.Transaction;
 import com.kltnbe.paymentservice.repositories.BankTransactionRepository;
 import com.kltnbe.paymentservice.repositories.CodTransactionRepository;
 import com.kltnbe.paymentservice.repositories.PaypalTransactionRepository;
 import com.kltnbe.paymentservice.repositories.TransactionRepository;
+import com.paypal.api.payments.*;
+import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.PayPalRESTException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final CodTransactionRepository codTransactionRepository;
     private final PaypalTransactionRepository paypalTransactionRepository;
     private final VnpayConfig vnpayConfig;
+    private final PayPalConfig payPalConfig;
 
     @Override
     public ResponseEntity<?> saveTransaction(PaymentRequest paymentRequest) {
@@ -46,7 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orderId(paymentRequest.getOrderId())
                 .paymentMethod(method)
                 .amount(paymentRequest.getAmount())
-                .status(method == PaymentMethod.BANK ? "PENDING" : "SUCCESS") // BANK thì pending
+                .status(method == PaymentMethod.COD ? "SUCCESS" : "PENDING")
                 .build();
 
         Transaction savedTransaction = transactionRepository.save(transaction);
@@ -79,11 +82,6 @@ public class PaymentServiceImpl implements PaymentService {
                 String ipAddress = paymentRequest.getIpAddress() != null
                         ? paymentRequest.getIpAddress()
                         : "127.0.0.1";
-
-                // Cập nhật lại transaction với amount VND
-                savedTransaction.setAmount(amountVND);
-                transactionRepository.save(savedTransaction);
-
                 try {
                     String vnpayUrl = buildVnpayUrl(savedTransaction, ipAddress, amountVND);
                     System.out.println("✅ VNPay URL generated: " + vnpayUrl);
@@ -99,17 +97,32 @@ public class PaymentServiceImpl implements PaymentService {
                 }
 
             case PAYPAL:
-                return ResponseEntity.ok(Map.of(
-                        "message", "Thanh toán PayPal thành công",
-                        "orderId", savedTransaction.getOrderId()
-                ));
+                try {
+                    String paypalRedirectUrl = createPayment(
+                            paymentRequest.getAmount().doubleValue(),
+                            "USD",
+                            savedTransaction.getOrderId().toString(),
+                            paymentRequest.getPaypalEmail(),
+                            savedTransaction
+                    );
 
+                    return ResponseEntity.ok(Map.of(
+                            "message", "Redirect đến PayPal",
+                            "paymentUrl", paypalRedirectUrl,
+                            "orderId", savedTransaction.getOrderId()
+                    ));
+                } catch (Exception e) {
+                    return ResponseEntity.internalServerError().body(Map.of(
+                            "error", "Không thể tạo thanh toán PayPal",
+                            "details", e.getMessage()
+                    ));
+                }
             default:
                 return ResponseEntity.badRequest().body(Map.of("error", "Phương thức thanh toán không hợp lệ"));
         }
     }
 
-
+    @Override
     public String buildVnpayUrl(Transaction transaction, String ipAddr, BigDecimal amountVND) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
@@ -117,14 +130,15 @@ public class PaymentServiceImpl implements PaymentService {
         String vnp_Amount = String.valueOf(amountVND.multiply(BigDecimal.valueOf(100)).longValue());
         String vnp_CurrCode = "VND";
         String vnp_TxnRef = String.valueOf(transaction.getTransactionId());
-        String vnp_OrderInfo = removeAccents("Thanh toan don hang " + transaction.getOrderId());
+        String vnp_OrderInfo = "Thanh toan don hang: " + transaction.getOrderId();
         String vnp_OrderType = "other";
         String vnp_Locale = "vn";
         String vnp_ReturnUrl = vnpayConfig.getReturnUrl();
         String vnp_IpAddr = ipAddr;
         String vnp_CreateDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String vnp_BankCode = "NCB";
 
-        Map<String, String> vnp_Params = new TreeMap<>();
+        Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
@@ -137,36 +151,89 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
+        vnp_Params.put("vnp_BankCode", vnp_BankCode);
 
-        // Bước 1: Tạo chuỗi hashData (chưa encode)
+        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
+        Collections.sort(fieldNames);
+
         StringBuilder hashData = new StringBuilder();
-        for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {
-            if (hashData.length() > 0) hashData.append('&');
-            hashData.append(entry.getKey()).append('=').append(entry.getValue());
-        }
-
-        // Bước 2: Tạo secureHash
-        String secureHash = hmacSHA512(vnpayConfig.getHashSecret(), hashData.toString());
-
-        // Bước 3: Tạo query string (đã URLEncode)
         StringBuilder query = new StringBuilder();
-        for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {
-            if (query.length() > 0) query.append('&');
-            query.append(URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII))
+
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String key = fieldNames.get(i);
+            String value = vnp_Params.get(key);
+            hashData.append(key).append('=').append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+            query.append(URLEncoder.encode(key, StandardCharsets.US_ASCII))
                     .append('=')
-                    .append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
+                    .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+            if (i < fieldNames.size() - 1) {
+                hashData.append('&');
+                query.append('&');
+            }
         }
 
+        String secureHash = hmacSHA512(vnpayConfig.getHashSecret(), hashData.toString());
         query.append("&vnp_SecureHash=").append(secureHash);
-
-        // Debug
-        System.out.println("🔐 RAW hashData: " + hashData);
-        System.out.println("🔑 Hash: " + secureHash);
 
         return vnpayConfig.getUrl() + "?" + query;
     }
 
+    @Override
+    public String createPayment(double total, String currency, String orderId, String paypalEmail, Transaction savedTransaction) throws Exception {
+        Amount amount = new Amount();
+        amount.setCurrency(currency);
+        amount.setTotal(String.format("%.2f", total)); // total cần format sang string
+        com.paypal.api.payments.Transaction transaction = new com.paypal.api.payments.Transaction();
+        transaction.setAmount(amount);
+        transaction.setDescription("Thanh toán đơn hàng #" + orderId);
+        List<com.paypal.api.payments.Transaction> transactions = new ArrayList<>();
+        transactions.add(transaction);
 
+
+        Payer payer = new Payer();
+        payer.setPaymentMethod("paypal");
+
+        RedirectUrls redirectUrls = new RedirectUrls();
+        redirectUrls.setCancelUrl("http://localhost:8087/api/payment/paypal_return?paypalStatus=cancel&orderId=" + orderId);
+        redirectUrls.setReturnUrl("http://localhost:8087/api/payment/paypal_return?paypalStatus=success&orderId=" + orderId);
+
+        Payment payment = new Payment();
+        payment.setIntent("sale");
+        payment.setPayer(payer);
+        payment.setTransactions(transactions);
+        payment.setRedirectUrls(redirectUrls);
+
+        // ✅ Tạo payment trên PayPal
+        APIContext context = payPalConfig.apiContext();
+        Payment createdPayment = payment.create(context);
+
+        // ✅ Lấy URL PayPal để redirect người dùng
+        for (Links link : createdPayment.getLinks()) {
+            if (link.getRel().equals("approval_url")) {
+                // Lưu vào DB nếu cần
+                PaypalTransaction paypalTransaction = PaypalTransaction.builder()
+                        .transaction(savedTransaction)
+                        .paypalEmail(paypalEmail)
+                        .paypalRedirectUrl(link.getHref())
+                        .build();
+
+                paypalTransactionRepository.save(paypalTransaction);
+                return link.getHref(); // redirect FE đến đây
+            }
+        }
+
+        throw new RuntimeException("Không tìm thấy approval_url từ PayPal");
+    }
+    @Override
+    public Payment executePayment(String paymentId, String payerId) throws PayPalRESTException {
+        Payment payment = new Payment();
+        payment.setId(paymentId);
+
+        PaymentExecution paymentExecution = new PaymentExecution();
+        paymentExecution.setPayerId(payerId);
+
+        return payment.execute(payPalConfig.apiContext(), paymentExecution);
+    }
 
     // Hàm removeAccents: loại bỏ dấu tiếng Việt
     private String removeAccents(String text) {

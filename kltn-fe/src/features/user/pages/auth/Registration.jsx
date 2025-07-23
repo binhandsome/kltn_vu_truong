@@ -17,21 +17,29 @@ function Registration() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [email, setEmail] = useState('');
-    const [message, setMessage] = useState('');
+    // const [message, setMessage] = useState('');
     const [otp, setOtp] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
+    const [toastMessage, setToastMessage] = useState('');
+    const [showToast, setShowToast] = useState(false);
+
+    const showToastMessage = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 1000);
+    };
 
     const handleSendVerification = async () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            setMessage("❌ Email không hợp lệ. Vui lòng nhập đúng định dạng email.");
+            showToastMessage("❌ Email không hợp lệ. Vui lòng nhập đúng định dạng email.");
             return;
-        }
-        const exists = await checkEmailExists(email);
-        if (exists) {
-        setMessage("❌ Email này đã tồn tại trong hệ thống.");
-        return;
-        }   
+          }
+          const exists = await checkEmailExists(email);
+          if (exists) {
+            showToastMessage("❌ Email này đã tồn tại trong hệ thống.");
+            return;
+          }  
         setIsSendingDisabled(true);
         setIsOtpInputVisible(true);
         setCountdown(60);
@@ -49,11 +57,10 @@ function Registration() {
     
         try {
             await axios.post(`${API_URL}/sendEmailRegister`, { email });
-            setMessage("✅ Gửi email xác thực thành công.");
-        } catch (error) {
-            console.error("Gửi email thất bại:", error);
-            setMessage("❌ Gửi email thất bại, vui lòng thử lại.");
-        }
+            showToastMessage("✅ Gửi email xác thực thành công.");
+          } catch (error) {
+            showToastMessage("❌ Gửi email thất bại, vui lòng thử lại.");
+          }
     };
     
 
@@ -70,26 +77,29 @@ function Registration() {
             if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password)) passwordErrors.push("Ít nhất 1 ký tự đặc biệt.");
 
             if (passwordErrors.length > 0) {
-                setMessage("Mật khẩu không hợp lệ:\n" + passwordErrors.join('\n'));
+                showToastMessage("Mật khẩu không hợp lệ:\n" + passwordErrors.join('\n'));
                 return;
             }
 
             if (password !== confirmPassword) {
-                setMessage("Mật khẩu xác nhận không khớp.");
+                showToastMessage("Mật khẩu xác nhận không khớp.");
                 return;
             }
 
             try {
                 const user = { username, password,confirmPassword, email, otp, dateOfBirth };
                 const response = await register(user);
-                setMessage(response.message);
+                showToastMessage(response.message);
                 setUsername('');
                 setPassword('');
                 setConfirmPassword('');
                 setEmail('');
                 setDateOfBirth('');
+                setTimeout(() => {
+                    window.location.href = '/user/auth/login'; // hoặc navigate('/user/auth/login');
+                  }, 1500);
             } catch (error) {
-                setMessage(`Error: ${error.message}`);
+                showToastMessage(`Error: ${error.message}`);
             }
         } else {
             form.reportValidity();
@@ -194,9 +204,7 @@ function Registration() {
                                         </div>
                                     </form>
                                     <br />
-                                    <div className="text-center">
-                                        {message && <p>{message}</p>}
-                                    </div>
+                                    {/* <div className="text-center">{message && <p>{message}</p>}</div> */}
                                 </div>
                             </div>
                         </div>
@@ -204,6 +212,23 @@ function Registration() {
                 </div>
                 <ScrollTopButton />
                 <QuickViewModal />
+                {showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor: '#4caf50',
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    whiteSpace: 'pre-wrap'
+  }}>
+    {toastMessage}
+  </div>
+)}
+
             </div>
         </>
     );

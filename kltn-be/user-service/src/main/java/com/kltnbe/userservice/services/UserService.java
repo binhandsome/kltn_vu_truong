@@ -7,6 +7,7 @@ import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
 import com.kltnbe.userservice.entities.Address;
+import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
 import org.springframework.http.ResponseEntity;
 
@@ -24,4 +25,5 @@ public interface UserService {
     AddressInfo getAddressById(Long addressId);
     ResponseEntity<?> getUserProfileById(Long userId);
     UserDTO getUserInfoById(Long userId);
+    User getOrCreateUserByAuth(Auth auth);
 }

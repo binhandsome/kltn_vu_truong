@@ -34,8 +34,17 @@ function ShopStandard({products }) {
   const [selectedSize, setSelectedSize] = useState(null);
   const [searchAsin, setSearchAsin] = useState([]);
   const [availableStock, setAvailableStock] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+const [toastMessage, setToastMessage] = useState('');
+const [toastType, setToastType] = useState('success'); // hoặc "error"
 
-
+// ✅ Đổi tên hàm showToast → triggerToast
+const triggerToast = (msg, type = "success") => {
+  setToastMessage(msg);
+  setToastType(type);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 1500);
+};
   useEffect(() => {
     const modalEl = document.getElementById('exampleModal');
   
@@ -210,11 +219,12 @@ const handleInputChangeSearch = (e) => {
       }
   
       window.dispatchEvent(new Event("cartUpdated"));
-      
+      triggerToast("✅ Thêm vào giỏ hàng thành công!");   
       // 👉 Chuyển sang trang Cart
       window.location.href = "/user/shoppages/cart";
     } catch (error) {
       console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
+      triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
     }
   };
   
@@ -238,12 +248,12 @@ const handleInputChangeSearch = (e) => {
       }
   
       window.dispatchEvent(new Event("cartUpdated"));
+      triggerToast("✅ Thêm vào giỏ hàng thành công!");      
     } catch (error) {
       console.error("❌ Không thể thêm giỏ hàng (from outside):", error.response?.data || error.message);
+      triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
     }
   };
-  
-
   const getCartProduct = async () => {
     const cartId = localStorage.getItem("cartId") || "";
     const token = localStorage.getItem("accessToken") || "";
@@ -375,10 +385,12 @@ const handleInputChangeSearch = (e) => {
         await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        triggerToast("🗑️ Đã xóa sản phẩm khỏi wishlist");
       } else {
         await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
       }
   
       const res = await axios.get("http://localhost:8083/api/wishlist", {
@@ -1646,6 +1658,24 @@ const handleInputChangeSearch = (e) => {
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
+         {showToast && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            zIndex: 9999,
+            padding: "12px 20px",
+            backgroundColor: toastType === "success" ? "#4caf50" : "#f44336",
+            color: "white",
+            borderRadius: "8px",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            transition: "opacity 0.5s ease-in-out",
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
       </div>
     </>
   );

@@ -282,5 +282,16 @@ public class UserServiceImpl implements UserService{
                 user.getProfilePicture()
         );
     }
+    @Override
+    public User getOrCreateUserByAuth(Auth auth) {
+        return userRepository.findByAuth(auth).orElseGet(() -> {
+            User user = new User();
+            user.setAuth(auth);
+            user.setEmail(auth.getEmail());
+            user.setCreatedAt(new Date());
+            user.setUpdatedAt(new Date());
+            return userRepository.save(user);
+        });
+    }
 
 }

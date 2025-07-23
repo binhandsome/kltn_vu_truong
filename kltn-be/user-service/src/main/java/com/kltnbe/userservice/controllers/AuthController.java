@@ -64,6 +64,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
+
         try {
             if (!jwtUtil.validateToken(token)) {
                 return ResponseEntity.status(401).body("Token hết hạn");
@@ -77,19 +78,8 @@ public class AuthController {
         String username = jwtUtil.getUsernameFromToken(token);
         Auth auth = authService.getUserByUsername(username);
 
-        // Check if user profile exists, if not, create it
-        Optional<User> userOpt = Optional.ofNullable(auth.getUser());
-        User user;
-        if (userOpt.isPresent()) {
-            user = userOpt.get();
-        } else {
-            user = new User();
-            user.setAuth(auth);
-            user.setEmail(auth.getEmail());
-            user.setCreatedAt(new java.util.Date());
-            user.setUpdatedAt(new java.util.Date());
-            userRepository.save(user);
-        }
+        // ✅ Gọi service để lấy hoặc tạo User
+        User user = userService.getOrCreateUserByAuth(auth);
 
         // Build response
         UserProfileResponse profile = new UserProfileResponse();
@@ -106,6 +96,7 @@ public class AuthController {
 
         return ResponseEntity.ok(profile);
     }
+
     @GetMapping("/getUserByUsername")
     public Auth getUserByUsername(@RequestParam String username) {
         return authService.getUserByUsername(username);
