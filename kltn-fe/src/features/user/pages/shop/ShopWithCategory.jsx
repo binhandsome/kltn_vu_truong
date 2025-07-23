@@ -40,6 +40,17 @@ function ShopWithCategory() {
   const [salesRankCategories, setSalesRankCategories] = useState([]);
   const [tags, setTags] = useState({});
   const [productTypeCount, setProductTypeCount] = useState({});
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success'); // hoặc "error"
+  
+  // ✅ Đổi tên hàm showToast → triggerToast
+  const triggerToast = (msg, type = "success") => {
+    setToastMessage(msg);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 1500);
+  };
 
   useEffect(() => {
     const modal = document.getElementById("exampleModal");
@@ -191,9 +202,11 @@ function ShopWithCategory() {
       }
   
       window.dispatchEvent(new Event("cartUpdated"));
+      triggerToast("✅ Thêm vào giỏ hàng thành công!");
       window.location.href = "/user/shoppages/cart";
     } catch (error) {
       console.error("❌ Không thể thêm vào giỏ hàng:", error.response?.data || error.message);
+      triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
     }
   };
   
@@ -212,8 +225,10 @@ function ShopWithCategory() {
       const res = await axios.post('http://localhost:8084/api/cart/addCart', payload);
       if (res.data.cartId) localStorage.setItem('cartId', res.data.cartId);
       window.dispatchEvent(new Event('cartUpdated'));
+      triggerToast("✅ Thêm vào giỏ hàng thành công!"); 
     } catch (error) {
       console.error('❌ Lỗi thêm giỏ hàng:', error);
+      triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
     }
   };
 
@@ -244,11 +259,13 @@ function ShopWithCategory() {
         await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        triggerToast("🗑️ Đã xóa sản phẩm khỏi wishlist");
       } else {
         await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        window.location.href = "/user/wishlist";
+        triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
+        // window.location.href = "/user/wishlist";
       }
   
       const res = await axios.get("http://localhost:8083/api/wishlist", {
@@ -1539,6 +1556,24 @@ function ShopWithCategory() {
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
+         {showToast && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            zIndex: 9999,
+            padding: "12px 20px",
+            backgroundColor: toastType === "success" ? "#4caf50" : "#f44336",
+            color: "white",
+            borderRadius: "8px",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            transition: "opacity 0.5s ease-in-out",
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
       </div>
     </>
   );

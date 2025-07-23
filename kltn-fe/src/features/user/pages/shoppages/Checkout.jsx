@@ -244,15 +244,12 @@ function Checkout() {
       }
   
       const response = await axios.post(endpoint, payload);
-      const { message, paymentUrl } = response.data;
+      const { message, paymentUrl, orderId } = response.data;
   
-      if (selectBank === "BANK" && paymentUrl) {
+      if ((selectBank === "BANK" || selectBank === "PAYPAL") && paymentUrl) {
         window.location.href = paymentUrl;
         return;
-      }
-  
-      alert(message || "Đặt hàng thành công!");
-  
+      }  
       try {
         await axios.delete("http://localhost:8084/api/cart/clearCart", {
           token: tokenAccess || '',
@@ -263,8 +260,8 @@ function Checkout() {
       }
   
       await getCartProductById();
-      setListCartById({ items: [], totalPrice: 0 });
-      navigate("/user/myaccount/orders");
+      setListCartById({ items: [], totalPrice: 0 });      
+      navigate(`/user/shoppages/paymentReturn?success=true&orderId=${orderId}`);
     } catch (error) {
       console.error("❌ Lỗi khi đặt hàng:", error);
       alert(error.response?.data?.error || error.message);

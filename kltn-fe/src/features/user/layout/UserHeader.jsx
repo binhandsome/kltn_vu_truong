@@ -62,18 +62,7 @@ import { useNavigate } from 'react-router-dom';
           updateCartItemQuantity(product.asin, num, unitPrice, product.size, product.nameColor);
         }
       }
-    };
-    
-    // const fetchUser = useCallback(async () => {
-    //   try {
-    //     const res = await authFetch(`${API_URL}/me`);
-    //     const data = await res.json();
-    //     setUser(data);
-    //   } catch {
-    //     setUser(null);
-    //   }
-    // }, []);
-  
+    };  
     useEffect(() => {
       const storedUsername = localStorage.getItem("username");
       const token = localStorage.getItem("accessToken");
@@ -134,9 +123,7 @@ import { useNavigate } from 'react-router-dom';
 
   setSelectedItemsCart(allSelected ? [] : allAsins);
 };
-
-  
-  
+ 
 const getCartProduct = async () => {
   const token = localStorage.getItem("accessToken");
   const cartId = token ? null : localStorage.getItem("cartId");
@@ -982,6 +969,7 @@ const getCartProduct = async () => {
                   aria-controls="offcanvasRight"
                 >
                   <i className="iconly-Light-Heart2" />
+                  <span className="badge badge-circle">{wishlistItems.length? wishlistItems.length:0}</span>
                 </a>
               </li>
               <li className="nav-item cart-link">
@@ -1067,16 +1055,24 @@ const getCartProduct = async () => {
       </a>
 
       <button
-        onClick={() => {
-          logout();
-          window.dispatchEvent(new Event('loggedOut'));
-          window.location.href = '/';
-        }}
-        className="btn d-flex align-items-center justify-content-start px-3 py-3 bg-white text-start text-danger shadow-sm w-100"
-        style={{ border: 'none', borderRadius: '0', fontWeight: '500' }}
-      >
-        <i className="fa fa-sign-out-alt me-2"></i> Đăng Xuất
-      </button>
+  onClick={() => {
+    logout(); // xoá token (nếu bạn định nghĩa riêng)
+    
+    // 🌟 Lưu thông báo vào localStorage
+    localStorage.setItem('logoutSuccess', 'Đăng xuất thành công');
+
+    // Dispatch nếu bạn cần
+    window.dispatchEvent(new Event('loggedOut'));
+
+    // Chuyển trang
+    window.location.href = '/user/auth/login'; // hoặc '/'
+  }}
+  className="btn d-flex align-items-center justify-content-start px-3 py-3 bg-white text-start text-danger shadow-sm w-100"
+  style={{ border: 'none', borderRadius: '0', fontWeight: '500' }}
+>
+  <i className="fa fa-sign-out-alt me-2"></i> Đăng Xuất
+</button>
+
     </div>
   </div>
 </div>

@@ -9,7 +9,15 @@ function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
+  // const [message, setMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+const showToastMessage = (msg) => {
+  setToastMessage(msg);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 2000);
+};
 
   const validatePassword = (pwd) => {
     const errors = [];
@@ -25,29 +33,29 @@ function ChangePassword() {
     e.preventDefault();
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setMessage("❌ Vui lòng điền đầy đủ thông tin.");
+      showToastMessage("❌ Vui lòng điền đầy đủ thông tin.");
       return;
     }
-
+    
     const errors = validatePassword(newPassword);
     if (errors.length > 0) {
-      setMessage("❌ Mật khẩu mới không hợp lệ:\n" + errors.join('\n'));
+      showToastMessage("❌ Mật khẩu mới không hợp lệ:\n" + errors.join('\n'));
       return;
     }
-
+    
     if (newPassword !== confirmPassword) {
-      setMessage("❌ Mật khẩu xác nhận không khớp.");
+      showToastMessage("❌ Mật khẩu xác nhận không khớp.");
       return;
     }
-
+    
     try {
       const res = await changePassword(currentPassword, newPassword);
-      setMessage(`✅ ${res}`);
+      showToastMessage(`✅ ${res}`);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setMessage(`❌ ${err.message}`);
+      showToastMessage(`❌ ${err.message}`);
     }
   };
 
@@ -101,11 +109,7 @@ function ChangePassword() {
                     <div className="text-center">
                       <button type="submit" className="btn btn-secondary">Đổi mật khẩu</button>
                     </div>
-                    {message && (
-                      <div className="alert alert-info text-center mt-3" style={{ whiteSpace: 'pre-wrap' }}>
-                        {message}
-                      </div>
-                    )}
+                    {/* {message && (<div className="alert alert-info text-center mt-3" style={{ whiteSpace: 'pre-wrap' }}>{message}</div>)} */}
                   </form>
                 </div>
               </div>
@@ -114,6 +118,23 @@ function ChangePassword() {
         </div>
         <ScrollTopButton />
         <QuickViewModal />
+        {showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor: '#4caf50',
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    whiteSpace: 'pre-wrap'
+  }}>
+    {toastMessage}
+  </div>
+)}
+
       </div>
     </>
   );

@@ -13,53 +13,78 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-      const navigate = useNavigate();
-
-      const handleSubmit = async (e) => {
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const showToastMessage = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 1000);
+  };
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
         e.preventDefault();
-        const form = e.target;
-        if (form.checkValidity()) {
-          try {
-            const credentials = { email, password };
-            const response = await login(credentials);
       
-            // 🌟 Lưu thông tin cơ bản từ login API
-            localStorage.setItem('accessToken', response.accessToken);
-            localStorage.setItem('refreshToken', response.refreshToken);
-            localStorage.setItem('username', response.username); 
+        // 🌟 Validate client-side
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+          showToastMessage('Vui lòng nhập email');
+          return;
+        }
+        if (!emailRegex.test(email)) {
+          showToastMessage('Email phải là Gmail hợp lệ (vd: example@gmail.com)');
+          return;
+        }
       
-            // 🌟 Gọi /me để lấy thông tin đầy đủ (userId, avatar,...)
-            const meRes = await fetch("http://localhost:8081/api/auth/me", {
-              headers: {
-                Authorization: `Bearer ${response.accessToken}`
-              }
-            });
-            if (meRes.ok) {
-              const meData = await meRes.json();
+        if (!password) {
+          showToastMessage('Vui lòng nhập mật khẩu');
+          return;
+        }
+        if (password.length < 6) {
+          showToastMessage('Mật khẩu phải có ít nhất 6 ký tự');
+          return;
+        }
       
-              // Lưu userId và avatar nếu có
-              if (meData?.userId) {
-                localStorage.setItem("userId", meData.userId);
-              }
-              if (meData?.profilePicture) {
-                localStorage.setItem("avatar", meData.profilePicture);
-              }
+        // ✅ Nếu hợp lệ thì tiếp tục đăng nhập
+        try {
+          const credentials = { email, password };
+          const response = await login(credentials);
+      
+          localStorage.setItem('accessToken', response.accessToken);
+          localStorage.setItem('refreshToken', response.refreshToken);
+          localStorage.setItem('username', response.username);
+          localStorage.setItem('user', JSON.stringify({ email }));
+      
+          const meRes = await fetch("http://localhost:8081/api/auth/me", {
+            headers: {
+              Authorization: `Bearer ${response.accessToken}`
             }
+          });
       
-            // ✅ Thành công: reset form và điều hướng
-            setMessage('Đăng nhập thành công');
-            setEmail('');
-            setPassword('');
-            window.location.href = '/user';
-          } catch (error) {
-            setMessage(`Error: ${error.message}`);
+          if (meRes.ok) {
+            const meData = await meRes.json();
+            if (meData?.userId) localStorage.setItem("userId", meData.userId);
+            if (meData?.profilePicture) localStorage.setItem("avatar", meData.profilePicture);
           }
-        } else {
-          form.reportValidity();
+      
+          
+          setEmail('');
+          setPassword('');
+          localStorage.setItem('loginSuccess','Đăng nhập thành công');
+          navigate('/user');
+        } catch (error) {
+          showToastMessage(`Đăng nhập thất bại: ${error.message}`);
         }
       };
-      
-
+      // Đăng xuất
+      useEffect(() => {
+        const logoutMsg = localStorage.getItem('logoutSuccess');
+        if (logoutMsg) {
+          showToastMessage(logoutMsg);
+          localStorage.removeItem('logoutSuccess');
+        }
+      }, []);            
 	useEffect(() => {
 	  if (hasBgClass) {
 		document.body.classList.add('bg');
@@ -192,6 +217,22 @@ function Login() {
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
         <QuickViewModal />
+        {showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    transition: 'opacity 0.5s ease-in-out'
+  }}>
+    {toastMessage}
+  </div>
+)}
       </div>
     </>
   );
