@@ -5,6 +5,7 @@ import com.kltnbe.emailservice.repositories.EmailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,14 +21,12 @@ public class EmailServiceImpl implements EmailService {
     private JavaMailSender mailSender;
 
     @Transactional
+    @Async
     public void sendOtpEmail(String to, String otp) {
-        // Xóa email cũ trong cùng giao dịch
         deleteAllEmail(to);
-        // Tạo và lưu email mới
         LocalDateTime expTime = LocalDateTime.now().plusMinutes(5);
         Email email = new Email(to, otp, expTime);
         emailRepository.save(email);
-        // Gửi email
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("Mã OTP xác minh tài khoản");
@@ -35,6 +34,12 @@ public class EmailServiceImpl implements EmailService {
         mailSender.send(message);
 
         System.out.println("Email sent to: " + to);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByEmail(String email) {
+        emailRepository.deleteByEmail(email);
     }
 
 

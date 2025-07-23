@@ -1,13 +1,11 @@
+// src/pages/PaymentReturn.jsx
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import queryString from "query-string";
-
-const PaymentReturn = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [paymentStatus, setPaymentStatus] = useState(null);
-  const [message, setMessage] = useState("Đang xác minh giao dịch...");
-
+ const PaymentReturn = () => {
+  const location = useLocation();   const navigate = useNavigate();
+ const [paymentStatus, setPaymentStatus] = useState(null);
+ const [message, setMessage] = useState("Đang xác minh giao dịch...");
   const parsed = queryString.parse(location.search);
   const orderId = parsed.orderId;
 
@@ -46,4 +44,5 @@ const PaymentReturn = () => {
   );
 };
 
-export default PaymentReturn;
+
+// export default PaymentReturn;

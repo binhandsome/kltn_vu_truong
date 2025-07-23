@@ -1,13 +1,13 @@
-package com.kltnbe.sellerservice;
+package com.kltn.upload_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SellerServiceApplicationTests {
+class UploadServiceApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
+	@Test
+	void contextLoads() {
+	}
 
 }

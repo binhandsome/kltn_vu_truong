@@ -1,152 +1,166 @@
 package com.kltnbe.sellerservice.services;
 
-import com.kltnbe.sellerservice.dtos.StoreDTO;
-import com.kltnbe.sellerservice.dtos.ProductVariantDTO;
-import com.kltnbe.sellerservice.entities.Store;
+import com.kltnbe.sellerservice.clients.UploadServiceProxy;
+import com.kltnbe.sellerservice.clients.UserServiceProxy;
+import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.entities.StoreAuthentic;
+import com.kltnbe.sellerservice.repositories.StoreAuthenticRepository;
 import com.kltnbe.sellerservice.repositories.StoreRepository;
-import com.kltnbe.sellerservice.services.SellerService;
-import com.kltnbe.sellerservice.clients.OrderClient;
-import com.kltnbe.sellerservice.clients.ReviewClient;
-import com.kltnbe.sellerservice.clients.ProductClient;
+
+import feign.FeignException;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
+@AllArgsConstructor
+
 public class SellerServiceImpl implements SellerService {
-    @Autowired
-    private StoreRepository storeRepository;
-    @Autowired
-    private ProductClient productClient;
-    @Autowired
-    private OrderClient orderClient;
-    @Autowired
-    private ReviewClient reviewClient;
-    @Autowired
-    private RestTemplate restTemplate;
 
-    @Override
-    public StoreDTO createStore(StoreDTO storeDTO, String token) {
-        Long authId = extractAuthIdFromToken(token);
-        Store store = new Store();
-        store.setAuthId(authId);
-        store.setStoreName(storeDTO.getStoreName());
-        store.setStoreDescription(storeDTO.getStoreDescription());
-        store.setStoreAddress(storeDTO.getStoreAddress());
-        store.setStorePhone(storeDTO.getStorePhone());
-        store.setStoreEmail(storeDTO.getStoreEmail());
-        store.setStoreThumbnail(storeDTO.getStoreThumbnail());
-        store.setStoreStatus(Store.StoreStatus.pending);
-        store.setCreatedAt(new Date());
-        store.setUpdatedAt(new Date());
-        store = storeRepository.save(store);
-        return convertToDto(store);
-    }
 
-    @Override
-    public StoreDTO getStore(Long storeId) {
-        Optional<Store> store = storeRepository.findById(storeId);
-        return store.map(this::convertToDto).orElse(null);
-    }
+    private static final Logger log = LoggerFactory.getLogger(SellerServiceImpl.class);
 
+    @Autowired
+    private final StoreRepository storeRepository;
+    private final UserServiceProxy userServiceProxy;
+    private final UploadServiceProxy uploadImages;
+    @Autowired
+    private final UploadServiceProxy uploadServiceProxy;
+    private final StoreAuthenticRepository storeAuthenticRepository;
     @Override
-    public StoreDTO updateStore(Long storeId, StoreDTO storeDTO) {
-        Optional<Store> storeOptional = storeRepository.findById(storeId);
-        if (storeOptional.isPresent()) {
-            Store store = storeOptional.get();
-            store.setStoreName(storeDTO.getStoreName());
-            store.setStoreDescription(storeDTO.getStoreDescription());
-            store.setStoreAddress(storeDTO.getStoreAddress());
-            store.setStorePhone(storeDTO.getStorePhone());
-            store.setStoreEmail(storeDTO.getStoreEmail());
-            store.setStoreThumbnail(storeDTO.getStoreThumbnail());
-            if (storeDTO.getStoreStatus() != null) {
-                try {
-                    store.setStoreStatus(Store.StoreStatus.valueOf(storeDTO.getStoreStatus().toLowerCase()));
-                } catch (IllegalArgumentException e) {
-                    store.setStoreStatus(store.getStoreStatus());
-                }
+    public ResponseEntity<?> registerSeller(SellerDTO sellerDTO) {
+        System.out.println("📥 Nhận request đăng ký seller:");
+        System.out.println("📨 Họ tên: " + sellerDTO.getFirstName() + " " + sellerDTO.getLastName());
+        System.out.println("📨 Email: " + sellerDTO.getEmail());
+        System.out.println("📨 Username: " + sellerDTO.getUsername());
+        System.out.println("📨 SĐT: " + sellerDTO.getSdt());
+        System.out.println("📨 Địa chỉ nhà: " + sellerDTO.getAddressHouse());
+        System.out.println("📨 Địa chỉ giao hàng: " + sellerDTO.getAddressDelivery());
+        if (sellerDTO.getFrontCCCD() != null) {
+            System.out.println("📎 frontCCCD: " + sellerDTO.getFrontCCCD().getOriginalFilename());
+        }
+        if (sellerDTO.getBackCCCD() != null) {
+            System.out.println("📎 backCCCD: " + sellerDTO.getBackCCCD().getOriginalFilename());
+        }
+        if (sellerDTO.getImageYou() != null) {
+            System.out.println("📎 imageYou: " + sellerDTO.getImageYou().getOriginalFilename());
+        }
+
+        if (sellerDTO.getEmail() == null || sellerDTO.getUsername() == null ||
+                sellerDTO.getPassword() == null || sellerDTO.getConfirmPassword() == null ||
+                sellerDTO.getFrontCCCD() == null || sellerDTO.getBackCCCD() == null ||
+                sellerDTO.getImageYou() == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng cung cấp đầy đủ thông tin"));
+        }
+
+        try {
+            RegisterRequest registerRequest = new RegisterRequest();
+            registerRequest.setUsername(sellerDTO.getUsername());
+            registerRequest.setEmail(sellerDTO.getEmail());
+            registerRequest.setFirstName(sellerDTO.getFirstName());
+            registerRequest.setLastName(sellerDTO.getLastName());
+            registerRequest.setPassword(sellerDTO.getPassword());
+            registerRequest.setConfirmPassword(sellerDTO.getConfirmPassword());
+            registerRequest.setSdt(sellerDTO.getSdt());
+            registerRequest.setOtp(sellerDTO.getOtp());
+
+            ResponseEntity<?> registerAuth = userServiceProxy.register(registerRequest);
+            Long authId = userServiceProxy.findIdByEmail(sellerDTO.getEmail());
+            if (authId != null && storeAuthenticRepository.findByAuthId(authId).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Email đã được đăng ký làm seller"));
             }
-            store.setUpdatedAt(new Date());
-            return convertToDto(storeRepository.save(store));
+            if (registerAuth.getStatusCode().is2xxSuccessful() ||
+                    (registerAuth.getBody() instanceof Map &&
+                            ((Map<String, String>) registerAuth.getBody()).getOrDefault("message", "").equals("Email đã được sử dụng"))) {
+                if (authId == null) {
+                    authId = userServiceProxy.findIdByEmail(sellerDTO.getEmail());
+                }
+
+                if (authId == null) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy tài khoản với email này"));
+                }
+
+                List<MultipartFile> images = new ArrayList<>();
+                images.add(sellerDTO.getFrontCCCD());
+                images.add(sellerDTO.getBackCCCD());
+                images.add(sellerDTO.getImageYou());
+
+                ResponseEntity<List<String>> imageUrls = uploadServiceProxy.uploadImages(images, "CCCD");
+                if (imageUrls.getStatusCode().is2xxSuccessful() && imageUrls.getBody() != null && imageUrls.getBody().size() == 3) {
+                    List<String> imageList = imageUrls.getBody();
+                    StoreAuthentic storeAuthentic = new StoreAuthentic();
+                    storeAuthentic.setFrontCccdUrl(imageList.get(0));
+                    storeAuthentic.setBackCccdUrl(imageList.get(1));
+                    storeAuthentic.setRealFaceImageUrl(imageList.get(2));
+                    storeAuthentic.setAddressHouse(sellerDTO.getAddressHouse());
+                    storeAuthentic.setAddressDelivery(sellerDTO.getAddressDelivery());
+                    storeAuthentic.setAuthId(authId);
+                    storeAuthenticRepository.save(storeAuthentic);
+                    return ResponseEntity.ok(Map.of("message", "Đăng ký seller thành công"));
+                } else {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Lỗi khi upload ảnh CCCD"));
+                }
+            } else {
+                Map<String, String> responseMap = (Map<String, String>) registerAuth.getBody();
+                String message = responseMap != null ? responseMap.getOrDefault("message", "Đăng ký thất bại") : "Đăng ký thất bại";
+                return ResponseEntity.status(registerAuth.getStatusCode()).body(Map.of("message", message));
+            }
+        } catch (FeignException e) {
+            log.error("Lỗi khi gọi user-service hoặc upload-service: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", "Lỗi khi xử lý yêu cầu: " + e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi hệ thống: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Lỗi hệ thống: " + e.getMessage()));
         }
-        return null;
     }
-
     @Override
-    public void deleteStore(Long storeId) {
-        storeRepository.deleteById(storeId);
-    }
-
-    @Override
-    public ProductVariantDTO createProduct(ProductVariantDTO variantDTO, String token) {
-        Long storeId = getStoreIdFromToken(token);
-        variantDTO.setStoreId(storeId);
-        if (variantDTO.getVariantSku() == null) {
-            variantDTO.setVariantSku(generateSku(storeId, variantDTO.getProductAsin()));
+    public ResponseEntity<?> loginWithSeller(LoginRequest loginRequest) {
+        try {
+            ResponseEntity<?> response = userServiceProxy.checkLoginSeller(loginRequest);
+            return ResponseEntity.ok(Map.of("message", "✅ Đã gửi OTP"));
+        } catch (FeignException.FeignClientException ex) {
+            int status = ex.status();
+            switch (status) {
+                case 401:
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(Map.of("message", "❌ Email hoặc mật khẩu không đúng"));
+                case 403:
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(Map.of("message", "🚫 Tài khoản không phải là seller"));
+                case 500:
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(Map.of("message", "⚠️ Lỗi hệ thống khi gửi OTP"));
+                default:
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(Map.of("message", "❗ Lỗi không xác định từ user-service"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "❗ Không thể kết nối đến user-service"));
         }
-        return productClient.createProduct(variantDTO, token);
     }
 
     @Override
-    public ProductVariantDTO getProduct(Long variantId, String token) {
-        return productClient.getProduct(variantId, token);
+    public ResponseEntity<?> verifyLoginSeller(RequestInfomation requestInfomation) {
+        return userServiceProxy.verifyLoginSeller(requestInfomation);
     }
 
     @Override
-    public ProductVariantDTO updateProduct(Long variantId, ProductVariantDTO variantDTO, String token) {
-        return productClient.updateProduct(variantId, variantDTO, token);
+    public ResponseEntity<?> getInfoUser(String accessToken) {
+        ResponseEntity<?> response = userServiceProxy.getUserWithAccessToken(accessToken);
+        return response;
     }
 
-    @Override
-    public void deleteProduct(Long variantId, String token) {
-        productClient.deleteProduct(variantId, token);
-    }
 
-    @Override
-    public BigDecimal getRevenue(String token) {
-        Long authId = extractAuthIdFromToken(token);
-        return orderClient.getRevenueBySeller(authId);
-    }
-
-    @Override
-    public void respondToReview(Long reviewId, String response) {
-        reviewClient.respondToReview(reviewId, response);
-    }
-
-    private StoreDTO convertToDto(Store store) {
-        StoreDTO dto = new StoreDTO();
-        dto.setStoreId(store.getStoreId());
-        dto.setAuthId(store.getAuthId());
-        dto.setStoreName(store.getStoreName());
-        dto.setStoreDescription(store.getStoreDescription());
-        dto.setStoreAddress(store.getStoreAddress());
-        dto.setStorePhone(store.getStorePhone());
-        dto.setStoreEmail(store.getStoreEmail());
-        dto.setStoreThumbnail(store.getStoreThumbnail());
-        dto.setStoreStatus(store.getStoreStatus() != null ? store.getStoreStatus().name() : null);
-        dto.setCreatedAt(store.getCreatedAt());
-        dto.setUpdatedAt(store.getUpdatedAt());
-        return dto;
-    }
-
-    private String generateSku(Long storeId, String productAsin) {
-        return storeId + "-" + productAsin + "-" + System.currentTimeMillis();
-    }
-
-    private Long extractAuthIdFromToken(String token) {
-        // Giả định logic lấy authId từ token (cần tích hợp JWT)
-        return 1L; // Placeholder
-    }
-
-    private Long getStoreIdFromToken(String token) {
-        Long authId = extractAuthIdFromToken(token);
-        return storeRepository.findByAuthId(authId)
-                .map(Store::getStoreId)
-                .orElseThrow(() -> new RuntimeException("No store found for this seller"));
-    }
 }
