@@ -20,22 +20,25 @@ public class JwtUtil {
     @Value("${jwt.refresh.expiration}")
     private long refreshTokenExpiration;
 
-    private static final long CLOCK_SKEW_SECONDS = 5; // Cho phép lệch 5 giây
+    private static final long CLOCK_SKEW_SECONDS = 5; // Cho phép lệch thời gian 5 giây
 
-    public String generateAccessToken(String username) {
+    // Tạo access token với username và role (chỉ một role: USER, SELLER, hoặc ADMIN)
+    public String generateAccessToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", "ROLE_" + role) // Thêm tiền tố ROLE_ khi tạo token
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
 
+    // Tạo refresh token
     public String generateRefreshToken() {
-
         return UUID.randomUUID().toString();
     }
 
+    // Lấy username từ token
     public String getUsernameFromToken(String token) {
         try {
             return Jwts.parser()
@@ -45,10 +48,25 @@ public class JwtUtil {
                     .getBody()
                     .getSubject();
         } catch (ExpiredJwtException e) {
-            return e.getClaims().getSubject(); // Still extract username for refresh
+            return e.getClaims().getSubject(); // Vẫn lấy username khi token hết hạn
         }
     }
 
+    // Lấy role từ token
+    public String getRoleFromToken(String token) {
+        try {
+            return Jwts.parser()
+                    .setSigningKey(secret)
+                    .setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS)
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("role", String.class);
+        } catch (ExpiredJwtException e) {
+            return e.getClaims().get("role", String.class);
+        }
+    }
+
+    // Xác thực token
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -57,7 +75,7 @@ public class JwtUtil {
                     .parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException e) {
-            throw new ExpiredJwtException(e.getHeader(), e.getClaims(), "Token đã hết hạn");
+            throw new RuntimeException("Token đã hết hạn", e);
         } catch (Exception e) {
             throw new RuntimeException("Token không hợp lệ", e);
         }

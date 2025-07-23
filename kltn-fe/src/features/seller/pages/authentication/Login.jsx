@@ -1,5 +1,99 @@
-const Login = () => (
-<div className="ad-auth-wrapper">
+import axios from 'axios';
+import React, { useState, useRef, useEffect } from 'react';
+
+function Login() {
+const [showModal, setShowModal] = useState(false);
+const [otp, setOtp] = useState(new Array(6).fill(""));
+const inputsRef = useRef([]);
+const [email, setEmail] = useState();
+const [password, setPassword] = useState();
+const [message, setMessage] = useState();
+useEffect(() => {
+  console.log(otp);
+})
+const handleChange = (e, index) => {
+  const value = e.target.value;
+  if (!/^[0-9]?$/.test(value)) return; // Chỉ nhận số
+  const newOtp = [...otp];
+  newOtp[index] = value;
+  setOtp(newOtp);
+  if (value && index < 5) {
+    inputsRef.current[index + 1].focus();
+  }
+};
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputsRef.current[index - 1].focus();
+    }
+  };
+  const checkLoginSeller = async() => {
+    if(email === null || password === null) {
+    return setMessage('❗ Vui lòng điền đầy đủ thông tin');
+    }
+     const payload = { email, password };
+   try {
+  const response = await axios.post("http://localhost:8089/api/seller/checkLoginSeller", payload);
+  if (response.status === 200) {
+    setMessage('' + response.data.message);
+    setShowModal(true);
+  }
+} catch (error) {
+  if (error.response) {
+    const status = error.response.status;
+    const msg = error.response.data?.message || 'Không xác định';
+
+    if (status === 401) {
+      setMessage(' ' + msg);
+    } else if (status === 403) {
+      setMessage(' ' + msg);
+    } else if (status === 500) {
+      setMessage(' ' + msg);
+    } else {
+      setMessage('❗ Đã xảy ra lỗi không xác định');
+    }
+  } else {
+    setMessage('❗ Không thể kết nối đến máy chủ');
+  }
+}
+};
+const verifyLoginSeller = async () => {
+  const otpCode = otp.join("");
+  console.log("✅ OTP Code vừa nhập:", otpCode); // Log OTP người dùng nhập
+
+  if (otpCode.length !== 6) {
+    alert("Vui lòng nhập đầy đủ mã OTP");
+    return;
+  }
+
+  const payload = {
+    email,
+    otp: otpCode, // ✅ Đúng key phải là "otp" để khớp với backend (RequestInfomation.otp)
+  };
+
+  console.log("📦 Payload gửi lên server:", payload);
+
+  try {
+    const response = await axios.post("http://localhost:8089/api/seller/verifyLoginSeller", payload);
+
+    console.log("📥 Phản hồi từ server:", response.data);
+
+    const { accessToken, refreshToken, username } = response.data;
+
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("username", username);
+
+    window.location.href = "/seller";
+  } catch (error) {
+    console.error("❌ Lỗi xác thực OTP:", error);
+    console.log("🪵 Phản hồi lỗi từ server:", error?.response?.data);
+    alert(error?.response?.data?.message || "Xác thực OTP thất bại");
+  }
+};
+
+return (
+<>
+  <div className="ad-auth-wrapper">
   <div className="ad-auth-box">
     <div className="row align-items-center">
       <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
@@ -7,9 +101,10 @@ const Login = () => (
           <img src="../../assets/admin/images/auth-img1.png" alt="" />
         </div>
       </div>
+   
       <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
         <div className="ad-auth-content">
-          <form>
+
             <a href="index.html" className="ad-auth-logo">
               <img src="../../assets/admin/images/logo2.png" alt="" />
             </a>
@@ -25,6 +120,9 @@ const Login = () => (
                   // Email Address
                   placeholder="Địa chỉ Email"
                   className="ad-input"
+                      value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
                 <div className="ad-auth-icon">
                   <svg
@@ -54,6 +152,9 @@ const Login = () => (
                   // Password
                   placeholder="Mật khẩu"
                   className="ad-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
                 <div className="ad-auth-icon">
                   <svg
@@ -96,20 +197,86 @@ const Login = () => (
               </a>
             </div>
             <div className="ad-auth-btn">
-              <a href="javascript:void(0);" className="ad-btn ad-login-member">
+              <button onClick={checkLoginSeller} className="ad-btn ad-login-member">
                 {/* Login */}
                 Đăng nhập
-              </a>
+              </button>
             </div>
+            {message}
             <p className="ad-register-text">
               {/* Don't have an account?  */} 
               Bạn chưa có tài khoản? <a href="register.html">Bấm vào đây</a>
               {/* Click Here */}
             </p>
-          </form>
+
+{showModal && (
+  <div className="modal d-block show" style={{ background: 'rgba(0,0,0,0.5)' }}>
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">NHẬP MÃ OTP GỬI VỀ MAIL CỦA BẠN</h5>
+          <button className="close" onClick={() => setShowModal(false)}>
+            &times;
+          </button>
+        </div>
+         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
+      {otp.map((digit, index) => (
+        <input
+          key={index}
+          ref={(el) => (inputsRef.current[index] = el)}
+          type="text"
+          inputMode="numeric"
+          maxLength="1"
+          value={digit}
+          onChange={(e) => handleChange(e, index)}
+          onKeyDown={(e) => handleKeyDown(e, index)}
+          style={{
+            width: "40px",
+            height: "50px",
+            fontSize: "24px",
+            textAlign: "center",
+            border: "2px solid #ccc",
+            borderRadius: "6px",
+            outline: "none",
+            transition: "border-color 0.2s ease-in-out",
+          }}
+          onFocus={(e) => e.target.select()}
+        />
+       
+      ))}
+    
+    </div>
+<div style={{ textAlign: 'center', marginTop: '20px' }}>
+  <button
+    style={{
+      padding: '10px 20px',
+      backgroundColor: '#007bff',
+      border: 'none',
+      color: 'white',
+      borderRadius: '6px',
+      fontSize: '16px',
+      cursor: 'pointer',
+    }}
+    onClick={() => {
+      const otpCode = otp.join('');
+      console.log('✅ Mã OTP nhập:', otpCode);
+      verifyLoginSeller();
+    }}
+  >
+    Xác nhận mã OTP
+  </button>
+</div>
+
+      </div>
+        
+    </div>
+  </div>
+)}
+
         </div>
       </div>
     </div>
+    
     <div className="ad-notifications ad-error">
       <p>
         {/* Something Went Wrong */}
@@ -117,8 +284,12 @@ const Login = () => (
       </p>
     </div>
   </div>
-</div>
+</div></>
+);
 
-  );
+}
+
+
+  
   
   export default Login;

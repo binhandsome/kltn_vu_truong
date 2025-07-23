@@ -7,6 +7,7 @@ import com.kltnbe.userservice.dtos.res.UserProfileResponse;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
 import com.kltnbe.userservice.helpers.EmailServiceProxy;
+import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
 import com.kltnbe.userservice.services.AuthService;
 import com.kltnbe.userservice.services.UserService;
@@ -39,6 +40,8 @@ public class AuthController {
 
     @Autowired
     private EmailServiceProxy emailServiceProxy;
+    @Autowired
+    private AuthRepository authRepository;
 
     @Autowired
     public AuthController(AuthService authService, UserService userService,UserRepository userRepository,JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate) {
@@ -142,8 +145,8 @@ public class AuthController {
                 System.out.println("Refresh token mismatch for user: " + username + ", sent: " + refreshToken + ", stored: " + storedToken);
                 throw new RuntimeException("Invalid refresh token");
             }
-
-            String newAccessToken = jwtUtil.generateAccessToken(username);
+            Optional<Auth> authOptional = authRepository.findByUsername(username);
+            String newAccessToken = jwtUtil.generateAccessToken(username, String.valueOf(authOptional.get().getUserRole()));
             String newRefreshToken = jwtUtil.generateRefreshToken();
             redisTemplate.opsForValue().set("refresh:" + username, newRefreshToken, 7L, TimeUnit.DAYS);
             System.out.println("Token refreshed successfully for user: " + username);
@@ -182,8 +185,7 @@ public class AuthController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<String> updateProfile(@RequestBody UpdateProfileRequest request,
-                                                @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<String> updateProfile(@RequestBody UpdateProfileRequest request, @RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         if (!jwtUtil.validateToken(token)) {
             return ResponseEntity.status(401).body("Token không hợp lệ hoặc đã hết hạn");
@@ -200,4 +202,33 @@ public class AuthController {
         response.put("exists", exists);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/findIdByUsername")
+    public Long findIdByUsername(String username) {
+        return authService.findIdByUsername(username);
+    }
+    @GetMapping("/findIdByEmail")
+    public Long findIdByEmail(String email) {
+        return authService.findIdByEmail(email);
+    }
+    @GetMapping("/checkUsernameExists")
+    public Boolean usernameExists(String username) {
+        return authService.usernameExists(username);
+    }
+    @GetMapping("/findRoleByEmail")
+    public String findRoleByEmail(String email) {
+        return authService.findRoleUserByEmail(email);
+    }
+    @PostMapping("/checkLoginSeller")
+    public ResponseEntity<?> checkLoginSeller(@RequestBody LoginRequest request) {
+        return authService.checkLoginSeller(request);
+    }
+    @PostMapping("/verifyLoginSeller")
+    public ResponseEntity<?> verifyLoginSeller(@RequestBody RequestInfomation requestInfomation) {
+        return authService.verifyLoginSeller(requestInfomation);
+    }
+    @GetMapping("/getUserWithAccessToken")
+    public ResponseEntity<?> getUserWithAccessToken(String accessToken) {
+        return authService.getUserWithAccessToken(accessToken);
+    }
+
 }

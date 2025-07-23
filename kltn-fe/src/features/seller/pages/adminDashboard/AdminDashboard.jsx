@@ -19,7 +19,7 @@ const AdminDashboard = () => (
                   </a>
                 </li>
                 {/* Admin */}
-                <li className="breadcrumb-link active">Quản trị viên</li>
+                <li className="breadcrumb-link active">SELLER</li>  
               </ul>
             </div>
           </div>

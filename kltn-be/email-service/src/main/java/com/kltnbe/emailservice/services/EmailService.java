@@ -4,5 +4,5 @@ import java.time.LocalDateTime;
 
 public interface EmailService {
     public void sendOtpEmail(String to, String otp);
-
+    public void deleteByEmail(String email);
 }
