@@ -3,6 +3,7 @@ package com.kltnbe.userservice.services;
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.entities.Auth;
+import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
 //    LoginResponse login(LoginRequest loginRequest);
@@ -12,7 +13,13 @@ public interface AuthService {
     String resetPassword(ResetPasswordRequest request);
     String changePassword(String email, ChangePasswordRequest request);
     boolean emailExists(String email);
-
+    Long findIdByUsername(String username);
+    Long findIdByEmail(String email);
+    boolean usernameExists(String username);
+    String findRoleUserByEmail(String email);
+    ResponseEntity<?> checkLoginSeller(LoginRequest request);
+    ResponseEntity<?> verifyLoginSeller(RequestInfomation requestInfomation);
+    ResponseEntity<?> getUserWithAccessToken(String accessToken);
 //    String verifyOtp(String username, String inputOtp);
 //    String registerSeller(RegisterRequest registerRequest);
 //

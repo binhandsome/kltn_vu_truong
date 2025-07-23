@@ -4,8 +4,10 @@ import com.kltnbe.userservice.dtos.req.ForgotPasswordOtpRequest;
 import com.kltnbe.userservice.dtos.req.RequestInfomation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "email-service")
 public interface EmailServiceProxy {
@@ -15,5 +17,6 @@ public interface EmailServiceProxy {
     ResponseEntity<String> checkOTP(@RequestBody RequestInfomation requestInfomation);
     @PostMapping("/api/email/sendOtpResetPassword")
     ResponseEntity<String> sendOtpResetPassword(@RequestBody ForgotPasswordOtpRequest request);
-
+    @DeleteMapping("/api/email/deleteByEmail")
+    public void deleteByEmail(@RequestParam String email);
 }

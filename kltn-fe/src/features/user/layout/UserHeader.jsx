@@ -1326,7 +1326,7 @@ const getCartProduct = async () => {
               <h6 className="title">
                 <a href={`/user/productstructure/ProductDetail?asin=${item.asin}`}>
                   {item.productTitle}
-                </a>=====
+                </a>
               </h6>
               <div className="d-flex align-items-center">
                 <div className="btn-quantity light quantity-sm me-3">
