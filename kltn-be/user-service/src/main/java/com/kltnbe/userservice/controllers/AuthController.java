@@ -1,5 +1,6 @@
 package com.kltnbe.userservice.controllers;
 
+import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.dtos.res.UserProfileResponse;
@@ -95,6 +96,7 @@ public class AuthController {
 
         // Build response
         UserProfileResponse profile = new UserProfileResponse();
+        profile.setUserId(user.getUserId());
         profile.setUsername(auth.getUsername());
         profile.setEmail(auth.getEmail());
         profile.setFirstName(user.getFirstName());
@@ -228,4 +230,5 @@ public class AuthController {
     public ResponseEntity<?> getUserWithAccessToken(String accessToken) {
         return authService.getUserWithAccessToken(accessToken);
     }
+
 }

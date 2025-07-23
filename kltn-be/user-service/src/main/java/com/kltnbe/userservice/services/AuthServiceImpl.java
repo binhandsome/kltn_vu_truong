@@ -328,5 +328,4 @@ public class AuthServiceImpl implements AuthService {
         return String.valueOf(auth.get().getUserRole());
     }
 
-
 }

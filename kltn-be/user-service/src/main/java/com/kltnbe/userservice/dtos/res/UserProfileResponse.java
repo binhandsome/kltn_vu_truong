@@ -7,6 +7,7 @@ import java.util.Date;
 
 @Data
 public class UserProfileResponse {
+    private Long userId;
     private String username;
     private String email;
     private String firstName;
@@ -16,6 +17,14 @@ public class UserProfileResponse {
     private Gender gender;
     private Date dateOfBirth;
     private String profilePicture;
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public Date getDateOfBirth() {
         return dateOfBirth;

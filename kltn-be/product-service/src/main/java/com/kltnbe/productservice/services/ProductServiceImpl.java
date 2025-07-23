@@ -6,7 +6,9 @@ import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
 //import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
 //import com.kltnbe.productservice.dtos.res.ProductSearchResponse;
 import com.kltnbe.productservice.entities.Product;
+import com.kltnbe.productservice.entities.ProductVariant;
 import com.kltnbe.productservice.repositories.ProductRepository;
+import com.kltnbe.productservice.repositories.ProductVariantRepository;
 import com.kltnbe.productservice.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -25,6 +28,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
         Pageable pageable = PageRequest.of(productFileterAll.getPage(), productFileterAll.getSize());
         return productRepository.findAll(pageable);
@@ -63,8 +68,4 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getProductsByIds(List<Long> ids) {
         return productRepository.findAllById(ids);
     }
-
-
-
-
 }
