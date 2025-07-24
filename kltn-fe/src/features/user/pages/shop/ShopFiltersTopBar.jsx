@@ -114,6 +114,9 @@ function ShopFiltersTopBar() {
     setCurrentPage(0);
     scrollToFilterWrapper();
   };
+  useEffect(()=> {
+    console.log(products + 'product cua toi la');
+  })
     useEffect(() => {
          const getRecommendationByUser = async () => {
           const accessToken = localStorage.getItem("accessToken");

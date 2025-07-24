@@ -19,10 +19,10 @@ public class ProductDocument {
     @Field(type = FieldType.Keyword)
     private String asin;
 
-    @Field(type = FieldType.Text, analyzer = "ngram_analyzer")
+    @Field(type = FieldType.Text)
     private String productTitle;
 
-    @Field(type = FieldType.Text, analyzer = "standard")
+    @Field(type = FieldType.Text)
     private String description;
 
     @Field(type = FieldType.Double)

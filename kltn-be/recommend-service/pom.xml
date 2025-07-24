@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.kltn-be</groupId>
-	<artifactId>product-service</artifactId>
+	<artifactId>recommend-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>product-service</name>
-	<description>product-service</description>
+	<name>recommend-service</name>
+	<description>recommend-service</description>
 	<url/>
 	<licenses>
 		<license/>

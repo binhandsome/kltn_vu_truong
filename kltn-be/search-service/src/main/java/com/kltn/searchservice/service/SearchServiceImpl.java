@@ -220,33 +220,56 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<ProductDocument> searchProductRecommend(RequestRecommend request) {
-        Long idUser = userServiceProxy.findUserIdByAccessToken(request.getAccessToken());
-        System.out.print("ten cua tao la " + idUser);
-        List<String> asinList = recommendServiceProxy.getAllRecommendByUser(idUser);
-        System.out.print("list cua tao la " + asinList);
+        log.info("🔐 Bắt đầu tìm kiếm sản phẩm đề xuất cho accessToken = {}", request.getAccessToken());
 
-        if (asinList == null || asinList.isEmpty()) {
+        // 1. Lấy ID người dùng từ accessToken
+        Long idUser = userServiceProxy.findUserIdByAccessToken(request.getAccessToken());
+        log.info("👤 ID người dùng lấy được: {}", idUser);
+
+        // 2. Gọi sang recommend-service để lấy danh sách asin
+        List<String> asinList = recommendServiceProxy.getAllRecommendByUser(idUser);
+        log.info("📦 Danh sách ASIN ban đầu từ recommend-service: {}", asinList);
+
+        // 3. Làm sạch ASIN (nếu cần)
+        List<String> cleanedAsinList = asinList.stream()
+                .flatMap(asin -> Arrays.stream(asin.replaceAll("\"", "").split(",")))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+        log.info("✅ Danh sách ASIN sau khi làm sạch: {}", cleanedAsinList);
+
+        // 4. Nếu danh sách trống → trả về rỗng
+        if (cleanedAsinList.isEmpty()) {
+            log.warn("⚠️ Không có sản phẩm nào để recommend cho userId {}", idUser);
             return new PageImpl<>(Collections.emptyList(), PageRequest.of(request.getPage(), request.getSize()), 0);
         }
+
+        // 5. Tạo Elasticsearch query
         Query esQuery = Query.of(q -> q.bool(b ->
                 b.filter(f -> f.terms(t -> t
-                        .field("asin.keyword")
-                        .terms(ts -> ts.value(asinList.stream().map(FieldValue::of).toList()))
+                        .field("asin")
+                        .terms(ts -> ts.value(cleanedAsinList.stream().map(FieldValue::of).toList()))
                 ))
         ));
+        log.debug("🔍 Elasticsearch query terms: {}", esQuery.toString());
 
+        // 6. Gửi truy vấn
         org.springframework.data.elasticsearch.core.query.Query searchQuery = NativeQuery.builder()
                 .withQuery(esQuery)
                 .withPageable(PageRequest.of(request.getPage(), request.getSize()))
                 .build();
+
         try {
             SearchHits<ProductDocument> hits = elasticsearchOperations.search(searchQuery, ProductDocument.class);
             List<ProductDocument> result = hits.getSearchHits().stream()
                     .map(SearchHit::getContent)
                     .toList();
+
+            log.info("🎯 Tìm thấy {} sản phẩm từ Elasticsearch cho user {}", result.size(), idUser);
+
             return new PageImpl<>(result, PageRequest.of(request.getPage(), request.getSize()), hits.getTotalHits());
         } catch (Exception e) {
-            log.error("Error searching recommend products from ES: {}", e.getMessage());
+            log.error("❌ Lỗi khi tìm kiếm sản phẩm recommend từ Elasticsearch: {}", e.getMessage(), e);
             return new PageImpl<>(Collections.emptyList(), PageRequest.of(request.getPage(), request.getSize()), 0);
         }
     }
@@ -277,7 +300,7 @@ public class SearchServiceImpl implements SearchService {
         // Tạo truy vấn Elasticsearch bằng NativeQuery
         Query esQuery = Query.of(q -> q.bool(b -> {
             b.filter(f -> f.terms(t -> t
-                    .field("asin.keyword")
+                    .field("asin")
                     .terms(ts -> ts.value(cleanedAsins.stream().map(FieldValue::of).toList()))
             ));
             return b;

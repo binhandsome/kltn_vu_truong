@@ -53,6 +53,7 @@ public class SearchController {
     @GetMapping("/getJustForYou")
     public ResponseEntity<SearchResponse<ProductDocument>> getJustForYou(RequestRecommend requestRecommend) {
         Page<ProductDocument> productDocuments = searchService.searchProductRecommend(requestRecommend);
+        System.out.println(productDocuments.getContent() + "content cua toi la");
         SearchResponse<ProductDocument> response = new SearchResponse<>();
         response.setContent(productDocuments.getContent());
         response.setPageNumber(productDocuments.getNumber());
