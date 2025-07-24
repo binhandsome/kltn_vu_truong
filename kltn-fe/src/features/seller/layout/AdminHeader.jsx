@@ -6,6 +6,12 @@ function AdminHeader() {
     const [email, setEmail] = useState();
     const [firstName, setFirstName] = useState();
     const [lastName, setLastName] = useState();
+     const logout = () => {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('username');
+  window.dispatchEvent(new Event('loggedOut'));
+};
     const getInfoSeller = async() => {
         const accessToken = localStorage.getItem("accessToken");
         try {
@@ -137,11 +143,15 @@ return (
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/seller/authentication/login">
+                                        <button  onClick={() => {
+                                                  logout();
+                                                  window.dispatchEvent(new Event('loggedOut'));
+                                                  window.location.href = '/seller';
+                                                }}>
                                         {/* Logout */}
                                             <i className="fas fa-sign-out-alt"></i> 
                                             Đăng xuất
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>

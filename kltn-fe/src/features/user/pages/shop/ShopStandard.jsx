@@ -1491,25 +1491,7 @@ const handleInputChangeSearch = (e) => {
   ) : null;
 })()}
 
-{/* --- CHỌN SIZE --- */}
-{selectedProduct?.sizes?.length > 0 && (
-  <div className="mb-3">
-    <label className="form-label fw-bold">Size</label>
-    <div className="btn-group flex-wrap" role="group">
-      {selectedProduct.sizes.map((size, idx) => (
-        <button
-          key={idx}
-          type="button"
-          className={`btn btn-outline-dark m-1 ${selectedSize?.sizeId === size.sizeId ? 'active' : ''}`}
-          onClick={() => setSelectedSize(size)} // 👈 lưu toàn bộ object size
-          style={{ minWidth: '60px' }}
-        >
-          {size.sizeName}
-        </button>
-      ))}
-    </div>
-  </div>
-)}
+
 
 {/* --- HIỂN THỊ SỐ LƯỢNG CÒN LẠI --- */}
 <div className="mb-3">

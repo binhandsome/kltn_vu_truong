@@ -29,7 +29,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
 //                        .requestMatchers("/api/auth/checkUsernameExists").hasRole("USER") // Sửa cú pháp, thêm /
-                        .requestMatchers("/api/auth/**").permitAll() // Endpoint công khai
+                        .requestMatchers("/api/auth/**", "/api/user/**").permitAll()
+                                // Endpoint công khai
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
