@@ -82,7 +82,17 @@ const showToastMessage = (msg) => {
       })
       .catch(error => {
         console.error('Lỗi khi lấy profile:', error);
-        alert('Không thể tải thông tin người dùng. Vui lòng đăng nhập lại.');
+      
+        setToastMessage('❌ Không thể tải thông tin người dùng. Vui lòng đăng nhập lại.');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 2500);
+      
+        // Optional: Xoá token + redirect sau đó
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('role');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
       });
   }, []);
 
@@ -168,11 +178,14 @@ const showToastMessage = (msg) => {
           <div className="dz-bnr-inr bg-secondary overlay-black-light" style={{ backgroundImage: "url(../../assets/user/images/background/bg1.jpg)" }}>
             <div className="container">
               <div className="dz-bnr-inr-entry">
-                <h1>Profile</h1>
+                <h1>
+                Hồ sơ
+                  {/* Profile */}
+                </h1>
                 <nav aria-label="breadcrumb" className="breadcrumb-row">
                   <ul className="breadcrumb">
-                    <li className="breadcrumb-item"><a href="index.html"> Home</a></li>
-                    <li className="breadcrumb-item">Account Profile</li>
+                    <li className="breadcrumb-item"><a href="index.html"> Trang chủ</a></li>
+                    <li className="breadcrumb-item">hồ sơ người dùng</li>
                   </ul>
                 </nav>
               </div>
@@ -239,37 +252,37 @@ const showToastMessage = (msg) => {
                     <form className="row">
                       <div className="col-lg-6">
                         <div className="form-group m-b25">
-                          <label className="label-title">First Name</label>
+                          <label className="label-title">Họ</label>
                           <input name="firstName" value={formData.firstName} onChange={handleInputChange} className="form-control" />
                         </div>
                       </div>
                       <div className="col-lg-6">
                         <div className="form-group m-b25">
-                          <label className="label-title">Last Name</label>
+                          <label className="label-title">Tên</label>
                           <input name="lastName" value={formData.lastName} onChange={handleInputChange} className="form-control" />
                         </div>
                       </div>
                       <div className="col-lg-6">
                         <div className="form-group m-b25">
-                          <label className="label-title">Email address</label>
+                          <label className="label-title">Địa chỉ Email</label>
                           <input type="email" name="email" value={formData.email} className="form-control" readOnly disabled />
                         </div>
                       </div>
                       <div className="col-lg-6">
                         <div className="form-group m-b25">
-                          <label className="label-title">Phone</label>
+                          <label className="label-title">SĐT</label>
                           <input name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className="form-control" />
                         </div>
                       </div>
                       <div className="col-lg-6">
                         <div className="form-group m-b25">
-                          <label className="label-title">Address</label>
+                          <label className="label-title">Địa chỉ</label>
                           <input name="userAddress" value={formData.userAddress} onChange={handleInputChange} className="form-control" />
                         </div>
                       </div>
                       <div className="col-lg-6">
                         <div className="form-group m-b25">
-                          <label className="label-title">Gender</label>
+                          <label className="label-title">Giới tính</label>
                           <select name="gender" value={formData.gender} onChange={handleInputChange} className="form-control">
                             <option value="">Select Gender</option>
                             <option value="MALE">Nam</option>
@@ -280,7 +293,7 @@ const showToastMessage = (msg) => {
                       </div>
                       <div className="col-lg-6">
                         <div className="form-group m-b25">
-                          <label className="label-title">Date of Birth</label><br />
+                          <label className="label-title">Ngày sinh</label><br />
                           <DatePicker
   selected={parseDate(formData.dateOfBirth)}
   onChange={(date) => {
@@ -299,12 +312,13 @@ const showToastMessage = (msg) => {
                         <div className="custom-control custom-checkbox text-black">
                           <input type="checkbox" className="form-check-input" id="basic_checkbox_1" />
                           <label className="form-check-label" htmlFor="basic_checkbox_1">
-                            Subscribe me to Newsletter
+                            Đăng ký nhận bản tin của tôi
+                            {/* Subscribe me to Newsletter */}
                           </label>
                         </div>
                       </div>
                       <button className="btn btn-primary mt-3 mt-sm-0" type="button" onClick={handleSubmit}>
-                        Update profile
+                       Sửa Hồ sơ
                       </button>
                     </div>
                   </div>

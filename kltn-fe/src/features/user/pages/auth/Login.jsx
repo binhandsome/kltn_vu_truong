@@ -127,9 +127,9 @@ function Login() {
           >
             <ul className="breadcrumb">
               <li className="breadcrumb-item">
-                <a href="index.html"> Home</a>
+                <a href="index.html"> Trang chủ</a>
               </li>
-              <li className="breadcrumb-item">Login</li>
+              <li className="breadcrumb-item">Đăng nhập</li>
             </ul>
           </nav>
         </div>
@@ -139,13 +139,14 @@ function Login() {
       </div>
       <div className="col-xxl-6 col-xl-6 col-lg-6 end-side-content justify-content-center">
         <div className="login-area">
-          <h2 className="text-secondary text-center">Login</h2>
+          <h2 className="text-secondary text-center">Đăng nhập</h2>
           <p className="text-center m-b25">
-            welcome please login to your account
+            Chào mừng bạn vui lòng đăng nhập vào tài khoản của bạn
+            {/* welcome please login to your account */}
           </p>
           <form onSubmit={handleSubmit}>
             <div className="m-b30">
-              <label className="label-title">Email Address</label>
+              <label className="label-title">Địa chỉ Email</label>
               <input
                 name="dzName"
                 value={email}
@@ -157,7 +158,7 @@ function Login() {
               />
             </div>
             <div className="m-b15">
-              <label className="label-title">Password</label>
+              <label className="label-title">Mật khẩu</label>
               <div className="secure-input ">
                 <input
                   type="password"
@@ -184,23 +185,23 @@ function Login() {
                     className="form-check-label"
                     htmlFor="basic_checkbox_1"
                   >
-                    Remember Me
+                    Nhớ
                   </label>
                 </div>
               </div>
               <div className="form-group">
                 <a className="text-primary" href="/user/auth/forgetpassword">
-                  Forgot Password
+                  Quên mật khẩu
                 </a>
               </div>
             </div>
             <div className="text-center">
-              <button type="submit" className="btn btn-secondary">Login</button>
+              <button type="submit" className="btn btn-secondary">Đăng nhập</button>
               <a
                 href="/user/auth/registration"
                 className="btn btn-outline-secondary btnhover text-uppercase"
               >
-                Register
+                Đăng ký
               </a>
             </div>
           </form>

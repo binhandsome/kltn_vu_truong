@@ -81,11 +81,11 @@ function WishList() {
           >
             <div className="container">
               <div className="dz-bnr-inr-entry">
-                <h1>Wishlist</h1>
+                <h1>Danh sách yêu thích</h1>
                 <nav aria-label="breadcrumb" className="breadcrumb-row">
                   <ul className="breadcrumb">
-                    <li className="breadcrumb-item"><a href="/">Home</a></li>
-                    <li className="breadcrumb-item">Wishlist</li>
+                    <li className="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                    <li className="breadcrumb-item">Danh sách yêu thích</li>
                   </ul>
                 </nav>
               </div>
@@ -101,10 +101,10 @@ function WishList() {
                     <table className="table check-tbl style-1">
                       <thead>
                         <tr>
-                          <th>Product</th>
+                          <th>Sản phẩm</th>
                           <th />
-                          <th>Price</th>
-                          <th>Stock</th>
+                          <th>Giá</th>
+                          <th>Tồn kho</th>
                           <th />
                           <th />
                         </tr>
@@ -121,13 +121,16 @@ function WishList() {
   ${item.discountedPrice}
 </td>
 
-                              <td className="product-item-stock">In Stock</td>
+                              <td className="product-item-stock">
+                              Còn hàng
+                                {/* In Stock */}
+                              </td>
                               <td className="product-item-totle">
                                 <button
                                   className="btn btn-secondary btnhover text-nowrap"
                                   onClick={() => handleAddToCart(item.asin)}
                                 >
-                                  Add To Cart
+                                 Thêm vào giỏ hàng
                                 </button>
                               </td>
                               <td className="product-item-close">

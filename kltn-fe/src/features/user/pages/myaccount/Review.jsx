@@ -44,13 +44,13 @@ function Review() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Review</h1>
+        <h1>Đánh giá</h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Review</li>
+            <li className="breadcrumb-item">Đánh giá</li>
           </ul>
         </nav>
       </div>

@@ -40,11 +40,11 @@ function Download() {
 		<div className="dz-bnr-inr bg-light" style={{ backgroundImage: `url('../assets/user/images/background/bg1.jpg')` }}>
 			<div className="container">
 				<div className="dz-bnr-inr-entry">
-					<h1>Downloads</h1>
+					<h1>Tải xuống</h1>
 					<nav aria-label="breadcrumb" className="breadcrumb-row">
 						<ul className="breadcrumb">
-							<li className="breadcrumb-item"><a href="/"> Home</a></li>
-							<li className="breadcrumb-item">Downloads</li>
+							<li className="breadcrumb-item"><a href="/"> Trang chủ</a></li>
+							<li className="breadcrumb-item">Tải xuống</li>
 						</ul>
 					</nav>
 				</div>
@@ -94,10 +94,10 @@ function Download() {
 								<table className="table check-tbl">
 									<thead>
 										<tr>
-											<th>No</th>
-											<th>Image</th>
-											<th>Name</th>
-											<th></th>
+											<th>STT</th>
+											<th>Ảnh sản phẩm</th>
+											<th>Tên sản phẩm</th>
+											<th>Hành động</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -105,7 +105,7 @@ function Download() {
 											<td className="product-item-price">1</td>
 											<td className="product-item-img"><img src="../../assets/user/images/shop/small/pic1.png" alt="/" /></td>
 											<td className="product-item-name"><h6>Collar Casual Shirt</h6></td>
-											<td><a href="product-default.html" className="btn btn-md btn-outline-secondary btnhover20">Download</a></td>
+											<td><a href="product-default.html" className="btn btn-md btn-outline-secondary btnhover20">Tải xuống</a></td>
 										</tr>
 										<tr>
 											<td className="product-item-price">2</td>

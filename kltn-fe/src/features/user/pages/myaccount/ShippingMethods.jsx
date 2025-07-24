@@ -42,13 +42,16 @@ function ShippingMethods() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shipping Methods</h1>
+        <h1>
+       Phương thức vận chuyển
+          {/* Shipping Methods */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Shipping Methods</li>
+            <li className="breadcrumb-item">Phương thức vận chuyển</li>
           </ul>
         </nav>
       </div>
@@ -124,7 +127,7 @@ function ShippingMethods() {
             <form className="row g-3">
               <div className="col-md-12">
                 <h4 className="title m-b15 text-capitalize">
-                  Shipping Methods
+                 Phương thức thanh toán
                 </h4>
               </div>
               <div className="col-lg-6">

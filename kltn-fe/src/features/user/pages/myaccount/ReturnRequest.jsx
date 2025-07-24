@@ -44,13 +44,16 @@ function ReturnRequest() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Return Request</h1>
+        <h1>
+        Yêu cầu trả lại
+          {/* Return Request */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Return Request</li>
+            <li className="breadcrumb-item">Yêu cầu trả lại</li>
           </ul>
         </nav>
       </div>
@@ -124,19 +127,23 @@ function ReturnRequest() {
         <section className="col-xl-9 account-wrapper">
           <div className="row">
             <div className="col-12 m-b30">
-              <h3 className="mb-0">REQUEST FOR PRODUCT RETURN (2)</h3>
+              <h3 className="mb-0">
+              YÊU CẦU ĐỔI TRẢ SẢN PHẨM (2)
+                {/* REQUEST FOR PRODUCT RETURN (2) */}
+              </h3>
             </div>
             <div className="col-lg-6 m-b30">
               <div className="order-cancel-card">
                 <div className="order-head">
                   <h6 className="mb-0">
-                    Request No: <span className="text-primary">#1374837</span>
+                  Yêu cầu số: <span className="text-primary">#1374837</span>
                   </h6>
                   <a
                     href="javascript:void(0);"
                     className="btn-link text-underline text-success"
                   >
-                    Return Made
+                    Trả lại đã thực hiện
+                    {/* Return Made */}
                   </a>
                 </div>
                 <a
@@ -150,7 +157,7 @@ function ReturnRequest() {
                     <span>March 21, 2024</span>
                     <h5 className="title mb-0">Collar Casual Shirt</h5>
                     <p className="mb-2">
-                      Quantity: <strong className="text-black">1</strong>
+                      Số lượng: <strong className="text-black">1</strong>
                     </p>
                     <h6 className="mb-0">$105</h6>
                   </div>
@@ -161,13 +168,14 @@ function ReturnRequest() {
               <div className="order-cancel-card">
                 <div className="order-head">
                   <h6 className="mb-0">
-                    Request No: <span className="text-primary">#1374837</span>
+                    Yêu cầu số: <span className="text-primary">#1374837</span>
                   </h6>
                   <a
                     href="javascript:void(0);"
                     className="btn-link text-underline text-priamry"
                   >
-                    Request Submited
+                    Yêu cầu đã gửi
+                    {/* Request Submited */}                   
                   </a>
                 </div>
                 <a
