@@ -233,13 +233,16 @@ const triggerToast = (msg, type = "error") => {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shop Cart</h1>
+        <h1>
+        Giỏ hàng
+          {/* Shop Cart */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Shop Cart</li>
+            <li className="breadcrumb-item">Giỏ hàng</li>
           </ul>
         </nav>
       </div>
@@ -256,11 +259,11 @@ const triggerToast = (msg, type = "error") => {
                   <table className="table check-tbl">
                     <thead>
                       <tr>
-                        <th>Product</th>
+                        <th>Sản phẩm</th>
                         <th></th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Subtotal</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Tổng</th>
                         <th></th>
                       </tr>
                     </thead>
@@ -331,7 +334,7 @@ const triggerToast = (msg, type = "error") => {
   {/* Color selection */}
   {item.colorAsin && JSON.parse(item.colorAsin).length > 0 && (
     <div>
-      <strong>Color:</strong>
+      <strong>Màu sắc:</strong>
       <div className="d-flex gap-2 mt-1">
         {JSON.parse(item.colorAsin).map((color, index) => {
           const isSelected = item.nameColor === color.name_color;
@@ -423,25 +426,35 @@ const triggerToast = (msg, type = "error") => {
     }
     onChange={toggleSelectAll}
   />
-   <span>Select All</span>
+   <span>
+   Chọn tất cả
+    {/* Select All */}
+   </span>
 </th>
               </div>
         <div className="col-lg-4">
-          <h4 className="title mb15">Cart Total</h4>
+          <h4 className="title mb15">
+         Tổng số giỏ hàng
+            {/* Cart Total */}
+          </h4>
           <div className="cart-detail">
             <a
               href="javascript:void(0);"
               className="btn btn-outline-secondary w-100 m-b20"
             >
-              Bank Offer 5% Cashback
+              Ưu đãi hoàn tiền 5% của ngân hàng
+              {/* Bank Offer 5% Cashback */}
             </a>
             <div className="icon-bx-wraper style-4 m-b15">
               <div className="icon-bx">
                 <i className="flaticon flaticon-ship" />
               </div>
               <div className="icon-content">
-                <span className=" font-14">FREE</span>
-                <h6 className="dz-title">Enjoy The Product</h6>
+                <span className=" font-14">Miễn phí</span>
+                <h6 className="dz-title">
+                Thưởng thức sản phẩm
+                  {/* Enjoy The Product */}
+                </h6>
               </div>
             </div>
             <div className="icon-bx-wraper style-4 m-b30">
@@ -449,22 +462,23 @@ const triggerToast = (msg, type = "error") => {
                 <img src="../../assets/user/images/shop/shop-cart/icon-box/pic2.png" alt="/" />
               </div>
               <div className="icon-content">
-                <h6 className="dz-title">Enjoy The Product</h6>
-                <p>
-                  Lorem Ipsum is simply dummy text of the printing and
-                  typesetting
+                <h6 className="dz-title">
+                Thưởng thức sản phẩm</h6>
+                <p>                  
+Lorem Ipsum chỉ đơn giản là văn bản giả dùng trong in ấn và
+sắp chữ
                 </p>
               </div>
             </div>
             <div className="save-text">
               <i className="icon feather icon-check-circle" />
-              <span className="m-l10">You will save ₹504 on this order</span>
+              <span className="m-l10">Bạn sẽ tiết kiệm được ₹504 cho đơn hàng này</span>
             </div>
             <table>
               <tbody>
                 <tr className="total">
                   <td>
-                    <h6 className="mb-0">Total</h6>
+                    <h6 className="mb-0">Tổng</h6>
                   </td>
                   <td className="price">${totalPrice.toFixed(2)}</td>
                 </tr>

@@ -40,11 +40,14 @@ function CancellationRequests() {
 		<div className="dz-bnr-inr bg-light" style={{ backgroundImage: `url('../assets/user/images/background/bg1.jpg')` }}>
 			<div className="container">
 				<div className="dz-bnr-inr-entry">
-					<h1>Cancellation Requests</h1>
+					<h1>
+					Yêu cầu hủy
+						{/* Cancellation Requests */}
+					</h1>
 					<nav aria-label="breadcrumb" className="breadcrumb-row">
 						<ul className="breadcrumb">
-							<li className="breadcrumb-item"><a href="/"> Home</a></li>
-							<li className="breadcrumb-item">Cancellation Requests</li>
+							<li className="breadcrumb-item"><a href="/"> Trang chủ</a></li>
+							<li className="breadcrumb-item">Yêu cầu hủy</li>
 						</ul>
 					</nav>
 				</div>
@@ -56,8 +59,11 @@ function CancellationRequests() {
                 <div className="row">
 					<aside className="col-xl-3">
 						<div className="toggle-info">
-							<h5 className="title mb-0">Account Navbar</h5>
-							<a className="toggle-btn" href="account-cancellation-requests.html#accountSidebar">Account Menu</a>
+							<h5 className="title mb-0">
+							Thanh điều hướng tài khoản
+								{/* Account Navbar */}
+							</h5>
+							<a className="toggle-btn" href="account-cancellation-requests.html#accountSidebar">Menu Tài khoản</a>
 						</div>
 						<div className="sticky-top account-sidebar-wrapper">
 							<div className="account-sidebar" id="accountSidebar">
@@ -127,36 +133,66 @@ function CancellationRequests() {
 								</div>
 							</div>
 							<div className="col-lg-6 m-b30">
-								<h4>Reason For Cancellation</h4>
+								<h4>
+								Lý do hủy bỏ
+									{/* Reason For Cancellation */}
+								</h4>
 								<div className="custom-control custom-checkbox mb-1">
 									<input className="form-check-input radio" type="radio" name="flexRadioDefault" id="flexRadioDefault1" />
-									<label className="form-check-label" for="flexRadioDefault1">I have changed my mind</label>
+									<label className="form-check-label" for="flexRadioDefault1">
+									Tôi đã thay đổi suy nghĩ của mình
+										{/* I have changed my mind */}
+									</label>
 								</div>
 								<div className="custom-control custom-checkbox mb-1">
 									<input className="form-check-input radio" type="radio" name="flexRadioDefault" id="flexRadioDefault2" />
-									<label className="form-check-label" for="flexRadioDefault2">Expected delivery time is very long</label>
+									<label className="form-check-label" for="flexRadioDefault2">
+									Thời gian giao hàng dự kiến rất dài
+										{/* Expected delivery time is very long */}
+									</label>
 								</div>
 								<div className="custom-control custom-checkbox mb-1">
 									<input className="form-check-input radio" type="radio" name="flexRadioDefault" id="flexRadioDefault3" />
-									<label className="form-check-label" for="flexRadioDefault3">I want to change address for the order</label>
+									<label className="form-check-label" for="flexRadioDefault3">
+									Tôi muốn thay đổi địa chỉ cho đơn hàng
+										{/* I want to change address for the order */}
+									</label>
 								</div>
 								<div className="custom-control custom-checkbox mb-1">
 									<input className="form-check-input radio" type="radio" name="flexRadioDefault" id="flexRadioDefault4" />
-									<label className="form-check-label" for="flexRadioDefault4">I want to convert my order to Prepaid</label>
+									<label className="form-check-label" for="flexRadioDefault4">
+									Tôi muốn chuyển đổi đơn hàng của mình sang trả trước
+										{/* I want to convert my order to Prepaid */}
+									</label>
 								</div>
 								<div className="custom-control custom-checkbox mb-1">
 									<input className="form-check-input radio" type="radio" name="flexRadioDefault" id="flexRadioDefault5" />
-									<label className="form-check-label" for="flexRadioDefault5">Price for the product has decreased</label>
+									<label className="form-check-label" for="flexRadioDefault5">
+									Giá sản phẩm đã giảm
+										{/* Price for the product has decreased */}
+									</label>
 								</div>
 								<div className="custom-control custom-checkbox mb-1">
 									<input className="form-check-input radio" type="radio" name="flexRadioDefault" id="flexRadioDefault6" />
-									<label className="form-check-label" for="flexRadioDefault6">I have purchased the product elsewhere</label>
+									<label className="form-check-label" for="flexRadioDefault6">
+									Tôi đã mua sản phẩm ở nơi khác
+										{/* I have purchased the product elsewhere */}
+									</label>
 								</div>
 							</div>
 							<div className="col-lg-6">
-								<h4>Refund status</h4>
-								<p>There will be no refund as the order is purchased using Cash-On-Delivery</p>
-								<a href="account-refund-requests-confirmed.html" className="btn btn-secondary me-xl-3 me-2 btnhover20">Submit Request</a>
+								<h4>
+								Trạng thái hoàn tiền
+									{/* Refund status */}
+								</h4>
+								<p>
+								Sẽ không có hoàn lại tiền vì đơn hàng được mua bằng hình thức Thanh toán khi nhận hàng
+									{/* There will be no refund as the order is purchased using Cash-On-Delivery */}
+								</p>
+								<a href="account-refund-requests-confirmed.html" className="btn btn-secondary me-xl-3 me-2 btnhover20">
+								Gửi yêu cầu
+									{/* Submit Request */}
+								</a>
 							</div>
 						</div>						
 					</section>

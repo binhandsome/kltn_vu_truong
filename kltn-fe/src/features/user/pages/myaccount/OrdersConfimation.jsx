@@ -44,13 +44,16 @@ function OrdersConfimation() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Order Confirmation</h1>
+        <h1>
+        Xác nhận đơn hàng
+          {/* Order Confirmation */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Order Confirmation</li>
+            <li className="breadcrumb-item">Xác nhận đơn hàng</li>
           </ul>
         </nav>
       </div>
@@ -128,25 +131,28 @@ function OrdersConfimation() {
             </div>
             <div className="text-center mt-4">
               <h4 className="mb-3 text-capitalize">
-                Your Order Is Completed !
+                Đơn hàng của bạn đã hoàn tất!
+                {/* Your Order Is Completed ! */}
               </h4>
               <p className="mb-2">
-                You will receive an order confirmation email with details of
-                your order.
+                Bạn sẽ nhận được email xác nhận đơn hàng với thông tin chi tiết về
+đơn hàng của bạn.
+                {/* You will receive an order confirmation email with details of
+                your order. */}
               </p>
-              <p className="mb-0">Order ID: 267676GHERT105467</p>
+              <p className="mb-0">ID đơn hàng: 267676GHERT105467</p>
               <div className="mt-4 d-sm-flex gap-3 justify-content-center">
                 <a
                   href="account-order-details.html"
                   className="btn my-1 btn-secondary"
                 >
-                  View Order{" "}
+                  Chi tiết đơn hàng{" "}
                 </a>
                 <a
                   href="index.html"
                   className="btn btn-outline-secondary my-1 btnhover20"
                 >
-                  Back To Home{" "}
+                  Quay lại trang chủ{" "}
                 </a>
               </div>
             </div>

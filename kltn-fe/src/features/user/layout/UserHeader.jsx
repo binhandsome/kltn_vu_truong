@@ -427,7 +427,10 @@ const getCartProduct = async () => {
           <ul className=" nav navbar-nav">
             <li className="has-mega-menu sub-menu-down auto-width menu-left">
               <a href="/user">
-                <span>Home</span>
+                <span>
+                Trang chủ
+                  {/* Home */}
+                </span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
               <div className="mega-menu ">
@@ -455,7 +458,10 @@ const getCartProduct = async () => {
             </li>
             <li className="has-mega-menu sub-menu-down">
               <a href="/user/shop/shopWithCategory">
-                <span>Shop</span>
+                <span>
+                Cửa hàng
+                  {/* Shop */}
+                </span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
               <div className="mega-menu shop-menu">
@@ -464,41 +470,104 @@ const getCartProduct = async () => {
                   <ul>
                                                     <li><a href="/user/shop/shopWithCategory" className="menu-title">Shop</a>
                                                         <ul>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopJustForYou'}>Shop Just For You</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopJustForYou'}>
+                                                            Mua sắm chỉ dành cho bạn
+                                                              {/* Shop Just For You */}
+                                                              </a></li>
 
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStandard'}>Shop Standard</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStandard'}>
+                                                            Cửa hàng tiêu chuẩn
+                                                              {/* Shop Standard */}
+                                                              </a></li>
                                                             {/* <li><a href="#" onClick={() => window.location.href = '/user/shop/shopList'}>Shop List</a></li> */}
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>Shop</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shop/shopWithCategory'}>
+                                                              Cửa hàng
+                                                              {/* Shop */}
+                                                              </a></li>
                                                             {/* <li><a href="#" onClick={() => window.location.href = '/user/shop/shopSideBar'}>Shop Sidebar</a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStyle1'}>Shop Style 1</a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shop/shopStyle2'}>Shop Style 2</a></li> */}
                                                         </ul>
                                                     </li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'} className="menu-title">Product Structure</a>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'} className="menu-title">
+                                                    Cơ cấu sản phẩm
+                                                      {/* Product Structure */}
+                                                    </a>
                                                         <ul>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Default</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Thumbnail</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Grid Media</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Carousel</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>Full Width</a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
+                                                              Mặc định
+                                                              {/* Default */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
+                                                              Hình thu nhỏ
+                                                              {/* Thumbnail */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
+                                                            Phương tiện lưới
+                                                              {/* Grid Media */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
+                                                            Băng chuyền
+                                                              {/* Carousel */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
+                                                              Chiều rộng đầy đủ
+                                                              {/* Full Width */}
+                                                              </a></li>
                                                         </ul>
                                                     </li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/shoppages/wishList'} className="menu-title">Shop Pages</a>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/shoppages/wishList'} className="menu-title">
+                                                    Trang cửa hàng
+                                                      {/* Shop Pages */}
+                                                    </a>
                                                         <ul>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/wishList'}>Wishlist</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/cart'}>Cart</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/checkout'}>Checkout</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/compare'}>Compare</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/orderTracking'}>Order Tracking</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/login'}>Login</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/registration'}>Registration</a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/forgetPassword'}>Forget Password <div className="badge badge-sm rounded badge-animated">New</div></a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/wishList'}>
+                                                            Danh sách yêu thích
+                                                              {/* Wishlist */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/cart'}>
+                                                              Xe đẩy
+                                                              {/* Cart */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/checkout'}>
+                                                            Thanh toán
+                                                              {/* Checkout */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/compare'}>
+                                                            So sánh
+                                                              {/* Compare */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/orderTracking'}>
+                                                            Theo dõi đơn hàng
+                                                              {/* Order Tracking */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/login'}>
+                                                              Đăng nhập
+                                                              {/* Login */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/registration'}>
+                                                            Sự đăng ký
+                                                              {/* Registration */}
+                                                              </a></li>
+                                                            <li><a href="#" onClick={() => window.location.href = '/user/auth/forgetPassword'}>
+                                                            Quên mật khẩu
+                                                              {/* Forget Password  */}
+                                                              <div className="badge badge-sm rounded badge-animated">Mới</div></a></li>
                                                         </ul>
                                                     </li>
                                                     <li className="month-deal">
                                                         <div className="clearfix me-3">
-                                                            <h3>Deal of the month</h3>
-                                                            <p className="mb-0">Yes! Send me exclusive offers, personalised, and unique gift ideas, tips for shopping on Pixio <Link to="/" className="dz-link-2">View All Products</Link></p>
+                                                            <h3>
+                                                            Thỏa thuận của tháng
+                                                              {/* Deal of the month */}
+                                                            </h3>
+                                                            <p className="mb-0">
+                                                              Có! Gửi cho tôi những ưu đãi độc quyền, ý tưởng quà tặng cá nhân hóa và độc đáo, mẹo mua sắm trên Pixio
+                                                              {/* Yes! Send me exclusive offers, personalised, and unique gift ideas, tips for shopping on Pixio */}
+                                                               <Link to="/" className="dz-link-2">
+                                                               Xem tất cả sản phẩm
+                                                               {/* View All Products */}
+                                                               </Link></p>
                                                         </div>
                                                         <div className="sale-countdown">
                                                             <div className="countdown text-center">
@@ -634,7 +703,10 @@ const getCartProduct = async () => {
             </li>
             <li className="has-mega-menu sub-menu-down auto-width">
               <a href="javascript:void(0);">
-                <span>Post Layout</span>
+                <span>
+                Bố cục bài viết
+                  {/* Post Layout */}
+                </span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
               <div className="mega-menu">
@@ -757,7 +829,10 @@ const getCartProduct = async () => {
             </li>
             <li className="has-mega-menu sub-menu-down">
               <a href="/user/portfolio/portfolioTiles">
-                <span>Portfolio</span>
+                <span>
+                Danh mục đầu tư
+                  {/* Portfolio */}
+                </span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
               <div className="mega-menu portfolio-menu">
@@ -841,7 +916,10 @@ const getCartProduct = async () => {
             </li>
             <li className="has-mega-menu sub-menu-down wide-width">
               <a href="/user/about/aboutUs">
-                <span>Pages</span>
+                <span>
+                Trang
+                  {/* Pages */}
+                </span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
               <div className="mega-menu">
@@ -911,41 +989,79 @@ const getCartProduct = async () => {
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle7'}>Footer Style 7</a></li>
                                                 </ul>
                                             </li>
-                                            <li>
-                                                <a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'} className="menu-title">Dashboard</a>
-                                                <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}>Dashboard</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/orders'}>Orders</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersDetails'}>Orders Details</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersConfimation'}>Orders Confirmation</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/download'}>Downloads</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequest'}>Return Request</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestDetail'}>Return Request Detail</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestConfirmed'}>Return Request Confirmed</a></li>
-                                                </ul>
-                                            </li>
                                         </ul>
               </div>
             </li>
             <li className="sub-menu-down">
-                                    <a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}><span>My Account</span> <div className="badge badge-sm rounded badge-animated">New</div><i className="fas fa-chevron-down tabindex"></i></a>
+                                    <a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}><span>
+                                      Tài khoản của tôi
+                                      {/* My Account */}
+                                      </span> <div className="badge badge-sm rounded badge-animated">Mới</div><i className="fas fa-chevron-down tabindex"></i></a>
                                     <ul className="sub-menu">
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}>Dashboard</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/orders'}>Orders</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersDetails'}>Orders Details</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersConfimation'}>Orders Confirmation</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/download'}>Downloads</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequest'}>Return Request</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestDetail'}>Return Request Detail</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestConfirmed'}>Return Request Confirmed</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/profile'}>Profile</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/address'}>Address</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/shippingMethods'}>Shipping methods</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/paymentMethods'}>Payment Methods</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/review'}>Review</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/billingAddress'}>Billing address</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/shippingAddress'}>Shipping address</a></li>
-                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/cancellationRequests'}>Cancellation Requests</a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}>
+                                        Trang tổng quan
+                                          {/* Dashboard */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/orders'}>
+                                        Đơn đặt hàng
+                                          {/* Orders */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersDetails'}>
+                                        Chi tiết đơn hàng
+                                          {/* Orders Details */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/ordersConfimation'}>
+                                          Xác nhận đơn hàng
+                                          {/* Orders Confirmation */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/download'}>
+                                          Tải xuống
+                                          {/* Downloads */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequest'}>
+                                          Yêu cầu trả lại
+                                          {/* Return Request */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestDetail'}>
+                                        Chi tiết yêu cầu trả lại
+                                          {/* Return Request Detail */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/returnRequestConfirmed'}>
+                                        Yêu cầu trả lại đã được xác nhận
+                                        {/* Return Request Confirmed */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/profile'}>
+                                          Hồ sơ
+                                          {/* Profile */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/address'}>
+                                          Địa chỉ
+                                          {/* Address */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/shippingMethods'}>
+                                        Phương thức vận chuyển
+                                          {/* Shipping methods */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/paymentMethods'}>
+                                          Phương thức thanh toán
+                                          {/* Payment Methods */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/review'}>
+                                          Đánh giá
+                                          {/* Review */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/billingAddress'}>
+                                        Địa chỉ thanh toán
+                                          {/* Billing address */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/shippingAddress'}>
+                                        Địa chỉ giao hàng
+                                          {/* Shipping address */}
+                                          </a></li>
+                                        <li><a href="#" onClick={() => window.location.href = '/user/myaccount/cancellationRequests'}>
+                                          Yêu cầu hủy
+                                          {/* Cancellation Requests */}
+                                          </a></li>
                                     </ul>
                                 </li>
           </ul>

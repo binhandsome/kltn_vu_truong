@@ -109,7 +109,7 @@ const showToastMessage = (msg) => {
           <div className="row">
             <div className="col-xxl-6 col-xl-6 col-lg-6 start-side-content">
               <div className="dz-bnr-inr-entry">
-                <h1>Forgot Password</h1>
+                <h1>Quên mật khẩu</h1>
               </div>
               <div className="registration-media">
                 <img src="../../assets/user/images/registration/pic3.png" alt="/" />
@@ -117,11 +117,17 @@ const showToastMessage = (msg) => {
             </div>
             <div className="col-xxl-6 col-xl-6 col-lg-6 end-side-content justify-content-center">
               <div className="login-area">
-                <h2 className="text-secondary text-center">Reset Password</h2>
-                <p className="text-center m-b25">Enter your email to reset your password</p>
+                <h2 className="text-secondary text-center">
+                Đặt lại mật khẩu
+                  {/* Reset Password */}
+                </h2>
+                <p className="text-center m-b25">
+                Nhập email của bạn để đặt lại mật khẩu
+                  {/* Enter your email to reset your password */}
+                </p>
                 <form onSubmit={handleResetPassword}>
                   <div className="m-b25">
-                    <label className="label-title">Email Address</label>
+                    <label className="label-title">Địa chỉ Email</label>
                     <div className="d-flex align-items-center" style={{ gap: '10px' }}>
   <input
     type="email"
@@ -160,7 +166,7 @@ const showToastMessage = (msg) => {
                         />
                       </div>
                       <div className="m-b25">
-  <label className="label-title">New Password</label>
+  <label className="label-title">Mật khẩu mới</label>
   <input
     type="password"
     className="form-control"
@@ -172,7 +178,7 @@ const showToastMessage = (msg) => {
 </div>
 
 <div className="m-b25">
-  <label className="label-title">Confirm New Password</label>
+  <label className="label-title">Nhập lại mật khẩu</label>
   <input
     type="password"
     className="form-control"
@@ -183,7 +189,7 @@ const showToastMessage = (msg) => {
   />
 </div>
                       <div className="text-center">
-                        <button type="submit" className="btn btn-secondary">Reset Password</button>
+                        <button type="submit" className="btn btn-secondary">Đặt lại mật khẩu</button>
                       </div>
                     </>
                   )}

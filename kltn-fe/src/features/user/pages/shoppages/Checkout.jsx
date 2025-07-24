@@ -523,13 +523,16 @@ useEffect(() => {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shop Checkout</h1>
+        <h1>
+        Thanh toán cửa hàng
+          {/* Shop Checkout */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Shop Checkout</li>
+            <li className="breadcrumb-item">Thanh toán cửa hàng</li>
           </ul>
         </nav>
       </div>
@@ -541,7 +544,10 @@ useEffect(() => {
     <div className="container">
       <div className="row shop-checkout">
         <div className="col-xl-8">
-          <h4 className="title m-b15">Billing details</h4>
+          <h4 className="title m-b15">
+          Chi tiết thanh toán
+            {/* Billing details */}
+          </h4>
           <div
             className="accordion dz-accordion accordion-sm"
             id="accordionFaq"
@@ -558,7 +564,8 @@ useEffect(() => {
                   aria-expanded="true"
                   aria-controls="collapseOne"
                 >
-                  Returning customer? Click here to login
+                  Khách hàng quay lại? Nhấp vào đây để đăng nhập
+                  {/* Returning customer? Click here to login */}
                   <span className="toggle-close" />
                 </a>
               </h2>
@@ -573,8 +580,10 @@ useEffect(() => {
               >
                 <div className="accordion-body">
                   <p className="m-b0">
-                    If your order has not yet shipped, you can contact us to
-                    change your shipping address
+                  Nếu đơn hàng của bạn chưa được giao, bạn có thể liên hệ với chúng tôi để
+                  thay đổi địa chỉ giao hàng
+                   {/*  If your order has not yet shipped, you can contact us to
+                    change your shipping address */}
                   </p>
                 </div>
               </div>
@@ -589,7 +598,8 @@ useEffect(() => {
                   aria-expanded="true"
                   aria-controls="collapseOne"
                 >
-                  Have a coupon? Click here to enter your code
+                  Bạn có phiếu giảm giá không? Nhấp vào đây để nhập mã của bạn
+                  {/* Have a coupon? Click here to enter your code */}
                   <span className="toggle-close" />
                 </a>
               </h2>
@@ -601,8 +611,10 @@ useEffect(() => {
               >
                 <div className="accordion-body">
                   <p className="m-b0">
-                    If your order has not yet shipped, you can contact us to
-                    change your shipping address
+                    Nếu đơn hàng của bạn chưa được giao, bạn có thể liên hệ với chúng tôi để
+thay đổi địa chỉ giao hàng.
+                    {/* If your order has not yet shipped, you can contact us to
+                    change your shipping address */}
                   </p>
                 </div>
               </div>
@@ -640,7 +652,7 @@ useEffect(() => {
           <div className="account-address-bottom">
             <a href="#" className="d-block me-3">
               <i className="fa-solid fa-pen me-2" />
-              Edit
+              Sửa
             </a>
             <button
               className="d-block me-3 btn btn-link p-0"
@@ -650,7 +662,7 @@ useEffect(() => {
               }}
             >
               <i className="fa-solid fa-trash-can me-2" />
-              Remove
+              Xoá
             </button>
           </div>
         </div>
@@ -685,7 +697,7 @@ useEffect(() => {
           <div className="account-address-bottom">
             <a href="#" className="d-block me-3">
               <i className="fa-solid fa-pen me-2" />
-              Edit
+              Sửa
             </a>
             <button
               className="d-block me-3 btn btn-link p-0"
@@ -695,7 +707,7 @@ useEffect(() => {
               }}
             >
               <i className="fa-solid fa-trash-can me-2" />
-              Remove
+              Xoá
             </button>
           </div>
         </div>
@@ -717,9 +729,12 @@ useEffect(() => {
                     <path d="m49.001 45.71942h-4v-4.00049a1.00019 1.00019 0 0 0 -2 0v4.00049h-4a1.00019 1.00019 0 0 0 .00006 2h3.99994v4a1 1 0 0 0 2 0v-4h4a1 1 0 0 0 0-2z" />
                   </svg>
                 </div>
-                <h4 className="mb-3">Add New Address</h4>
+                <h4 className="mb-3">
+                Thêm địa chỉ mới
+                  {/* Add New Address */}
+                </h4>
                 <button className="btn btn-primary px-5"         onClick={() => setShowModal(true)}
->Add</button>
+>Thêm</button>
               </div>
             </div></>
             ):(
@@ -727,22 +742,22 @@ useEffect(() => {
          <>         
                   <div className="col-md-6">
               <div className="form-group m-b25">
-                <label className="label-title">First Name</label>
+                <label className="label-title">Họ</label>
                 <input name="dzName" required="" className="form-control" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
               </div>
             </div>
             <div className="col-md-6">
               <div className="form-group m-b25">
-                <label className="label-title">Last Name</label>
+                <label className="label-title">Tên</label>
                 <input name="dzName" required="" className="form-control" value={lastName} onChange={(e) => setLastName(e.target.value)} />
               </div>
             </div>
           <div className="col-md-12">
               <div className="m-b25">
-                <label className="label-title">Country / Region *</label>
+                <label className="label-title">Tỉnh/ Thành Phố *</label>
                 <select className="default-select form-select w-100" value={selectedProvince || ""} onChange={(e) => setSelectedProvince(e.target.value)}>
 
-                  <option selected="" value="">Select Province</option>
+                  <option selected="" value="">Lựa chọn</option>
                   {provinces.map((province) => (
                   <option key={province.code} value={province.name}>{province.name}</option>
                   ))}
@@ -753,9 +768,9 @@ useEffect(() => {
             {districts.length > 0 && (
   <div className="col-md-12">
               <div className="m-b25">
-                <label className="label-title">Districs *</label>
+                <label className="label-title">Huyện/ Quận</label>
                 <select className="default-select form-select w-100" value={selectedDistrict || ""} onChange={(e) => setSelectedDistrict(e.target.value)}> 
-                  <option selected="">Select Districs</option>
+                  <option selected="">Lựa chọn</option>
                   {districts.map((district) => (
                   <option key={district.code} value={district.name}>{district.name}</option>
 
@@ -769,9 +784,9 @@ useEffect(() => {
                 {wards.length > 0 && (
     <div className="col-md-12">
               <div className="m-b25">
-                <label className="label-title">Ward *</label>
+                <label className="label-title">Xã/ Phường</label>
                 <select className="default-select form-select w-100" value={ward} onChange={(e) => setWard(e.target.value)}>
-                  <option selected="">Select Ward</option>
+                  <option selected="">Lựa chọn</option>
                   {wards.map((ward) => (
                   <option key={ward.code} value={ward.name}> {ward.name}</option>
 
@@ -783,12 +798,12 @@ useEffect(() => {
             )} 
                    <div className="col-md-12">
               <div className="form-group m-b25">
-                <label className="label-title">Street address *</label>
+                <label className="label-title">Địa chỉ cụ thể *</label>
                 <input
                   name="dzName"
                   required=""
                   className="form-control m-b15"
-                  placeholder="House number and street name"
+                  placeholder="Số nhà và tên đường"
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                 />
@@ -796,7 +811,7 @@ useEffect(() => {
                   name="dzName"
                   required=""
                   className="form-control"
-                  placeholder="Apartment, suite, unit, etc. (optional)"
+                  placeholder="Căn hộ, phòng suite, đơn vị, v.v. (tùy chọn)"
                   value={optionalStreet}
                   onChange={(e) => setOptionalStreet(e.target.value)}
                 />
@@ -804,13 +819,13 @@ useEffect(() => {
             </div>
                  <div className="col-md-12">
               <div className="form-group m-b25">
-                <label className="label-title">Phone *</label>
+                <label className="label-title">SĐT *</label>
                 <input name="dzName" required="" className="form-control" value={phone} onChange={(e) => setPhone(e.target.value)}/>
               </div>
             </div>
             <div className="col-md-12">
               <div className="form-group m-b25">
-                <label className="label-title">Email address *</label>
+                <label className="label-title">Địa chỉ Email *</label>
                 <input name="dzName" required="" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
             </div>
@@ -826,7 +841,7 @@ useEffect(() => {
                     className="form-check-label"
                     htmlFor="basic_checkbox_1"
                   >
-                    Create an account?{" "}
+                    Tạo một tài khoản?{" "}
                   </label>
                 </div>
               </div>
@@ -841,7 +856,8 @@ useEffect(() => {
                     className="form-check-label"
                     htmlFor="basic_checkbox_2"
                   >
-                    Ship to a different address?
+                    Gửi đến một địa chỉ khác?
+                    {/* Ship to a different address? */}
                   </label>
                 </div>
               </div>
@@ -860,7 +876,7 @@ useEffect(() => {
 <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Add Address</h5>
+                <h5 className="modal-title">Thêm địa chỉ</h5>
                 <button
                   type="button"
                   className="close"
@@ -874,23 +890,23 @@ useEffect(() => {
 
                    <div className="col-md-6">
               <div className="form-group m-b25">
-                <label className="label-title">First Name</label>
+                <label className="label-title">Họ</label>
                 <input name="dzName" required="" className="form-control" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
               </div>
             </div>
             <div className="col-md-6">
               <div className="form-group m-b25">
-                <label className="label-title">Last Name</label>
+                <label className="label-title">Tên</label>
                 <input name="dzName" required="" className="form-control" value={lastName} onChange={(e) => setLastName(e.target.value)} />
               </div>
             </div>
           <div className="col-md-12">
               <div className="m-b25">
-                <label className="label-title">Country / Region *</label>
+                <label className="label-title">Tỉnh/ Thành Phố</label>
                 <select className="default-select form-select w-100" value={selectedProvince || ""} onChange={(e)  => {
                  setSelectedProvince(e.target.value);               
                 }}>
-                  <option selected="" value="">Select Province</option>
+                  <option selected="" value="">Lựa chọn</option>
                   {provinces.map((province) => (
                   <option key={province.code} value={province.name}>{province.name}</option>
                   ))}  
@@ -900,9 +916,9 @@ useEffect(() => {
             {districts.length > 0 && (
   <div className="col-md-12">
               <div className="m-b25">
-                <label className="label-title">Districs *</label>
+                <label className="label-title">Huyện/ Quận *</label>
                 <select className="default-select form-select w-100" value={selectedDistrict || ""} onChange={(e) => setSelectedDistrict(e.target.value)}> 
-                  <option selected="">Select Districs</option>
+                  <option selected="">Lựa chọn</option>
                   {districts.map((district) => (
                   <option key={district.code} value={district.name}>{district.name}</option>
                   ))}
@@ -913,12 +929,12 @@ useEffect(() => {
                 {wards.length > 0 && (
     <div className="col-md-12">
               <div className="m-b25">
-                <label className="label-title">Ward *</label>
+                <label className="label-title">Xã/ Phường *</label>
                 <select className="default-select form-select w-100" value={ward} onChange={(e) => {
 setWard(e.target.value);
 console.log(ward)}
                 } >
-                  <option selected="">Select Ward</option>
+                  <option selected="">Lựa chọn</option>
                   {wards.map((ward) => (
                   <option key={ward.code} value={ward.name}> {ward.name}</option>
                   ))}     
@@ -928,12 +944,12 @@ console.log(ward)}
             )} 
                    <div className="col-md-12">
               <div className="form-group m-b25">
-                <label className="label-title">Street address *</label>
+                <label className="label-title">Địa chỉ cụ thể *</label>
                 <input
                   name="dzName"
                   required=""
                   className="form-control m-b15"
-                  placeholder="House number and street name"
+                  placeholder="Số nhà và tên đường"
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                 />
@@ -941,7 +957,7 @@ console.log(ward)}
                   name="dzName"
                   required=""
                   className="form-control"
-                  placeholder="Apartment, suite, unit, etc. (optional)"
+                  placeholder="Căn hộ, phòng suite, đơn vị, v.v. (tùy chọn)"
                   value={optionalStreet}
                   onChange={(e) => setOptionalStreet(e.target.value)}
                 />
@@ -949,22 +965,22 @@ console.log(ward)}
             </div>
                  <div className="col-md-12">
               <div className="form-group m-b25">
-                <label className="label-title">Phone *</label>
+                <label className="label-title">SĐT *</label>
                 <input name="dzName" required="" className="form-control" value={phone} onChange={(e) => setPhone(e.target.value)}/>
               </div>
             </div>
             <div className="col-md-12">
               <div className="form-group m-b25">
-                <label className="label-title">Email address *</label>
+                <label className="label-title">Địa chỉ Email *</label>
                 <input name="dzName" required="" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
             </div>
             <div className="col-md-12">
               <div className="m-b25">
-                <label className="label-title">Address Setup *</label>
+                <label className="label-title">Thiết lập địa chỉ *</label>
                 <select className=" form-select w-100" value={selectOption} onChange={(e) => setSelectOption(e.target.value)}  
                 >
-                  <option> Select Option Address </option>
+                  <option> Lựa chọn </option>
                   <option value={1}> Mặc Định </option>
                   <option value={0}> Phụ </option>  
                 </select>
@@ -980,7 +996,7 @@ console.log(ward)}
                   Close
                 </button>
                 <button type="button" className="btn btn-primary" onClick={sendInfoAddress}>
-                  Save changes
+                  Lưu thay đổi
                 </button>
               </div>
             </div>
@@ -990,10 +1006,13 @@ console.log(ward)}
     </>   
             <div className="col-md-12 m-b25">
               <div className="form-group">
-                <label className="label-title">Order notes (optional)</label>
+                <label className="label-title">
+                Ghi chú đơn hàng (tùy chọn)
+                  {/* Order notes (optional) */}
+                </label>
                 <textarea
                   id="comments"
-                  placeholder="Notes about your order, e.g. special notes for delivery."
+                  placeholder="Ghi chú về đơn hàng của bạn, ví dụ: ghi chú đặc biệt về việc giao hàng."
                   className="form-control"
                   name="comment"
                   cols={90}
@@ -1008,7 +1027,7 @@ console.log(ward)}
           </form>
         </div>
         <div className="col-xl-4 side-bar">
-          <h4 className="title m-b15">Your Order</h4>
+          <h4 className="title m-b15">Đơn hàng của bạn</h4>
           <div className="order-detail sticky-top">
            {listCartById?.items?.length > 0 ? (          
   listCartById.items.map((item, index) => ( 
@@ -1049,12 +1068,12 @@ console.log(ward)}
             <table>
               <tbody>
                 <tr className="subtotal">
-                  <td>Subtotal</td>
+                  <td>Tổng phụ</td>
                   <td className="price">${listCartById.totalPrice}</td>
                 </tr>
                 <tr className="title">
                   <td>
-                    <h6 className="title font-weight-500">Shipping</h6>
+                    <h6 className="title font-weight-500">Vận chuyển</h6>
                   </td>
                   <td />
                 </tr>
@@ -1083,7 +1102,7 @@ console.log(ward)}
 </tr>
 
                 <tr className="total">
-                  <td>Total</td>
+                  <td>Tổng</td>
                   <td className="price">${totalPrice}</td>
                 </tr>
               </tbody>
@@ -1112,7 +1131,7 @@ console.log(ward)}
                     <label
                       className="form-check-label"
                       htmlFor="flexRadioDefault3">
-                      Direct bank transfer
+                      Chuyển khoản ngân hàng trực tiếp
                     </label>
                   </div>
                 </div>
@@ -1124,10 +1143,14 @@ console.log(ward)}
                 >
                   <div className="accordion-body">
                     <p className="m-b0">
-                      Make your payment directly into our bank account. Please
+                      Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
+sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
+sẽ không được giao cho đến khi tiền được chuyển vào
+tài khoản của chúng tôi.
+                      {/* Make your payment directly into our bank account. Please
                       use your Order ID as the payment reference. Your order
                       will not be shipped until the funds have cleared in our
-                      account.
+                      account. */}
                     </p>
                   </div>
                 </div>
@@ -1154,7 +1177,8 @@ console.log(ward)}
                       className="form-check-label"
                       htmlFor="flexRadioDefault5"
                     >
-                      Cash on delivery
+                      Tiền mặt khi giao hàng
+                      {/* Cash on delivery */}
                     </label>
                   </div>
                 </div>
@@ -1166,10 +1190,14 @@ console.log(ward)}
                 >
                   <div className="accordion-body">
                     <p className="m-b0">
-                      Make your payment directly into our bank account. Please
+                     Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
+sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
+sẽ không được giao cho đến khi tiền được chuyển vào
+tài khoản của chúng tôi.
+                     {/*  Make your payment directly into our bank account. Please
                       use your Order ID as the payment reference. Your order
                       will not be shipped until the funds have cleared in our
-                      account.
+                      account. */}
                     </p>
                   </div>
                 </div>
@@ -1200,7 +1228,7 @@ console.log(ward)}
                       Paypal
                     </label>
                     <img src="../../assets/user/images/shop/payment.jpg" alt="/" />
-                    <a href="javascript:void(0);">What is PayPal?</a>
+                    <a href="javascript:void(0);">PayPal là gì?</a>
                   </div>
                 </div>
                 <div
@@ -1211,19 +1239,23 @@ console.log(ward)}
                 >
                   <div className="accordion-body">
                     <p className="m-b0">
-                      Make your payment directly into our bank account. Please
+                    Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
+sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
+sẽ không được giao cho đến khi tiền được chuyển vào
+tài khoản của chúng tôi.
+                      {/* Make your payment directly into our bank account. Please
                       use your Order ID as the payment reference. Your order
                       will not be shipped until the funds have cleared in our
-                      account.
+                      account. */}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
             <p className="text">
-              Your personal data will be used to process your order, support
-              your experience throughout this website, and for other purposes
-              described in our <a href="javascript:void(0);">privacy policy.</a>
+            Dữ liệu cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng của bạn, hỗ trợ
+trải nghiệm của bạn trên toàn bộ trang web này và cho các mục đích khác
+được mô tả trong <a href="javascript:void(0);">chính sách bảo mật.</a>
             </p>
             <div className="form-group">
               <div className="custom-control custom-checkbox d-flex m-b15">
@@ -1233,12 +1265,14 @@ console.log(ward)}
                   id="basic_checkbox_3"
                 />
                 <label className="form-check-label" htmlFor="basic_checkbox_3">
-                  I have read and agree to the website terms and conditions{" "}
+                Tôi đã đọc và đồng ý với các điều khoản và điều kiện của trang web{" "}
+                  {/* I have read and agree to the website terms and conditions{" "} */}
                 </label>
               </div>
             </div>
             <button href="/user/shop/shopStandard" className="btn btn-secondary w-100" onClick={saveOrder}>
-              PLACE ORDER
+              ĐẶT HÀNG
+              {/* PLACE ORDER */}
             </button>
           </div>
         </div>

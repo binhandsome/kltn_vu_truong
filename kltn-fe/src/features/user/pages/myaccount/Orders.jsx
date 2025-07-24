@@ -153,16 +153,16 @@ function Orders() {
 											<table className="table table-hover mb-3">
 												<thead>
 													<tr>
-														<th>Order #</th>
-														<th>Date</th>
-														<th>Status</th>
-														<th>Total</th>
-														<th>Name</th>
+														<th>STT</th>
+														<th>Ngày đặt hàng</th>
+														<th>Trạng thái đơn hàng</th>
+														<th>Tổng tiền</th>
+														<th>Tên người dùng</th>
 														<th>Email</th>
-														<th>Phone</th>
-														<th>Address</th>
-														<th>Items</th>
-														<th>Action</th>
+														<th>SĐT</th>
+														<th>Địa chỉ đặt hàng</th>
+														<th>Chi tiết</th>
+														<th>Hành động</th>
 													</tr>
 												</thead>
 												<tbody>

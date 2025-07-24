@@ -45,13 +45,16 @@ function Dashboard() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Dashboard</h1>
+        <h1>
+        Trang tổng quan
+          {/* Dashboard */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Dashboard</li>
+            <li className="breadcrumb-item">Trang tổng quan</li>
           </ul>
         </nav>
       </div>
@@ -126,25 +129,31 @@ function Dashboard() {
           <div className="account-card">
             <div className="m-b30">
               <p>
-                Hello <strong className="text-black">John Doe</strong> (not{" "}
+                Xin chào <strong className="text-black">John Doe</strong> (không phải{" "}
                 <strong className="text-black">John Doe</strong>?{" "}
                 <a href="login.html" className="text-underline">
-                  Log out
+                  Đăng xuất
                 </a>
                 )
               </p>
               <p>
-                From your account dashboard you can view your{" "}
+              Từ bảng điều khiển tài khoản của bạn, bạn có thể xem{" "}
+                {/* From your account dashboard you can view your{" "} */}
                 <a href="account-orders.html" className="text-underline">
-                  recent orders
+                  đơn đặt hàng gần đây
+                  {/* recent orders */}
                 </a>
-                , manage your{" "}
+                , quản lý{" "} bạn về
+                {/* , manage your{" "} */}
                 <a href="account-address.html" className="text-underline">
-                  shipping and billing addresses
+                  địa chỉ giao hàng và thanh toán
+                  {/* shipping and billing addresses */}
                 </a>
-                , and{" "}
+                , và{" "}
+                {/* , and{" "} */}
                 <a href="account-profile.html" className="text-underline">
-                  edit your password and account details
+                  chỉnh sửa mật khẩu và thông tin tài khoản của bạn
+                  {/* edit your password and account details */}
                 </a>
                 .
               </p>
@@ -175,7 +184,10 @@ function Dashboard() {
                     </svg>
                   </div>
                   <div className="total-detail">
-                    <span className="text">Total Order</span>
+                    <span className="text">
+                    Tổng số đơn hàng
+                      {/* Total Order */}
+                    </span>
                     <h2 className="title">3658</h2>
                   </div>
                 </div>
@@ -197,7 +209,10 @@ function Dashboard() {
                     </svg>
                   </div>
                   <div className="total-detail">
-                    <span className="text">Total Pending Order</span>
+                    <span className="text">
+                    Tổng số đơn hàng chờ xử lý
+                      {/* Total Pending Order */}
+                    </span>
                     <h2 className="title">215</h2>
                   </div>
                 </div>
@@ -227,7 +242,10 @@ function Dashboard() {
                     </svg>
                   </div>
                   <div className="total-detail">
-                    <span className="text">Total Wishlist</span>
+                    <span className="text">
+                      Tổng danh sách yêu thích
+                      {/* Total Wishlist */}
+                    </span>
                     <h2 className="title">31576</h2>
                   </div>
                 </div>
@@ -237,7 +255,7 @@ function Dashboard() {
                   <div id="handleSalesChart" />
                 </div>
               </div>
-              <div className="col-xl-4">
+              {/* <div className="col-xl-4">
                 <div className="card countries-card px-3 pt-3 pb-2 mb-2">
                   <h6>Your Top Countries</h6>
                   <ul>
@@ -297,7 +315,7 @@ function Dashboard() {
                     </li>
                   </ul>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </section>

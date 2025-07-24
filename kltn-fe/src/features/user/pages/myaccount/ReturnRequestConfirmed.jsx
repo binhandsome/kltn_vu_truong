@@ -44,13 +44,16 @@ function ReturnRequestConfirmed() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Refund Requests Confirmed</h1>
+        <h1>
+        Xác nhận yêu cầu hoàn tiền
+          {/* Refund Requests Confirmed */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Refund Requests Confirmed</li>
+            <li className="breadcrumb-item">Xác nhận yêu cầu hoàn tiền</li>
           </ul>
         </nav>
       </div>
@@ -126,12 +129,15 @@ function ReturnRequestConfirmed() {
             <div className="cancel-btn m-auto mb-sm-4 mb-2">
               <i className="fa-solid fa-check" />
             </div>
-            <h2>Cancellation Confirmed</h2>
+            <h2>
+{/* Cancellation Confirmed */}
+Đã xác nhận hủy
+            </h2>
             <a
               className="btn btn-outline-secondary btn-lg btnhover20 m-t15"
               href="account-order-details.html"
             >
-              Check Status
+              Kiểm tra trạng thái
             </a>
           </div>
         </section>

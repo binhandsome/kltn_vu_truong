@@ -44,13 +44,16 @@ function ReturnRequestDetail() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Return Request Detail</h1>
+        <h1>
+        Chi tiết yêu cầu trả lại
+          {/* Return Request Detail */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Return Request Detail</li>
+            <li className="breadcrumb-item">Chi tiết yêu cầu trả lại</li>
           </ul>
         </nav>
       </div>
@@ -127,7 +130,7 @@ function ReturnRequestDetail() {
               <div className="order-cancel-card">
                 <div className="order-head">
                   <h6 className="mb-0">
-                    Request No: <span className="text-primary">#1374837</span>
+                    Yêu cầu số: <span className="text-primary">#1374837</span>
                   </h6>
                 </div>
                 <a
@@ -141,7 +144,7 @@ function ReturnRequestDetail() {
                     <span>March 21, 2024</span>
                     <h5 className="title mb-0">Collar Casual Shirt</h5>
                     <p className="mb-2">
-                      Quantity: <strong className="text-black">1</strong>
+                      Số lượng: <strong className="text-black">1</strong>
                     </p>
                     <h6 className="mb-0">$105</h6>
                   </div>
@@ -176,7 +179,10 @@ function ReturnRequestDetail() {
           </div>
           <div className="row">
             <div className="col-12 m-b30">
-              <h4>What do you want to return?</h4>
+              <h4>
+              Bạn muốn trả lại cái gì?
+                {/* What do you want to return? */}
+              </h4>
               <div className="custom-control custom-checkbox mb-1">
                 <input
                   className="form-check-input radio"
@@ -185,7 +191,8 @@ function ReturnRequestDetail() {
                   id="flexRadioDefault1"
                 />
                 <label className="form-check-label" htmlFor="flexRadioDefault1">
-                  Refund
+                  Hoàn trả
+                  {/* Refund */}
                 </label>
               </div>
               <div className="custom-control custom-checkbox mb-1">
@@ -196,7 +203,8 @@ function ReturnRequestDetail() {
                   id="flexRadioDefault2"
                 />
                 <label className="form-check-label" htmlFor="flexRadioDefault2">
-                  Replacment
+                  Thay thế
+                  {/* Replacment */}
                 </label>
               </div>
             </div>
@@ -213,7 +221,10 @@ function ReturnRequestDetail() {
                   htmlFor="Methods7"
                 >
                   <span>
-                    <span className="title">Direct bank Transfer</span>
+                    <span className="title">
+                    Chuyển khoản ngân hàng trực tiếp
+                      {/* Direct bank Transfer */}
+                    </span>
                   </span>
                 </label>
               </div>
@@ -231,7 +242,10 @@ function ReturnRequestDetail() {
                   htmlFor="Methods8"
                 >
                   <span>
-                    <span className="title">Gifte Card Wallet</span>
+                    <span className="title">
+                    Ví thẻ quà tặng
+                      {/* Gifte Card Wallet */}
+                    </span>
                   </span>
                 </label>
               </div>
@@ -241,7 +255,8 @@ function ReturnRequestDetail() {
                 href="shop-wishlist.html"
                 className="btn btn-secondary me-xl-3 me-2 btnhover20"
               >
-                Submit Request
+                Gửi yêu cầu
+                {/* Submit Request */}
               </a>
             </div>
           </div>

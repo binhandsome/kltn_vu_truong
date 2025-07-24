@@ -44,13 +44,16 @@ function ShippingAddress() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shipping Address</h1>
+        <h1>
+          Địa chỉ giao hàng
+          {/* Shipping Address */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Shipping Address</li>
+            <li className="breadcrumb-item"> Địa chỉ giao hàng</li>
           </ul>
         </nav>
       </div>
@@ -124,26 +127,26 @@ function ShippingAddress() {
         <section className="col-xl-9 account-wrapper">
           <div className="account-card">
             <form className="row" action="account-shipping-address.html#">
-              <h3 className="m-b30">Shipping address</h3>
+              <h3 className="m-b30">Địa chỉ giao hàng</h3>
               <div className="col-md-6">
                 <div className="form-group m-b25">
-                  <label className="label-title">First Name</label>
+                  <label className="label-title">Họ</label>
                   <input name="dzName" required="" className="form-control" />
                 </div>
               </div>
               <div className="col-md-6">
                 <div className="form-group m-b25">
-                  <label className="label-title">Last Name</label>
+                  <label className="label-title">Tên</label>
                   <input name="dzName" required="" className="form-control" />
                 </div>
               </div>
-              <div className="col-md-12">
+              {/* <div className="col-md-12">
                 <div className="form-group m-b25">
-                  <label className="label-title">Company name (optional)</label>
+                  <label className="label-title">Tên công ty (optional)</label>
                   <input name="dzName" required="" className="form-control" />
                 </div>
-              </div>
-              <div className="col-md-12">
+              </div> */}
+              {/* <div className="col-md-12">
                 <div className="m-b25">
                   <label className="label-title">Country / Region *</label>
                   <select className="default-select form-select w-100">
@@ -153,10 +156,10 @@ function ShippingAddress() {
                     <option value={3}>Iraq</option>
                   </select>
                 </div>
-              </div>
+              </div> */}
               <div className="col-md-12">
                 <div className="form-group m-b25">
-                  <label className="label-title">Street address *</label>
+                  <label className="label-title">Địa chỉ giao hàng *</label>
                   <input
                     name="dzName"
                     required=""
@@ -171,7 +174,7 @@ function ShippingAddress() {
                   />
                 </div>
               </div>
-              <div className="col-md-12">
+              {/* <div className="col-md-12">
                 <div className="m-b25">
                   <label className="label-title">Town / City *</label>
                   <select className="form-select default-select w-100">
@@ -181,8 +184,8 @@ function ShippingAddress() {
                     <option value={3}>Udaipur</option>
                   </select>
                 </div>
-              </div>
-              <div className="col-md-12">
+              </div> */}
+              {/* <div className="col-md-12">
                 <div className="m-b25">
                   <label className="label-title">State*</label>
                   <select className="default-select form-select w-100">
@@ -192,15 +195,15 @@ function ShippingAddress() {
                     <option value={3}>Rajasthan</option>
                   </select>
                 </div>
-              </div>
-              <div className="col-md-12">
+              </div> */}
+              {/* <div className="col-md-12">
                 <div className="form-group m-b25">
                   <label className="label-title">pincode*</label>
                   <input name="dzName" required="" className="form-control" />
                 </div>
-              </div>
+              </div> */}
             </form>
-            <button className="btn btn-secondary">Save changes</button>
+            <button className="btn btn-secondary">Lưu thay đổi</button>
           </div>
         </section>
       </div>

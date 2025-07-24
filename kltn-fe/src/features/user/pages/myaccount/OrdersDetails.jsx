@@ -183,13 +183,13 @@ function OrdersDetails() {
                       </div>
                       <div className="clearfix m-l20">
                       <div className="badge">{order?.orderStatus || 'In Progress'}</div>
-                        <h4 className="mb-0">Order #{order?.orderId || '17493'}</h4>
+                        <h4 className="mb-0">Đơn hàng #{order?.orderId || '17493'}</h4>
                       </div>
                     </div>
                     <div className="row mb-sm-4 mb-2">
                     <div className="col-sm-6">
                         <div className="shiping-tracker-detail">
-                          <span>Name</span>
+                          <span>Tên</span>
                           <h6 className="title mb-0">{order?.recipientName || 'Ronald M. Spino'}</h6>
                         </div>
                       </div>
@@ -201,25 +201,28 @@ function OrdersDetails() {
                       </div>
                       <div className="col-sm-6">
                         <div className="shiping-tracker-detail">
-                          <span>Item</span>
+                          <span>Tên sản phẩm</span>
                           <h6 className="title">{order?.items?.[0]?.productName || 'casual shirt'}</h6>
                         </div>
                       </div>
                       <div className="col-sm-6">
                         <div className="shiping-tracker-detail">
-                          <span>Courier</span>
+                          <span>
+                          Chuyển phát nhanh
+                            {/* Courier */}
+                          </span>
                           <h6 className="title">{order?.courierName || 'DHL Express'}</h6>
                         </div>
                       </div>
                       <div className="col-sm-6">
                         <div className="shiping-tracker-detail">
-                          <span>Start Time</span>
+                          <span>Ngày bắt đầu</span>
                           <h6 className="title">{formatDate(order?.createdAt)}</h6>
                         </div>
                       </div>
                       <div className="col-sm-6">
                         <div className="shiping-tracker-detail">
-                          <span>Address</span>
+                          <span>Địa chỉ</span>
                           <h6 className="title">{order?.deliveryAddress || 'Address 451 Wall Street UK, London'}</h6>
                         </div>
                       </div>
@@ -230,14 +233,16 @@ function OrdersDetails() {
               onClick={cancelOrder}
               disabled={order?.orderStatus !== 'pending'}
             >
-              Cancel Order
+              Hủy đơn hàng
+              {/* Cancel Order */}
             </button>
             <button
               className="btn btn-outline-warning m-b15 btnhover20"
               onClick={() => document.getElementById('return-form').classList.toggle('d-none')}
               disabled={order?.orderStatus !== 'success'}
             >
-              Return Order
+            Trả lại đơn hàng
+            {/* Return Order */}
             </button>
           </div>
           <div id="return-form" className="d-none p-3 border rounded bg-white mb-4">
@@ -276,7 +281,7 @@ function OrdersDetails() {
                     aria-controls="nav-order-history"
                     aria-selected="true"
                   >
-                    Order History
+                    Lịch sử đơn hàng
                   </button>
                   <button
                     className="nav-link"
@@ -287,7 +292,7 @@ function OrdersDetails() {
                     aria-controls="nav-Item"
                     aria-selected="false"
                   >
-                    Item Details
+                    Chi tiết đơn hàng
                   </button>
                   <button
                     className="nav-link"
@@ -298,7 +303,7 @@ function OrdersDetails() {
                     aria-controls="nav-courier"
                     aria-selected="false"
                   >
-                    Courier
+                    Chuyển phát nhanh
                   </button>
                   <button
                     className="nav-link"
@@ -309,7 +314,8 @@ function OrdersDetails() {
                     aria-controls="nav-receiver"
                     aria-selected="false"
                   >
-                    Receiver
+                    Người nhận
+                    {/* Receiver */}
                   </button>
                 </div>
               </div>
@@ -330,14 +336,17 @@ function OrdersDetails() {
                             className="timeline-panel"
                             href="javascript:void(0);"
                           >
-                            <h6 className="mb-0">Product Shiped</h6>
+                            <h6 className="mb-0">
+                            Sản phẩm đã được vận chuyển
+                              {/* Product Shiped */}
+                            </h6>
                             <span>08/04/2024 5:23pm</span>
                           </a>
                           <p>
-                            <strong>Courier Service : </strong>UPS, R. Gosling
+                            <strong>Dịch vụ chuyển phát nhanh : </strong>UPS, R. Gosling
                           </p>
                           <p>
-                            <strong>Estimated Delivery Date : </strong>
+                            <strong>Ngày giao hàng dự kiến : </strong>
                             09/04/2024
                           </p>
                         </div>
@@ -349,14 +358,17 @@ function OrdersDetails() {
                             className="timeline-panel"
                             href="javascript:void(0);"
                           >
-                            <h6 className="mb-0">Product Shiped</h6>
+                            <h6 className="mb-0">
+                            Sản phẩm đã được vận chuyển
+                              {/* Product Shiped */}
+                            </h6>
                             <span>08/04/2024 5:23pm</span>
                           </a>
                           <p>
-                            <strong>Tracking Number : </strong>3409-4216-8759
+                            <strong> Số theo dõi: </strong>3409-4216-8759
                           </p>
                           <p>
-                            <strong>Warehouse : </strong>Top Shirt 12b
+                            <strong>Kho : </strong>Top Shirt 12b
                           </p>
                         </div>
                       </li>
@@ -367,7 +379,10 @@ function OrdersDetails() {
                             className="timeline-panel"
                             href="javascript:void(0);"
                           >
-                            <h6 className="mb-0">Product Packaging</h6>
+                            <h6 className="mb-0">
+                            Bao bì sản phẩm
+                              {/* Product Packaging */}
+                            </h6>
                             <span>09/04/2024 4:34pm</span>
                           </a>
                         </div>
@@ -379,7 +394,10 @@ function OrdersDetails() {
                             className="timeline-panel"
                             href="javascript:void(0);"
                           >
-                            <h6 className="mb-0">Order Palced</h6>
+                            <h6 className="mb-0">
+                            Đặt hàng
+                              {/* Order Palced */}
+                            </h6>
                             <span>10/04/2024 2:36pm</span>
                           </a>
                         </div>
@@ -422,7 +440,7 @@ function OrdersDetails() {
         <strong>Size:</strong> {item.size} &nbsp; | &nbsp; <strong>Qty:</strong> {item.quantity}
       </p>
       <p className="mb-0">
-        <strong>Price:</strong> ${item.unitPrice/item.quantity} <em>(after {item.percentDiscount}% off)</em><br />
+        <strong>Price:</strong> ${item.unitPrice/item.quantity} <em>(giảm giá {item.percentDiscount}%)</em><br />
         <strong>Original:</strong> <s>${item.productPrice}</s>
       </p>
     </div>
@@ -430,7 +448,7 @@ function OrdersDetails() {
 ))}
 
 <div className="tracking-item-content">
-  <span>Total Price</span>
+  <span>Tổng tiền</span>
   <h6>
     + $
     {order?.items?.reduce((acc, item) =>
@@ -440,7 +458,7 @@ function OrdersDetails() {
 </div>
 
 <div className="tracking-item-content border-bottom border-light mb-2">
-  <span className="text-success">Total Discounts</span>
+  <span className="text-success">Tổng tiền giảm giá</span>
   <h6>
     - $
     {order?.items?.reduce((acc, item) =>
@@ -450,7 +468,7 @@ function OrdersDetails() {
 </div>
 
 <div className="tracking-item-content">
-  <span>Order Total</span>
+  <span>Tổng đơn hàng</span>
   <h6>
     $
     {order?.items?.reduce((acc, item) =>
@@ -483,13 +501,14 @@ function OrdersDetails() {
                   tabIndex={0}
                 >
                   <h5 className="text-success mb-4">
-                    Thank you Your order has been received
+                  Cảm ơn bạn. Đơn hàng của bạn đã được nhận.
+                   {/*  Thank you Your order has been received */}
                   </h5>
                   <ul className="tracking-receiver">
-  <li>Order Number : <strong>#{order?.orderId}</strong></li>
-  <li>Date : <strong>{formatDate(order?.createdAt)}</strong></li>
-  <li>Total : <strong>${order?.total}</strong></li>
-  <li>Payment Methods : <strong>{order?.paymentMethod}</strong></li>
+  <li>ID đơn hàng : <strong>#{order?.orderId}</strong></li>
+  <li>Ngày : <strong>{formatDate(order?.createdAt)}</strong></li>
+  <li>Tổng : <strong>${order?.total}</strong></li>
+  <li>Phương thức thanh toán : <strong>{order?.paymentMethod}</strong></li>
 </ul>
 
                 </div>
