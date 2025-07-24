@@ -6,13 +6,24 @@ import { Link } from 'react-router-dom';
 import WOW from 'wowjs'; // Import WOW.js
 import 'mutation-observer';
 function HomePage() {
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
 	useEffect(() => {
 		const wow = new WOW.WOW();
 		wow.init();
 	}, []);
-
-	
-
+const showToastMessage = (msg) => {
+  setToastMessage(msg);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 2500);
+};
+  useEffect(() => {
+    const successMsg = localStorage.getItem('loginSuccess');
+    if (successMsg) {
+      showToastMessage(successMsg);
+      localStorage.removeItem('loginSuccess');
+    }
+  }, []);
   return (
     <>
       <div className="page-wraper">
@@ -3013,6 +3024,21 @@ function HomePage() {
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
         <QuickViewModal />
+        {showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor: '#4caf50', // xanh lá cho thành công
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+  }}>
+    {toastMessage}
+  </div>
+)}
       </div>
     </>
   );

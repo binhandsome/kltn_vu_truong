@@ -12,25 +12,32 @@ function ForgetPassword() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [message, setMessage] = useState('');
+  // const [message, setMessage] = useState('');
   const [isOtpInputVisible, setIsOtpInputVisible] = useState(false);
   const [isSendingDisabled, setIsSendingDisabled] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
+const showToastMessage = (msg) => {
+  setToastMessage(msg);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 2000);
+};  
   const handleSendVerification = async () => {
     // Kiểm tra định dạng email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setMessage("❌ Email không hợp lệ. Vui lòng nhập đúng định dạng email.");
+      showToastMessage("❌ Email không hợp lệ. Vui lòng nhập đúng định dạng email.");
       return;
     }
+    
     const exists = await checkEmailExists(email);
-        if (!exists) {
-        setMessage("❌ Email này không tồn tại trong hệ thống.");
-        return;
-        }
+    if (!exists) {
+      showToastMessage("❌ Email này không tồn tại trong hệ thống.");
+      return;
+    }
   
     setIsSendingDisabled(true);
     setIsOtpInputVisible(true);
@@ -49,9 +56,9 @@ function ForgetPassword() {
   
     try {
       await requestOtpResetPassword(email);
-      setMessage("✅ Mã OTP đã được gửi đến email của bạn.");
+      showToastMessage("✅ Mã OTP đã được gửi đến email của bạn.");
     } catch (error) {
-      setMessage(`❌ Lỗi gửi mã OTP: ${error.message}`);
+      showToastMessage(`❌ Lỗi gửi mã OTP: ${error.message}`);
     }
   };
   
@@ -67,12 +74,12 @@ function ForgetPassword() {
     if (!/[!@#$%^&*(),.?\":{}|<>]/.test(newPassword)) passwordErrors.push("Ít nhất 1 ký tự đặc biệt");
   
     if (passwordErrors.length > 0) {
-      setMessage("❌ Mật khẩu không hợp lệ:\n" + passwordErrors.join('\n'));
+      showToastMessage("❌ Mật khẩu không hợp lệ:\n" + passwordErrors.join('\n'));
       return;
     }
-  
+    
     if (newPassword !== confirmNewPassword) {
-      setMessage("❌ Mật khẩu xác nhận không khớp.");
+      showToastMessage("❌ Mật khẩu xác nhận không khớp.");
       return;
     }
   
@@ -81,7 +88,7 @@ function ForgetPassword() {
       localStorage.setItem('resetSuccess', 'Đổi mật khẩu thành công');
       navigate('/user/auth/login');
     } catch (error) {
-      setMessage(error.message || 'Có lỗi xảy ra khi đặt lại mật khẩu');
+      showToastMessage(error.message || 'Có lỗi xảy ra khi đặt lại mật khẩu');
     }
   };
   
@@ -181,11 +188,7 @@ function ForgetPassword() {
                     </>
                   )}
                 </form>
-                {message && (
-  <div className="alert alert-info text-center mt-3" style={{ whiteSpace: 'pre-wrap' }}>
-    {message}
-  </div>
-)}
+                {/* {message && (<div className="alert alert-info text-center mt-3" style={{ whiteSpace: 'pre-wrap' }}>{message}</div>)} */}
               </div>
             </div>
           </div>
@@ -193,6 +196,22 @@ function ForgetPassword() {
       </div>
       <ScrollTopButton />
       <QuickViewModal />
+      {showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor: '#2196f3', // Xanh dương thông báo
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    whiteSpace: 'pre-wrap'
+  }}>
+    {toastMessage}
+  </div>
+)}
     </div>
   );
 }

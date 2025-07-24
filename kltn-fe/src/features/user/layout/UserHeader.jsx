@@ -18,6 +18,16 @@ import { useNavigate } from 'react-router-dom';
     const [selectedItemsCart, setSelectedItemsCart] = useState([]);
     const API_URL = 'http://localhost:8081/api/auth';
     const navigate = useNavigate();
+    const [toastMessage, setToastMessage] = useState('');
+const [showToast, setShowToast] = useState(false);
+
+const showToastMessage = (msg) => {
+  setToastMessage(msg);
+  setShowToast(true);
+  setTimeout(() => {
+    setShowToast(false);
+  }, 1500);
+};
     let colorAsinArray = [];
     try {
       if (Array.isArray(listCart.items)) {
@@ -62,18 +72,7 @@ import { useNavigate } from 'react-router-dom';
           updateCartItemQuantity(product.asin, num, unitPrice, product.size, product.nameColor);
         }
       }
-    };
-    
-    // const fetchUser = useCallback(async () => {
-    //   try {
-    //     const res = await authFetch(`${API_URL}/me`);
-    //     const data = await res.json();
-    //     setUser(data);
-    //   } catch {
-    //     setUser(null);
-    //   }
-    // }, []);
-  
+    };  
     useEffect(() => {
       const storedUsername = localStorage.getItem("username");
       const token = localStorage.getItem("accessToken");
@@ -134,9 +133,7 @@ import { useNavigate } from 'react-router-dom';
 
   setSelectedItemsCart(allSelected ? [] : allAsins);
 };
-
-  
-  
+ 
 const getCartProduct = async () => {
   const token = localStorage.getItem("accessToken");
   const cartId = token ? null : localStorage.getItem("cartId");
@@ -310,36 +307,87 @@ const getCartProduct = async () => {
         console.error("❌ Lỗi xoá khỏi wishlist:", err);
       }
     };
-    const handleCheckout = () => {
+    const handleCheckout = async (e) => {
+      e.preventDefault();
+    
       if (selectedItemsCart.length === 0) {
-        alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
+        showToastMessage("🛒 Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
         return;
       }
     
       const invalidItems = listCart.items.filter(item =>
-        selectedItemsCart.includes(item.asin) && (
+        selectedItemsCart.includes(item.asin) &&
+        (
           (item.hasSize && !item.size) ||
           (item.hasColor && !item.nameColor)
         )
       );
     
       if (invalidItems.length > 0) {
-        alert("Vui lòng chọn đúng size và màu sắc cho các sản phẩm yêu cầu.");
+        showToastMessage("⚠️ Vui lòng chọn đúng size và màu sắc cho các sản phẩm yêu cầu.");
         return;
       }
     
-      const cartId = localStorage.getItem("cartId") || null;
+      try {
+        let anyAdjusted = false;
     
-      console.log('selected:', selectedItemsCart, 'cartId:', cartId);
+        for (const item of listCart.items) {
+          if (!selectedItemsCart.includes(item.asin)) continue;
     
-      navigate('/user/shoppages/checkout', {
-        state: {
-          selectedItemsCart,
-          cartId
+          const sizeId = item.sizes?.find(s => s.sizeName === item.size)?.sizeId;
+          const colorId = JSON.parse(item.colorAsin || '[]')?.find(c => c.name_color === item.nameColor)?.color_id;
+          const quantity = quantityMap[item.productId] ?? item.quantity ?? 1;
+    
+          if (!sizeId || !colorId || !item.productId) continue;
+    
+          const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, {
+            params: {
+              productId: item.productId,
+              sizeId,
+              colorId
+            }
+          });
+    
+          const stock = res.data;
+    
+          if (quantity > stock) {
+            // ✅ Cập nhật lại giỏ hàng với số lượng mới
+            const token = localStorage.getItem("accessToken") || '';
+            const cartId = localStorage.getItem("cartId") || '';
+    
+            await axios.put("http://localhost:8084/api/cart/updateItem", {
+              token,
+              cartId,
+              asin: item.asin,
+              quantity: stock,
+              price: item.unitPrice,
+              size: item.size,
+              nameColor: item.nameColor
+            });
+    
+            setQuantityMap(prev => ({ ...prev, [item.productId]: stock }));
+            showToastMessage(`⚠️ "${item.productTitle}" chỉ còn ${stock} sản phẩm. Đã tự điều chỉnh.`);
+            anyAdjusted = true;
+          }
         }
-      });
-    };
-       
+    
+        if (anyAdjusted) {
+          await getCartProduct();
+          return; // ✅ Sau khi điều chỉnh thì không cho đi tiếp, người dùng cần xem lại
+        }
+    
+        const cartId = localStorage.getItem("cartId") || null;
+        navigate("/user/shoppages/checkout", {
+          state: {
+            selectedItemsCart,
+            cartId
+          }
+        });
+      } catch (err) {
+        console.error("❌ Lỗi kiểm tra tồn kho:", err);
+        showToastMessage("Có lỗi xảy ra khi kiểm tra tồn kho. Vui lòng thử lại.");
+      }
+    };      
     return (
         <header className="site-header mo-left header">
   {/* Main Header */}
@@ -982,6 +1030,7 @@ const getCartProduct = async () => {
                   aria-controls="offcanvasRight"
                 >
                   <i className="iconly-Light-Heart2" />
+                  <span className="badge badge-circle">{wishlistItems.length? wishlistItems.length:0}</span>
                 </a>
               </li>
               <li className="nav-item cart-link">
@@ -1067,16 +1116,24 @@ const getCartProduct = async () => {
       </a>
 
       <button
-        onClick={() => {
-          logout();
-          window.dispatchEvent(new Event('loggedOut'));
-          window.location.href = '/';
-        }}
-        className="btn d-flex align-items-center justify-content-start px-3 py-3 bg-white text-start text-danger shadow-sm w-100"
-        style={{ border: 'none', borderRadius: '0', fontWeight: '500' }}
-      >
-        <i className="fa fa-sign-out-alt me-2"></i> Đăng Xuất
-      </button>
+  onClick={() => {
+    logout(); // xoá token (nếu bạn định nghĩa riêng)
+    
+    // 🌟 Lưu thông báo vào localStorage
+    localStorage.setItem('logoutSuccess', 'Đăng xuất thành công');
+
+    // Dispatch nếu bạn cần
+    window.dispatchEvent(new Event('loggedOut'));
+
+    // Chuyển trang
+    window.location.href = '/user/auth/login'; // hoặc '/'
+  }}
+  className="btn d-flex align-items-center justify-content-start px-3 py-3 bg-white text-start text-danger shadow-sm w-100"
+  style={{ border: 'none', borderRadius: '0', fontWeight: '500' }}
+>
+  <i className="fa fa-sign-out-alt me-2"></i> Đăng Xuất
+</button>
+
     </div>
   </div>
 </div>
@@ -1898,8 +1955,25 @@ readOnly
       </div>
     </div>
   </div>
+  {showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    transition: 'opacity 0.5s ease-in-out'
+  }}>
+    {toastMessage}
+  </div>
+)}
   {/* filter sidebar */}
 </header>
+
 
     );
 }

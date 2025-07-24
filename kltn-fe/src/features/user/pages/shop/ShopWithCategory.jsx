@@ -29,8 +29,10 @@ function ShopWithCategory() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+const [selectedColorId, setSelectedColorId] = useState(null);
+const [selectedSize, setSelectedSize] = useState(null);
+const [selectedSizeId, setSelectedSizeId] = useState(null);
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -40,6 +42,18 @@ function ShopWithCategory() {
   const [salesRankCategories, setSalesRankCategories] = useState([]);
   const [tags, setTags] = useState({});
   const [productTypeCount, setProductTypeCount] = useState({});
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success'); // hoặc "error"
+  const [availableStock, setAvailableStock] = useState(null);
+  
+  // ✅ Đổi tên hàm showToast → triggerToast
+  const triggerToast = (msg, type = "success") => {
+    setToastMessage(msg);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 1500);
+  };
 
   useEffect(() => {
     const modal = document.getElementById("exampleModal");
@@ -163,13 +177,41 @@ function ShopWithCategory() {
       setListCart([]);
     }
   };
-
   const addCart = async () => {
     const cartId = localStorage.getItem("cartId") || "";
     const token = localStorage.getItem("accessToken") || "";
   
-    if (!selectedProduct || !selectedSize || !selectedColor) {
-      alert("Vui lòng chọn đầy đủ size và màu sắc trước khi thêm vào giỏ hàng.");
+    // ✅ Validate size nếu có
+    if (selectedProduct?.sizes?.length > 0 && !selectedSize) {
+      triggerToast("⚠️ Vui lòng chọn size", "error");
+      return;
+    }
+  
+    // ✅ Validate color nếu có
+    const hasColor = selectedProduct?.colorAsin && JSON.parse(selectedProduct.colorAsin || '[]').length > 0;
+    if (hasColor && !selectedColor) {
+      triggerToast("⚠️ Vui lòng chọn màu", "error");
+      return;
+    }
+  
+    // ✅ Validate tồn kho cơ bản
+    if (availableStock === 0) {
+      triggerToast("❌ Sản phẩm đã hết hàng", "error");
+      return;
+    }
+  
+    // ✅ Lấy sản phẩm đã có trong giỏ (nếu có)
+    const existing = listCart.find(item => {
+      const matchSize = item.size === (selectedSize?.sizeName || null);
+      const matchColor = item.nameColor === (selectedColor?.name_color || null);
+      return item.asin === selectedProduct.asin && matchSize && matchColor;
+    });
+  
+    const existingQty = existing?.quantity || 0;
+    const totalAfterAdd = quantity + existingQty;
+  
+    if (totalAfterAdd > availableStock) {
+      triggerToast(`⚠️ Tổng cộng ${totalAfterAdd} vượt tồn kho. Chỉ còn ${availableStock}`, "error");
       return;
     }
   
@@ -180,24 +222,25 @@ function ShopWithCategory() {
         quantity,
         price: parseFloat(priceDiscount),
         cartId,
-        size: selectedSize,
-        nameColor: selectedColor.name_color,
-        colorAsin: JSON.stringify(selectedProduct.colors || []),
+        size: selectedSize?.sizeName || null,
+        nameColor: selectedColor?.name_color || null,
+        colorAsin: selectedProduct.colorAsin || null,
       };
   
       const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+  
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }
   
       window.dispatchEvent(new Event("cartUpdated"));
+      triggerToast("✅ Đã thêm vào giỏ hàng", "success");
       window.location.href = "/user/shoppages/cart";
     } catch (error) {
-      console.error("❌ Không thể thêm vào giỏ hàng:", error.response?.data || error.message);
+      console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
+      triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
     }
-  };
-  
-
+  }; 
   const addCartWithQuantity = async (quantity, product) => {
     const cartId = localStorage.getItem('cartId') || '';
     const token = localStorage.getItem('accessToken') || '';
@@ -212,8 +255,10 @@ function ShopWithCategory() {
       const res = await axios.post('http://localhost:8084/api/cart/addCart', payload);
       if (res.data.cartId) localStorage.setItem('cartId', res.data.cartId);
       window.dispatchEvent(new Event('cartUpdated'));
+      triggerToast("✅ Thêm vào giỏ hàng thành công!"); 
     } catch (error) {
       console.error('❌ Lỗi thêm giỏ hàng:', error);
+      triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
     }
   };
 
@@ -244,11 +289,13 @@ function ShopWithCategory() {
         await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        triggerToast("🗑️ Đã xóa sản phẩm khỏi wishlist");
       } else {
         await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        window.location.href = "/user/wishlist";
+        triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
+        // window.location.href = "/user/wishlist";
       }
   
       const res = await axios.get("http://localhost:8083/api/wishlist", {
@@ -267,12 +314,11 @@ function ShopWithCategory() {
   };
 
   useEffect(() => {
-    if (selectedProduct) {
-      const discountPrice = (
-        selectedProduct.productPrice * quantity -
-        (selectedProduct.productPrice * selectedProduct.percentDiscount * quantity) / 100
-      ).toFixed(2);
-      setPriceDiscount(discountPrice);
+    if (selectedProduct && selectedProduct.productPrice > 0) {
+      const discount = selectedProduct.percentDiscount || 0;
+      const basePrice = selectedProduct.productPrice * quantity;
+      const discounted = basePrice - (basePrice * discount / 100);
+      setPriceDiscount(discounted.toFixed(2));
     } else {
       setPriceDiscount(0);
     }
@@ -391,11 +437,62 @@ function ShopWithCategory() {
   };
 
   const handleChange = (e) => {
-    const value = e.target.value;
-    const parsed = parseInt(value);
-    setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
+    const value = parseInt(e.target.value);
+    if (isNaN(value) || value < 1) {
+      triggerToast("⚠️ Số lượng phải ≥ 1", "error");
+      setQuantity(1);
+    } else if (availableStock !== null && value > availableStock) {
+      triggerToast(`⚠️ Tối đa còn ${availableStock} sản phẩm`, "error");
+      setQuantity(availableStock);
+    } else {
+      setQuantity(value);
+    }
   };
+  // Mở modal
+  const handleOpenProductModal = async (asin) => {
+    try {
+      const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+      if (res.data) {
+        setSelectedProduct(res.data);
+        setSelectedColor(null); 
+        setSelectedSize(null); 
+        setQuantity(1);         
+  
+        // Nếu chưa chọn màu / size → gán tồn kho tổng
+        setAvailableStock(res.data.stockQuantity || 0);
+      }
+  
+      const modal = new window.bootstrap.Modal(document.getElementById("exampleModal"));
+      modal.show();
+    } catch (error) {
+      console.error("❌ Lỗi lấy chi tiết sản phẩm:", error);
+      triggerToast("❌ Không lấy được chi tiết sản phẩm", "error");
+    }
+  };
+// ✅ Xử lý tồn kho sản phẩm khi chọn size & color
+// ✅ Xu lý tồn kho y như trang Cart
+useEffect(() => {
+  if (!selectedProduct || !selectedSizeId || !selectedColorId) {
+    setAvailableStock(selectedProduct?.stockQuantity || 0);
+    return;
+  }
 
+  const fetchAvailableStock = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}&sizeId=${selectedSizeId}&colorId=${selectedColorId}`
+      );
+      if (!res.ok) throw new Error("Lỗi gọi API tồn kho");
+      const quantity = await res.json();
+      setAvailableStock(quantity);
+      setQuantity(q => Math.min(q, quantity));
+    } catch (err) {
+      console.error("❌ Lỗi lấy tồn kho biến thể:", err);
+      setAvailableStock(null);
+    }
+  };
+  fetchAvailableStock();
+}, [selectedProduct, selectedSizeId, selectedColorId]); // ✅ đúng key
   return (
     <>
       <div className="page-wraper">
@@ -857,13 +954,7 @@ function ShopWithCategory() {
               >
                 {/* Quick View */}
                 <div
-                  onClick={() => {
-                    setSelectedProduct(product);
-                    const modal = new window.bootstrap.Modal(
-                      document.getElementById("exampleModal")
-                    );
-                    modal.show();
-                  }}
+                  onClick={() => handleOpenProductModal(product.asin)}
                   style={{
                     width: "40px",
                     height: "40px",
@@ -1054,13 +1145,7 @@ function ShopWithCategory() {
                 <div
                   className="btn btn-secondary btn-md btn-rounded"
                   style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    setSelectedProduct(product);
-                    const modal = new window.bootstrap.Modal(
-                      document.getElementById("exampleModal")
-                    );
-                    modal.show();
-                  }}
+                  onClick={() => handleOpenProductModal(product.asin)}
                 >
                   <i className="fa-solid fa-eye d-md-none d-block" />
                   <span className="d-md-block d-none">Quick View</span>
@@ -1174,15 +1259,7 @@ function ShopWithCategory() {
                 <div
                   className="btn btn-secondary btn-md btn-rounded"
                   style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    setSelectedProduct(product);
-                    setTimeout(() => {
-                      const modal = new window.bootstrap.Modal(
-                        document.getElementById("exampleModal")
-                      );
-                      modal.show();
-                    }, 100);
-                  }}
+                  onClick={() => handleOpenProductModal(product.asin)}
                 >
                   <i className="fa-solid fa-eye d-md-none d-block" />
                   <span className="d-md-block d-none">Quick View</span>
@@ -1412,19 +1489,57 @@ function ShopWithCategory() {
                   <div className="btn-quantity light me-0">
                     <label className="form-label fw-bold">Quantity</label>
                     <div className="input-group">
-                      <button className="btn btn-dark rounded-circle p-0" style={{ width: '40px', height: '40px' }} onClick={() => setQuantity(q => Math.max(1, q - 1))}>-</button>
-                      <input type="text" min="1" value={quantity} onChange={handleChange} className="form-control text-center" />
-                      <button className="btn btn-dark rounded-circle p-0" style={{ width: '40px', height: '40px' }} onClick={() => setQuantity(q => q + 1)}>+</button>
-                    </div>
+  <button
+    className="btn btn-dark rounded-circle p-0"
+    style={{ width: '40px', height: '40px' }}
+    onClick={() => {
+      if (quantity <= 1) {
+        triggerToast("⚠️ Tối thiểu là 1", "error");
+      } else {
+        setQuantity(q => q - 1);
+      }
+    }}
+  >-</button>
+
+  <input
+    type="text"
+    value={quantity}
+    className="form-control text-center"
+    onChange={(e) => {
+      let val = parseInt(e.target.value);
+      if (isNaN(val) || val < 1) {
+        triggerToast("⚠️ Số lượng phải lớn hơn 0", "error");
+        val = 1;
+      } else if (availableStock !== null && val > availableStock) {
+        triggerToast(`⚠️ Tối đa chỉ còn ${availableStock} sản phẩm`, "error");
+        val = availableStock;
+      }
+      setQuantity(val);
+    }}
+  />
+
+  <button
+    className="btn btn-dark rounded-circle p-0"
+    style={{ width: '40px', height: '40px' }}
+    onClick={() => {
+      if (availableStock !== null && quantity >= availableStock) {
+        triggerToast("⚠️ Đã đạt số lượng tối đa", "error");
+      } else {
+        setQuantity(q => q + 1);
+      }
+    }}
+  >+</button>
+</div>
                   </div>
                 </div>
-                {/* Color */}
-                {selectedProduct?.colorAsin && (() => {
+{/* Color */}
+{/* Color */}
+{selectedProduct?.colorAsin && (() => {
   let colors = [];
   try {
     colors = JSON.parse(selectedProduct.colorAsin);
   } catch (e) {
-    console.error(e);
+    console.error("❌ Lỗi parse colorAsin:", e);
   }
 
   return colors.length > 0 && (
@@ -1433,16 +1548,20 @@ function ShopWithCategory() {
       <div className="d-flex flex-wrap gap-2 align-items-center">
         {colors.map((color, index) => {
           const inputId = `colorRadio-${index}`;
-          const isSelected = selectedColor?.name_color === color.name_color;
+          const isSelected = selectedColorId === color.color_id;
+
           return (
             <div key={index} className="form-check m-0 p-0">
               <input
                 type="radio"
-                className="visually-hidden"
-                name="colorRadio"
                 id={inputId}
+                name="colorRadioGroup"
+                className="visually-hidden"
                 checked={isSelected}
-                onChange={() => setSelectedColor(color)}
+                onChange={() => {
+                  setSelectedColor(color);
+                  setSelectedColorId(color.color_id); // ✅ Dùng đúng key
+                }}
               />
               <label
                 htmlFor={inputId}
@@ -1452,10 +1571,8 @@ function ShopWithCategory() {
                   height: '32px',
                   borderRadius: '50%',
                   border: isSelected ? '2px solid black' : '1px solid #ccc',
-                  display: 'inline-block',
                   cursor: 'pointer',
-                  boxShadow: isSelected ? '0 0 3px rgba(0,0,0,0.5)' : 'none',
-                  transition: '0.2s ease',
+                  boxShadow: isSelected ? '0 0 4px rgba(0,0,0,0.6)' : 'none',
                 }}
                 title={color.name_color}
               />
@@ -1463,30 +1580,46 @@ function ShopWithCategory() {
           );
         })}
       </div>
-      <p className="form-label mt-1">Selected: {selectedColor?.name_color || 'None'}</p>
+      <p className="form-label mt-1">
+        Selected: {selectedColor?.name_color || 'None'}
+      </p>
     </div>
   );
 })()}
 
-                {/* Size */}
-                {selectedProduct?.sizes?.length > 0 && (
-                  <div className="mb-3">
-                    <label className="form-label fw-bold">Size</label>
-                    <div className="btn-group flex-wrap" role="group">
-                      {selectedProduct.sizes.map((size, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          className={`btn btn-outline-dark m-1 ${selectedSize === size.sizeName ? 'active' : ''}`}
-                          onClick={() => setSelectedSize(size.sizeName)}
-                          style={{ minWidth: '60px' }}
-                        >
-                          {size.sizeName}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+
+{/* Size */}
+{/* Size */}
+{selectedProduct?.sizes?.length > 0 && (
+  <div className="mb-3">
+    <label className="form-label fw-bold">Size</label>
+    <div className="btn-group flex-wrap" role="group">
+      {selectedProduct.sizes.map((size, idx) => (
+        <button
+          key={idx}
+          type="button"
+          className={`btn btn-outline-dark m-1 ${selectedSizeId === size.sizeId ? 'active' : ''}`}
+          onClick={() => {
+            setSelectedSize(size);
+            setSelectedSizeId(size.sizeId); // ✅ Dùng đúng sizeId như Cart
+          }}
+        >
+          {size.sizeName}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+
+<div className="mb-2">
+  <label className="form-label fw-bold d-flex align-items-center">
+    Quantity:
+    {availableStock !== null && (
+      <span className="ms-2">({availableStock} sản phẩm)</span>
+    )}
+  </label>
+</div>
+
                 <div className="cart-btn">
                   <button onClick={addCart} className="btn btn-secondary text-uppercase">Add To Cart</button>
                   <button className="btn btn-md btn-outline-secondary btn-icon" onClick={() => handleToggleWishlist(selectedProduct.asin)}>
@@ -1539,6 +1672,24 @@ function ShopWithCategory() {
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
+         {showToast && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            zIndex: 9999,
+            padding: "12px 20px",
+            backgroundColor: toastType === "success" ? "#4caf50" : "#f44336",
+            color: "white",
+            borderRadius: "8px",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            transition: "opacity 0.5s ease-in-out",
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
       </div>
     </>
   );

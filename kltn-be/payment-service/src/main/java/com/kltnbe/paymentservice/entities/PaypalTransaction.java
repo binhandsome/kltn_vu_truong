@@ -24,13 +24,38 @@ public class PaypalTransaction {
     @Column(name = "paypal_email", nullable = false)
     private String paypalEmail;
 
-    @Column(name = "paypal_payment_id", nullable = false)
-    private String paypalPaymentId;
-
-    @Column(name = "paypal_transaction_id")
-    private String paypalTransactionId;
 
     @Column(name = "paypal_redirect_url")
     private String paypalRedirectUrl;
 
+    public String getPaypalEmail() {
+        return paypalEmail;
+    }
+
+    public void setPaypalEmail(String paypalEmail) {
+        this.paypalEmail = paypalEmail;
+    }
+
+    public Long getPaypalId() {
+        return paypalId;
+    }
+
+    public void setPaypalId(Long paypalId) {
+        this.paypalId = paypalId;
+    }
+
+    public String getPaypalRedirectUrl() {
+        return paypalRedirectUrl;
+    }
+
+    public void setPaypalRedirectUrl(String paypalRedirectUrl) {
+        this.paypalRedirectUrl = paypalRedirectUrl;
+    }
+    public Transaction getTransaction() {
+        return transaction;
+    }
+
+    public void setTransaction(Transaction transaction) {
+        this.transaction = transaction;
+    }
 }

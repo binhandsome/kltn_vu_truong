@@ -13,33 +13,32 @@ function Cart() {
   const [selectedItemsCart, setSelectedItemsCart] = useState([]);  
   const navigate = useNavigate();
   const [availableStockMap, setAvailableStockMap] = useState({});
+  const [showToast, setShowToast] = useState(false);
+const [toastMessage, setToastMessage] = useState("");
+const [toastType, setToastType] = useState("error");
+
+const triggerToast = (msg, type = "error") => {
+  setToastMessage(msg);
+  setToastType(type);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 2500);
+};
 
   // Xu li gioi han san pham: 
   const fetchStockVariant = async (productId, sizeName, colorName, asin) => {
-  try {
-    const sizeId = listCart.items
-      .find(item => item.productId === productId)
-      ?.sizes.find(s => s.sizeName === sizeName)?.sizeId;
-
-    const colorId = JSON.parse(
-      listCart.items.find(item => item.asin === asin)?.colorAsin || '[]'
-    ).find(c => c.name_color === colorName)?.color_id;
-
-    if (!sizeId || !colorId || !productId) return;
-
-    const res = await axios.get(
-      `http://localhost:8083/api/product-variants/available-stock`,
-      { params: { productId, sizeId, colorId } }
-    );
-
-    setAvailableStockMap(prev => ({
-      ...prev,
-      [asin]: res.data,
-    }));
-  } catch (err) {
-    console.error("❌ Lỗi lấy tồn kho biến thể:", err);
-  }
-};
+    try {
+      const sizeId = listCart.items.find(item => item.productId === productId)?.sizes.find(s => s.sizeName === sizeName)?.sizeId;
+      const colorId = JSON.parse(listCart.items.find(item => item.asin === asin)?.colorAsin || '[]').find(c => c.name_color === colorName)?.color_id;
+  
+      if (!sizeId || !colorId || !productId) return;
+  
+      const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, { params: { productId, sizeId, colorId } });
+  
+      setAvailableStockMap(prev => ({ ...prev, [asin]: res.data }));
+    } catch (err) {
+      console.error("❌ Lỗi lấy tồn kho biến thể:", err);
+    }
+  };
 
   useEffect(() => {
     if (hasBgClass) {
@@ -76,10 +75,7 @@ function Cart() {
     const cartId = localStorage.getItem("cartId") || '';
     const token = localStorage.getItem("accessToken") || '';
     try {
-      const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
-        params: { cartId, token },
-      });
-  
+      const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', { params: { cartId, token } });
       const cartItems = cartResponse.data.items || [];
       if (!cartItems.length) {
         setListCart({ items: [], totalPrice: 0 });
@@ -87,43 +83,29 @@ function Cart() {
       }
   
       const asins = cartItems.map(item => item.asin).join(',');
-      const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
-        params: { asins },
-      });
+      const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, { params: { asins } });
   
       const mergedItems = cartItems.map(item => {
         const product = productResponse.data.find(p => p.asin === item.asin);
         if (!product) return item;
-      
+  
         const unitPrice = product.productPrice;
         const discount = product.percentDiscount || 0;
         const discountedUnitPrice = unitPrice - (unitPrice * discount / 100);
-      
+  
         const hasSize = product?.sizes?.length > 0;
         const hasColor = product?.colorAsin && JSON.parse(product.colorAsin).length > 0;
-      
-        return {
-          ...item,
-          ...product,
-          unitPrice,
-          discountedUnitPrice,
-          size: item.size,
-          nameColor: item.nameColor,
-          hasSize,
-          hasColor, // ✅ THÊM VÀO ĐÂY
-        };
-      });
-      
   
-      setListCart({
-        ...cartResponse.data,
-        items: mergedItems,
+        return { ...item, ...product, unitPrice, discountedUnitPrice, hasSize, hasColor };
       });
-      console.log("Merged items with size/color flags:", mergedItems);
   
+      setListCart({ ...cartResponse.data, items: mergedItems });
       const map = {};
       mergedItems.forEach(item => {
         map[item.productId] = item.quantity;
+        if (item.hasSize && item.hasColor) {
+          fetchStockVariant(item.productId, item.size, item.nameColor, item.asin);
+        }
       });
       setQuantityMap(map);
     } catch (error) {
@@ -172,7 +154,7 @@ function Cart() {
     const maxStock = availableStockMap[asin] ?? 1000;
   
     if (current >= maxStock) {
-      alert("Đã đạt giới hạn tồn kho cho biến thể này.");
+      triggerToast("⚠️ Đã đạt giới hạn tồn kho!");
       return;
     }
   
@@ -180,20 +162,16 @@ function Cart() {
     setQuantityMap(prev => ({ ...prev, [productId]: newQty }));
     updateQuantity(productId, newQty);
   };
-  
-
   const handleDecrement = (productId) => {
     const current = quantityMap[productId] || 1;
     if (current <= 1) {
-      alert("Số lượng tối thiểu là 1.");
+      triggerToast("⚠️ Số lượng tối thiểu là 1!");
       return;
     }
     const newQty = current - 1;
     setQuantityMap(prev => ({ ...prev, [productId]: newQty }));
     updateQuantity(productId, newQty);
   };
-  
-
   const handleRemove = async (asin) => {
     const cartId = localStorage.getItem("cartId") || '';
     const token = localStorage.getItem("accessToken") || '';
@@ -210,15 +188,14 @@ function Cart() {
     let num = parseInt(value);
     if (isNaN(num)) num = 1;
     if (num < 1) {
-      alert("Số lượng tối thiểu là 1.");
+      triggerToast("⚠️ Số lượng tối thiểu là 1!");
       num = 1;
     }
     const maxStock = availableStockMap[asin] ?? 1000;
     if (num > maxStock) {
-      alert("Vượt quá số lượng tồn kho.");
+      triggerToast("⚠️ Vượt quá số lượng tồn kho!");
       num = maxStock;
     }
-  
     setQuantityMap(prev => ({ ...prev, [productId]: num }));
     updateQuantity(productId, num);
   };
@@ -226,26 +203,22 @@ function Cart() {
   const updateCartItemVariant = async (asin, quantity, price, size, nameColor, productId) => {
     const token = localStorage.getItem("accessToken") || '';
     const cartId = localStorage.getItem("cartId") || '';
-  
     try {
       await axios.put("http://localhost:8084/api/cart/updateItem", {
         token,
         cartId,
-        asin,                        // đúng biến đã truyền vào
+        asin,
         quantity,
         price,
-        size: size?.sizeName || size, // nếu size là object thì lấy sizeName
+        size: size?.sizeName || size,
         nameColor
       });
-  
-      // Gọi fetch tồn kho sau khi cập nhật
-      await fetchStockVariant(productId, size, nameColor, asin); 
-  
+      await fetchStockVariant(productId, size, nameColor, asin);
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
       console.error("❌ updateCartItemVariant failed:", err);
     }
-  }; 
+  };
   return (
     <>
       <div className="page-wraper">
@@ -541,6 +514,21 @@ function Cart() {
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
         <QuickViewModal />
+        {showToast && (
+  <div style={{
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    zIndex: 9999,
+    padding: "12px 20px",
+    backgroundColor: toastType === "success" ? "#4caf50" : "#f44336",
+    color: "white",
+    borderRadius: "8px",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+    transition: "opacity 0.5s ease-in-out"
+  }}>{toastMessage}</div>
+) }
+
       </div>
     </>
   );
