@@ -231,6 +231,17 @@ public class AuthServiceImpl implements AuthService {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public Long findIdAuthByAccessToken(String accessToken) {
+        String username = jwtUtil.getUsernameFromToken(accessToken);
+        Optional<Auth> authOpt = authRepository.findByUsername(username);
+        if (authOpt.isEmpty()) {
+            return 0L;
+        }else{
+            return authOpt.get().getAuthId();
+        }
+    }
+
 
     @Override
         public Auth getUserByUsername(String username) {

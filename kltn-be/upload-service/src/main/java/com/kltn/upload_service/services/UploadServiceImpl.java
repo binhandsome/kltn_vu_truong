@@ -30,6 +30,17 @@ public class UploadServiceImpl implements UploadService {
         }
         return publicIds;
     }
+    @Override
+    public String uploadImage(MultipartFile file, String folderName) throws IOException {
+        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), Map.of(
+                "folder", folderName,
+                "resource_type", "image"
+                // "access_mode" mặc định là public, có thể bỏ
+        ));
+
+        return uploadResult.get("secure_url").toString();
+    }
+
 
     @Override
     public String generateSignedUrl(String publicId, int expiresInSeconds) {

@@ -20,6 +20,7 @@ public interface AuthService {
     ResponseEntity<?> checkLoginSeller(LoginRequest request);
     ResponseEntity<?> verifyLoginSeller(RequestInfomation requestInfomation);
     ResponseEntity<?> getUserWithAccessToken(String accessToken);
+    Long findIdAuthByAccessToken(String accessToken);
 //    String verifyOtp(String username, String inputOtp);
 //    String registerSeller(RegisterRequest registerRequest);
 //

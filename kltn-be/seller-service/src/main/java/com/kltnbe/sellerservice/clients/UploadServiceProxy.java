@@ -17,4 +17,9 @@ public interface UploadServiceProxy {
             @RequestPart("files") List<MultipartFile> files,
             @RequestPart("folderName") String folderName
     );
+    @PostMapping(value = "/api/upload/uploadImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadImage(
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("folderName") String folderName
+    );
 }

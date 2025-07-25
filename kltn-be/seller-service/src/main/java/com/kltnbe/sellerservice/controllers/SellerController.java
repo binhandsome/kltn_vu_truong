@@ -1,9 +1,9 @@
 package com.kltnbe.sellerservice.controllers;
 
-import com.kltnbe.sellerservice.dtos.LoginRequest;
-import com.kltnbe.sellerservice.dtos.RequestInfomation;
-import com.kltnbe.sellerservice.dtos.SellerDTO;
-import com.kltnbe.sellerservice.dtos.StoreDTO;
+import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.entities.Shop;
+import com.kltnbe.sellerservice.entities.ShopDiscount;
+import com.kltnbe.sellerservice.entities.UserUseDiscount;
 import com.kltnbe.sellerservice.services.SellerService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/seller")
@@ -34,6 +35,48 @@ public class SellerController {
     @GetMapping("/userProfileResponse")
     public ResponseEntity<?> userProfileResponse(String accessToken) {
         return sellerService.getInfoUser(accessToken);
+    }@PostMapping("/create-shop")
+    public ResponseEntity<ShopResponseDTO> createShop(@ModelAttribute ShopRequestDTO shopRequestDTO) {
+        ShopResponseDTO shop = sellerService.createShop(shopRequestDTO.getAccessToken(), shopRequestDTO);
+        return ResponseEntity.ok(shop);
     }
 
+    @PostMapping("/create-discount")
+    public ResponseEntity<ShopDiscountResponseDTO> createShopDiscount(@RequestBody ShopDiscountRequestDTO discountRequestDTO) {
+        ShopDiscountResponseDTO discount = sellerService.createShopDiscount(discountRequestDTO.getAccessToken(), discountRequestDTO);
+        return ResponseEntity.ok(discount);
+    }
+
+    @PostMapping("/use-discount")
+    public ResponseEntity<UseDiscountResponseDTO> useDiscount(@RequestBody UseDiscountRequestDTO useDiscountRequestDTO) {
+        UseDiscountResponseDTO userUseDiscount = sellerService.useDiscount(useDiscountRequestDTO.getAccessToken(), useDiscountRequestDTO);
+        return ResponseEntity.ok(userUseDiscount);
+    }
+    @GetMapping("/has-shop")
+    public ResponseEntity<ShopStatusResponseDTO> hasShop(@RequestParam String accessToken) {
+        ShopStatusResponseDTO status = sellerService.hasShop(accessToken);
+        return ResponseEntity.ok(status);
+    }
+
+    @GetMapping("/get-shop-info")
+    public ResponseEntity<ShopResponseDTO> getShopInfo(@RequestParam String accessToken) {
+        ShopResponseDTO shopInfo = sellerService.getShopInfo(accessToken);
+        return ResponseEntity.ok(shopInfo);
+    }
+    @GetMapping("/get-shop-discounts")
+    public ResponseEntity<List<ShopDiscountResponseDTO>> getShopDiscounts(@RequestParam String accessToken) {
+        List<ShopDiscountResponseDTO> discounts = sellerService.getShopDiscounts(accessToken);
+        return ResponseEntity.ok(discounts);
+    }
+    @PutMapping(value = "/update-shop", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ShopResponseDTO> updateShop(@ModelAttribute ShopRequestDTO shopUpdateRequestDTO) {
+        ShopResponseDTO shopInfo = sellerService.updateShop(shopUpdateRequestDTO);
+        return ResponseEntity.ok(shopInfo);
+    }
+
+    @DeleteMapping("/delete-shop")
+    public ResponseEntity<Void> deleteShop(@RequestParam String accessToken) {
+        sellerService.deleteShop(accessToken);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -1,8 +1,371 @@
-const AdminDashboard = () => (
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+function AdminDashboard() {
+    const [hasShop, setHasShop] = useState(null);
+    const [message, setMessage] = useState('');
+    const [shopStatus, setShopStatus] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [showModalShop, setShowModalShop] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [discounts, setDiscounts] = useState([]);
+    const [nameShop, setNameShop] = useState('');
+  const [thumbnailShop, setThumbnailShop] = useState('');
+  const [descriptionShop, setDescriptionShop] = useState('');
+  const [shopAddress, setShopAddress] = useState('');
+  const [shopPhone, setShopPhone] = useState('');
+  const [shopEmail, setShopEmail] = useState('');
+
+  
+ const handleOpenModalShop = () => setShowModalShop(true);
+  const handleCloseModalShop = () => setShowModalShop(false);
+  const [shopInfo, setShopInfo] = useState(null);
+
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
+    const API_URL = 'http://localhost:8089/api/seller';
+      const navigate = useNavigate();
+
+    const [nameDiscount, setNameDiscount] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [percentValue, setPercentValue] = useState('');
+  const [dayStart, setDayStart] = useState('');
+  const [dayEnd, setDayEnd] = useState('');
+  const [status, setStatus] = useState('');
+    const [showEditModal, setShowEditModal] = useState(false);
+const handleOpenModalEdit = () => setShowEditModal(true);
+  const handleCloseModalEdit = () => setShowEditModal(false);
+   const convertToVNISOString = (localDateTimeStr) => {
+  const date = new Date(localDateTimeStr);
+  // Lấy giờ VN bằng cách cộng thêm 7 tiếng offset (UTC+7)
+  const vnOffset = 7 * 60 * 60000; // 7h -> ms
+  const vnTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000 + vnOffset);
+  return vnTime.toISOString().slice(0, 19); // cắt 'Z' ở cuối nếu không muốn timezone
+};
+const handleEditSubmit = async (event) => {
+    event.preventDefault();
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      setMessage('❌ Vui lòng đăng nhập để cập nhật shop.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('accessToken', accessToken);
+    formData.append('nameShop', nameShop);
+    if (thumbnailShop) {
+      formData.append('thumbnailShop', thumbnailShop);
+    }
+    formData.append('descriptionShop', descriptionShop);
+    formData.append('shopAddress', shopAddress);
+    formData.append('shopPhone', shopPhone);
+    formData.append('shopEmail', shopEmail);
+
+    try {
+      const response = await axios.put(`${API_URL}/update-shop`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setShopInfo(response.data);
+      setMessage('✅ Cập nhật shop thành công.');
+      setShowEditModal(false);
+    } catch (error) {
+      console.error('Error updating shop:', error);
+      setMessage(error.response?.data || '❌ Lỗi khi cập nhật shop.');
+    }
+  };
+
+  const handleDeleteShop = async () => {
+    if (!window.confirm('Bạn có chắc muốn xóa shop?')) return;
+
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      setMessage('❌ Vui lòng đăng nhập để xóa shop.');
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_URL}/delete-shop`, {
+        params: { accessToken }
+      });
+      setShopInfo(null);
+      setMessage('✅ Đã xóa shop thành công.');
+    } catch (error) {
+      console.error('Error deleting shop:', error);
+      setMessage(error.response?.data || '❌ Lỗi khi xóa shop.');
+    }
+  };
+  useEffect(() => {
+    if (shopInfo) {
+      setNameShop(shopInfo.nameShop || '');
+      setThumbnailShop(shopInfo.thumbnailShop || '');
+      setDescriptionShop(shopInfo.descriptionShop || '');
+      setShopAddress(shopInfo.shopAddress || '');
+      setShopPhone(shopInfo.shopPhone || '');
+      setShopEmail(shopInfo.shopEmail || '');
+    }
+  }, [shopInfo]);
+
+const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      setMessage('❌ Vui lòng đăng nhập để tạo mã giảm giá.');
+      return;
+    }
+
+    // Validate inputs
+    if (!nameDiscount.trim()) {
+      setMessage('❌ Tên mã giảm giá không được để trống.');
+      return;
+    }
+    if (!minPrice || minPrice <= 0) {
+      setMessage('❌ Giá tối thiểu phải lớn hơn 0.');
+      return;
+    }
+    if (!percentValue || percentValue <= 0 || percentValue > 100) {
+      setMessage('❌ Phần trăm giảm giá phải từ 1 đến 100.');
+      return;
+    }
+    if (!dayStart || !dayEnd) {
+      setMessage('❌ Vui lòng chọn ngày bắt đầu và kết thúc.');
+      return;
+    }
+    if (!status) {
+      setMessage('❌ Vui lòng chọn trạng thái.');
+      return;
+    }
+
+   const convertToVNISOString = (localDateTimeStr) => {
+  const date = new Date(localDateTimeStr);
+  // Lấy giờ VN bằng cách cộng thêm 7 tiếng offset (UTC+7)
+  const vnOffset = 7 * 60 * 60000; // 7h -> ms
+  const vnTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000 + vnOffset);
+  return vnTime.toISOString().slice(0, 19); // cắt 'Z' ở cuối nếu không muốn timezone
+};
+
+    const discountData = {
+  accessToken,
+  nameDiscount,
+  minPrice: parseFloat(minPrice),
+  percentValue: parseInt(percentValue),
+  dayStart: convertToVNISOString(dayStart), // Giữ nguyên định dạng người dùng nhập
+  dayEnd: convertToVNISOString(dayEnd),
+  status
+};
+
+
+    try {
+      const response = await axios.post(`${API_URL}/create-discount`, discountData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      setMessage('✅ Tạo mã giảm giá thành công!');
+      console.log('Discount created:', response.data);
+      // Reset form
+      setNameDiscount('');
+      setMinPrice('');
+      setPercentValue('');
+      setDayStart('');
+      setDayEnd('');
+      setStatus('');
+      handleCloseModal();
+      
+    } catch (error) {
+      console.error('Error creating discount:', error);
+      setMessage(error.response?.data || '❌ Lỗi khi tạo mã giảm giá, vui lòng thử lại.');
+    }
+  };
+useEffect(() => {
+    const fetchShopDiscounts = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        setMessage('❌ Vui lòng đăng nhập để xem mã giảm giá.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${API_URL}/get-shop-discounts`, {
+          params: { accessToken }
+        });
+        setDiscounts(response.data);
+        setMessage(response.data.length > 0 ? '✅ Đã tải danh sách mã giảm giá.' : '⚠️ Chưa có mã giảm giá nào.');
+      } catch (error) {
+        console.error('Error fetching shop discounts:', error);
+        setMessage(error.response?.data || '❌ Lỗi khi tải danh sách mã giảm giá.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchShopDiscounts();
+  }, []);
+const handleAddDiscount = () => {
+    navigate('/seller/shop/createShop');
+  };
+ useEffect(() => {
+    const checkShopStatus = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        setMessage('❌ Vui lòng đăng nhập để kiểm tra trạng thái shop.');
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${API_URL}/has-shop`, {
+          params: { accessToken }
+        });
+        setShopStatus(response.data);
+        if (response.data.hasShop) {
+          switch (response.data.shopStatus) {
+            case 'active':
+              setMessage('✅ Shop của bạn đang hoạt động.');
+              break;
+            case 'pending':
+              setMessage('⏳ Shop của bạn đang chờ duyệt.');
+              break;
+            case 'suspended':
+              setMessage('⚠️ Shop của bạn đã bị tạm ngưng.');
+              break;
+            default:
+              setMessage('❓ Trạng thái shop không xác định.');
+          }
+        } else {
+          setMessage('⚠️ Bạn chưa có shop.');
+        }
+      } catch (error) {
+        console.error('Error checking shop status:', error);
+        setMessage(error.response?.data || '❌ Lỗi khi kiểm tra trạng thái shop.');
+      }
+    };
+
+    checkShopStatus();
+  }, []);
+    useEffect(() => {
+    const fetchShopInfo = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        setMessage('❌ Vui lòng đăng nhập để xem thông tin shop.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${API_URL}/get-shop-info`, {
+          params: { accessToken }
+        });
+        setShopInfo(response.data);
+        setMessage('✅ Đã tải thông tin shop thành công.');
+      } catch (error) {
+        console.error('Error fetching shop info:', error);
+        setMessage(error.response?.data || '❌ Lỗi khi tải thông tin shop.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchShopInfo();
+  }, []);
+
+  return (
 <>
+
   <div className="page-wrapper">
+    
     <div className="main-content">
-      {/* Page Title Start */}
+      {shopStatus?.shopStatus === null ? (
+<div
+  style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh' // chiều cao toàn màn hình để căn giữa dọc
+  }}
+>
+  <button
+        onClick={handleAddDiscount}
+
+    style={{
+      background: 'linear-gradient(90deg, #3b82f6, #06b6d4)',
+      color: '#fff',
+      fontWeight: '600',
+      padding: '12px 24px',
+      borderRadius: '16px',
+      border: 'none',
+      cursor: 'pointer',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+      transition: 'transform 0.3s ease',
+    }}
+    onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+    onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+  >
+    ➕ Thêm Shop
+  </button>
+</div>
+     ) : shopStatus?.shopStatus === 'pending' ? (
+   <div
+  style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh' // chiều cao toàn màn hình để căn giữa dọc
+  }}
+>
+  <button
+    style={{
+      background: 'linear-gradient(90deg, #3b82f6, #06b6d4)',
+      color: '#fff',
+      fontWeight: '600',
+      padding: '12px 24px',
+      borderRadius: '16px',
+      border: 'none',
+      cursor: 'pointer',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+      transition: 'transform 0.3s ease',
+    }}
+    onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+    onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+  >
+    ➕ Bạn Đã Đăng Ký Shop Rồi, Vui Lòng Đợi Duyệt
+  </button>
+</div>
+     ):shopStatus?.shopStatus === 'suspended' ? (
+<div
+  style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh' // chiều cao toàn màn hình để căn giữa dọc
+  }}
+>
+  <button
+    style={{
+      background: 'linear-gradient(90deg, #3b82f6, #06b6d4)',
+      color: '#fff',
+      fontWeight: '600',
+      padding: '12px 24px',
+      borderRadius: '16px',
+      border: 'none',
+      cursor: 'pointer',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+      transition: 'transform 0.3s ease',
+    }}
+    onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+    onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+  >
+    ➕ Shop Của Bạn Đã Bị Cấm Vĩnh Viễn, Vui Lòng Liên Hệ ADMIN
+  </button>
+</div>
+     ):(
+<>
+
+
       <div className="row">
         <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
           <div className="page-title-wrapper">
@@ -26,6 +389,10 @@ const AdminDashboard = () => (
         </div>
       </div>
       {/* Dashboard Start */}
+      <div className="flex flex-wrap gap-4">
+
+
+  </div>
       <div className="row">
         <div className="col-xl-3 col-lg-4 col-md-6">
           {/* Start Card*/}
@@ -131,7 +498,7 @@ const AdminDashboard = () => (
               </div>
               <div className="icon-info-text">
                 {/* Happy Customers */}
-                <h5 className="ad-title">Chúc mừng khách hàng</h5>
+                <h5 className="ad-title">Số Lượng Người Theo Dõi</h5>
                 <h4 className="ad-card-title">66k</h4>
               </div>
             </div>
@@ -150,7 +517,7 @@ const AdminDashboard = () => (
               </div>
               <div className="icon-info-text">
                 {/* Daily Orders */}
-                <h5 className="ad-title">Đơn hàng hàng ngày</h5>
+                <h5 className="ad-title">Đơn hàng hôm nay</h5>
                 <h4 className="ad-card-title">15k</h4>
               </div>
             </div>
@@ -175,7 +542,7 @@ const AdminDashboard = () => (
               </div>
               <div className="icon-info-text">
                 {/* Total Sales */}
-                <h5 className="ad-title">Tổng doanh thu</h5>
+                <h5 className="ad-title">Đơn hàng tháng này</h5>
                 <h4 className="ad-card-title">420k</h4>
               </div>
             </div>
@@ -204,13 +571,14 @@ const AdminDashboard = () => (
               </div>
               <div className="icon-info-text">
                 {/* Total Revenue */}
-                <h5 className="ad-title">Tổng lợi nhuận</h5>
+                <h5 className="ad-title">Tổng doanh thu</h5>
                 <h4 className="ad-card-title">10k</h4>
               </div>
             </div>
           </div>
         </div>
       </div>
+      
       {/* Revanue Status Start */}
       <div className="row">
         <div className="col-xl-12 col-lg-12 col-md-12">
@@ -229,335 +597,797 @@ const AdminDashboard = () => (
                 </span>
               </h4>
             </div>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-xl-8 col-lg-12 col-md-12">
-                  <div className="chart-holder">
-                    <div id="chartD" />
-                  </div>
-                </div>
-                <div className="col-xl-4 col-lg-12 col-md-12">
-                  <div className="revenue-wrapper">
-                    <ul
-                      className="nav nav-pills mb-3"
-                      id="pills-tab"
-                      role="tablist"
-                    >
-                      <li className="nav-item">
-                        <a
-                          className="nav-link active"
-                          id="tab1-tab"
-                          data-bs-toggle="pill"
-                          href="index.html#tab1"
-                          role="tab"
-                          aria-controls="tab1"
-                          aria-selected="true"
-                        >
-                          {/* Weekly */}
-                          Hàng tuần
-                        </a>
-                      </li>
-                      <li className="nav-item">
-                        <a
-                          className="nav-link"
-                          id="tab2-tab"
-                          data-bs-toggle="pill"
-                          href="index.html#tab2"
-                          role="tab"
-                          aria-controls="tab2"
-                          aria-selected="false"
-                        >
-                          {/* Monthly */}
-                          Hàng tháng
-                        </a>
-                      </li>
-                      <li className="nav-item">
-                        <a
-                          className="nav-link"
-                          id="tab3-tab"
-                          data-bs-toggle="pill"
-                          href="index.html#tab3"
-                          role="tab"
-                          aria-controls="tab3"
-                          aria-selected="false"
-                        >
-                          {/* Yearly */}
-                          Hàng năm
-                        </a>
-                      </li>
-                    </ul>
-                    <div className="tab-content" id="pills-tabContent">
-                      <div
-                        className="tab-pane fade show active"
-                        id="tab1"
-                        role="tabpanel"
-                        aria-labelledby="tab1-tab"
-                      >
-                        <div className="revenue-info-wrap">
-                          <table>
-                            <tbody>
-                              <tr>
-                                <td>
-                                  <i className="far fa-chart-bar mr-2 icon-only" />
-                                  {/*  Total Sales */}
-                                  Tổng doanh thu
-                                </td>
-                                <td>
-                                  5995
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-user-friends mr-2 icon-only" />
-                                  {/* Total Customers */}
-                                  Tổng số khách hàng
-                                </td>
-                                <td>
-                                  5894
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  {/*  Total Income */}
-                                  Tổng thu nhập
-                                </td>
-                                <td>
-                                  4453
-                                  <sup className="medium ml-2 txt-green">
-                                    +25%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-signal mr-2 icon-only" />
-                                  {/* Total Expense */}
-                                  Tổng chi phí
-                                </td>
-                                <td>
-                                  7454
-                                  <sup className="medium ml-2 txt-red">+2%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-heart mr-2 icon-only" />
-                                  {/* Total Likes */}
-                                  Tổng số lượt thích
-                                </td>
-                                <td>
-                                  14454
-                                  <sup className="medium ml-2 txt-red">+5%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-frown-open mr-2 icon-only" />
-                                  {/* Tax Paid */}
-                                  Thuế đã nộp
-                                </td>
-                                <td>
-                                  786
-                                  <sup className="medium ml-2 txt-green">
-                                    +5%
-                                  </sup>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      <div
-                        className="tab-pane fade"
-                        id="tab2"
-                        role="tabpanel"
-                        aria-labelledby="tab2-tab"
-                      >
-                        <div className="revenue-info-wrap">
-                          <table>
-                            <tbody>
-                              <tr>
-                                <td>
-                                  <i className="far fa-chart-bar mr-2 icon-only" />
-                                  {/*  Total Sales */}
-                                  Tổng doanh thu
-                                </td>
-                                <td>
-                                  5995
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-user-friends mr-2 icon-only" />
-                                  {/* Total Customers */}
-                                  Tổng số khách hàng
-                                </td>
-                                <td>
-                                  5894
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  {/*  Total Income */}
-                                  Tổng thu nhập
-                                </td>
-                                <td>
-                                  4453
-                                  <sup className="medium ml-2 txt-green">
-                                    +25%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-signal mr-2 icon-only" />
-                                  {/* Total Expense */}
-                                  Tổng chi phí
-                                </td>
-                                <td>
-                                  7454
-                                  <sup className="medium ml-2 txt-red">+2%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-heart mr-2 icon-only" />
-                                  {/* Total Likes */}
-                                  Tổng số lượt thích
-                                </td>
-                                <td>
-                                  14454
-                                  <sup className="medium ml-2 txt-red">+5%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-frown-open mr-2 icon-only" />
-                                  {/* Tax Paid */}
-                                  Thuế đã nộp
-                                </td>
-                                <td>
-                                  786
-                                  <sup className="medium ml-2 txt-green">
-                                    +5%
-                                  </sup>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      <div
-                        className="tab-pane fade"
-                        id="tab3"
-                        role="tabpanel"
-                        aria-labelledby="tab3-tab"
-                      >
-                        <div className="revenue-info-wrap">
-                          <table>
-                            <tbody>
-                              <tr>
-                                <td>
-                                  <i className="far fa-chart-bar mr-2 icon-only" />
-                                  {/*  Total Sales */}
-                                  Tổng doanh thu
-                                </td>
-                                <td>
-                                  5995
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-user-friends mr-2 icon-only" />
-                                  {/* Total Customers */}
-                                  Tổng số khách hàng
-                                </td>
-                                <td>
-                                  5894
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  {/*  Total Income */}
-                                  Tổng thu nhập
-                                </td>
-                                <td>
-                                  4453
-                                  <sup className="medium ml-2 txt-green">
-                                    +25%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-signal mr-2 icon-only" />
-                                  {/* Total Expense */}
-                                  Tổng chi phí
-                                </td>
-                                <td>
-                                  7454
-                                  <sup className="medium ml-2 txt-red">+2%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-heart mr-2 icon-only" />
-                                  {/* Total Likes */}
-                                  Tổng số lượt thích
-                                </td>
-                                <td>
-                                  14454
-                                  <sup className="medium ml-2 txt-red">+5%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-frown-open mr-2 icon-only" />
-                                  {/* Tax Paid */}
-                                  Thuế đã nộp
-                                </td>
-                                <td>
-                                  786
-                                  <sup className="medium ml-2 txt-green">
-                                    +5%
-                                  </sup>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+    <div className="card-body">
+  <div className="col-12"> {/* Full width */}
+    <div className="chart-holder" style={{ width: '100%' }}>
+      <div id="chartD" style={{ width: '100%', height: '400px' }} />
+    </div>
+  </div>
+</div>
+
+          </div>
+        </div>
+      </div>
+            <div className="row">
+        <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+          <div className="card chart-card">
+            <div className="card-header">
+              <h4>Thông Tin Shop</h4>
+            </div>
+            <div className="card-body pb-4">
+              <div className="chart-holder">
+                <div className="table-responsive">
+                  <table className="table table-styled mb-0">
+                    <thead>
+                      <tr>
+                        <th>
+                          {/* <div className="checkbox">
+                            <input id="checkbox1" type="checkbox" />
+                            <label htmlFor="checkbox1" />
+                          </div> */}
+                        </th>
+                        {/* <th>Tên Mã</th> */}
+                        <th>Thông Tin Shop</th>
+                        <th>Số Điện Thoại</th>
+                        <th>Email</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Tạo Shop</th>
+                        <th>Xem chi tiết</th>
+                        {/* Action */}
+                        <th>Hoạt động</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+      
+                      <tr>
+                        <td>
+                          {/* <div className="checkbox">
+                            <input id="checkbox9" type="checkbox" />
+                            <label htmlFor="checkbox9" />
+                          </div> */}
+                        </td>
+                        {/* <td>#DD1048</td> */}
+                        <td>
+                          <span className="img-thumb ">
+                            <img src={shopInfo?.thumbnailShop} alt=" " />
+                            <span className="ml-2 ">{shopInfo?.nameShop}</span>
+                          </span>
+                        </td>
+                        <td>{shopInfo?.shopPhone}</td>
+                        <td>{shopInfo?.shopEmail}</td>
+                        <td>
+                          <label
+                            className="mb-0 badge badge-success"
+                            title=""
+                            data-original-title="Pending"
+                          >
+                            {shopInfo?.shopStatus}
+                          </label>
+                        </td>
+                        <td>
+                          <span className="img-thumb">
+                            <span className="ml-2">{shopInfo?.createdAt}</span>
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            className="mb-0 badge badge-primary"
+                            title=""
+                            data-original-title="Pending"
+                                                            onClick={handleOpenModalShop}
+
+                          >
+                            View Detail
+                          </button>
+                        </td>
+                        <td className="relative">
+                          <a
+                            className="action-btn "
+                            href="javascript:void(0); "
+                          >
+                            <svg
+                              className="default-size "
+                              viewBox="0 0 341.333 341.333 "
+                            >
+                              <g>
+                                <g>
+                                  <g>
+                                    <path d="M170.667,85.333c23.573,0,42.667-19.093,42.667-42.667C213.333,19.093,194.24,0,170.667,0S128,19.093,128,42.667 C128,66.24,147.093,85.333,170.667,85.333z " />
+                                    <path d="M170.667,128C147.093,128,128,147.093,128,170.667s19.093,42.667,42.667,42.667s42.667-19.093,42.667-42.667 S194.24,128,170.667,128z " />
+                                    <path d="M170.667,256C147.093,256,128,275.093,128,298.667c0,23.573,19.093,42.667,42.667,42.667s42.667-19.093,42.667-42.667 C213.333,275.093,194.24,256,170.667,256z " />
+                                  </g>
+                                </g>
+                              </g>
+                            </svg>
+                          </a>
+                          <div className="action-option ">
+                            <ul>
+                              <li>
+                                <a  onClick={() => setShowEditModal(true)}
+>
+                                  <i className="far fa-edit mr-2 " />
+                                  Edit
+                                </a>
+                              </li>
+                              <li>
+                                <a onClick={handleDeleteShop}>
+                                  <i className="far fa-trash-alt mr-2 " />
+                                  Delete
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* Products Orders Start */}
-      <div className="row">
+      
+             {showEditModal && (
+  <div
+    className="modal-backdrop "
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1050,
+    }}
+  >
+    <div className="modal-dialog modal-xl" role="document">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Chỉnh sửa Shop</h5>
+          <button
+            type="button"
+            className="close"
+            onClick={handleCloseModalEdit}
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div className="modal-body" style={{
+  maxHeight: '70vh',       // giới hạn chiều cao
+  overflowY: 'auto',       // thêm cuộn khi vượt quá
+  paddingRight: '10px',
+  
+}}>
+<form >
+      
+        
+          <div className="ad-auth-form">
+  {/* Tên Shop */}
+  <div className="ad-auth-feilds mb-30">
+    <input
+      type="text"
+      placeholder="Tên Shop"
+      className="ad-input"
+      value={nameShop}
+      onChange={(e) => setNameShop(e.target.value)}
+      required
+    />
+    <div className="ad-auth-icon">
+      {/* icon cửa hàng */}
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16px" height="16px" fill="#9abeed">
+        <path d="M21 7H3V5h18v2zm0 2H3v10h18V9zM5 17v-6h2v6H5zm4 0v-6h2v6H9zm4 0v-6h2v6h-2zm4 0v-6h2v6h-2z"/>
+      </svg>
+    </div>
+  </div>
+
+  {/* Số điện thoại Shop */}
+  <div className="ad-auth-feilds mb-30">
+    <input
+      type="text"
+      placeholder="Số Điện Thoại Shop"
+      className="ad-input"
+      value={shopPhone}
+      onChange={(e) => setShopPhone(e.target.value)}
+      required
+    />
+    <div className="ad-auth-icon">
+      {/* icon điện thoại */}
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16px" height="16px" fill="#9abeed">
+        <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+      </svg>
+    </div>
+  </div>
+
+  {/* Email Shop */}
+  <div className="ad-auth-feilds mb-30">
+    <input
+      type="email"
+      placeholder="Email Shop"
+      className="ad-input"
+      value={shopEmail}
+      onChange={(e) => setShopEmail(e.target.value)}
+      required
+    />
+    <div className="ad-auth-icon">
+      {/* icon email */}
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16px" height="16px" fill="#9abeed">
+        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+      </svg>
+    </div>
+  </div>
+
+  {/* Ảnh đại diện Shop */}
+  <div className="ad-auth-feilds mb-30">
+    <label>Ảnh đại diện Shop</label>
+    <input
+      type="file"
+      accept="image/*"
+      className="ad-input"
+      onChange={(e) => setThumbnailShop(e.target.files[0])}
+      required
+    />
+  </div>
+
+  {/* Địa chỉ Shop */}
+  <div className="ad-auth-feilds mb-30">
+    <input
+      type="text"
+      placeholder="Địa Chỉ Shop"
+      className="ad-input"
+      value={shopAddress}
+      onChange={(e) => setShopAddress(e.target.value)}
+      required
+    />
+    <div className="ad-auth-icon">
+      {/* icon location */}
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16px" height="16px" fill="#9abeed">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/>
+      </svg>
+    </div>
+  </div>
+
+  {/* Mô tả Shop */}
+<div className="ad-auth-feilds mb-30">
+  <textarea
+    placeholder="Giới thiệu ngắn gọn về shop..."
+    className="ad-input"
+    rows={4}
+    value={descriptionShop}
+    onChange={(e) => setDescriptionShop(e.target.value)}
+    required
+    style={{
+      width: '100%',
+      resize: 'vertical',        // cho phép kéo chiều cao nếu cần
+      fontSize: '14px',
+      padding: '10px 12px',
+      border: '1px solid #ccc',
+      borderRadius: '6px',
+      fontFamily: 'inherit',
+      boxSizing: 'border-box'
+    }}
+  ></textarea>
+</div>
+</div>
+
+              <div className="ad-auth-btn">
+
+              </div>
+
+            </form>
+   </div>
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary squer-btn"
+            onClick={handleCloseModalEdit}
+          >
+            Đóng
+          </button>
+         <button
+  type="button"
+  className="btn squer-btn"
+  style={{
+    color: '#fff',
+    background: 'linear-gradient(135deg, #06b6d4, #3b82f6)', // xanh cyan → xanh dương
+    fontWeight: '600',
+    padding: '10px 24px',
+    borderRadius: '12px',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    transition: 'all 0.3s ease',
+  }}
+  onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+  onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+  onClick={handleEditSubmit}
+>
+  ➕ Sửa Shop và Đợi Duyệt
+</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+       {showModalShop && (
+  <div
+    className="modal-backdrop "
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1050,
+    }}
+  >
+    <div className="modal-dialog modal-xl" role="document">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Thông Tin Chi Tiết</h5>
+          <button
+            type="button"
+            className="close"
+            onClick={handleCloseModalShop}
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div className="modal-body" style={{
+  maxHeight: '70vh',       // giới hạn chiều cao
+  overflowY: 'auto',       // thêm cuộn khi vượt quá
+  paddingRight: '10px',
+  
+}}>
+<table className="table table-styled mb-0">
+                    <thead>
+                      <tr>
+                        <th>
+                          {/* <div className="checkbox">
+                            <input id="checkbox1" type="checkbox" />
+                            <label htmlFor="checkbox1" />
+                          </div> */}
+                        </th>
+                        {/* <th>Tên Mã</th> */}
+                        <th>Địa Chỉ</th>
+                        <th>Mô Tả</th>
+                        <th>Đánh Giá</th>
+                        <th>Người Theo Dõi</th>
+
+                      </tr>
+                    </thead>
+                    <tbody>
+      
+                      <tr>
+                        <td>
+                          {/* <div className="checkbox">
+                            <input id="checkbox9" type="checkbox" />
+                            <label htmlFor="checkbox9" />
+                          </div> */}
+                        </td>
+                        {/* <td>#DD1048</td> */}
+          
+                        <td>{shopInfo?.shopAddress}</td>
+<td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
+  {shopInfo?.description}
+</td>
+                        <td>{shopInfo?.avaluate}</td>
+                        <td>{shopInfo?.followers}</td>
+
+                 
+                      </tr>
+                    </tbody>
+                  </table>
+   </div>
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary squer-btn"
+            onClick={handleCloseModalShop}
+          >
+            Đóng
+          </button>
+         <button
+  type="button"
+  className="btn squer-btn"
+  style={{
+    color: '#fff',
+    background: 'linear-gradient(135deg, #06b6d4, #3b82f6)', // xanh cyan → xanh dương
+    fontWeight: '600',
+    padding: '10px 24px',
+    borderRadius: '12px',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    transition: 'all 0.3s ease',
+  }}
+  onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+  onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+  onClick={handleSubmit}
+>
+  ➕ Thêm Mã Giảm Giá
+</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+        <div className="row">
+        <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+          <div className="card chart-card">
+            
+            <div className="card-header">
+              <h4>Mã Giảm Giá Của Shop</h4>
+              
+            </div>
+              {/* Nút Thêm Mã Giảm Giá */}
+<div style={{ textAlign: 'center' }}>
+  <button
+    style={{
+      
+      background: 'linear-gradient(90deg, #ec4899, #ef4444)',
+      color: '#fff',
+      fontWeight: '600',
+      padding: '12px 24px',
+      borderRadius: '16px',
+      width: '20%',
+      border: 'none',
+      cursor: 'pointer',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+      transition: 'transform 0.3s ease',
+    }}
+    onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+    onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+    onClick={handleOpenModal}
+  >
+    🎁 Thêm Mã Giảm Giá
+  </button>
+</div>
+      {/* Modal */}
+   {showModal && (
+  <div
+    className="modal-backdrop"
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1050,
+    }}
+  >
+    <div className="modal-dialog" role="document">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Thêm Mã Giảm Giá</h5>
+          <button
+            type="button"
+            className="close"
+            onClick={handleCloseModal}
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div className="modal-body" style={{
+  maxHeight: '70vh',       // giới hạn chiều cao
+  overflowY: 'auto',       // thêm cuộn khi vượt quá
+  paddingRight: '10px'
+}}>
+<form>
+       
+                    <div className="ad-auth-form">
+  {/* Tên Shop */}
+{/* Tên giảm giá */}
+<div className="ad-auth-feilds mb-30">
+  <input
+    type="text"
+    placeholder="Tên Giảm Giá"
+    className="ad-input"
+    value={nameDiscount}
+    onChange={(e) => setNameDiscount(e.target.value)}
+    required
+  />
+  <div className="ad-auth-icon">
+    {/* 🎁 icon quà tặng */}
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#9abeed" viewBox="0 0 24 24">
+      <path d="M20 7h-2.18c.11-.31.18-.65.18-1a3 3 0 0 0-6-1.73A3 3 0 0 0 4 6c0 .35.07.69.18 1H4a2 2 0 0 0-2 2v2h20V9a2 2 0 0 0-2-2zm-6-2a1 1 0 1 1 1 1h-2a1 1 0 0 1 1-1zm-6 0a1 1 0 0 1 1 1H7a1 1 0 0 1 1-1zM2 13v7a2 2 0 0 0 2 2h5v-9H2zm7 0v9h6v-9H9zm8 0v9h5a2 2 0 0 0 2-2v-7h-7z" />
+    </svg>
+  </div>
+</div>
+
+{/* Mức giá áp dụng từ */}
+<div className="ad-auth-feilds mb-30">
+  <input
+    type="number"
+    placeholder="Mức giá áp dụng từ ..."
+    className="ad-input"
+    value={minPrice}
+    onChange={(e) => setMinPrice(e.target.value)}
+    required
+  />
+  <div className="ad-auth-icon">
+    {/* 💰 icon tiền */}
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#9abeed" viewBox="0 0 24 24">
+      <path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1zM13 17h-2v-1h2a2 2 0 0 0 0-4h-2v-2h2v1h2v-1a2 2 0 0 0-2-2h-2a2 2 0 0 0 0 4h2v2h-2v-1H9v1a2 2 0 0 0 2 2h2v1z"/>
+    </svg>
+  </div>
+</div>
+
+{/* Phần trăm giảm giá */}
+<div className="ad-auth-feilds mb-30">
+  <input
+    type="number"
+    placeholder="Phần trăm giảm giá"
+    className="ad-input"
+    value={percentValue}
+    onChange={(e) => setPercentValue(e.target.value)}
+    required
+  />
+  <div className="ad-auth-icon">
+    {/* % icon */}
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#9abeed" viewBox="0 0 24 24">
+      <path d="M17.94 6.06a7.007 7.007 0 0 0-11.88 0 7.007 7.007 0 0 0 0 11.88 7.007 7.007 0 0 0 11.88 0 7.007 7.007 0 0 0 0-11.88zM7 10a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm8 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-6.293 3.293 6-6 1.414 1.414-6 6-1.414-1.414z"/>
+    </svg>
+  </div>
+</div>
+
+{/* Ngày bắt đầu */}
+{/* Ngày bắt đầu */}
+<div className="ad-auth-feilds mb-30">
+  <input
+    type="datetime-local"
+    placeholder="Ngày Bắt Đầu Giảm"
+    className="ad-input"
+    value={dayStart}
+    onChange={(e) => setDayStart(e.target.value)}
+    required
+  />
+  <div className="ad-auth-icon">
+    {/* 🕓 Icon đồng hồ + lịch */}
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#9abeed" viewBox="0 0 24 24">
+      <path d="M12 8v5h4v-2h-2V8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+    </svg>
+  </div>
+</div>
+
+{/* Ngày kết thúc */}
+{/* Ngày kết thúc */}
+<div className="ad-auth-feilds mb-30">
+  <input
+    type="datetime-local"
+    placeholder="Ngày Kết Thúc"
+    className="ad-input"
+    value={dayEnd}
+    onChange={(e) => setDayEnd(e.target.value)}
+    required
+  />
+  <div className="ad-auth-icon">
+    {/* 🕓 Icon đồng hồ + lịch */}
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#9abeed" viewBox="0 0 24 24">
+      <path d="M12 8v5h4v-2h-2V8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+    </svg>
+  </div>
+</div>
+
+
+{/* Trạng thái */}
+<div className="ad-auth-feilds mb-30" style={{ position: 'relative' }}>
+  <select
+    className="ad-input"
+    style={{
+      appearance: 'none',
+      WebkitAppearance: 'none',
+      MozAppearance: 'none',
+      paddingRight: '36px',
+      borderRadius: '8px',
+      border: '1px solid #ccc',
+      fontSize: '14px',
+      color: '#333',
+      backgroundColor: '#fff',
+      boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)',
+      width: '100%',
+      cursor: 'pointer',
+    }}
+    value={status}
+    onChange={(e) => setStatus(e.target.value)}
+  >
+    <option value="">Trạng Thái</option>
+    <option value="0">Hoạt Động</option>
+    <option value="1">Không Hoạt Động</option>
+  </select>
+  <div style={{
+    position: 'absolute',
+    top: '50%',
+    right: '12px',
+    transform: 'translateY(-50%)',
+    pointerEvents: 'none',
+  }}>
+    {/* ▼ icon mũi tên dropdown */}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      fill="#9abeed"
+      viewBox="0 0 24 24"
+    >
+      <path d="M7 10l5 5 5-5z" />
+    </svg>
+  </div>
+</div>
+
+
+
+</div>
+
+              <div className="ad-auth-btn">
+               
+              </div>
+
+            </form>
+   </div>
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary squer-btn"
+            onClick={handleCloseModal}
+          >
+            Đóng
+          </button>
+         <button
+  type="button"
+  className="btn squer-btn"
+  style={{
+    color: '#fff',
+    background: 'linear-gradient(135deg, #06b6d4, #3b82f6)', // xanh cyan → xanh dương
+    fontWeight: '600',
+    padding: '10px 24px',
+    borderRadius: '12px',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    transition: 'all 0.3s ease',
+  }}
+  onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+  onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+  onClick={handleSubmit}
+>
+  ➕ Thêm Mã Giảm Giá
+</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+            <div className="card-body pb-4">
+              <div className="chart-holder">
+                <div className="table-responsive">
+                  <table className="table table-styled mb-0">
+                    <thead>
+                      <tr>
+                  
+                        <th>Tên Mã</th>
+                        <th>Áp Dụng</th>
+                        <th>% Giảm Giá</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Bắt Đầu</th>
+                        <th>Ngày Kết Thúc</th>
+                        {/* Action */}
+                        <th>Hoạt động</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+      
+      {discounts && discounts.length > 0 ? (
+  discounts.map((discount) => (
+    <tr key={discount.id}>
+      <td>{discount.nameDiscount}</td>
+         <td>
+                          <span className="img-thumb ">
+                            <span className="ml-2 ">Từ {discount.minPrice}$</span>
+                          </span>
+                        </td>
+                         <td>{discount.percentValue}%</td>
+          <td>
+  <label
+    className={`mb-0 badge ${discount.status === 0 ? 'badge-success' : 'badge-warning'}`}
+    title=""
+    data-original-title="Pending"
+  >
+    {discount.status === 0 ? 'Đang Hoạt Động' : 'Tạm Dừng'}
+  </label>
+</td>
+
+                      
+                        <td>
+                          <span className="img-thumb">
+                            <span className="ml-2">{discount.dayStart}</span>
+                          </span>
+                        </td>
+                       <td>
+                          <span className="img-thumb">
+                            <span className="ml-2">{discount.dayEnd}</span>
+                          </span>
+                        </td>
+                        <td className="relative">
+                          <a
+                            className="action-btn "
+                            href="javascript:void(0); "
+                          >
+                            <svg
+                              className="default-size "
+                              viewBox="0 0 341.333 341.333 "
+                            >
+                              <g>
+                                <g>
+                                  <g>
+                                    <path d="M170.667,85.333c23.573,0,42.667-19.093,42.667-42.667C213.333,19.093,194.24,0,170.667,0S128,19.093,128,42.667 C128,66.24,147.093,85.333,170.667,85.333z " />
+                                    <path d="M170.667,128C147.093,128,128,147.093,128,170.667s19.093,42.667,42.667,42.667s42.667-19.093,42.667-42.667 S194.24,128,170.667,128z " />
+                                    <path d="M170.667,256C147.093,256,128,275.093,128,298.667c0,23.573,19.093,42.667,42.667,42.667s42.667-19.093,42.667-42.667 C213.333,275.093,194.24,256,170.667,256z " />
+                                  </g>
+                                </g>
+                              </g>
+                            </svg>
+                          </a>
+                          <div className="action-option ">
+                            <ul>
+                              <li>
+                                <a href="javascript:void(0); ">
+                                  <i className="far fa-edit mr-2 " />
+                                  Edit
+                                </a>
+                              </li>
+                              <li>
+                                <a href="javascript:void(0); ">
+                                  <i className="far fa-trash-alt mr-2 " />
+                                  Delete
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                        </td>
+      {/* Các cột khác */}
+    </tr>
+  ))
+) : (
+  <tr>
+    <td colSpan="8" style={{ textAlign: 'center' }}>
+      <p>Chưa có mã giảm giá nào.</p>
+      <p>{message}</p>
+      <a href="/create-discount">Thêm mã giảm giá</a>
+    </td>
+  </tr>
+)}
+
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+  <div className="row">
         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
           <div className="card chart-card">
             <div className="card-header">
@@ -1226,6 +2056,8 @@ const AdminDashboard = () => (
           </div>
         </div>
       </div>
+      </>
+          )}
       <div className="ad-footer-btm">
         <p>Copyright 2022 © SplashDash All Rights Reserved.</p>
       </div>
@@ -1284,7 +2116,11 @@ const AdminDashboard = () => (
     </div>
   </div>
 </>
+  )
 
-  );
+}
+  
+
+
   
   export default AdminDashboard;

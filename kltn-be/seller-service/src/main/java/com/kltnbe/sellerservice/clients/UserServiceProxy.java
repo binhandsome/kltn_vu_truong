@@ -30,5 +30,6 @@ public interface UserServiceProxy {
     public ResponseEntity<?> verifyLoginSeller(@RequestBody RequestInfomation requestInfomation);
     @GetMapping("/api/auth/getUserWithAccessToken")
     public ResponseEntity<?> getUserWithAccessToken(@RequestParam String accessToken);
-
+    @GetMapping("/api/auth/findIdAuthByAccessToken")
+    public Long findIdAuthByAccessToken(@RequestParam String accessToken);
 }
