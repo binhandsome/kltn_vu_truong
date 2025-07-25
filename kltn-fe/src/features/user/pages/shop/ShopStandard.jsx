@@ -1544,25 +1544,64 @@ const handleInputChangeSearch = (e) => {
   ) : null;
 })()}
 
-{/* --- CHỌN SIZE --- */}
-{selectedProduct?.sizes?.length > 0 && (
-  <div className="mb-3">
+<>
+  <style>
+    {`
+      .product-size .btn {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        text-align: center;
+        line-height: 40px;
+        border: 1px solid black;
+        font-weight: bold;
+        background-color: white;
+        color: black;
+        transition: all 0.2s ease;
+      }
+
+      .product-size .btn-check:checked + .btn {
+        background-color: black;
+        color: white;
+        border-color: black;
+      }
+
+      .product-size .btn:hover {
+        background-color: #f0f0f0;
+      }
+    `}
+  </style>
+
+  <div className="d-block mb-3">
     <label className="form-label fw-bold">Kích thước</label>
-    <div className="btn-group flex-wrap" role="group">
-      {selectedProduct.sizes.map((size, idx) => (
-        <button
-          key={idx}
-          type="button"
-          className={`btn btn-outline-dark m-1 ${selectedSize?.sizeId === size.sizeId ? 'active' : ''}`}
-          onClick={() => setSelectedSize(size)} // 👈 lưu toàn bộ object size
-          style={{ minWidth: '60px' }}
-        >
-          {size.sizeName}
-        </button>
-      ))}
+    <div className="btn-group flex-wrap product-size m-0" role="group">
+      {selectedProduct?.sizes?.length > 0 ? (
+        selectedProduct.sizes.map((size, index) => {
+          const inputId = `btnradiol${index}`;
+          return (
+            <React.Fragment key={index}>
+              <input
+                type="radio"
+                className="btn-check"
+                name="btnradio2"
+                id={inputId}
+                checked={selectedSize?.sizeId === size.sizeId}
+                onChange={() => setSelectedSize(size)}
+              />
+              <label className="btn m-1" htmlFor={inputId}>
+                {size.sizeName}
+              </label>
+            </React.Fragment>
+          );
+        })
+      ) : (
+        <p>Không có kích thước nào</p>
+      )}
     </div>
   </div>
-)}
+</>
+
 
 {/* --- HIỂN THỊ SỐ LƯỢNG CÒN LẠI --- */}
 <div className="mb-3">
