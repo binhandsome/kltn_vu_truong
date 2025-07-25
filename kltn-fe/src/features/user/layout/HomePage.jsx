@@ -49,13 +49,15 @@ const showToastMessage = (msg) => {
                     href="shop-wishlist.html"
                     className="btn btn-secondary me-xl-3 me-2 btnhover20"
                   >
-                    ADD TO CART
+                    {/* ADD TO CART */}
+                    THÊM VÀO GIỎ HÀNG
                   </a>
                   <a
                     href="product-default.html"
                     className="btn btn-outline-secondary btnhover20"
                   >
-                    VIEW DETAIL{" "}
+                    {/* VIEW DETAIL */}
+                    XEM CHI TIẾT{" "}
                   </a>
                 </div>
               </div>
@@ -165,7 +167,7 @@ const showToastMessage = (msg) => {
         <div className="col-lg-6">
           <div className="slider-thumbs">
             <div className="slick-slide">
-              <div className="banner-media" data-name="Winter">
+              <div className="banner-media" data-name="MÙA ĐÔNG">
                 <div className="img-preview">
                   <img
                     src="../../assets/user/images/banner/banner-media.png"
@@ -175,7 +177,7 @@ const showToastMessage = (msg) => {
               </div>
             </div>
             <div className="slick-slide">
-              <div className="banner-media" data-name="Summer">
+              <div className="banner-media" data-name="MÙA HÈ">
                 <div className="img-preview">
                   <img
                     src="../../assets/user/images/banner/banner-media2.png"
@@ -185,7 +187,7 @@ const showToastMessage = (msg) => {
               </div>
             </div>
             <div className="slick-slide">
-              <div className="banner-media" data-name="Leggings">
+              <div className="banner-media" data-name="XÀ CẠP">
                 <div className="img-preview">
                   <img
                     src="../../assets/user/images/banner/banner-media.png"
@@ -195,7 +197,7 @@ const showToastMessage = (msg) => {
               </div>
             </div>
             <div className="slick-slide">
-              <div className="banner-media" data-name="Dress">
+              <div className="banner-media" data-name="ĐẦM">
                 <div className="img-preview">
                   <img
                     src="../../assets/user/images/banner/banner-media4.png"
@@ -205,7 +207,7 @@ const showToastMessage = (msg) => {
               </div>
             </div>
             <div className="slick-slide">
-              <div className="banner-media" data-name="Shorts">
+              <div className="banner-media" data-name="QUẦN SHORT">
                 <div className="img-preview">
                   <img
                     src="../../assets/user/images/banner/banner-media5.png"
@@ -234,8 +236,12 @@ const showToastMessage = (msg) => {
           />
         </svg>
         <div>
-          <span className="sub-title">Summer Collection</span>
-          <h4 className="title">Trendy and Classic for the New Season</h4>
+          <span className="sub-title">
+            {/* Summer Collection */}
+            Bộ sưu tập mùa hè</span>
+          <h4 className="title">
+            {/* Trendy and Classic for the New Season */}
+           Thời trang và cổ điển cho mùa mới</h4>
         </div>
       </div>
       <svg
@@ -269,7 +275,9 @@ const showToastMessage = (msg) => {
         href="https://www.youtube.com/watch?v=YwYoyQ1JdpQ"
       >
         <div className="text-row word-rotate-box c-black">
-          <span className="word-rotate"> More Collection Explore </span>
+          <span className="word-rotate">
+            {/* More Collection Explore */}
+             Thêm bộ sưu tập Khám phá</span>
           <i className="fa-solid fa-play text-dark badge__emoji" />
         </div>
       </a>
@@ -291,7 +299,9 @@ const showToastMessage = (msg) => {
                     <img src="../../assets/user/images/shop/product/clothes/1.png" alt="image" />
                   </div>
                   <h6 className="product-name">
-                    <a href="shop-with-category.html">Shirts</a>
+                    <a href="shop-with-category.html">
+                      {/* Shirts */}
+                      Áo sơ mi</a>
                   </h6>
                 </div>
               </div>
@@ -304,7 +314,9 @@ const showToastMessage = (msg) => {
                     <img src="../../assets/user/images/shop/product/clothes/2.png" alt="image" />
                   </div>
                   <h6 className="product-name">
-                    <a href="shop-with-category.html">Shorts</a>
+                    <a href="shop-with-category.html">
+                      {/* Shorts */}
+                      Quần short</a>
                   </h6>
                 </div>
               </div>
@@ -317,7 +329,9 @@ const showToastMessage = (msg) => {
                     <img src="../../assets/user/images/shop/product/clothes/3.png" alt="image" />
                   </div>
                   <h6 className="product-name">
-                    <a href="shop-with-category.html">t-Shirt</a>
+                    <a href="shop-with-category.html">
+                      {/* t-Shirt  */}
+                      Áo thun</a>
                   </h6>
                 </div>
               </div>
@@ -330,7 +344,9 @@ const showToastMessage = (msg) => {
                     <img src="../../assets/user/images/shop/product/clothes/4.png" alt="image" />
                   </div>
                   <h6 className="product-name">
-                    <a href="shop-with-category.html">t-Jeans</a>
+                    <a href="shop-with-category.html">
+                      {/* t-Jeans */}
+                      Quần Jeans</a>
                   </h6>
                 </div>
               </div>
@@ -377,7 +393,9 @@ const showToastMessage = (msg) => {
           </div>
           <a className="icon-button" href="shop-standard.html">
             <div className="text-row word-rotate-box c-black border-secondary">
-              <span className="word-rotate">More Collection Explore </span>
+              <span className="word-rotate">
+                {/* More Collection Explore */}
+                Thêm bộ sưu tập Khám phá</span>
               <svg
                 className="badge__emoji"
                 xmlns="http://www.w3.org/2000/svg"
@@ -397,10 +415,12 @@ const showToastMessage = (msg) => {
         <div className="col-lg-4 right-box">
           <div>
             <h3 className="title wow fadeInUp" data-wow-delay="1.2s">
-              Featured Categories
+              {/* Featured Categories */}
+              Danh mục nổi bật
             </h3>
             <p className="text wow fadeInUp" data-wow-delay="1.4s">
-              Discover the most trending products in Pixio.
+              {/* Discover the most trending products in Pixio. */}
+              Khám phá những sản phẩm thịnh hành nhất tại Pixio.
             </p>
             <div
               className="pagination-align wow fadeInUp"
@@ -438,7 +458,9 @@ const showToastMessage = (msg) => {
           </div>
           <a className="icon-button" href="shop-standard.html">
             <div className="text-row word-rotate-box c-black border-white">
-              <span className="word-rotate">More Collection Explore </span>
+              <span className="word-rotate">
+                {/* More Collection Explore */}
+                Thêm bộ sưu tập Khám phá </span>
               <svg
                 className="badge__emoji"
                 xmlns="http://www.w3.org/2000/svg"
@@ -475,7 +497,8 @@ const showToastMessage = (msg) => {
               href="shop-list.html"
               className="btn btn-outline-secondary btn-light btn-xl"
             >
-              Woman collection
+              {/* Woman collection */}
+              Bộ sưu tập phụ nữ
             </a>
           </div>
         </div>
@@ -486,12 +509,14 @@ const showToastMessage = (msg) => {
               data-wow-delay="0.4s"
             >
               <h3 className="title ">
-                Set your wardrobe with our amazing selection!
+                {/* Set your wardrobe with our amazing selection! */}
+                Hãy sắm sửa tủ đồ của bạn với bộ sưu tập tuyệt vời của chúng tôi!
               </h3>
               <p>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
+                {/* Lorem Ipsum is simply dummy text of the printing and typesetting
                 industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the
+                text ever since the */}
+                Lorem Ipsum đơn giản là văn bản giả của ngành in ấn và sắp chữ. Lorem Ipsum đã trở thành văn bản giả tiêu chuẩn của ngành kể từ khi
               </p>
             </div>
             <a
@@ -538,7 +563,8 @@ const showToastMessage = (msg) => {
                       href="shop-list.html"
                       className="btn btn-outline-secondary btn-light btn-md"
                     >
-                      Child Fashion
+                      {/* Child Fashion */}
+                      Thời trang trẻ em
                     </a>
                   </div>
                 </div>
@@ -556,7 +582,8 @@ const showToastMessage = (msg) => {
                       href="shop-list.html"
                       className="btn btn-outline-secondary btn-light btn-md"
                     >
-                      Man collection
+                      {/* Man collection */}
+                      Bộ sưu tập đàn ông
                     </a>
                   </div>
                   <span className="sale-badge">
@@ -578,7 +605,10 @@ const showToastMessage = (msg) => {
     <div className="dz-features-wrapper overflow-hidden">
       <ul className="dz-features text-wrapper">
         <li className="item">
-          <h2 className="title">Jacket</h2>
+          <h2 className="title">
+            Áo khoác
+            {/* Jacket */}
+            </h2>
         </li>
         <li className="item">
           <svg
@@ -596,7 +626,10 @@ const showToastMessage = (msg) => {
           </svg>
         </li>
         <li className="item">
-          <h2 className="title">Jeans</h2>
+          <h2 className="title">
+          Quần jean
+            {/* Jeans */}
+            </h2>
         </li>
         <li className="item">
           <svg
@@ -614,7 +647,10 @@ const showToastMessage = (msg) => {
           </svg>
         </li>
         <li className="item">
-          <h2 className="title">Shirts</h2>
+          <h2 className="title">
+          Áo sơ mi
+            {/* Shirts */}
+            </h2>
         </li>
         <li className="item">
           <svg
@@ -632,7 +668,10 @@ const showToastMessage = (msg) => {
           </svg>
         </li>
         <li className="item">
-          <h2 className="title">Shorts</h2>
+          <h2 className="title">
+          Quần short
+            {/* Shorts */}
+            </h2>
         </li>
         <li className="item">
           <svg
@@ -650,7 +689,10 @@ const showToastMessage = (msg) => {
           </svg>
         </li>
         <li className="item">
-          <h2 className="title">t-shirt</h2>
+          <h2 className="title">
+          Áo thun
+            {/* t-shirt */}
+            </h2>
         </li>
         <li className="item">
           <svg
@@ -668,7 +710,10 @@ const showToastMessage = (msg) => {
           </svg>
         </li>
         <li className="item">
-          <h2 className="title">Blazer</h2>
+          <h2 className="title">
+            Áo blazer
+            {/* Blazer */}
+            </h2>
         </li>
         <li className="item">
           <svg
@@ -686,7 +731,10 @@ const showToastMessage = (msg) => {
           </svg>
         </li>
         <li className="item">
-          <h2 className="title">Jacket</h2>
+          <h2 className="title">
+          Áo khoác
+            {/* Jacket */}
+            </h2>
         </li>
         <li className="item">
           <svg
@@ -704,7 +752,10 @@ const showToastMessage = (msg) => {
           </svg>
         </li>
         <li className="item">
-          <h2 className="title">Jeans</h2>
+          <h2 className="title">
+            Quần jean
+            {/* Jeans */}
+            </h2>
         </li>
         <li className="item">
           <svg
@@ -771,7 +822,10 @@ const showToastMessage = (msg) => {
             data-wow-delay="0.2s"
           >
             <div className="left-content">
-              <h2 className="title">Most popular products</h2>
+              <h2 className="title">
+              Sản phẩm phổ biến nhất
+                {/* Most popular products */}
+                </h2>
             </div>
           </div>
         </div>
@@ -783,23 +837,38 @@ const showToastMessage = (msg) => {
             <ul className="filters" data-bs-toggle="buttons">
               <li className="btn active">
                 <input type="radio" />
-                <a href="javascript:void(0);">ALL</a>
+                <a href="javascript:void(0);">
+                  Tất cả
+{/* ALL */}
+                </a>
               </li>
               <li data-filter=".Dresses" className="btn">
                 <input type="radio" />
-                <a href="javascript:void(0);">Dresses</a>
+                <a href="javascript:void(0);">
+                Váy
+                  {/* Dresses */}
+                  </a>
               </li>
               <li data-filter=".Tops" className="btn">
                 <input type="radio" />
-                <a href="javascript:void(0);">Tops</a>
+                <a href="javascript:void(0);">
+                  Hàng đầu
+                  {/* Tops */}
+                  </a>
               </li>
               <li data-filter=".Outerwear" className="btn">
                 <input type="radio" />
-                <a href="javascript:void(0);">Outerwear</a>
+                <a href="javascript:void(0);">
+                Áo khoác ngoài
+                  {/* Outerwear */}
+                  </a>
               </li>
               <li data-filter=".Jacket" className="btn">
                 <input type="radio" />
-                <a href="javascript:void(0);">Jacket</a>
+                <a href="javascript:void(0);">
+                  Áo khoác
+                  {/* Jacket */}
+                  </a>
               </li>
             </ul>
           </div>
@@ -822,7 +891,10 @@ const showToastMessage = (msg) => {
                     data-bs-target="#exampleModal"
                   >
                     <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">Quick View</span>
+                    <span className="d-md-block d-none">
+                      Xem nhanh
+                      {/* Quick View */}
+                      </span>
                   </a>
                   <div className="btn btn-primary meta-icon dz-wishicon">
                     <i className="icon feather icon-heart dz-heart" />
@@ -841,7 +913,10 @@ const showToastMessage = (msg) => {
                 <h5 className="price">$80</h5>
               </div>
               <div className="product-tag">
-                <span className="badge ">Get 20% Off</span>
+                <span className="badge ">
+                  Giảm giá 20%
+                  {/* Get 20% Off */}
+                  </span>
               </div>
             </div>
           </li>
@@ -1131,15 +1206,19 @@ const showToastMessage = (msg) => {
               }}
             />
             <div className="sale-box">
-              <div className="badge style-1 mb-1">Sale Up to 50% Off</div>
+              <div className="badge style-1 mb-1">
+                Giảm giá lên đến 50%
+                {/* Sale Up to 50% Off */}
+              </div>
               <h2 className="sale-name">
-                Summer<span>2023</span>
+                Mùa hè<span>2023</span>
               </h2>
               <a
                 href="shop-list.html"
                 className="btn btn-outline-secondary btn-lg text-uppercase"
               >
-                Shop Now
+                {/* Shop Now */}
+                Mua ngay
               </a>
             </div>
           </div>
@@ -1154,14 +1233,20 @@ const showToastMessage = (msg) => {
             />
             <div className="product-content">
               <div className="main-content">
-                <div className="badge style-1 mb-3">Sale Up to 50% Off</div>
-                <h2 className="product-name">New Summer Collection</h2>
+                <div className="badge style-1 mb-3">
+                Giảm giá lên đến 50%
+                  {/* Sale Up to 50% Off */}
+                  </div>
+                <h2 className="product-name">
+                Bộ sưu tập mùa hè mới
+                  {/* New Summer Collection */}
+                  </h2>
               </div>
               <a
                 href="shop-list.html"
                 className="btn btn-secondary btn-lg text-uppercase"
               >
-                Shop Now
+                Mua ngay
               </a>
             </div>
           </div>
@@ -1191,8 +1276,9 @@ const showToastMessage = (msg) => {
               >
                 <div className="left-content">
                   <h2 className="title">
-                    Users Who Viewed This Also Checked Out These Similar
-                    Profiles
+                  Người dùng đã xem nội dung này cũng đã xem những hồ sơ tương tự này
+                    {/* Users Who Viewed This Also Checked Out These Similar
+                    Profiles */}
                   </h2>
                 </div>
               </div>
@@ -1207,7 +1293,7 @@ const showToastMessage = (msg) => {
               >
                 <div className="text-row word-rotate-box c-black">
                   <span className="word-rotate">
-                    all products - all products -{" "}
+                    Tất cả sản phẩm -{" "}
                   </span>
                   <svg
                     className="badge__emoji"
@@ -1249,7 +1335,10 @@ const showToastMessage = (msg) => {
                 </div>
                 <div className="dz-content">
                   <div>
-                    <span className="sale-title">up to 79% off</span>
+                    <span className="sale-title">
+                    giảm giá tới 79%
+                      {/* up to 79% off */}
+                      </span>
                     <h6 className="title">
                       <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
                     </h6>
@@ -1327,7 +1416,7 @@ const showToastMessage = (msg) => {
                 </div>
                 <div className="dz-content">
                   <div>
-                    <span className="sale-title">up to 79% off</span>
+                    <span className="sale-title">Giảm giá đến 79%</span>
                     <h6 className="title">
                       <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
                     </h6>
@@ -1421,17 +1510,23 @@ const showToastMessage = (msg) => {
             <div className="dz-media h-100">
               <img src="../../assets/user/images/about/pic1.jpg" alt="" />
               <div className="media-contant">
-                <h2 className="title">Great saving on everyday essentials</h2>
+                <h2 className="title">
+                Tiết kiệm lớn cho các nhu yếu phẩm hàng ngày
+                  {/* Great saving on everyday essentials */}
+                </h2>
                 <h5 className="sub-title">
-                  Up to 60% off + up to $107 Cashback
+                Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
+                  {/* Up to 60% off + up to $107 Cashback */}
                 </h5>
                 <a href="shop-list.html" className="btn btn-white btn-lg">
-                  See All
+                  Xem Tất Cả
+                  {/* See All */}
                 </a>
               </div>
               <svg className="title animation-text" viewBox="0 0 1320 300">
                 <text x={0} y="">
-                  Great saving
+                  Tiết kiệm tuyệt vời
+                  {/* Great saving */}
                 </text>
               </svg>
             </div>
@@ -1593,7 +1688,7 @@ const showToastMessage = (msg) => {
                   <h5 className="title">
                     <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
                   </h5>
-                  <span className="sale-title">up to 79% off</span>
+                  <span className="sale-title">Giảm đến 79%</span>
                 </div>
               </div>
             </div>
@@ -1632,17 +1727,19 @@ const showToastMessage = (msg) => {
           >
             <div className="left-content">
               <h2 className="title">
-                Discovering the Hottest Nearby Destinations in Your Area
+               Khám phá những điểm đến hấp dẫn nhất gần khu vực của bạn
+               {/*  Discovering the Hottest Nearby Destinations in Your Area */}
               </h2>
               <p className="text-capitalize text-secondary m-0">
-                Up to 60% off + up to $107 Cashback
+                Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
+                {/* Up to 60% off + up to $107 Cashback */}
               </p>
             </div>
             <a
               href="shop-list.html"
               className="text-secondary font-14 d-flex align-items-center gap-1 m-b15"
             >
-              See All
+              Xem tất cả
               <i className="icon feather icon-chevron-right font-18" />
             </a>
           </div>
@@ -1658,7 +1755,7 @@ const showToastMessage = (msg) => {
                       <a href="shop-list.html">Cardigan Sweater</a>
                     </h5>
                     <span className="sale-title text-success">
-                      up to 79% off
+                     Giảm đến 79%
                     </span>
                   </div>
                 </div>
@@ -1744,13 +1841,17 @@ const showToastMessage = (msg) => {
         data-wow-delay="0.2s"
       >
         <div className="left-content">
-          <h2 className="title">Blockbuster deals</h2>
+          <h2 className="title">
+          Ưu đãi bom tấn
+            {/* Blockbuster deals */}
+          </h2>
         </div>
         <a
           href="shop-list.html"
           className="text-secondary font-14 d-flex align-items-center gap-1"
         >
-          See all deals
+          Xem tất cả ưu đãi
+          {/* See all deals */}
           <i className="icon feather icon-chevron-right font-18" />
         </a>
       </div>
@@ -1889,13 +1990,16 @@ const showToastMessage = (msg) => {
         data-wow-delay="0.2s"
       >
         <div className="left-content">
-          <h2 className="title">Featured offer for you</h2>
+          <h2 className="title">
+          Ưu đãi nổi bật dành cho bạn
+            {/* Featured offer for you */}
+          </h2>
         </div>
         <a
           href="shop-list.html"
           className="text-secondary font-14 d-flex align-items-center gap-1"
         >
-          See All
+          Xem tất cả
           <i className="icon feather icon-chevron-right font-18" />
         </a>
       </div>
@@ -1914,13 +2018,20 @@ const showToastMessage = (msg) => {
               />
               <div className="product-content">
                 <div className="main-content">
-                  <span className="offer">20% Off</span>
-                  <h2 className="product-name">Luxury Bras</h2>
+                  <span className="offer">
+                  Giảm giá 20%
+                    {/* 20% Off */}
+                  </span>
+                  <h2 className="product-name">
+                  Áo lót cao cấp
+                    {/* Luxury Bras */}
+                  </h2>
                   <a
                     href="shop-list.html"
                     className="btn btn-outline-secondary btn-rounded btn-lg"
                   >
-                    Collect Now
+                    Thu thập ngay
+                    {/* Collect Now */}
                   </a>
                 </div>
               </div>
@@ -1937,15 +2048,19 @@ const showToastMessage = (msg) => {
               />
               <div className="product-content">
                 <div className="main-content">
-                  <span className="offer">Sale Up to 50% Off</span>
+                  <span className="offer">
+                  Giảm giá lên đến 50%
+                    {/* Sale Up to 50% Off */}
+                  </span>
                   <h2 className="sub-title1">
-                    Summer <span className="year">2024</span>
+                    Mùa hè <span className="year">2024</span>
                   </h2>
                   <a
                     href="shop-list.html"
                     className="btn btn-outline-secondary btn-rounded btn-lg"
                   >
-                    Collect Now
+                    Thu thập ngay
+                    {/* Collect Now */}                   
                   </a>
                 </div>
               </div>
@@ -1962,15 +2077,24 @@ const showToastMessage = (msg) => {
               />
               <div className="product-content">
                 <div className="main-content">
-                  <span className="offer">20% Off</span>
+                  <span className="offer">
+                  Giảm giá 20%
+                    {/* 20% Off */}
+                  </span>
                   <h2 className="sub-title2">
-                    Swimwear<span className="bg-title">Sale</span>
+                  Đồ bơi
+                    {/* Swimwear  */}
+                    <span className="bg-title">
+                    Doanh thu
+                      {/* Sale */}
+                    </span>
                   </h2>
                   <a
                     href="shop-list.html"
                     className="btn btn-outline-secondary btn-rounded btn-lg"
                   >
-                    Collect Now
+                    Thu thập ngay
+                    {/* Collect Now  */}                   
                   </a>
                 </div>
               </div>
@@ -1987,13 +2111,20 @@ const showToastMessage = (msg) => {
               />
               <div className="product-content">
                 <div className="main-content">
-                  <span className="offer">20% Off</span>
-                  <h2 className="product-name">Luxury Bras</h2>
+                  <span className="offer">
+                  Giảm giá 20%
+                    {/* 20% Off */}
+                  </span>
+                  <h2 className="product-name">
+                  Áo lót cao cấp
+                    {/* Luxury Bras */}
+                  </h2>
                   <a
                     href="shop-list.html"
                     className="btn btn-outline-secondary btn-rounded btn-lg"
                   >
-                    Collect Now
+                    Thu thập ngay
+                    {/* Collect Now */}
                   </a>
                 </div>
               </div>
@@ -2062,13 +2193,17 @@ const showToastMessage = (msg) => {
         data-wow-delay="0.2s"
       >
         <div className="left-content">
-          <h2 className="title">Featured now </h2>
+          <h2 className="title">
+          Nổi bật bây giờ
+            {/* Featured now */}
+             </h2>
         </div>
         <a
           href="shop-list.html"
           className="text-secondary font-14 d-flex align-items-center gap-1"
         >
-          See All
+          Xem Tất Cả
+          {/* See All */}
           <i className="icon feather icon-chevron-right font-18" />
         </a>
       </div>
@@ -2253,14 +2388,19 @@ const showToastMessage = (msg) => {
             <div className="dz-media h-100">
               <img src="../../assets/user/images/about/pic2.jpg" alt="" />
               <div className="media-contant">
-                <h2 className="title">Recent Additions to Your Shortlist</h2>
+                <h2 className="title">
+                Những bổ sung gần đây vào danh sách rút gọn của bạn
+                  {/* Recent Additions to Your Shortlist */}
+                </h2>
                 <a href="shop-list.html" className="btn btn-white">
-                  Shop Now
+                Mua ngay
+                  {/* Shop Now */}
                 </a>
               </div>
               <svg className="title animation-text" viewBox="0 0 1320 300">
                 <text x={0} y="">
-                  Shortlist
+                  Danh sách rút gọn
+                  {/* Shortlist */}
                 </text>
               </svg>
             </div>
@@ -2375,13 +2515,16 @@ const showToastMessage = (msg) => {
         data-wow-delay="0.2s"
       >
         <div className="left-content">
-          <h2 className="title">Sponsored</h2>
+          <h2 className="title">
+          Được tài trợ
+            {/* Sponsored */}
+          </h2>
         </div>
         <a
           href="shop-list.html"
           className="text-secondary font-14 d-flex align-items-center gap-1"
         >
-          See All
+          Xem tất cả
           <i className="icon feather icon-chevron-right font-18" />
         </a>
       </div>
@@ -2544,7 +2687,8 @@ const showToastMessage = (msg) => {
           >
             <div className="left-content">
               <h2 className="title">
-                Discover the most trending Post in Pixio.
+              Khám phá bài đăng thịnh hành nhất trên Pixio.
+                {/* Discover the most trending Post in Pixio. */}
               </h2>
             </div>
           </div>
@@ -2558,7 +2702,7 @@ const showToastMessage = (msg) => {
             href="shop-standard.html"
           >
             <div className="text-row word-rotate-box c-black">
-              <span className="word-rotate">latest news - latest news -</span>
+              <span className="word-rotate">Tin tức mới nhất -</span>
               <svg
                 className="badge__emoji"
                 xmlns="http://www.w3.org/2000/svg"
@@ -2989,7 +3133,8 @@ const showToastMessage = (msg) => {
   <section className="collection-bx content-inner-3 overflow-hidden">
     <div className="container">
       <h2 className="title wow fadeInUp" data-wow-delay="0.2s">
-        Upgrade your style with our top-notch collection.
+        Nâng cấp phong cách của bạn với bộ sưu tập hàng đầu của chúng tôi.
+        {/* Upgrade your style with our top-notch collection. */}
       </h2>
       <div className="text-center">
         <a
@@ -2997,7 +3142,8 @@ const showToastMessage = (msg) => {
           className="btn btn-secondary btn-lg wow fadeInUp m-b30"
           data-wow-delay="0.4s"
         >
-          All Collections
+          Tất cả bộ sưu tập
+          {/* All Collections */}
         </a>
       </div>
     </div>

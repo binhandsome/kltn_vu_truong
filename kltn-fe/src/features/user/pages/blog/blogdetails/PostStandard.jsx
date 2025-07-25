@@ -44,18 +44,19 @@ function PostStandard() {
           {/* blog start */}
           <div className="dz-blog blog-single style-1 sidebar">
             <h1 className="dz-title">
-              The Sustainable Wardrobe A Greener Approach to Fashion
+              Tủ quần áo bền vững - Cách tiếp cận thời trang xanh hơn
+              {/* The Sustainable Wardrobe A Greener Approach to Fashion */}
             </h1>
             <div className="dz-meta">
               <ul>
                 <li className="post-date">17 May 2024</li>
                 <li className="dz-user">
                   <i className="fa-solid fa-user" />
-                  By <a href="javascript:void(0);">KK Sharma</a>
+                  Bởi <a href="javascript:void(0);">KK Sharma</a>
                 </li>
                 <li className="dz-comment">
                   <i className="fa-solid fa-message" />
-                  <a href="javascript:void(0);">24 Comments</a>
+                  <a href="javascript:void(0);">24 Bình luận</a>
                 </li>
               </ul>
             </div>
@@ -65,22 +66,40 @@ function PostStandard() {
             <div className="dz-info">
               <div className="dz-post-text">
                 <p>
-                  Lorem Ipsum is simply dummy text of the printing and
+                 Lorem Ipsum đơn giản là một đoạn văn bản giả của ngành in ấn và
+sắp chữ. Lorem Ipsum đã trở thành
+văn bản giả chuẩn mực của ngành kể từ những năm 1500, khi một thợ in vô danh
+lấy một galley chữ và xáo trộn nó để tạo ra một
+sách mẫu chữ
+                 {/*  Lorem Ipsum is simply dummy text of the printing and
                   typesetting industry. Lorem Ipsum has been the industry's
                   standard dummy text ever since the 1500s, when an unknown
                   printer took a galley of type and scrambled it to make a type
-                  specimen book.
+                  specimen book. */}
                 </p>
                 <blockquote className="wp-block-quote is-style-default">
                   <p>
-                    Create An Information Architecture That’s Easy To Use Way
-                    Precise Usability Considerations For Partially{" "}
+                  Tạo Kiến trúc Thông tin Dễ sử dụng
+Những Cân nhắc Chính xác về Khả năng Sử dụng cho Một phần{" "}
+                    {/* Create An Information Architecture That’s Easy To Use Way
+                    Precise Usability Considerations For Partially{" "} */}
                   </p>
                   <cite>Ronald M. Spino</cite>
                   <i className="flaticon-right-quote" />
                 </blockquote>
                 <p>
-                  Lorem Ipsum is simply dummy text of the printing and
+                Lorem Ipsum đơn giản là một đoạn văn bản giả của ngành in ấn và
+sắp chữ. Lorem Ipsum đã trở thành
+văn bản giả tiêu chuẩn của ngành kể từ những năm 1500, khi một thợ in vô danh
+lấy một galley chữ và xáo trộn nó để tạo ra một
+sách mẫu chữ. Nó không chỉ tồn tại qua năm thế kỷ,
+mà còn trải qua cả bước nhảy vọt vào sắp chữ điện tử,
+mà về cơ bản vẫn
+không thay đổi. Nó trở nên phổ biến vào những năm 1960 với
+việc phát hành các tờ Letraset chứa các đoạn Lorem Ipsum
+, và gần đây hơn là với các phần mềm xuất bản trên máy tính
+như Aldus PageMaker bao gồm các phiên bản của Lorem Ipsum.
+                  {/* Lorem Ipsum is simply dummy text of the printing and
                   typesetting industry. Lorem Ipsum has been the industry's
                   standard dummy text ever since the 1500s, when an unknown
                   printer took a galley of type and scrambled it to make a type
@@ -89,7 +108,7 @@ function PostStandard() {
                   essentially unchanged. It was popularised in the 1960s with
                   the release of Letraset sheets containing Lorem Ipsum
                   passages, and more recently with desktop publishing software
-                  like Aldus PageMaker including versions of Lorem Ipsum.
+                  like Aldus PageMaker including versions of Lorem Ipsum. */}
                 </p>
                 <figure className="wp-container-5 wp-block-gallery-3 wp-block-gallery has-nested-images columns-3 is-cropped">
                   <figure className="wp-block-image size-large">
@@ -109,7 +128,18 @@ function PostStandard() {
                   </figure>
                 </figure>
                 <p>
-                  Lorem Ipsum is simply dummy text of the printing and
+                Lorem Ipsum đơn giản là một đoạn văn bản giả của ngành in ấn và
+sắp chữ. Lorem Ipsum đã trở thành
+văn bản giả tiêu chuẩn của ngành kể từ những năm 1500, khi một thợ in vô danh
+lấy một galley chữ và xáo trộn nó để tạo ra một
+sách mẫu chữ. Nó không chỉ tồn tại qua năm thế kỷ,
+mà còn trải qua cả bước nhảy vọt vào sắp chữ điện tử,
+mà về cơ bản vẫn
+không thay đổi. Nó trở nên phổ biến vào những năm 1960 với
+việc phát hành các tờ Letraset chứa các đoạn Lorem Ipsum
+, và gần đây hơn là với các phần mềm xuất bản trên máy tính
+như Aldus PageMaker bao gồm các phiên bản của Lorem Ipsum.
+                  {/* Lorem Ipsum is simply dummy text of the printing and
                   typesetting industry. Lorem Ipsum has been the industry's
                   standard dummy text ever since the 1500s, when an unknown
                   printer took a galley of type and scrambled it to make a type
@@ -118,41 +148,89 @@ function PostStandard() {
                   essentially unchanged. It was popularised in the 1960s with
                   the release of Letraset sheets containing Lorem Ipsum
                   passages, and more recently with desktop publishing software
-                  like Aldus PageMaker including versions of Lorem Ipsum.
+                  like Aldus PageMaker including versions of Lorem Ipsum. */}
                 </p>
-                <h3 className="dz-title">Additional information</h3>
+                <h3 className="dz-title">
+                Thông tin bổ sung
+                  {/* Additional information */}
+                </h3>
                 <p>
-                  It was popularised in the 1960s with the release of Letraset
+                Nó trở nên phổ biến vào những năm 1960 với việc phát hành các tờ Letraset
+chứa các đoạn văn Lorem Ipsum, và gần đây hơn là với
+phần mềm xuất bản trên máy tính để bàn như Aldus PageMaker bao gồm
+các phiên bản của Lorem Ipsum.
+                  {/* It was popularised in the 1960s with the release of Letraset
                   sheets containing Lorem Ipsum passages, and more recently with
                   desktop publishing software like Aldus PageMaker including
-                  versions of Lorem Ipsum.
+                  versions of Lorem Ipsum. */}
                 </p>
                 <ul className="list-check-2 check-circle">
-                  <li>Sustainable Materials and Eco-Friendly Fabrics</li>
-                  <li>Promoting Fair Labor Practices in Fashion</li>
-                  <li>The Three R's in Sustainable Fashion</li>
-                  <li>Capsule Wardrobes Curating Timeless Style</li>
-                  <li>Transparency in Fashion Supply Chains</li>
-                  <li>Vegan and Cruelty-Free Fashion Alternatives</li>
+                  <li>
+                  Vật liệu bền vững và vải thân thiện với môi trường
+                    {/* Sustainable Materials and Eco-Friendly Fabrics */}
+                  </li>
+                  <li>
+                    Thúc đẩy thực hành lao động công bằng trong thời trang
+                    {/* Promoting Fair Labor Practices in Fashion */}
+                  </li>
+                  <li>
+                    Ba chữ R trong thời trang bền vững
+                    {/* The Three R's in Sustainable Fashion */}
+                  </li>
+                  <li>
+                  Tủ quần áo Capsule tạo nên phong cách vượt thời gian
+                    {/* Capsule Wardrobes Curating Timeless Style */}
+                  </li>
+                  <li>
+                  Tính minh bạch trong chuỗi cung ứng thời trang
+                    {/* Transparency in Fashion Supply Chains */}
+                  </li>
+                  <li>
+                  Các lựa chọn thay thế cho thời trang thuần chay và không thử nghiệm trên động vật
+                    {/* Vegan and Cruelty-Free Fashion Alternatives */}
+                  </li>
                 </ul>
                 <p>
-                  Lorem Ipsum is simply dummy text of the printing and
+                Lorem Ipsum đơn giản là văn bản giả của ngành in ấn và
+sắp chữ. Lorem Ipsum đã là văn bản giả
+chuẩn mực của ngành kể từ những năm 1500, khi một thợ in vô danh
+lấy một galley chữ và xáo trộn nó để tạo ra một
+sách mẫu chữ. Nó không chỉ tồn tại qua năm thế kỷ,
+mà còn vượt qua cả bước nhảy vọt vào lĩnh vực sắp chữ điện tử,
+về cơ bản vẫn
+không thay đổi.
+                  {/* Lorem Ipsum is simply dummy text of the printing and
                   typesetting industry. Lorem Ipsum has been the industry's
                   standard dummy text ever since the 1500s, when an unknown
                   printer took a galley of type and scrambled it to make a type
                   specimen book. It has survived not only five centuries, but
                   also the leap into electronic typesetting, remaining
-                  essentially unchanged.
+                  essentially unchanged. */}
                 </p>
               </div>
               <div className="dz-share-post meta-bottom">
                 <div className="post-tags">
                   <strong>Tags:</strong>
-                  <a href="javascript:void(0);">Dresses</a>
-                  <a href="javascript:void(0);">Boots</a>
-                  <a href="javascript:void(0);">Jewelry</a>
-                  <a href="javascript:void(0);">Jacket</a>
-                  <a href="javascript:void(0);">Coat</a>
+                  <a href="javascript:void(0);">
+                  Váy
+                    {/* Dresses */}
+                  </a>
+                  <a href="javascript:void(0);">
+                 Bốt
+                    {/* Boots */}
+                  </a>
+                  <a href="javascript:void(0);">
+                  Trang sức
+                    {/* Jewelry */}
+                  </a>
+                  <a href="javascript:void(0);">
+                  Áo khoác
+                    {/* Jacket */}
+                  </a>
+                  <a href="javascript:void(0);">
+                  Áo choàng
+                    {/* Coat */}
+                  </a>
                 </div>
                 <div className="dz-social-icon primary-light">
                   <ul>
@@ -187,10 +265,14 @@ function PostStandard() {
                 <img src="../../../assets/user/images/blog/profile.jpg" alt="/" />
               </div>
               <div className="author-profile-content">
-                <h6 className="title">I am John Doe</h6>
+                <h6 className="title">
+               Tôi là John Doe
+                  {/* I am John Doe */}
+                </h6>
                 <p>
-                  We were making our way to the Rila Mountains, where we were
-                  visiting the Rila Monastery where we enjoyed scrambled eggs.
+                Chúng tôi đang trên đường đến dãy núi Rila, nơi chúng tôi ghé thăm Tu viện Rila và thưởng thức món trứng bác.
+                  {/* We were making our way to the Rila Mountains, where we were
+                  visiting the Rila Monastery where we enjoyed scrambled eggs. */}
                 </p>
                 <ul className="social-icon m-b0">
                   <li>
@@ -227,7 +309,10 @@ function PostStandard() {
             </div>
           </div>
           <div className="dz-related-post">
-            <h4 className="widget-title">Related Blogs</h4>
+            <h4 className="widget-title">
+            Blog liên quan
+              {/* Related Blogs */}
+            </h4>
             <div className="row">
               <div className="col-lg-6 col-md-6 m-b30">
                 <div className="dz-card style-5">
@@ -241,15 +326,17 @@ function PostStandard() {
                       </ul>
                     </div>
                     <h4 className="dz-title">
-                      <a href="blog-grid-right-sidebar.html">
-                        Trendsetter Chronicles: Unveiling the Latest in Fashion
+                      <a href="blog-grid-right-sidebar.html">                        
+                      Biên niên sử về người dẫn đầu xu hướng: Tiết lộ những xu hướng thời trang mới nhất
+                        {/* Trendsetter Chronicles: Unveiling the Latest in Fashion */}
                       </a>
                     </h4>
                     <a
                       href="blog-grid-right-sidebar.html"
                       className="font-14 read-btn"
                     >
-                      Read More
+                     Đọc thêm
+                     {/*  Read More */}
                       <i className="icon feather icon-chevron-right" />
                     </a>
                   </div>
@@ -286,7 +373,7 @@ function PostStandard() {
           {/* blog END */}
           <div className="clear" id="comment-list">
             <div className="post-comments comments-area style-1 clearfix">
-              <h4 className="comments-title mb-2">Comments (02)</h4>
+              <h4 className="comments-title mb-2">Bình luận (02)</h4>
               <p className="dz-title-text">
                 There are many variations of passages of Lorem Ipsum available.
               </p>
@@ -401,7 +488,7 @@ function PostStandard() {
                 id="respond"
               >
                 <h4 className="comment-reply-title mb-2" id="reply-title">
-                  Good Comments
+                  Bình luận mới
                 </h4>
                 <p className="dz-title-text">
                   There are many variations of passages of Lorem Ipsum
@@ -417,7 +504,7 @@ function PostStandard() {
                     <p className="comment-form-author">
                       <input
                         id="name"
-                        placeholder="Author"
+                        placeholder="Tên người dùng"
                         name="author"
                         type="text"
                         defaultValue=""
@@ -436,7 +523,7 @@ function PostStandard() {
                     <p className="comment-form-comment">
                       <textarea
                         id="comments"
-                        placeholder="Type Comment Here"
+                        placeholder="Bình luận"
                         className="form-control4"
                         name="comment"
                         cols={45}
@@ -451,7 +538,7 @@ function PostStandard() {
                         type="submit"
                         className="submit btn btn-secondary btnhover3 filled"
                       >
-                        Submit Now
+                        Bình luận ngay
                       </button>
                     </p>
                   </form>
@@ -463,7 +550,7 @@ function PostStandard() {
         <div className="col-xl-4 col-lg-4 col-md-8 order-lg-1 order-2 m-b30">
           <aside className="side-bar sticky-top">
             <div className="widget">
-              <h5 className="widget-title">Search</h5>
+              <h5 className="widget-title">Tim kiếm</h5>
               <div className="search-bx">
                 <form role="search" method="post">
                   <div className="input-group">
@@ -483,7 +570,7 @@ function PostStandard() {
               </div>
             </div>
             <div className="widget widget_categories style-1">
-              <h5 className="widget-title">Category</h5>
+              <h5 className="widget-title">Danh mục</h5>
               <ul>
                 <li className="cat-item">
                   <a href="blog-category.html">Dresses</a> (10)

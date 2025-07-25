@@ -481,13 +481,16 @@ const handleInputChangeSearch = (e) => {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shop Standard</h1>
+        <h1>
+        Cửa hàng tiêu chuẩn
+          {/* Shop Standard */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Shop Standard</li>
+            <li className="breadcrumb-item">Cửa hàng tiêu chuẩn</li>
           </ul>
         </nav>
       </div>
@@ -528,7 +531,7 @@ const handleInputChangeSearch = (e) => {
                 <div className="d-flex align-items-center justify-content-between m-b30">
                   <h6 className="title mb-0 fw-normal d-flex">
                     <i className="flaticon-filter me-3" />
-                    Filter
+                    Lọc
                   </h6>
                 </div>
                 <div className="widget widget_search">
@@ -557,7 +560,7 @@ const handleInputChangeSearch = (e) => {
                   </div>
                 </div>
                 <div className="widget">
-                  <h6 className="widget-title">Price</h6>
+                  <h6 className="widget-title">Giá</h6>
                   <div className="price-slide range-slider">
                     <div className="price">
                       <div className="range-slider style-1">
@@ -576,7 +579,7 @@ const handleInputChangeSearch = (e) => {
                 </div>
 
                        <div className="widget widget_categories">
-                          <h6 className="widget-title">Category</h6>
+                          <h6 className="widget-title">Danh mục</h6>
                   <ul>
                 {Object.entries(salesRankCount).map(([type, count]) => (
 
@@ -589,7 +592,7 @@ const handleInputChangeSearch = (e) => {
                        </ul>
                          </div>
                  <div className="widget widget_categories">
-                  <h6 className="widget-title">Type</h6>
+                  <h6 className="widget-title">Loại</h6>
                   <ul>
                        {Object.entries(productTypeCount).map(([type, count]) => (
                     <li className="cat-item cat-item-26">
@@ -651,7 +654,7 @@ const handleInputChangeSearch = (e) => {
     setCurrentPage(0);
   }}
 >
-  RESET
+  Cài lại
 </a>
 
               </aside>
@@ -674,7 +677,8 @@ const handleInputChangeSearch = (e) => {
       transition: 'background-color 0.3s ease',
     }}
   >
-    <span role="img" aria-label="shopping">🛍️</span> Go To Shop For You
+    <span role="img" aria-label="shopping">🛍️</span> 
+    Đi mua sắm cho bạn
   </a>
         
             </div>
@@ -864,7 +868,7 @@ const handleInputChangeSearch = (e) => {
           />
           {product.percentDiscount > 0 && (
             <div className="product-tag">
-              <span className="badge badge-secondary">Sale</span>
+              <span className="badge badge-secondary">Giảm giá</span>
             </div>
           )}
         </div>
@@ -898,20 +902,20 @@ const handleInputChangeSearch = (e) => {
                 ))}
               </ul>
               <span>
-                <a href="javascript:void(0);"> {product.reviewCount ?? 0} Review</a>
+                <a href="javascript:void(0);"> {product.reviewCount ?? 0} đánh giá</a>
               </span>
             </div>
           </div>
           <div className="dz-body">
             <div className="dz-rating-box">
               <p className="dz-para">
-                {product.productTitle?.substring(0, 120) || 'No description available.'}
+                {product.productTitle?.substring(0, 120) || 'Không có mô tả có sẵn.'}
               </p>
             </div>
             <div className="rate">
               <div className="d-flex align-items-center mb-xl-3 mb-2">
                 <div className="meta-content">
-                  <span className="price-name">Price</span>
+                  <span className="price-name">Giá</span>
                   <span className="price">
                     ${(
                       product.productPrice -
@@ -926,7 +930,7 @@ const handleInputChangeSearch = (e) => {
                   onClick={() => addCartWithQuantity(1, product)}
                 >
                   <i className="icon feather icon-shopping-cart d-md-none d-block" />
-                  <span className="d-md-block d-none">Add to cart</span>
+                  <span className="d-md-block d-none">Thêm vào giỏ hàng</span>
                 </button>
                 <div
   style={{
@@ -1122,7 +1126,7 @@ const handleInputChangeSearch = (e) => {
 
                   <div className="product-tag">
                     <span className="badge">
-                      Get {product.percentDiscount}% Off
+                      Giảm {product.percentDiscount}%
                     </span>
                   </div>
                 </div>
@@ -1170,7 +1174,7 @@ const handleInputChangeSearch = (e) => {
                   }}
                 >
                   <i className="fa-solid fa-eye d-md-none d-block" />
-                  <span className="d-md-block d-none" >Quick View</span>
+                  <span className="d-md-block d-none" >Xem nhanh</span>
                 </div>
 
                 {/* Wishlist + Cart icons */}
@@ -1261,7 +1265,7 @@ const handleInputChangeSearch = (e) => {
 
             <div className="product-tag">
               <span className="badge">
-                Get {product.percentDiscount}% Off
+                Giảm  {product.percentDiscount}%
               </span>
             </div>
           </div>
@@ -1289,7 +1293,7 @@ const handleInputChangeSearch = (e) => {
                
                 onClick={() => handlePageChange(currentPage - 1)}
               >
-                Previous
+                Trước
               </a>
             </li>
             {/* Các số trang trong phạm vi */}
@@ -1309,7 +1313,7 @@ const handleInputChangeSearch = (e) => {
                 className={`page-link next ${currentPage >= totalPages - 1 ? 'disabled' : ''}`}
                 onClick={() => handlePageChange(currentPage + 1)}
               >
-                Next
+                Sau
               </a>
             </li>
           </ul>
@@ -1383,7 +1387,7 @@ const handleInputChangeSearch = (e) => {
                                                 {selectedProduct !== null && (
 
                     <span className="badge bg-secondary mb-2">
-                      SALE {selectedProduct.percentDiscount}% Off
+                      Giảm {selectedProduct.percentDiscount}% 
                     </span>
                        )}
                     <h4 className="title mb-1">
@@ -1409,8 +1413,8 @@ const handleInputChangeSearch = (e) => {
                           <i className="flaticon-star-1" />
                         </li>
                       </ul>
-                      <span className="text-secondary me-2">4.7 Rating</span>
-                      <a href="javascript:void(0);">(5 customer reviews)</a>
+                      <span className="text-secondary me-2">4.7 sao</span>
+                      <a href="javascript:void(0);">(5 khách hàng đánh giá)</a>
                     </div>
                   </div>
                 </div>
@@ -1421,7 +1425,7 @@ const handleInputChangeSearch = (e) => {
                 </p>
                 <div className="meta-content m-b20 d-flex align-items-end">
                 <div className="me-3">
-  <span className="form-label">Price</span>
+  <span className="form-label">Giá</span>
   {selectedProduct ? (
     <span className="price">
       ${priceDiscount} <del>${selectedProduct.productPrice}</del>
@@ -1431,7 +1435,7 @@ const handleInputChangeSearch = (e) => {
   )}
 </div>
        <div className="btn-quantity light me-0">
-    <label className="form-label fw-bold">Quantity</label>
+    <label className="form-label fw-bold">Số lượng</label>
     <div className="input-group">
   <button
     className="btn btn-dark rounded-circle p-0"
@@ -1498,7 +1502,7 @@ const handleInputChangeSearch = (e) => {
 
   return colors.length > 0 ? (
     <div className="mb-3">
-      <label className="form-label fw-bold">Color</label>
+      <label className="form-label fw-bold">Màu sắc</label>
       <div className="d-flex align-items-center flex-wrap gap-2">
         {colors.map((color, index) => {
           const parsedColor = {
@@ -1540,7 +1544,25 @@ const handleInputChangeSearch = (e) => {
   ) : null;
 })()}
 
-
+{/* --- CHỌN SIZE --- */}
+{selectedProduct?.sizes?.length > 0 && (
+  <div className="mb-3">
+    <label className="form-label fw-bold">Kích thước</label>
+    <div className="btn-group flex-wrap" role="group">
+      {selectedProduct.sizes.map((size, idx) => (
+        <button
+          key={idx}
+          type="button"
+          className={`btn btn-outline-dark m-1 ${selectedSize?.sizeId === size.sizeId ? 'active' : ''}`}
+          onClick={() => setSelectedSize(size)} // 👈 lưu toàn bộ object size
+          style={{ minWidth: '60px' }}
+        >
+          {size.sizeName}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
 
 {/* --- HIỂN THỊ SỐ LƯỢNG CÒN LẠI --- */}
 <div className="mb-3">
@@ -1573,7 +1595,7 @@ const handleInputChangeSearch = (e) => {
                         fill="black"
                       />
                     </svg>
-                    Add To Wishlist
+                    Thêm vào yêu thích
                   </button>
                 </div>
                 <div className="dz-info mb-0">
@@ -1583,7 +1605,7 @@ const handleInputChangeSearch = (e) => {
                       )}
                   <ul>
                     <li>
-                      <strong>Categories:</strong>
+                      <strong>Danh mục:</strong>
                     </li>
         {selectedProduct !== null && (
   <>

@@ -507,13 +507,16 @@ useEffect(() => {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shop With Category</h1>
+        <h1>
+        Mua sắm với danh mục
+          {/* Shop With Category */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Shop With Category</li>
+            <li className="breadcrumb-item">Mua sắm với danh mục</li>
           </ul>
         </nav>
       </div>
@@ -582,7 +585,7 @@ useEffect(() => {
 
   {/* Price */}
   <div className="widget">
-    <h6 className="widget-title">Price</h6>
+    <h6 className="widget-title">Giá</h6>
     <div className="price-slide range-slider">
       <div className="range-slider style-1">
         <div id="slider-tooltips2" className="mb-3" />
@@ -594,7 +597,7 @@ useEffect(() => {
 
   {/* Sales Rank Category */}
   <div className="widget widget_categories">
-    <h6 className="widget-title">Category</h6>
+    <h6 className="widget-title">Danh mục</h6>
     <ul>
       {Object.entries(salesRankCount).map(([type, count]) => (
         <li className="cat-item cat-item-26" key={type}>
@@ -606,7 +609,7 @@ useEffect(() => {
 
   {/* Product Type */}
   <div className="widget widget_categories">
-  <h6 className="widget-title">Type</h6>
+  <h6 className="widget-title">Loại</h6>
   <ul>
     {Object.entries(productTypeCount).map(([type, count]) => (
       <li className="cat-item cat-item-26" key={type}>
@@ -668,7 +671,7 @@ useEffect(() => {
       setCurrentPage(0);
     }}
   >
-    RESET
+    Cài lại
   </a>
 </aside>
 
@@ -676,7 +679,7 @@ useEffect(() => {
           </div>
         </div>
         <div className="col-80 col-xl-9">
-          <h4 className="mb-3">Category</h4>
+          <h4 className="mb-3">Danh mục</h4>
           <div className="row">
   <div className="col-xl-12">
     <div className="swiper category-swiper">
@@ -935,7 +938,7 @@ useEffect(() => {
               {product.percentDiscount > 0 && (
                 <div className="product-tag">
                   <span className="badge badge-secondary">
-                    GET {product.percentDiscount}% OFF
+                    Giảm {product.percentDiscount}% 
                   </span>
                 </div>
               )}
@@ -1068,7 +1071,7 @@ useEffect(() => {
                   </ul>
                   <span>
                     <a href="javascript:void(0);">
-                      {product.numberOfRatings || 0} Review
+                      {product.numberOfRatings || 0} đánh giá
                     </a>
                   </span>
                 </div>
@@ -1077,13 +1080,13 @@ useEffect(() => {
               <div className="dz-body">
                 <div className="dz-rating-box">
                   <p className="dz-para">
-                    {product.description || "No description available."}
+                    {product.description || "Không có mô tả có sẵn."}
                   </p>
                 </div>
                 <div className="rate">
                   <div className="d-flex align-items-center mb-xl-3 mb-2">
                     <div className="meta-content">
-                      <span className="price-name">Price</span>
+                      <span className="price-name">Giá</span>
                       <span className="price">
                         $
                         {(
@@ -1107,7 +1110,7 @@ useEffect(() => {
                       onClick={() => addCartWithQuantity(1, product)}
                     >
                       <i className="icon feather icon-shopping-cart" />
-                      <span className="ms-2">Add to cart</span>
+                      <span className="ms-2">Thêm vào giỏ hàng</span>
                     </button>
                   </div>
                 </div>
@@ -1148,7 +1151,7 @@ useEffect(() => {
                   onClick={() => handleOpenProductModal(product.asin)}
                 >
                   <i className="fa-solid fa-eye d-md-none d-block" />
-                  <span className="d-md-block d-none">Quick View</span>
+                  <span className="d-md-block d-none">Xem nhanh</span>
                 </div>
 
                 {/* Wishlist */}
@@ -1224,7 +1227,7 @@ useEffect(() => {
 
             <div className="product-tag">
               <span className="badge">
-                Get {product.percentDiscount}% Off
+               Giảm  {product.percentDiscount}%
               </span>
             </div>
           </div>
@@ -1338,7 +1341,7 @@ useEffect(() => {
 
             <div className="product-tag">
               <span className="badge">
-                Get {product.percentDiscount}% Off
+              Giảm {product.percentDiscount}%
               </span>
             </div>
           </div>
@@ -1353,7 +1356,7 @@ useEffect(() => {
           </div>
                   <div className="row page mt-0">
             <div className="col-md-6">
-              <p className="page-text">Showing 1–5 Of 50 Results</p>
+              <p className="page-text">Hiển thị 1–5 trong số 50 kết quả</p>
             </div>
           <div className="col-md-6">
         <nav aria-label="Product Pagination">
@@ -1365,7 +1368,7 @@ useEffect(() => {
                
                 onClick={() => handlePageChange(currentPage - 1)}
               >
-                Previous
+                Trước
               </a>
             </li>
             {/* Các số trang trong phạm vi */}
@@ -1385,7 +1388,7 @@ useEffect(() => {
                 className={`page-link next ${currentPage >= totalPages - 1 ? 'disabled' : ''}`}
                 onClick={() => handlePageChange(currentPage + 1)}
               >
-                Next
+                Sau
               </a>
             </li>
           </ul>
@@ -1455,7 +1458,7 @@ useEffect(() => {
                   <div className="dz-content-start">
                     {selectedProduct !== null && (
                       <span className="badge bg-secondary mb-2">
-                        SALE {selectedProduct.percentDiscount}% Off
+                        Giảm {selectedProduct.percentDiscount}% 
                       </span>
                     )}
                     <h4 className="title mb-1">
@@ -1471,8 +1474,8 @@ useEffect(() => {
                           </li>
                         ))}
                       </ul>
-                      <span className="text-secondary me-2">4.7 Rating</span>
-                      <a href="javascript:void(0);">(5 customer reviews)</a>
+                      <span className="text-secondary me-2">4.7 sao</span>
+                      <a href="javascript:void(0);">(5 khách hàng đánh giá)</a>
                     </div>
                   </div>
                 </div>
@@ -1487,7 +1490,7 @@ useEffect(() => {
                     )}
                   </div>
                   <div className="btn-quantity light me-0">
-                    <label className="form-label fw-bold">Quantity</label>
+                    <label className="form-label fw-bold">Số lượng</label>
                     <div className="input-group">
   <button
     className="btn btn-dark rounded-circle p-0"
@@ -1533,7 +1536,6 @@ useEffect(() => {
                   </div>
                 </div>
 {/* Color */}
-{/* Color */}
 {selectedProduct?.colorAsin && (() => {
   let colors = [];
   try {
@@ -1544,7 +1546,7 @@ useEffect(() => {
 
   return colors.length > 0 && (
     <div className="mb-3">
-      <label className="form-label fw-bold">Color</label>
+      <label className="form-label fw-bold">Màu sắc</label>
       <div className="d-flex flex-wrap gap-2 align-items-center">
         {colors.map((color, index) => {
           const inputId = `colorRadio-${index}`;
@@ -1586,13 +1588,10 @@ useEffect(() => {
     </div>
   );
 })()}
-
-
-{/* Size */}
 {/* Size */}
 {selectedProduct?.sizes?.length > 0 && (
   <div className="mb-3">
-    <label className="form-label fw-bold">Size</label>
+    <label className="form-label fw-bold">Kích thước</label>
     <div className="btn-group flex-wrap" role="group">
       {selectedProduct.sizes.map((size, idx) => (
         <button
@@ -1621,9 +1620,9 @@ useEffect(() => {
 </div>
 
                 <div className="cart-btn">
-                  <button onClick={addCart} className="btn btn-secondary text-uppercase">Add To Cart</button>
+                  <button onClick={addCart} className="btn btn-secondary text-uppercase">Thêm vào giỏ hàng</button>
                   <button className="btn btn-md btn-outline-secondary btn-icon" onClick={() => handleToggleWishlist(selectedProduct.asin)}>
-                    <i className="far fa-heart"></i> Add To Wishlist
+                    <i className="far fa-heart"></i> Thêm vào yêu thích
                   </button>
                 </div>
                 <div className="dz-info mb-0 mt-3">
@@ -1631,7 +1630,7 @@ useEffect(() => {
                     <ul><li><strong>SKU:</strong></li><li>{selectedProduct.asin}</li></ul>
                   )}
                   <ul>
-                    <li><strong>Categories:</strong></li>
+                    <li><strong>Danh mục:</strong></li>
                     {selectedProduct !== null && (
                       <>
                         <li><a href={`/user/shop/shopWithCategory?salesRank=${selectedProduct.salesRank}`}>{selectedProduct.salesRank}{selectedProduct.productType && ','}</a></li>

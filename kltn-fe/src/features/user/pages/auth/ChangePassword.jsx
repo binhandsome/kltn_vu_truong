@@ -80,8 +80,11 @@ const showToastMessage = (msg) => {
                   <h1>Change Password</h1>
                   <nav className="breadcrumb-row" aria-label="breadcrumb text-align-start">
                     <ul className="breadcrumb">
-                      <li className="breadcrumb-item"><a href="/">Home</a></li>
-                      <li className="breadcrumb-item">Change Password</li>
+                      <li className="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                      <li className="breadcrumb-item">
+                      Thay đổi mật khẩu
+                        {/* Change Password */}
+                      </li>
                     </ul>
                   </nav>
                 </div>

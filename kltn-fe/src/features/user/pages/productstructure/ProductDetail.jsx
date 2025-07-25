@@ -364,8 +364,11 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 		<div className="d-sm-flex justify-content-between container-fluid py-3">
 			<nav aria-label="breadcrumb" className="breadcrumb-row">
 				<ul className="breadcrumb mb-0">
-					<li className="breadcrumb-item"><a href="/"> Home</a></li>
-					<li className="breadcrumb-item">Product Thumbnail</li>
+					<li className="breadcrumb-item"><a href="/"> Trang chủ</a></li>
+					<li className="breadcrumb-item">
+					Hình thu nhỏ sản phẩm
+						{/* Product Thumbnail */}
+					</li>
 				</ul>
 			</nav>
 		</div>
@@ -458,7 +461,10 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 										</div>
 											))
 										) : (
-											  <p>No images available</p>
+											  <p>
+												Không có hình ảnh nào
+												{/* No images available */}
+											  </p>
 										
 										)}
 										{products.images && products.images.length > 0 ? (
@@ -469,7 +475,9 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 										</div>
 											))
 										) : (
-											  <p>No images available</p>
+											  <p>Không có hình ảnh nào
+												{/* No images available */}
+												</p>
 										
 										)}	{products.images && products.images.length > 0 ? (
 											products.images.map((image, index) => (
@@ -479,7 +487,9 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 										</div>
 											))
 										) : (
-											  <p>No images available</p>
+											  <p>Không có hình ảnh nào
+												{/* No images available */}
+												</p>
 										
 										)}
 									</div>
@@ -507,8 +517,8 @@ const checkQuantityAgainstStock = async (newQuantity) => {
       </li>
     ))}
   </ul>
-  <span className="text-secondary me-2">4.0 Rating</span>
-  <a href="#reviews">({reviews.length} customer reviews)</a>
+  <span className="text-secondary me-2">4.0 sao</span>
+  <a href="#reviews">({reviews.length} khách hàng đánh giá)</a>
 </div>
 
 									</div>
@@ -518,7 +528,7 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 								</p>
 								
 								<div className="meta-content m-b20">
-  <span className="price-name">Price</span>
+  <span className="price-name">Giá</span>
   <span className="price">
     ${discountedPrice.toFixed(2)}{" "}
     <del>${originalPrice.toFixed(2)}</del>
@@ -526,7 +536,7 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 </div>
 								<div className="product-num gap-md-2 gap-xl-0">
 									   <div className="btn-quantity light">
-    <label className="form-label fw-bold">Quantity</label>
+    <label className="form-label fw-bold">Số lượng</label>
 <div className="input-group light d-flex align-items-center">
   <button
     className="btn btn-dark rounded-circle p-0"
@@ -578,7 +588,7 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 
   </div>
 									<div className="d-block">
-										<label className="form-label">Size</label>
+										<label className="form-label">Kích thước</label>
 										<div className="btn-group product-size m-0">
   {products.sizes?.length > 0 ? (
     products.sizes.map((size, index) => {
@@ -600,12 +610,12 @@ const checkQuantityAgainstStock = async (newQuantity) => {
       );
     })
   ) : (
-    <p>No size available</p>
+    <p>Không có kích thước nào</p>
   )}
 </div>
 									</div>
 									<div className="meta-content">
-										<label className="form-label">Color</label>
+										<label className="form-label">Màu sắc</label>
 										<div className="d-flex align-items-center color-filter">
 											{Array.isArray(colorAsinArray) && colorAsinArray.length > 0 ? (
   colorAsinArray.map((item, index) => (
@@ -632,11 +642,11 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 								</div>
 								<div className="btn-group cart-btn">
 								<a onClick={handleAddToCart} className="btn btn-secondary text-uppercase">
-  Add To Cart
+  Thêm vào giỏ hàng
 </a>
 									<a href="shop-wishlist.html" className="btn btn-outline-secondary btn-icon">
 										<i className="icon feather icon-heart"></i>
-										Add To Wishlist
+										Thêm vào yêu thích
 									</a>
 								</div>
 								<div className="dz-info">
@@ -651,16 +661,19 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 											<i className="flaticon flaticon-ship"></i>
 										</div>
 										<div className="info-content">
-											<span>FREE</span>
-											<h6 className="dz-title mb-0">Shipping</h6>
+											<span>Miễn Phí</span>
+											<h6 className="dz-title mb-0">Vận chuyển</h6>
 										</div>
 									</li>
 									<li className="icon-bx-wraper style-3">
 										<div className="icon-bx">
 											<i className="flaticon-fast-delivery-1"></i></div>
 										<div className="info-content">
-											<span>Easy Returns</span>
-											<h6 className="dz-title mb-0">30 Days</h6>
+											<span>
+											Trả lại dễ dàng
+												{/* Easy Returns */}
+											</span>
+											<h6 className="dz-title mb-0">30 ngày</h6>
 										</div>
 									</li>
 								</ul>
@@ -798,8 +811,11 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 							<div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex="0">
   <div className="clear" id="comment-list">
     <div className="post-comments comments-area style-1 clearfix">
-      <h4 className="comments-title mb-2">Comments ({reviews.length})</h4>
-      <p className="dz-title-text">There are many variations of passages of Lorem Ipsum available.</p>
+      <h4 className="comments-title mb-2">Bình luận ({reviews.length})</h4>
+      <p className="dz-title-text">
+	  Có rất nhiều phiên bản khác nhau của Lorem Ipsum.
+		{/* There are many variations of passages of Lorem Ipsum available. */}
+	  </p>
 	  <div id="comment">
   <ol className="comment-list">
     {reviews
@@ -826,7 +842,7 @@ const checkQuantityAgainstStock = async (newQuantity) => {
                   className="comment-reply-link btn btn-link p-0"
                   onClick={() => setReplyTo(parent.reviewId)}
                 >
-                  Reply
+                  Phản hồi
                 </button>
               </div>
 
@@ -843,7 +859,7 @@ const checkQuantityAgainstStock = async (newQuantity) => {
               <div className="reply-form mt-3">
                 <textarea
                   className="form-control mb-2"
-                  placeholder="Type your reply..."
+                  placeholder="Nhập câu trả lời của bạn..."
                   value={newReply}
                   onChange={(e) => setNewReply(e.target.value)}
                   rows="3"
@@ -856,7 +872,8 @@ const checkQuantityAgainstStock = async (newQuantity) => {
                     className="btn btn-secondary btn-sm"
                     onClick={() => handleSubmitReply(parent.reviewId)}
                   >
-                    Submit Reply
+                    Gửi trả lời
+					{/* Submit Reply */}
                   </button>
                   <button
                     type="button"
@@ -901,11 +918,20 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 </div>
 
       <div className="default-form comment-respond style-1" id="respond">
-        <h4 className="comment-reply-title mb-2" id="reply-title">Good Comments</h4>
-        <p className="dz-title-text">There are many variations of passages of Lorem Ipsum available.</p>
+        <h4 className="comment-reply-title mb-2" id="reply-title">
+		Bình luận tốt
+			{/* Good Comments */}
+		</h4>
+        <p className="dz-title-text">
+		Có rất nhiều phiên bản khác nhau của Lorem Ipsum.
+			{/* There are many variations of passages of Lorem Ipsum available. */}
+		</p>
 
         <div className="comment-form-rating d-flex">
-          <label className="pull-left m-r10 m-b20 text-secondary">Your Rating</label>
+          <label className="pull-left m-r10 m-b20 text-secondary">
+		  Đánh giá của bạn
+			{/* Your Rating */}
+		  </label>
           <div className="rating-widget">
             <div className="rating-stars">
 			<ul id="stars">
@@ -940,7 +966,7 @@ const checkQuantityAgainstStock = async (newQuantity) => {
               <p className="comment-form-comment">
                 <textarea
                   className="form-control4"
-                  placeholder="Type Comment Here"
+                  placeholder="Nhập bình luận ở đây"
                   value={newReview}
                   onChange={(e) => setNewReview(e.target.value)}
                   required
@@ -949,13 +975,14 @@ const checkQuantityAgainstStock = async (newQuantity) => {
               </p>
               <p className="col-md-12 col-sm-12 col-xs-12 form-submit">
                 <button type="submit" className="submit btn btn-secondary btnhover3 filled">
-                  Submit Now
+                  Gửi ngay
+				  {/* Submit Now */}
                 </button>
               </p>
             </form>
           ) : (
             <p className="text-danger">
-              Please <a href="/user/auth/login">login</a> to post a review.
+              Please <a href="/user/auth/login">Đăng nhập</a> để đăng bài đánh giá.
             </p>
           )}
         </div>
@@ -974,7 +1001,10 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 			<div className="container">
 				<div className="section-head style-2 d-md-flex align-items-center justify-content-between">
 					<div className="left-content">
-						<h2 className="title mb-0">Related products</h2>
+						<h2 className="title mb-0">
+						Sản phẩm liên quan
+							{/* Related products */}
+						</h2>
 					</div>
 					<a href="shop-list.html" className="text-secondary font-14 d-flex align-items-center gap-1">See all products
 						<i className="icon feather icon-chevron-right font-18"></i>
@@ -992,7 +1022,7 @@ const checkQuantityAgainstStock = async (newQuantity) => {
 										<div className="shop-meta">
 														<a href="javascript:void(0);" className="btn btn-secondary btn-md btn-rounded" data-bs-toggle="modal" data-bs-target="#exampleModal">
 															<i className="fa-solid fa-eye d-md-none d-block"></i>
-															<span className="d-md-block d-none">Quick View</span>
+															<span className="d-md-block d-none">Xem nhanh</span>
 														</a>
 														<div className="btn btn-primary meta-icon dz-wishicon">
 															<i className="icon feather icon-heart dz-heart"></i>
@@ -1013,7 +1043,7 @@ const checkQuantityAgainstStock = async (newQuantity) => {
                     ).toFixed(2)}</h5>
 									</div>
 									<div className="product-tag">
-										<span className="badge ">Get {relateProduct.percentDiscount}% Off</span>
+										<span className="badge ">Giảm {relateProduct.percentDiscount}% </span>
 									</div>
 								</div>
 							</div>

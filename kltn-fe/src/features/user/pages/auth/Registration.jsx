@@ -131,9 +131,9 @@ function Registration() {
                                     <nav aria-label="breadcrumb text-align-start" className="breadcrumb-row">
                                         <ul className="breadcrumb">
                                             <li className="breadcrumb-item">
-                                                <Link to="/">Home</Link>
+                                                <Link to="/">Trang chủ</Link>
                                             </li>
-                                            <li className="breadcrumb-item">Shop Registration</li>
+                                            <li className="breadcrumb-item">Đăng ký</li>
                                         </ul>
                                     </nav>
                                 </div>
@@ -143,15 +143,18 @@ function Registration() {
                             </div>
                             <div className="col-xxl-6 col-xl-6 col-lg-6 end-side-content">
                                 <div className="login-area">
-                                    <h2 className="text-secondary text-center">Register Now</h2>
-                                    <p className="text-center m-b30">Welcome, please register for your account</p>
+                                    <h2 className="text-secondary text-center">Đăng ký ngay</h2>
+                                    <p className="text-center m-b30">
+                                    Chào mừng, vui lòng đăng ký tài khoản của bạn
+                                        {/* Welcome, please register for your account */}
+                                    </p>
                                     <form onSubmit={handleSubmit}>
                                         <div className="m-b25">
-                                            <label className="label-title">Username</label>
+                                            <label className="label-title">Tên người dùng</label>
                                             <input name="username" value={username} onChange={(e) => setUsername(e.target.value)} required className="form-control" placeholder="Username" type="text" />
                                         </div>
                                         <div className="m-b25">
-                                            <label className="label-title">Email Address</label>
+                                            <label className="label-title">Địa chỉ Email</label>
                                             <div style={{ display: 'flex' }}>
                                                 <input name="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="form-control" placeholder="Email Address" type="email" style={{ flex: 1 }} disabled={isSendingDisabled} />
                                                 <button type="button" className="btn btn-success" style={{ marginLeft: '10px' }} onClick={handleSendVerification} disabled={isSendingDisabled}>
@@ -165,7 +168,7 @@ function Registration() {
                                             </div>
                                         )}
                                         <div className="m-b40">
-                                            <label className="label-title">Password</label>
+                                            <label className="label-title">Mật khẩu</label>
                                             <div className="secure-input">
                                                 <input type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="form-control dz-password" placeholder="Password" />
                                                 <div className="show-pass">
@@ -174,7 +177,10 @@ function Registration() {
                                             </div>
                                         </div>
                                         <div className="m-b40">
-  <label className="label-title">Confirm Password</label>
+  <label className="label-title">
+  Xác nhận mật khẩu
+    {/* Confirm Password */}
+  </label>
   <div className="secure-input">
     <input
       type="password"
@@ -188,7 +194,10 @@ function Registration() {
   </div>
 </div>
 <div className="m-b25">
-  <label className="label-title">Date of Birth</label>
+  <label className="label-title">
+  Ngày sinh
+    {/* Date of Birth */}
+  </label>
   <input
     type="date"
     name="dateOfBirth"
@@ -199,8 +208,11 @@ function Registration() {
   />
 </div>
                                         <div className="text-center">
-                                            <button type="submit" className="btn btn-secondary">Register</button>
-                                            <Link to="/user/auth/login" className="btn btn-outline-secondary btnhover text-uppercase">Sign In</Link>
+                                            <button type="submit" className="btn btn-secondary">Đăng ký</button>
+                                            <Link to="/user/auth/login" className="btn btn-outline-secondary btnhover text-uppercase">
+                                            Đăng nhập
+                                            {/* Sign In */}
+                                            </Link>
                                         </div>
                                     </form>
                                     <br />

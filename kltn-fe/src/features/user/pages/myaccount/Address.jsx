@@ -44,13 +44,16 @@ function Address() {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Account Address</h1>
+        <h1>
+        Địa chỉ tài khoản
+          {/* Account Address */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Account Address</li>
+            <li className="breadcrumb-item">Địa chỉ tài khoản</li>
           </ul>
         </nav>
       </div>
@@ -62,12 +65,16 @@ function Address() {
       <div className="row">
         <aside className="col-xl-3">
           <div className="toggle-info">
-            <h5 className="title mb-0">Account Navbar</h5>
+            <h5 className="title mb-0">
+            Thanh điều hướng tài khoản
+              {/* Account Navbar */}
+            </h5>
             <a
               className="toggle-btn"
               href="account-address.html#accountSidebar"
             >
-              Account Menu
+              Menu tài khoản
+              {/* Account Menu */}
             </a>
           </div>
           <div className="sticky-top account-sidebar-wrapper">
@@ -84,37 +91,70 @@ function Address() {
                 <span className="text text-primary">info@example.com</span>
               </div>
               <div className="account-nav">
-                <div className="nav-title bg-light">DASHBOARD</div>
+                <div className="nav-title bg-light">
+                BẢNG ĐIỀU KHIỂN
+                  {/* DASHBOARD */}
+                </div>
                 <ul>
                   <li>
-                    <a href="account-dashboard.html">Dashboard</a>
+                    <a href="account-dashboard.html">
+                    Trang tổng quan
+                      {/* Dashboard */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-orders.html">Orders</a>
+                    <a href="account-orders.html">
+                    Đơn đặt hàng
+                      {/* Orders */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-downloads.html">Downloads</a>
+                    <a href="account-downloads.html">
+                    Tải xuống
+                      {/* Downloads */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-return-request.html">Return request</a>
+                    <a href="account-return-request.html">
+                    Yêu cầu trả lại
+                      {/* Return request */}
+                    </a>
                   </li>
                 </ul>
-                <div className="nav-title bg-light">ACCOUNT SETTINGS</div>
+                <div className="nav-title bg-light">
+                CÀI ĐẶT TÀI KHOẢN
+                {/* ACCOUNT SETTINGS */}
+                </div>
                 <ul className="account-info-list">
                   <li>
-                    <a href="account-profile.html">Profile</a>
+                    <a href="account-profile.html">
+                    Hồ sơ
+                      {/* Profile */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-address.html">Address</a>
+                    <a href="account-address.html">
+                    Địa chỉ
+                      {/* Address */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-shipping-methods.html">Shipping methods</a>
+                    <a href="account-shipping-methods.html">
+                    Phương thức vận chuyển
+                      {/* Shipping methods */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-payment-methods.html">Payment Methods</a>
+                    <a href="account-payment-methods.html">
+                    Phương thức thanh toán
+                      {/* Payment Methods */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-review.html">Review</a>
+                    <a href="account-review.html">
+                      Đánh giá
+                      {/* Review */}
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -125,8 +165,9 @@ function Address() {
           <div className="row">
             <div className="col-12 m-b30">
               <p className="m-b0">
-                The following addresses will be used on the checkout page by
-                default.
+              Các địa chỉ sau sẽ được sử dụng trên trang thanh toán theo mặc định.
+                {/* The following addresses will be used on the checkout page by
+                default. */}
               </p>
             </div>
             <div className="col-md-6 m-b30">
@@ -196,8 +237,14 @@ function Address() {
                     <path d="m49.001 45.71942h-4v-4.00049a1.00019 1.00019 0 0 0 -2 0v4.00049h-4a1.00019 1.00019 0 0 0 .00006 2h3.99994v4a1 1 0 0 0 2 0v-4h4a1 1 0 0 0 0-2z" />
                   </svg>
                 </div>
-                <h4 className="mb-3">Add New Address</h4>
-                <button className="btn btn-primary px-5">Add</button>
+                <h4 className="mb-3">
+                Thêm địa chỉ mới
+                  {/* Add New Address */}
+                </h4>
+                <button className="btn btn-primary px-5">
+                  Thêm
+                  {/* Add */}
+                </button>
               </div>
             </div>
           </div>

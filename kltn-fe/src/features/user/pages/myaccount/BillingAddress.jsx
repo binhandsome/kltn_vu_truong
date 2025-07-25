@@ -40,11 +40,17 @@ function BillingAddress() {
     <div className="dz-bnr-inr bg-light" style={{ backgroundImage: `url('../assets/user/images/background/bg1.jpg')` }}>
         <div className="container">
             <div className="dz-bnr-inr-entry">
-                <h1>Billing Address</h1>
+                <h1>
+                Địa chỉ thanh toán
+                    {/* Billing Address */}
+                </h1>
                 <nav aria-label="breadcrumb" className="breadcrumb-row">
                     <ul className="breadcrumb">
-                        <li className="breadcrumb-item"><a href="/">Home</a></li>
-                        <li className="breadcrumb-item">Billing Address</li>
+                        <li className="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                        <li className="breadcrumb-item">
+                        Địa chỉ thanh toán
+                            {/* Billing Address */}
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -56,8 +62,14 @@ function BillingAddress() {
             <div className="row">
                 <aside className="col-xl-3">
                     <div className="toggle-info">
-                        <h5 className="title mb-0">Account Navbar</h5>
-                        <a className="toggle-btn" href="account-billing-address.html#accountSidebar">Account Menu</a>
+                        <h5 className="title mb-0">
+                       Thanh điều hướng tài khoản
+                            {/* Account Navbar */}
+                        </h5>
+                        <a className="toggle-btn" href="account-billing-address.html#accountSidebar">
+                        Menu tài khoản
+                            {/* Account Menu */}
+                        </a>
                     </div>
                     <div className="sticky-top account-sidebar-wrapper">
                         <div className="account-sidebar" id="accountSidebar">

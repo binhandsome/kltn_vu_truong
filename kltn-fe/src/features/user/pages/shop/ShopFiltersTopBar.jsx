@@ -194,13 +194,16 @@ const handlePageChange = (pageNumber) => {
   >
     <div className="container">
       <div className="dz-bnr-inr-entry">
-        <h1>Shop Just For You</h1>
+        <h1>
+        Mua sắm chỉ dành cho bạn
+          {/* Shop Just For You */}
+        </h1>
         <nav aria-label="breadcrumb" className="breadcrumb-row">
           <ul className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="index.html"> Home</a>
+              <a href="index.html"> Trang chủ</a>
             </li>
-            <li className="breadcrumb-item">Shop Just For You</li>
+            <li className="breadcrumb-item">Mua sắm chỉ dành cho bạn</li>
           </ul>
         </nav>
       </div>
@@ -216,24 +219,29 @@ const handlePageChange = (pageNumber) => {
               <ul className="filter-tag">
                 <li>
                   <a href="javascript:void(0);" className="tag-btn">
-                    Dresses
+                  Váy
+                    {/* Dresses */}
                     <i className="icon feather icon-x tag-close" />
                   </a>
                 </li>
                 <li>
                   <a href="javascript:void(0);" className="tag-btn">
-                    Tops
+                    Hàng đầu
                     <i className="icon feather icon-x tag-close" />
                   </a>
                 </li>
                 <li>
                   <a href="javascript:void(0);" className="tag-btn">
-                    Outerwear
+                  Áo khoác ngoài
+                    {/* Outerwear */}
                     <i className="icon feather icon-x tag-close" />
                   </a>
                 </li>
               </ul>
-              <span>Showing 1–5 Of 50 Results</span>
+              <span>
+              Hiển thị 1–5 trong số 50 kết quả
+                {/* Showing 1–5 Of 50 Results */}
+              </span>
             </div>
             <div className="filter-right-area">
               <div className="form-group border-0">
@@ -270,12 +278,12 @@ const handlePageChange = (pageNumber) => {
               </div>
              <div className="form-group Category">
                 <select className="default-select" value={pageSize} onChange={handlePageChangeProduct}>
-                  <option value={20}>Products</option>
-                  <option value={32}>32 Products</option>
-                  <option value={44}>44 Products</option>
-                  <option value={60}>60 Products</option>
-                  <option value={72}>72 Products</option>
-                  <option value={84}>84 Products</option>
+                  <option value={20}>Sản phẩm</option>
+                  <option value={32}>32 Sản phẩm</option>
+                  <option value={44}>44 Sản phẩm</option>
+                  <option value={60}>60 Sản phẩm</option>
+                  <option value={72}>72 Sản phẩm</option>
+                  <option value={84}>84 Sản phẩm</option>
                 </select>
               </div>
               <div className="shop-tab">
@@ -497,7 +505,7 @@ const handlePageChange = (pageNumber) => {
                   </div>
                 </div>
                 <div className="widget">
-                  <h6 className="widget-title">Price</h6>
+                  <h6 className="widget-title">Giá</h6>
                   <div className="price-slide range-slider">
                     <div className="price">
                       <div className="range-slider style-1">
@@ -515,7 +523,7 @@ const handlePageChange = (pageNumber) => {
                   </div>
                 </div>
                 <div className="widget">
-                  <h6 className="widget-title">Color</h6>
+                  <h6 className="widget-title">Màu sắc</h6>
                   <div className="d-flex align-items-center flex-wrap color-filter ps-2">
                     <div className="form-check">
                       <input
@@ -631,7 +639,7 @@ const handlePageChange = (pageNumber) => {
                   </div>
                 </div>
                 <div className="widget">
-                  <h6 className="widget-title">Size</h6>
+                  <h6 className="widget-title">Kích thước</h6>
                   <div className="btn-group product-size">
                     <input
                       type="radio"
@@ -718,35 +726,47 @@ const handlePageChange = (pageNumber) => {
                   </div>
                 </div>
                 <div className="widget widget_categories">
-                  <h6 className="widget-title">Category</h6>
+                  <h6 className="widget-title">Danh mục</h6>
                   <ul>
                     <li className="cat-item cat-item-26">
-                      <a href="blog-category.html">Dresses</a> (10)
+                      <a href="blog-category.html">Váy</a> (10)
                     </li>
                     <li className="cat-item cat-item-36">
-                      <a href="blog-category.html">Top &amp; Blouses</a> (5)
+                      <a href="blog-category.html">Áo &amp; Áo cánh</a> (5)
                     </li>
                     <li className="cat-item cat-item-43">
-                      <a href="blog-category.html">Boots</a> (17)
+                      <a href="blog-category.html">
+                      Bốt
+                        {/* Boots */}
+                        </a> (17)
                     </li>
                     <li className="cat-item cat-item-27">
-                      <a href="blog-category.html">Jewelry</a> (13)
+                      <a href="blog-category.html">
+                      Trang sức
+                        {/* Jewelry */}
+                        </a> (13)
                     </li>
                     <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Makeup</a> (06)
+                      <a href="blog-category.html">
+                        Trang điểm
+                        {/* Makeup */}
+                        </a> (06)
                     </li>
                     <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Fragrances</a> (17)
+                      <a href="blog-category.html">
+                        Nước hoa
+                        {/* Fragrances */}
+                        </a> (17)
                     </li>
                     <li className="cat-item cat-item-40">
-                      <a href="blog-category.html">Shaving &amp; Grooming</a>{" "}
+                      <a href="blog-category.html">Cạo râu &amp;Chải chuốt</a>{" "}
                       (13)
                     </li>
                     <li className="cat-item cat-item-43">
-                      <a href="blog-category.html">Jacket</a> (06)
+                      <a href="blog-category.html">Áo khoác</a> (06)
                     </li>
                     <li className="cat-item cat-item-36">
-                      <a href="blog-category.html">Coat</a> (22)
+                      <a href="blog-category.html">Áo choàng</a> (22)
                     </li>
                   </ul>
                 </div>
@@ -785,17 +805,22 @@ const handlePageChange = (pageNumber) => {
                           <div>
                             <h4 className="title mb-0">
                               <a href="shop-list.html">
-                                Sophisticated Swagger Suit
+                                Bộ vest Swagger tinh tế
+                                {/* Sophisticated Swagger Suit */}
                               </a>
                             </h4>
                             <ul className="dz-tags">
                               <li>
                                 <a href="shop-with-category.html">
-                                  Accessories,
+                                  Phụ kiện,
+                                  {/* Accessories, */}
                                 </a>
                               </li>
                               <li>
-                                <a href="shop-with-category.html">Sunglasses</a>
+                                <a href="shop-with-category.html">
+                               Kính râm
+                                  {/* Sunglasses */}
+                                </a>
                               </li>
                             </ul>
                           </div>
@@ -818,7 +843,7 @@ const handlePageChange = (pageNumber) => {
                               </li>
                             </ul>
                             <span>
-                              <a href="javascript:void(0);"> 250 Review</a>
+                              <a href="javascript:void(0);"> 250 đánh giá</a>
                             </span>
                           </div>
                         </div>
@@ -836,7 +861,7 @@ const handlePageChange = (pageNumber) => {
                           <div className="rate">
                             <div className="d-flex align-items-center mb-xl-3 mb-2">
                               <div className="meta-content m-0">
-                                <span className="price-name">Price</span>
+                                <span className="price-name">Giá</span>
                                 <span className="price">$40.00</span>
                               </div>
                             </div>
@@ -847,7 +872,7 @@ const handlePageChange = (pageNumber) => {
                               >
                                 <i className="icon feather icon-shopping-cart d-md-none d-block" />
                                 <span className="d-md-block d-none">
-                                  Add to cart
+                                  Thêm vào giỏ hàng
                                 </span>
                               </a>
                               <div className="bookmark-btn style-1">

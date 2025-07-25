@@ -43,13 +43,22 @@ function AboutUs() {
         <div className="row align-items-center">
           <div className="col-lg-7 col-md-7">
             <div className="text-start mb-xl-0 mb-4">
-              <h1>Your Fashion Journey Starts Here Discover Style at Pixio</h1>
+              <h1>
+              Hành trình thời trang của bạn bắt đầu từ đây Khám phá phong cách tại Pixio
+                {/* Your Fashion Journey Starts Here Discover Style at Pixio */}
+              </h1>
               <nav aria-label="breadcrumb" className="breadcrumb-row">
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
-                    <a href="index.html"> Home</a>
+                    <a href="index.html"> 
+                    Trang chủ
+                      {/* Home */}
+                    </a>
                   </li>
-                  <li className="breadcrumb-item">About us</li>
+                  <li className="breadcrumb-item">
+                  Về chúng tôi
+                    {/* About us */}
+                  </li>
                 </ul>
               </nav>
             </div>
@@ -62,13 +71,19 @@ function AboutUs() {
                     <h2 className="title">
                       <span className="counter">50</span>+
                     </h2>
-                    <p className="text">Items Sale</p>
+                    <p className="text">
+                    Mặt hàng bán
+                      {/* Items Sale */}
+                    </p>
                   </div>
                 </div>
                 <div className="col-lg-5 col-md-6 col-6">
                   <div className="about-content">
                     <h2 className="title">400%</h2>
-                    <p className="text">Return on investment </p>
+                    <p className="text">
+                    Lợi tức đầu tư
+                      {/* Return on investment  */}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -84,15 +99,19 @@ function AboutUs() {
     </video>
     <div className="about-info">
       <h3 className="dz-title">
-        <a href="about-me.html">why Pixio ?</a>
+        <a href="about-me.html">
+        Tại sao lại là Pixio?
+          {/* why Pixio ? */}
+        </a>
       </h3>
       <p className="text mb-0">
-        It is a long established fact that a reader will be distracted by the
+      Một thực tế đã được chứng minh từ lâu là người đọc sẽ bị phân tâm bởi nội dung dễ đọc của một trang khi nhìn vào bố cục của nó. Mục đích của việc sử dụng Lorem Ipsum là nó có sự phân bố các chữ cái gần như bình thường, trái ngược với việc sử dụng kiểu "Nội dung ở đây, nội dung ở đây", khiến nó trông giống như tiếng Anh dễ đọc. Nhiều gói xuất bản trên máy tính để bàn và trình chỉnh sửa trang web hiện nay sử dụng
+        {/* It is a long established fact that a reader will be distracted by the
         readable content of a page when looking at its layout. The point of
         using Lorem Ipsum is that it has a more-or-less normal distribution of
         letters, as opposed to using 'Content here, content here', making it
         look like readable English. Many desktop publishing packages and web
-        page editors now use
+        page editors now use */}
       </p>
     </div>
   </section>
@@ -109,21 +128,24 @@ function AboutUs() {
           <div className="about-content">
             <div className="section-head style-2 d-block">
               <h3 className="title w-100">
-                Elevate Your Style: A Unique Fashion Experience at Pixio
+                Nâng tầm phong cách của bạn: Trải nghiệm thời trang độc đáo tại Pixio
+                {/* Elevate Your Style: A Unique Fashion Experience at Pixio */}
               </h3>
               <p>
-                At Untouch, we're dedicated to creating an exclusive fashion
+              Tại Untouch, chúng tôi tận tâm tạo ra một điểm đến thời trang độc quyền, vượt ra khỏi những điều bình thường. Niềm đam mê về phong cách, chất lượng và cá tính thúc đẩy sứ mệnh của chúng tôi. Bộ sưu tập của chúng tôi là sự kết hợp được tuyển chọn kỹ lưỡng giữa những thiết kế cổ điển vượt thời gian và những xu hướng mới nhất.
+                {/* At Untouch, we're dedicated to creating an exclusive fashion
                 destination that transcends the ordinary. Our passion for style,
                 quality, and individuality drives our mission. Our collection is
                 a carefully curated blend of timeless classics and the latest
-                trends,
+                trends, */}
               </p>
               <p>
-                In addition to our extensive collection, we're equally devoted
+              Bên cạnh bộ sưu tập phong phú, chúng tôi cũng tận tâm đảm bảo trải nghiệm mua sắm của bạn luôn liền mạch và thú vị. Trang web của chúng tôi được thiết kế hướng đến sự tiện lợi của bạn, cung cấp các giao dịch an toàn và đội ngũ hỗ trợ khách hàng tận tâm, sẵn sàng hỗ trợ bạn trong từng bước.
+                {/* In addition to our extensive collection, we're equally devoted
                 to ensuring your shopping experience is seamless and enjoyable.
                 Our website is designed with your convenience in mind, offering
                 secure transactions and a responsive customer support team to
-                assist you every step of the way.
+                assist you every step of the way. */}
               </p>
             </div>
             <div className="about-bx-detail">
@@ -132,7 +154,10 @@ function AboutUs() {
               </div>
               <div>
                 <h6 className="name">Kenneth Fong</h6>
-                <span className="position">Ceo and founder</span>
+                <span className="position">
+                CEO và người sáng lập
+                  {/* Ceo and founder */}
+                </span>
               </div>
             </div>
           </div>
@@ -144,12 +169,15 @@ function AboutUs() {
   <section className="get-in-touch">
     <div className="m-r100 m-md-r0 m-sm-r0">
       <h3 className="dz-title mb-lg-0 mb-3">
-        Questions ?
-        <span>Our experts will help find the grar that’s right for you</span>
+      Bạn có thắc mắc không?
+<span>Các chuyên gia của chúng tôi sẽ giúp bạn tìm ra loại cỏ phù hợp nhất</span>
+        {/* Questions ?
+        <span>Our experts will help find the grar that’s right for you</span> */}
       </h3>
     </div>
     <a href="contact-us-1.html" className="btn btn-light">
-      Get In Touch
+    Liên hệ
+      {/* Get In Touch */}
     </a>
   </section>
   {/* Get In Touch End */}
@@ -162,16 +190,21 @@ function AboutUs() {
         >
           <div className="section-head ">
             <h2 className="title">
-              Meet our team of creators, designers, and world-class problem
-              solvers
+            Gặp gỡ đội ngũ sáng tạo, nhà thiết kế và chuyên gia giải quyết vấn đề đẳng cấp thế giới của chúng tôi
+             {/*  Meet our team of creators, designers, and world-class problem
+              solvers */}
             </h2>
             <p>
-              There are many variations of passages of Lorem Ipsum available,
+              Có rất nhiều biến thể của Lorem Ipsum,
+nhưng phần lớn đã bị thay đổi ở một số hình thức, bằng cách
+thêm yếu tố hài hước, hoặc sử dụng các từ ngữ ngẫu nhiên.
+              {/* There are many variations of passages of Lorem Ipsum available,
               but the majority have suffered alteration in some form, by
-              injected humour, or randomised words.
+              injected humour, or randomised words. */}
             </p>
             <a className="btn btn-secondary me-3" href="registration.html">
-              Join Our Team
+              Tham gia nhóm của chúng tôi
+              {/* Join Our Team */}
             </a>
           </div>
         </div>
@@ -217,7 +250,7 @@ function AboutUs() {
               <h5 className="title">
                 <a href="our-team.html">John Doe</a>
               </h5>
-              <span>CEO &amp; Founder</span>
+              <span>CEO &amp; Nhà sáng lập</span>
             </div>
           </div>
         </div>
