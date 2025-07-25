@@ -21,4 +21,7 @@ public interface SellerService {
     List<ShopDiscountResponseDTO> getShopDiscounts(String accessToken);
     ShopResponseDTO updateShop(ShopRequestDTO shopRequestDTO);
     void deleteShop(String accessToken);
+    ShopResponseDTO addShopEdit(ShopRequestDTO shopRequestDTO);
+    ResponseEntity<?> updateDiscountShop(ShopDiscountRequestDTO discountRequestDTO);
+    ResponseEntity<?> deleteDiscountShop(String accessToken, Long shopDiscountId);
 }

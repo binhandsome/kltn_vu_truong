@@ -3,10 +3,7 @@ package com.kltnbe.sellerservice.services;
 import com.kltnbe.sellerservice.clients.UploadServiceProxy;
 import com.kltnbe.sellerservice.clients.UserServiceProxy;
 import com.kltnbe.sellerservice.dtos.*;
-import com.kltnbe.sellerservice.entities.Shop;
-import com.kltnbe.sellerservice.entities.ShopDiscount;
-import com.kltnbe.sellerservice.entities.StoreAuthentic;
-import com.kltnbe.sellerservice.entities.UserUseDiscount;
+import com.kltnbe.sellerservice.entities.*;
 import com.kltnbe.sellerservice.repositories.*;
 
 import feign.FeignException;
@@ -22,6 +19,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -40,7 +38,7 @@ public class SellerServiceImpl implements SellerService {
     private static final Logger log = LoggerFactory.getLogger(SellerServiceImpl.class);
 
     @Autowired
-    private final StoreRepository storeRepository;
+//    private final StoreRepository storeRepository;
     private final UserServiceProxy userServiceProxy;
     private final UploadServiceProxy uploadImages;
     private final ShopRepository shopRepository;
@@ -50,6 +48,7 @@ public class SellerServiceImpl implements SellerService {
     @Autowired
     private final UploadServiceProxy uploadServiceProxy;
     private final StoreAuthenticRepository storeAuthenticRepository;
+    private final ShopEditRepository shopEditRepository;
     @Override
     public ResponseEntity<?> registerSeller(SellerDTO sellerDTO) {
         System.out.println("📥 Nhận request đăng ký seller:");
@@ -186,7 +185,9 @@ public class SellerServiceImpl implements SellerService {
                     .shopAddress(shopRequestDTO.getShopAddress())
                     .shopPhone(shopRequestDTO.getShopPhone())
                     .shopEmail(shopRequestDTO.getShopEmail())
-                    .shopStatus(Shop.ShopStatus.pending) // Mặc định là pending
+                    .shopStatus(Shop.ShopStatus.pending)
+                    .evaluateShop(0.0)
+                    .followersShop(0L)// Mặc định là pending
                     .build();
 
         Shop savedShop = shopRepository.save(shop);
@@ -213,10 +214,8 @@ public class SellerServiceImpl implements SellerService {
             throw new IllegalArgumentException("Invalid access token");
         }
 
-        // Tìm shop dựa trên authId
         Shop shop = shopRepository.findByAuthId(authId)
                 .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
-        // Tạo mới mã giảm giá
         ShopDiscount discount = new ShopDiscount();
         discount.setShopId(shop.getShopId());
         discount.setNameDiscount(discountRequestDTO.getNameDiscount());
@@ -250,17 +249,11 @@ public class SellerServiceImpl implements SellerService {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
-
-        // Kiểm tra mã giảm giá tồn tại
         ShopDiscount discount = shopDiscountRepository.findById(useDiscountRequestDTO.getDiscountShopId())
                 .orElseThrow(() -> new IllegalArgumentException("Discount not found"));
-
-        // Kiểm tra xem user đã sử dụng mã này chưa
         if (userUseDiscountRepository.existsByUserIdAndDiscountShopId(authId, useDiscountRequestDTO.getDiscountShopId())) {
             throw new IllegalStateException("User has already used this discount");
         }
-
-        // Kiểm tra thời hạn mã giảm giá
         LocalDateTime now = LocalDateTime.now();
         if (now.isBefore(discount.getDayStart()) || now.isAfter(discount.getDayEnd())) {
             throw new IllegalStateException("Discount is not valid at this time");
@@ -332,14 +325,13 @@ public class SellerServiceImpl implements SellerService {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
-
         Shop shop = shopRepository.findByAuthId(authId)
                 .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
-
         List<ShopDiscount> discounts = shopDiscountRepository.findByShopId(shop.getShopId());
         return discounts.stream().map(discount -> {
             ShopDiscountResponseDTO response = new ShopDiscountResponseDTO();
             response.setDiscountShopId(discount.getDiscountShopId());
+            System.out.println("id discount la" + response.getDiscountShopId());
             response.setNameDiscount(discount.getNameDiscount());
             response.setMinPrice(discount.getMinPrice());
             response.setPercentValue(discount.getPercentValue());
@@ -386,7 +378,6 @@ public class SellerServiceImpl implements SellerService {
         }
 
         Shop updatedShop = shopRepository.save(shop);
-
         ShopResponseDTO response = new ShopResponseDTO();
         response.setShopId(updatedShop.getShopId());
         response.setNameShop(updatedShop.getNameShop());
@@ -405,7 +396,6 @@ public class SellerServiceImpl implements SellerService {
 
     @Override
     @Transactional
-
     public void deleteShop(String accessToken) {
         Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
         if (authId == null) {
@@ -419,5 +409,103 @@ public class SellerServiceImpl implements SellerService {
         shopDiscountRepository.deleteByShopId(shop.getShopId());
         shopRepository.delete(shop);
     }
+
+    @Override
+    public ShopResponseDTO addShopEdit(ShopRequestDTO shopRequestDTO) {
+        Long authId = userServiceProxy.findIdAuthByAccessToken(shopRequestDTO.getAccessToken());
+        if (authId == null) {
+            throw new IllegalArgumentException("Invalid access token");
+        }
+        Shop shop = shopRepository.findByAuthId(authId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
+        Boolean exists = shopEditRepository.existsByShopIdAndStatus(shop.getShopId(), 0L);
+        if (exists) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "⛔ Bạn đã gửi yêu cầu chỉnh sửa rồi!");
+        }
+        ShopEdit shopEdit = new ShopEdit();
+        if (shopRequestDTO.getNameShop() != null) {
+            shopEdit.setNameShop(shopRequestDTO.getNameShop());
+        }
+        if (shopRequestDTO.getThumbnailShop() != null) {
+            ResponseEntity<String> urlImage = uploadServiceProxy.uploadImage(shopRequestDTO.getThumbnailShop(), "Thumbnail");
+            if (urlImage.getBody() != null) {
+                shopEdit.setThumbnailShop(urlImage.getBody());
+            }
+        }
+        if (shopRequestDTO.getDescriptionShop() != null) {
+            shopEdit.setDescriptionShop(shopRequestDTO.getDescriptionShop());
+        }
+        if (shopRequestDTO.getShopAddress() != null) {
+            shopEdit.setShopAddress(shopRequestDTO.getShopAddress());
+        }
+        if (shopRequestDTO.getShopPhone() != null) {
+            shopEdit.setShopPhone(shopRequestDTO.getShopPhone());
+        }
+        if (shopRequestDTO.getShopEmail() != null) {
+            shopEdit.setShopEmail(shopRequestDTO.getShopEmail());
+        }
+        shopEdit.setStatus(0L);
+        shopEdit.setShopId(shop.getShopId());
+        ShopEdit updatedShopEdit = shopEditRepository.save(shopEdit);
+        ShopResponseDTO response = new ShopResponseDTO();
+        response.setShopId(updatedShopEdit.getShopId());
+        response.setNameShop(updatedShopEdit.getNameShop());
+        response.setThumbnailShop(updatedShopEdit.getThumbnailShop());
+        response.setDescriptionShop(updatedShopEdit.getDescriptionShop());
+        response.setShopAddress(updatedShopEdit.getShopAddress());
+        response.setShopPhone(updatedShopEdit.getShopPhone());
+        response.setShopEmail(updatedShopEdit.getShopEmail());
+        response.setCreatedAt(updatedShopEdit.getCreatedAt());
+        response.setDescription(updatedShopEdit.getDescriptionShop());
+
+        return response;
     }
+    public ResponseEntity<?> updateDiscountShop(ShopDiscountRequestDTO discountRequestDTO) {
+        Long authId = userServiceProxy.findIdAuthByAccessToken(discountRequestDTO.getAccessToken());
+        if (authId == null) {
+            throw new IllegalArgumentException("Invalid access token");
+        }
+        Shop shop = shopRepository.findByAuthId(authId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
+        ShopDiscount shopDiscount = shopDiscountRepository.findByDiscountShopIdAndShopId(discountRequestDTO.getShopDiscountId(), shop.getShopId());
+        // Update fields
+        if (discountRequestDTO.getNameDiscount() != null) {
+            shopDiscount.setNameDiscount(discountRequestDTO.getNameDiscount());
+        }
+        if (discountRequestDTO.getStatus() != null) {
+            shopDiscount.setStatus(discountRequestDTO.getStatus());
+        }
+        if (discountRequestDTO.getMinPrice() != null) {
+            shopDiscount.setMinPrice(discountRequestDTO.getMinPrice());
+        }
+        if (discountRequestDTO.getDayStart() != null) {
+            shopDiscount.setDayStart(LocalDateTime.parse(discountRequestDTO.getDayStart()));
+        }
+        if (discountRequestDTO.getDayEnd() != null) {
+            shopDiscount.setDayEnd(LocalDateTime.parse(discountRequestDTO.getDayEnd()));
+        }
+        if (discountRequestDTO.getPercentValue() != null) {
+            shopDiscount.setPercentValue(discountRequestDTO.getPercentValue() );
+        }
+        ShopDiscount updateDiscountShop = shopDiscountRepository.save(shopDiscount);
+        return ResponseEntity.ok(Map.of("message", "Chỉnh sửa mã giảm giá thành công"));
+    }
+    @Override
+    @Transactional
+    public ResponseEntity<?> deleteDiscountShop(String accessToken, Long shopDiscountId) {
+        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
+        if (authId == null) {
+            throw new IllegalArgumentException("Invalid access token");
+        }
+        Shop shop = shopRepository.findByAuthId(authId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
+        ShopDiscount shopDiscount = shopDiscountRepository.findByDiscountShopIdAndShopId(shopDiscountId, shop.getShopId());
+        if (shopDiscount == null) {
+            throw new IllegalArgumentException("Discount not found");
+        }
+        shopDiscountRepository.delete(shopDiscount);
+        return ResponseEntity.ok(Map.of("message", "Xóa mã giảm giá thành công"));
+    }
+
+}
 

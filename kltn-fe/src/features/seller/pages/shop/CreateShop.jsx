@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const CreateShop = () => {
   const [nameShop, setNameShop] = useState('');
@@ -10,6 +11,7 @@ const CreateShop = () => {
   const [shopEmail, setShopEmail] = useState('');
   const [message, setMessage] = useState('');
   const API_URL = 'http://localhost:8089/api/seller';
+  const navigate = useNavigate();
 
   const handleCreateShop = async (event) => {
     event.preventDefault();
@@ -47,6 +49,10 @@ const CreateShop = () => {
       setShopAddress('');
       setShopPhone('');
       setShopEmail('');
+setTimeout(() => {
+  navigate('/seller');
+}, 5000);
+
     } catch (error) {
       console.error('Error creating shop:', error);
       setMessage(error.response?.data?.message || '❌ Lỗi khi tạo shop, vui lòng thử lại.');
