@@ -9,5 +9,5 @@ import java.util.Map;
 public interface UploadService {
     List<String> uploadImages(List<MultipartFile> files, String folderName) throws IOException;
     String generateSignedUrl(String publicId, int expiresInSeconds);
-
+    String uploadImage(MultipartFile file, String folderName) throws IOException;
 }

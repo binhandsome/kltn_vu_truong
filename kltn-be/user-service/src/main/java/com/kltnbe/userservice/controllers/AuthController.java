@@ -221,5 +221,9 @@ public class AuthController {
     public ResponseEntity<?> getUserWithAccessToken(String accessToken) {
         return authService.getUserWithAccessToken(accessToken);
     }
+    @GetMapping("/findIdAuthByAccessToken")
+    public Long findIdAuthByAccessToken(String accessToken) {
+        return authService.findIdAuthByAccessToken(accessToken);
+    }
 
 }

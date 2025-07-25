@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableDiscoveryClient
 @EnableFeignClients
 @EnableAsync
-
 public class SellerServiceApplication {
 
     public static void main(String[] args) {

@@ -29,6 +29,20 @@ public class UploadController {
                     .body(Collections.singletonList("Upload thất bại: " + e.getMessage()));
         }
     }
+    @PostMapping("/uploadImage")
+    public ResponseEntity<String> uploadImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(defaultValue = "Thumbnail") String folderName
+    ) {
+        try {
+            String url = service.uploadImage(file, folderName);
+            return ResponseEntity.ok(url);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("❌ Upload thất bại: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/publicId")
     public ResponseEntity<?> getSignedImageUrl(@RequestParam String publicId) {
         try {

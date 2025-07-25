@@ -45,7 +45,7 @@ import ProgressBars from '../pages/uiKit/ProgressBars';
 import Tabs from '../pages/uiKit/Tabs';
 import Typography from '../pages/uiKit/Typography';
 import Chart from '../pages/chart/Chart';
-
+import CreateShop from '../pages/shop/CreateShop'
 const SellerRoutes = () => {
   return (
     <Routes>
@@ -94,6 +94,7 @@ const SellerRoutes = () => {
         <Route path="uikit/tabs" element={<Tabs/>} />
         <Route path="uikit/typography" element={<Typography/>} />
         <Route path="chart/chart" element={<Chart/>} />
+        <Route path="shop/createShop" element={<CreateShop/>} />
       </Route>
     </Routes>
   );
