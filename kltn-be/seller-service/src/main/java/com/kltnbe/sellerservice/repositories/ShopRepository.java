@@ -1,7 +1,6 @@
 package com.kltnbe.sellerservice.repositories;
 
 import com.kltnbe.sellerservice.entities.Shop;
-import com.kltnbe.sellerservice.entities.Store;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

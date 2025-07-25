@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ShopDiscountRequestDTO {
+    private Long shopDiscountId;
     private String accessToken;
     private String nameDiscount;
     private Double minPrice;
