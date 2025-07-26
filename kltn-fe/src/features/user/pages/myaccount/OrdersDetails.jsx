@@ -144,7 +144,7 @@ function OrdersDetails() {
                         <div className="user-thumb">
                         <img
   className="rounded-circle"
-  src={userProfile?.profilePicture || "/assets/user/images/default-avatar.jpg"}
+  src={userProfile?.profilePicture || "https://www.w3schools.com/howto/img_avatar.png"}
   alt="User Avatar"
 />
                         </div>
@@ -152,22 +152,73 @@ function OrdersDetails() {
                         <span className="text text-primary">{order?.receiverEmail || 'info@example.com'}</span>
                       </div>
                       <div className="account-nav">
-                        <div className="nav-title bg-light">DASHBOARD</div>
-                        <ul>
-                          <li><a href="/dashboard">Dashboard</a></li>
-                          <li><a href="/orders">Orders</a></li>
-                          <li><a href="/downloads">Downloads</a></li>
-                          <li><a href="/return-request">Return request</a></li>
-                        </ul>
-                        <div className="nav-title bg-light">ACCOUNT SETTINGS</div>
-                        <ul className="account-info-list">
-                          <li><a href="/profile">Profile</a></li>
-                          <li><a href="/address">Address</a></li>
-                          <li><a href="/shipping-methods">Shipping methods</a></li>
-                          <li><a href="/payment-methods">Payment Methods</a></li>
-                          <li><a href="/review">Review</a></li>
-                        </ul>
-                      </div>
+                <div className="nav-title bg-light">
+                BẢNG ĐIỀU KHIỂN
+                  {/* DASHBOARD */}
+                </div>
+                <ul>
+                  <li>
+                    <a href="account-dashboard.html">
+                    Trang tổng quan
+                      {/* Dashboard */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-orders.html">
+                    Đơn đặt hàng
+                      {/* Orders */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-downloads.html">
+                    Tải xuống
+                      {/* Downloads */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-return-request.html">
+                    Yêu cầu trả lại
+                      {/* Return request */}
+                    </a>
+                  </li>
+                </ul>
+                <div className="nav-title bg-light">
+                CÀI ĐẶT TÀI KHOẢN
+                {/* ACCOUNT SETTINGS */}
+                </div>
+                <ul className="account-info-list">
+                  <li>
+                    <a href="account-profile.html">
+                    Hồ sơ
+                      {/* Profile */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-address.html">
+                    Địa chỉ
+                      {/* Address */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-shipping-methods.html">
+                    Phương thức vận chuyển
+                      {/* Shipping methods */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-payment-methods.html">
+                    Phương thức thanh toán
+                      {/* Payment Methods */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-review.html">
+                      Đánh giá
+                      {/* Review */}
+                    </a>
+                  </li>
+                </ul>
+              </div>
                     </div>
                   </div>
                 </aside>
@@ -177,7 +228,7 @@ function OrdersDetails() {
                       <div className="head-thumb">
                       <img
   className="rounded-circle"
-  src={userProfile?.profilePicture || "/assets/user/images/default-avatar.jpg"}
+  src={userProfile?.profilePicture || "https://www.w3schools.com/howto/img_avatar.png"}
   alt="User Avatar"
 />
                       </div>
@@ -202,7 +253,7 @@ function OrdersDetails() {
                       <div className="col-sm-6">
                         <div className="shiping-tracker-detail">
                           <span>Tên sản phẩm</span>
-                          <h6 className="title">{order?.items?.[0]?.productName || 'casual shirt'}</h6>
+                          <h6 className="title">{order?.items?.[0]?.productName || 'sản phẩm'}</h6>
                         </div>
                       </div>
                       <div className="col-sm-6">

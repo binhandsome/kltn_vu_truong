@@ -1,5 +1,6 @@
 package com.kltnbe.orderservice.controllers;
 
+import com.kltnbe.orderservice.dtos.SalesStatsDTO;
 import com.kltnbe.orderservice.dtos.req.OrderRequest;
 import com.kltnbe.orderservice.dtos.res.OrderResponse;
 import com.kltnbe.orderservice.services.OrderService;
@@ -8,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -57,5 +57,11 @@ public class OrderController {
     ) {
         return orderService.requestReturn(orderId, reason, accessToken);
     }
-
+    @GetMapping("/statistics/sales/me")
+    public ResponseEntity<List<SalesStatsDTO>> getSalesStatsByToken(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "month") String type) {
+        List<SalesStatsDTO> stats = orderService.getSalesStatsByToken(token, type);
+        return ResponseEntity.ok(stats);
+    }
 }

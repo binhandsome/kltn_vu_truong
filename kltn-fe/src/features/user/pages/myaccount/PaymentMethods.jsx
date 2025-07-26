@@ -84,37 +84,70 @@ function PaymentMethods() {
                 <span className="text text-primary">info@example.com</span>
               </div>
               <div className="account-nav">
-                <div className="nav-title bg-light">DASHBOARD</div>
+                <div className="nav-title bg-light">
+                BẢNG ĐIỀU KHIỂN
+                  {/* DASHBOARD */}
+                </div>
                 <ul>
                   <li>
-                    <a href="account-dashboard.html">Dashboard</a>
+                    <a href="account-dashboard.html">
+                    Trang tổng quan
+                      {/* Dashboard */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-orders.html">Orders</a>
+                    <a href="account-orders.html">
+                    Đơn đặt hàng
+                      {/* Orders */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-downloads.html">Downloads</a>
+                    <a href="account-downloads.html">
+                    Tải xuống
+                      {/* Downloads */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-return-request.html">Return request</a>
+                    <a href="account-return-request.html">
+                    Yêu cầu trả lại
+                      {/* Return request */}
+                    </a>
                   </li>
                 </ul>
-                <div className="nav-title bg-light">ACCOUNT SETTINGS</div>
+                <div className="nav-title bg-light">
+                CÀI ĐẶT TÀI KHOẢN
+                {/* ACCOUNT SETTINGS */}
+                </div>
                 <ul className="account-info-list">
                   <li>
-                    <a href="account-profile.html">Profile</a>
+                    <a href="account-profile.html">
+                    Hồ sơ
+                      {/* Profile */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-address.html">Address</a>
+                    <a href="account-address.html">
+                    Địa chỉ
+                      {/* Address */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-shipping-methods.html">Shipping methods</a>
+                    <a href="account-shipping-methods.html">
+                    Phương thức vận chuyển
+                      {/* Shipping methods */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-payment-methods.html">Payment Methods</a>
+                    <a href="account-payment-methods.html">
+                    Phương thức thanh toán
+                      {/* Payment Methods */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-review.html">Review</a>
+                    <a href="account-review.html">
+                      Đánh giá
+                      {/* Review */}
+                    </a>
                   </li>
                 </ul>
               </div>

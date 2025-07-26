@@ -1,36 +1,223 @@
-import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet'; 
-import QuickViewModal from '../../components/home/QuickViewModal'; 
+import React, { useEffect, useState, useRef } from 'react';
+import Chart from 'chart.js/auto';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import ScrollTopButton from '../../layout/ScrollTopButton';
-import { Link } from 'react-router-dom'; 
-import WOW from 'wowjs'; // Import WOW.js
+import QuickViewModal from '../../components/home/QuickViewModal';
+import dayjs from 'dayjs';
+import minMax from 'dayjs/plugin/minMax';
+import isoWeek from 'dayjs/plugin/isoWeek';
+dayjs.extend(minMax);
+dayjs.extend(isoWeek);
+
+Chart.register(ChartDataLabels);
 
 function Dashboard() {
-	const [hasBgClass, setHasBgClass] = useState(true); 
-  
-	useEffect(() => {
-	  if (hasBgClass) {
-		document.body.classList.add('bg');
-	  } else {
-		document.body.classList.remove('bg');
-	  }
-  
-	  return () => {
-		document.body.classList.remove('bg');
-	  };
-	}, [hasBgClass]);
+  const [orderStats, setOrderStats] = useState({
+    totalOrders: 0,
+    processingOrders: 0
+  });
 
-	useEffect(() => {
-		const wow = new WOW.WOW();
-		wow.init();
-	}, []);
+  const chartRef = useRef(null);
+  const chartInstanceRef = useRef(null);
+  const [salesStats, setSalesStats] = useState([]);
+  const [statType, setStatType] = useState("month");
 
-	// 🟢 Gọi hàm vẽ biểu đồ khi component đã mount
-	useEffect(() => {
-		if (window.handleChart && typeof window.handleChart.load === 'function') {
-			window.handleChart.load(); // chạy khi DOM đã có #handleSalesChart
-		}
-	}, []);
+  const groupByType = (apiData, type) => {
+    const today = dayjs();
+
+    if (type === "day") {
+      const end = today;
+      const start = end.subtract(6, "day");
+      const days = Array.from({ length: 7 }, (_, i) => {
+        const d = start.add(i, "day");
+        return { key: d.format("YYYY-MM-DD"), label: d.format("DD/MM"), total: 0 };
+      });
+
+      apiData.forEach(item => {
+        const dateKey = dayjs(item.label).format("YYYY-MM-DD");
+        const found = days.find(d => d.key === dateKey);
+        if (found) found.total = item.total;
+      });
+
+      return days.map(d => ({ label: d.label, total: d.total }));
+    }
+    if (type === "week") {
+      const startOfMonth = today.startOf('month');
+      const endOfMonth = today.endOf('month');
+    
+      const weeks = [];
+      let current = startOfMonth.startOf('week');
+    
+      while (current.isBefore(endOfMonth)) {
+        const isoYear = current.isoWeekYear();
+        const isoWeek = String(current.isoWeek()).padStart(2, '0');
+        const key = `${isoYear}-${isoWeek}`;
+    
+        const label = `Tuần ${weeks.length + 1}`;
+        weeks.push({ key, label, total: 0 });
+    
+        current = current.add(1, 'week');
+      }
+    
+      apiData.forEach(item => {
+        const found = weeks.find(w => w.key === item.label);
+        if (found) found.total = item.total;
+      });
+    
+      return weeks.map(w => ({ label: w.label, total: w.total }));
+    }
+    
+    if (type === "month") {
+      const months = Array.from({ length: 12 }, (_, i) => ({
+        label: `Tháng ${i + 1}`,
+        key: `${today.year()}-${String(i + 1).padStart(2, "0")}`,
+        total: 0
+      }));
+
+      apiData.forEach(item => {
+        const monthKey = item.label;
+        const found = months.find(m => m.key === monthKey);
+        if (found) found.total = item.total;
+      });
+
+      return months.map(m => ({ label: m.label, total: m.total }));
+    }
+
+    if (type === "year") {
+      const currentYear = today.year();
+      const years = Array.from({ length: 10 }, (_, i) => {
+        const y = currentYear - 9 + i;
+        return { key: y.toString(), label: y.toString(), total: 0 };
+      });
+
+      apiData.forEach(item => {
+        const found = years.find(y => y.key === item.label);
+        if (found) found.total = item.total;
+      });
+
+      return years;
+    }
+
+    return [];
+  };
+
+  useEffect(() => {
+    const fetchSalesStats = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const res = await fetch(`http://localhost:8086/api/orders/statistics/sales/me?type=${statType}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        const grouped = groupByType(data, statType);
+        setSalesStats(grouped);
+      } catch (err) {
+        console.error("❌ Lỗi khi lấy doanh thu:", err);
+      }
+    };
+    fetchSalesStats();
+  }, [statType]);
+
+  useEffect(() => {
+    const fetchOrderCounts = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const res = await fetch(`http://localhost:8086/api/orders/user?page=0&size=1000`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        const allOrders = data.content || [];
+
+        setOrderStats({
+          totalOrders: allOrders.length,
+          processingOrders: allOrders.filter(o => o.orderStatus === "processing").length
+        });
+
+      } catch (err) {
+        console.error("❌ Lỗi khi lấy thống kê đơn hàng:", err);
+      }
+    };
+    fetchOrderCounts();
+  }, []);
+
+  useEffect(() => {
+    if (!chartRef.current || !Array.isArray(salesStats)) return;
+
+    const ctx = chartRef.current.getContext("2d");
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+    }
+
+    const values = salesStats.map(s => s.total || 0);
+    const realMax = Math.max(...values);
+    const fallbackMax = 10;
+    const maxValue = realMax > 0 ? realMax : fallbackMax;
+    const stepSize = Math.ceil(maxValue / 10);
+    const suggestedMax = stepSize * 10;
+
+    chartInstanceRef.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: salesStats.map(s => s.label),
+        datasets: [{
+          label: 'Doanh thu ($)',
+          data: salesStats.map(s => s.total),
+          borderWidth: 2,
+          fill: false,
+          borderColor: '#ffbb38',
+          tension: 0.3,
+          spanGaps: true,
+          pointBackgroundColor: '#ffbb38',
+          pointBorderColor: '#ffbb38'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMax,
+            ticks: {
+              stepSize,
+              callback: function (value) {
+                return '$' + value;
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              color: '#000'
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return `Doanh thu: $${context.parsed.y}`;
+              }
+            }
+          },
+          datalabels: {
+            display: true,
+            align: 'top',
+            color: '#000',
+            formatter: function(value) {
+              return value > 0 ? `$${value}` : '';
+            }
+          }
+        }
+      }
+    });
+  }, [salesStats]);
+  
   return (
     <>
       <div className="page-wraper">
@@ -88,37 +275,70 @@ function Dashboard() {
                 <span className="text text-primary">info@example.com</span>
               </div>
               <div className="account-nav">
-                <div className="nav-title bg-light">DASHBOARD</div>
+                <div className="nav-title bg-light">
+                BẢNG ĐIỀU KHIỂN
+                  {/* DASHBOARD */}
+                </div>
                 <ul>
                   <li>
-                    <a href="account-dashboard.html">Dashboard</a>
+                  <a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}>
+                    Trang tổng quan
+                      {/* Dashboard */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-orders.html">Orders</a>
+                    <a href="account-orders.html">
+                    Đơn đặt hàng
+                      {/* Orders */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-downloads.html">Downloads</a>
+                    <a href="account-downloads.html">
+                    Tải xuống
+                      {/* Downloads */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-return-request.html">Return request</a>
+                    <a href="account-return-request.html">
+                    Yêu cầu trả lại
+                      {/* Return request */}
+                    </a>
                   </li>
                 </ul>
-                <div className="nav-title bg-light">ACCOUNT SETTINGS</div>
+                <div className="nav-title bg-light">
+                CÀI ĐẶT TÀI KHOẢN
+                {/* ACCOUNT SETTINGS */}
+                </div>
                 <ul className="account-info-list">
                   <li>
-                    <a href="account-profile.html">Profile</a>
+                    <a href="account-profile.html">
+                    Hồ sơ
+                      {/* Profile */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-address.html">Address</a>
+                    <a href="account-address.html">
+                    Địa chỉ
+                      {/* Address */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-shipping-methods.html">Shipping methods</a>
+                    <a href="account-shipping-methods.html">
+                    Phương thức vận chuyển
+                      {/* Shipping methods */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-payment-methods.html">Payment Methods</a>
+                    <a href="account-payment-methods.html">
+                    Phương thức thanh toán
+                      {/* Payment Methods */}
+                    </a>
                   </li>
                   <li>
-                    <a href="account-review.html">Review</a>
+                    <a href="account-review.html">
+                      Đánh giá
+                      {/* Review */}
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -128,14 +348,14 @@ function Dashboard() {
         <section className="col-xl-9 account-wrapper">
           <div className="account-card">
             <div className="m-b30">
-              <p>
+              {/* <p>
                 Xin chào <strong className="text-black">John Doe</strong> (không phải{" "}
                 <strong className="text-black">John Doe</strong>?{" "}
                 <a href="login.html" className="text-underline">
                   Đăng xuất
                 </a>
                 )
-              </p>
+              </p> */}
               <p>
               Từ bảng điều khiển tài khoản của bạn, bạn có thể xem{" "}
                 {/* From your account dashboard you can view your{" "} */}
@@ -143,10 +363,10 @@ function Dashboard() {
                   đơn đặt hàng gần đây
                   {/* recent orders */}
                 </a>
-                , quản lý{" "} bạn về
+                , quản lý{" "} bạn về {" "}
                 {/* , manage your{" "} */}
                 <a href="account-address.html" className="text-underline">
-                  địa chỉ giao hàng và thanh toán
+                   địa chỉ giao hàng và thanh toán
                   {/* shipping and billing addresses */}
                 </a>
                 , và{" "}
@@ -188,7 +408,7 @@ function Dashboard() {
                     Tổng số đơn hàng
                       {/* Total Order */}
                     </span>
-                    <h2 className="title">3658</h2>
+                    <h2 className="title">{orderStats.totalOrders}</h2>
                   </div>
                 </div>
               </div>
@@ -213,112 +433,33 @@ function Dashboard() {
                     Tổng số đơn hàng chờ xử lý
                       {/* Total Pending Order */}
                     </span>
-                    <h2 className="title">215</h2>
+                    <h2 className="title">{orderStats.processingOrders}</h2>
                   </div>
                 </div>
               </div>
               <div className="col-md-4">
-                <div className="total-contain">
-                  <div className="total-icon">
-                    <svg
-                      width={27}
-                      height={31}
-                      viewBox="0 0 27 31"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M9.79749 18.4331C6.71621 20.0289 5.95627 20.8019 4.64859 23.6816C3.76653 22.8387 2.90107 22.0123 2.00953 21.1599C2.5288 20.3146 3.03267 19.4942 3.53535 18.6726C3.88035 18.1071 3.46066 17.0579 2.82282 16.899C1.88623 16.6666 0.94845 16.4426 0 16.2114C0 14.4034 0 12.6274 0 10.7827C0.921182 10.561 1.85422 10.3405 2.78489 10.1117C3.46777 9.94331 3.8922 8.90476 3.52705 8.30605C3.03385 7.49868 2.5371 6.6925 2.06051 5.91596C3.35514 4.62014 4.62251 3.35396 5.92426 2.05339C6.70673 2.53355 7.52832 3.03978 8.35347 3.54246C8.88698 3.8673 9.94331 3.44524 10.0927 2.84416C10.3262 1.90638 10.5491 0.965048 10.7839 0C12.5883 0 14.3785 0 16.2197 0C16.4366 0.906955 16.6548 1.8234 16.8777 2.73865C17.0555 3.46777 18.0763 3.89694 18.7082 3.50926C19.5144 3.01489 20.3182 2.52051 21.0829 2.05102C22.3763 3.34447 23.6318 4.59998 24.943 5.9124C24.4783 6.67235 23.9756 7.49038 23.4753 8.31079C23.1114 8.90713 23.5405 9.93976 24.2258 10.1081C25.1434 10.3334 26.0646 10.5503 27 10.7756C27 12.5954 27 14.3892 27 16.2197C26.1298 16.426 25.2667 16.6287 24.4048 16.8338C23.4658 17.0579 23.0651 18.0122 23.5654 18.8267C24.029 19.5819 24.4914 20.3383 24.9727 21.122C24.1487 22.004 23.3473 22.8612 22.4901 23.7776C21.5393 21.1741 19.8297 19.4243 17.3163 18.4592C20.5565 15.5332 19.8558 11.4668 17.659 9.41099C15.2973 7.19992 11.5995 7.26157 9.31378 9.56393C7.15368 11.7406 6.71858 15.6885 9.79749 18.4331Z"
-                        fill="#FFBB38"
-                      />
-                      <path
-                        d="M21.0695 30.3147C16.0415 30.3147 11.0847 30.3147 6.03891 30.3147C6.03891 29.9768 6.03416 29.6496 6.04009 29.3224C6.06262 28.0396 5.97963 26.7426 6.13612 25.4752C6.53566 22.2576 9.12611 19.9244 12.3722 19.8213C13.5886 19.7821 14.8417 19.7762 16.0249 20.0169C18.8643 20.5954 20.8916 23.0258 21.0552 25.9364C21.1359 27.3709 21.0695 28.8138 21.0695 30.3147Z"
-                        fill="#FFBB38"
-                      />
-                      <path
-                        d="M13.5375 17.9235C11.2244 17.9093 9.35005 16.0112 9.38325 13.7195C9.41763 11.4124 11.3169 9.55701 13.6157 9.58428C15.8849 9.61036 17.7486 11.5013 17.7403 13.7693C17.7332 16.0752 15.8481 17.9378 13.5375 17.9235Z"
-                        fill="#FFBB38"
-                      />
-                    </svg>
-                  </div>
-                  <div className="total-detail">
-                    <span className="text">
-                      Tổng danh sách yêu thích
-                      {/* Total Wishlist */}
-                    </span>
-                    <h2 className="title">31576</h2>
+                      <div className="form-group">
+                        <label>Thống kê theo:</label>
+                        <select className="form-control"
+                                value={statType}
+                                onChange={e => setStatType(e.target.value)}>
+                          <option value="day">Ngày</option>
+                          <option value="week">Tuần</option>
+                          <option value="month">Tháng</option>
+                          <option value="year">Năm</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Biểu đồ doanh thu */}
+                    <div className="col-xl-12">
+                      <div className="sales-chart-wraper">
+                        <canvas ref={chartRef} height="100"></canvas>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="col-xl-8">
-                <div className="sales-chart-wraper">
-                  <div id="handleSalesChart" />
-                </div>
-              </div>
-              {/* <div className="col-xl-4">
-                <div className="card countries-card px-3 pt-3 pb-2 mb-2">
-                  <h6>Your Top Countries</h6>
-                  <ul>
-                    <li>
-                      <div className="thumb-detail">
-                        <img src="../../assets/user/images/country/pic1.png" alt="" />
-                        <span>United States</span>
-                      </div>
-                      <div className="thumb-content">
-                        <h6 className="amount">$130.00</h6>
-                      </div>
-                    </li>
-                    <li>
-                      <div className="thumb-detail">
-                        <img src="../../assets/user/images/country/pic2.png" alt="" />
-                        <span>India</span>
-                      </div>
-                      <div className="thumb-content">
-                        <h6 className="amount">$110.00</h6>
-                      </div>
-                    </li>
-                    <li>
-                      <div className="thumb-detail">
-                        <img src="../../assets/user/images/country/pic3.png" alt="" />
-                        <span>Africa</span>
-                      </div>
-                      <div className="thumb-content">
-                        <h6 className="amount">$90.00</h6>
-                      </div>
-                    </li>
-                    <li>
-                      <div className="thumb-detail">
-                        <img src="../../assets/user/images/country/pic4.png" alt="" />
-                        <span>Canada</span>
-                      </div>
-                      <div className="thumb-content">
-                        <h6 className="amount">$75.00</h6>
-                      </div>
-                    </li>
-                    <li>
-                      <div className="thumb-detail">
-                        <img src="../../assets/user/images/country/pic5.png" alt="" />
-                        <span>Brazil</span>
-                      </div>
-                      <div className="thumb-content">
-                        <h6 className="amount">$60.00</h6>
-                      </div>
-                    </li>
-                    <li className="border-bottom-0">
-                      <div className="thumb-detail">
-                        <img src="../../assets/user/images/country/pic6.png" alt="" />
-                        <span>Jordan</span>
-                      </div>
-                      <div className="thumb-content">
-                        <h6 className="amount">$50.00</h6>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div> */}
-            </div>
-          </div>
-        </section>
+              </section>
       </div>
     </div>
   </div>

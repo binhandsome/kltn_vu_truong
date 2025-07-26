@@ -1122,7 +1122,7 @@ const getCartProduct = async () => {
 ) : (
   <li className="nav-item login-link">
     <a className="nav-link" href="/user/auth/login">
-      Login / Register
+      Đăng nhập / Đăng ký
     </a>
   </li>
 )}             

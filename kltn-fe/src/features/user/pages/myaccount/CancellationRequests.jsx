@@ -66,33 +66,88 @@ function CancellationRequests() {
 							<a className="toggle-btn" href="account-cancellation-requests.html#accountSidebar">Menu Tài khoản</a>
 						</div>
 						<div className="sticky-top account-sidebar-wrapper">
-							<div className="account-sidebar" id="accountSidebar">
-								<div className="profile-head">
-									<div className="user-thumb">
-										<img className="rounded-circle" src="../../assets/user/images/profile4.jpg" alt="Susan Gardner" />
-									</div>
-									<h5 className="title mb-0">Ronald M. Spino</h5>
-									<span className="text text-primary">info@example.com</span>
-								</div>
-								<div className="account-nav">
-									<div className="nav-title bg-light">DASHBOARD</div>
-									<ul>
-										<li><a href="/myaccount/dashboard">Dashboard</a></li>
-										<li><a href="/myaccount/orders">Orders</a></li>
-										<li><a href="/myaccount/download">Downloads</a></li>
-										<li><a href="/myaccount/returnRequest">Return request</a></li>
-									</ul>
-									<div className="nav-title bg-light">ACCOUNT SETTINGS</div>
-									<ul className="account-info-list">
-										<li><a href="/myaccount/profile">Profile</a></li>
-										<li><a href="/myaccount/address">Address</a></li>
-										<li><a href="/myaccount/shippingMethods">Shipping methods</a></li>
-										<li><a href="/myaccount/paymentMethods">Payment Methods</a></li>
-										<li><a href="/myaccount/review">Review</a></li>
-									</ul>
-								</div>
-							</div>
-						</div>
+            <div className="account-sidebar" id="accountSidebar">
+              <div className="profile-head">
+                <div className="user-thumb">
+                  <img
+                    className="rounded-circle"
+                    src="../../assets/user/images/profile4.jpg"
+                    alt="Susan Gardner"
+                  />
+                </div>
+                <h5 className="title mb-0">Ronald M. Spino</h5>
+                <span className="text text-primary">info@example.com</span>
+              </div>
+              <div className="account-nav">
+                <div className="nav-title bg-light">
+                BẢNG ĐIỀU KHIỂN
+                  {/* DASHBOARD */}
+                </div>
+                <ul>
+                  <li>
+                    <a href="account-dashboard.html">
+                    Trang tổng quan
+                      {/* Dashboard */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-orders.html">
+                    Đơn đặt hàng
+                      {/* Orders */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-downloads.html">
+                    Tải xuống
+                      {/* Downloads */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-return-request.html">
+                    Yêu cầu trả lại
+                      {/* Return request */}
+                    </a>
+                  </li>
+                </ul>
+                <div className="nav-title bg-light">
+                CÀI ĐẶT TÀI KHOẢN
+                {/* ACCOUNT SETTINGS */}
+                </div>
+                <ul className="account-info-list">
+                  <li>
+                    <a href="account-profile.html">
+                    Hồ sơ
+                      {/* Profile */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-address.html">
+                    Địa chỉ
+                      {/* Address */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-shipping-methods.html">
+                    Phương thức vận chuyển
+                      {/* Shipping methods */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-payment-methods.html">
+                    Phương thức thanh toán
+                      {/* Payment Methods */}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="account-review.html">
+                      Đánh giá
+                      {/* Review */}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
                     </aside>
                     <section className="col-xl-9 account-wrapper">
 						<div className="row">
