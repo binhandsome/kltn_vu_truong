@@ -185,14 +185,30 @@ public class ProductController {
     @PostMapping("/reduce-inventory")
     public ResponseEntity<?> reduceInventory(@RequestBody List<InventoryReduceRequest> requests) {
         for (InventoryReduceRequest req : requests) {
-            Optional<ProductVariant> variantOpt = productVariantRepository
-                    .findByProductVariant(req.getProductId(), req.getSizeId(), req.getColorId());
+            Optional<ProductVariant> variantOpt;
+
+            // Lựa chọn query phù hợp theo từng trường hợp
+            if (req.getSizeId() != null && req.getColorId() != null) {
+                variantOpt = productVariantRepository.findByProductIdAndSizeIdAndColorId(
+                        req.getProductId(), req.getSizeId(), req.getColorId());
+            } else if (req.getSizeId() != null) {
+                variantOpt = productVariantRepository.findByProductIdAndSizeIdAndColorNull(
+                        req.getProductId(), req.getSizeId());
+            } else if (req.getColorId() != null) {
+                variantOpt = productVariantRepository.findByProductIdAndSizeNullAndColorId(
+                        req.getProductId(), req.getColorId());
+            } else {
+                variantOpt = productVariantRepository.findByProductIdAndSizeNullAndColorNull(
+                        req.getProductId());
+            }
 
             if (variantOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body("Không tìm thấy sản phẩm với size và màu tương ứng");
+                return ResponseEntity.badRequest().body("Không tìm thấy sản phẩm phù hợp (productId: "
+                        + req.getProductId() + ")");
             }
 
             ProductVariant variant = variantOpt.get();
+
             if (variant.getQuantityInStock() < req.getQuantity()) {
                 return ResponseEntity.badRequest().body("Sản phẩm " + req.getProductId() + " không đủ tồn kho");
             }
@@ -204,4 +220,5 @@ public class ProductController {
 
         return ResponseEntity.ok("Đã trừ tồn kho");
     }
+
 }

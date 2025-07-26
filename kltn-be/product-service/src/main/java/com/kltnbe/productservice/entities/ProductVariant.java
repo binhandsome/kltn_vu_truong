@@ -23,11 +23,11 @@ public class ProductVariant {
     private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "size_id", nullable = false)
+    @JoinColumn(name = "size_id")
     private ProductSize size;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "color_id", nullable = false)
+    @JoinColumn(name = "color_id")
     private Color color;
 
     private BigDecimal price;

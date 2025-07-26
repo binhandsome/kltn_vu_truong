@@ -45,51 +45,73 @@ function Checkout() {
   const [prevQuantity, setPrevQuantity] = useState(1);
   const [stockStatus, setStockStatus] = useState('in_stock');
   // Lấy số lượng tồn kho
-  const fetchAvailableStock = async (productId, sizeId, colorId) => {
-    if (!productId || !sizeId || !colorId) {
-      console.warn("⚠️ Thiếu thông tin productId, sizeId hoặc colorId:", { productId, sizeId, colorId });
+  const fetchAvailableStock = async (productId, sizeId = null, colorId = null) => {
+    if (!productId) {
+      console.warn("⚠️ Thiếu productId:", { productId });
       setAvailableStock(0);
       setStockStatus('out_of_stock');
       return;
     }
+  
     try {
       const response = await axios.get("http://localhost:8083/api/product-variants/available-stock", {
-        params: { productId, sizeId, colorId }
+        params: {
+          productId,
+          sizeId,    // có thể là null
+          colorId    // có thể là null
+        }
       });
-      console.log("✅ API response:", response.data);
+  
+      console.log("✅ API tồn kho:", response.data);
+  
       let qty, status;
       if (typeof response.data === 'number') {
-        qty = response.data; // Nếu API trả về số thô (2)
+        qty = response.data;
         status = qty > 0 ? 'in_stock' : 'out_of_stock';
       } else {
-        qty = response.data.quantityInStock || response.data.quantity || 0;
+        qty = response.data.quantityInStock ?? response.data.quantity ?? 0;
         status = response.data.status || (qty > 0 ? 'in_stock' : 'out_of_stock');
       }
+  
       setAvailableStock(qty);
       setStockStatus(status);
-      if (editQuantity > qty) setEditQuantity(qty);
+      if (editQuantity > qty) {
+        setEditQuantity(qty);
+      }
+  
     } catch (err) {
-      console.error("❌ Không fetch được tồn kho:", err.response?.data || err.message);
+      console.error("❌ Lỗi khi lấy tồn kho:", err.response?.data || err.message);
       setAvailableStock(0);
       setStockStatus('out_of_stock');
-      alert("Lỗi khi lấy số lượng tồn kho. Vui lòng thử lại.");
+      alert("Không thể lấy số lượng tồn kho. Vui lòng thử lại.");
     }
   };
+  
   useEffect(() => {
-    if (editingItem && editSize && editColor) {
-      const sizeObj = editingItem.sizes?.find(s => s.sizeName?.toString() === editSize.toString());
-      const sizeId = sizeObj?.sizeId;
-      const colorId = parseInt(editColor);
-      console.log("🔍 Debug:", { editSize, sizeId, editColor, colorId, sizes: editingItem.sizes, colorAsin: editingItem.colorAsin });
-      if (sizeId && !isNaN(colorId)) {
-        fetchAvailableStock(editingItem.productId, sizeId, colorId);
-      } else {
-        console.warn("⚠️ sizeId hoặc colorId không hợp lệ:", { sizeId, colorId });
-        setAvailableStock(0);
-        setStockStatus('out_of_stock');
+    if (editingItem) {
+      // ✅ Tìm sizeId nếu có size
+      const sizeObj = editingItem.sizes?.find(
+        s => s.sizeName?.toString() === editSize?.toString()
+      );
+      const sizeId = editingItem.hasSize ? sizeObj?.sizeId || null : null;
+  
+      // ✅ Tìm colorId nếu có color
+      let colorId = null;
+      if (editingItem.hasColor && editColor) {
+        const colorList = editingItem.colorAsin ? JSON.parse(editingItem.colorAsin) : [];
+        colorId = colorList.find(c => c.color_id?.toString() === editColor?.toString())?.color_id || null;
       }
+  
+      console.log("🔍 Debug fetchAvailableStock:", {
+        productId: editingItem.productId,
+        sizeId,
+        colorId
+      });
+  
+      fetchAvailableStock(editingItem.productId, sizeId, colorId);
     }
   }, [editingItem, editSize, editColor]);
+  
   // Xử lý tăng số lượng
   const handleIncrease = () => {
     if (availableStock !== null && editQuantity >= availableStock) {
