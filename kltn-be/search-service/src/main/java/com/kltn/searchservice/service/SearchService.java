@@ -23,6 +23,10 @@ public interface SearchService {
 //            BigDecimal maxPrice,
 //            Pageable pageable
 //    );
+    ProductDto getProductById(Long productId);
+    ProductDto getProductByAsin(String asin);
+    Page<ProductDocument> searchProductsByStoreIdAndStatus(Long storeId, String status, int page, int size);
+
     Page<ProductDocument> searchAdvanced(String keyword,
                                          BigDecimal minPrice,
                                          BigDecimal maxPrice,
@@ -32,4 +36,13 @@ public interface SearchService {
 
     Page<ProductDocument> searchProductRecommend(RequestRecommend request);
     List<ProductDocument> getRecommendByAsin(String asin);
+    Page<ProductDocument> searchAdvancedSeller(
+            String keyword,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            List<String> tags,
+            Long storeId,
+            List<String> status,
+            Pageable pageable
+    );
 }

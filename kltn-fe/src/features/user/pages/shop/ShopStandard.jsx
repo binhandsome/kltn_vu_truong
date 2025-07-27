@@ -468,7 +468,7 @@ const handleInputChangeSearch = (e) => {
       console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);
     }
   };
-
+  
   return (
     <>
       <div className="page-wraper">
@@ -1499,7 +1499,6 @@ const handleInputChangeSearch = (e) => {
   } catch (error) {
     console.error("❌ Lỗi parse colorAsin:", error);
   }
-
   return colors.length > 0 ? (
     <div className="mb-3">
       <label className="form-label fw-bold">Màu sắc</label>

@@ -3,62 +3,43 @@ package com.kltnbe.productservice.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "product_images")
 @Data
 public class ProductImage {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "image_id")
     private Long imageId;
 
-    @ManyToOne
-    @JoinColumn(name = "product_asin", referencedColumnName = "asin")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_asin", referencedColumnName = "asin", nullable = false)
     private Product product;
 
-    @Column(name = "image_data", length = 255)
-    private String imageData;
+    @Column(name = "image_data", nullable = false, length = 255)
+    private String imageData; // Tên file ảnh (VD: B00AQNOOIA_1.jpg)
 
     @Column(name = "is_main_image")
-    private Boolean isMainImage;
+    private Integer isMainImage = 0; // default false
 
-    public Long getImageId() {
-        return imageId;
+    @Column(name = "color_id")
+    private Long colorId; // Có thể là null nếu không gắn với màu cụ thể
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
-    public void setImageId(Long imageId) {
-        this.imageId = imageId;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public Boolean getMainImage() {
-        return isMainImage;
-    }
-
-    public void setMainImage(Boolean mainImage) {
-        isMainImage = mainImage;
-    }
-
-    public String getImageData() {
-        return imageData;
-    }
-
-    public void setImageData(String imageData) {
-        this.imageData = imageData;
-    }
-
-    public Boolean getIsMainImage() {
-        return isMainImage;
-    }
-
-    public void setIsMainImage(Boolean isMainImage) {
-        this.isMainImage = isMainImage;
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }
