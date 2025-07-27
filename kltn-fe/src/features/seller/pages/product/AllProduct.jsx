@@ -1,101 +1,199 @@
-const AllProduct = () => (
-    <div className="main-content">
-                {/* <!-- Page Title Start --> */}
-                <div className="row">
-                    <div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                        <div className="page-title-wrapper">
-                            <div className="page-title-box">
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom'; // Ensure react-router-dom is installed
+import { useParams } from 'react-router-dom';
+
+const AllProduct = () => {
+	const [products, setProducts] = useState([]);
+	const [totalPages, setTotalPages] = useState(0);
+	const [loading, setLoading] = useState(false);
+	const [selectedStatuses, setSelectedStatuses] = useState([]); // MULTI STATUS
+	const [searchTerm, setSearchTerm] = useState('');
+	const [minPrice, setMinPrice] = useState('');
+	const [maxPrice, setMaxPrice] = useState('');
+	const [selectedTags, setSelectedTags] = useState([]);
+	const [storeId, setStoreId] = useState(55);
+	const navigate = useNavigate();
+	const handleClickAddShop = () => {
+		navigate('/seller/product/addProduct');
+	};
+const fetchProductsData = useCallback(
+  async (
+    page = 0,
+    size = 10,
+    searchTerm = '',
+    minPrice = null,
+    maxPrice = null,
+    tags = [],
+    statuses = []
+  ) => {
+    setLoading(true);
+    try {
+    //   const storeId = localStorage.getItem('storeId');
+    //   if (!storeId) {
+    //     console.error('❌ Không tìm thấy storeId');
+    //     return;
+    //   }
+
+      const params = {
+        storeId: storeId,
+        page,
+        size,
+      };
+
+      if (searchTerm.trim() !== '') params.keyword = searchTerm;
+      if (minPrice !== '' && minPrice !== null && !isNaN(minPrice)) params.minPrice = Number(minPrice);
+      if (maxPrice !== '' && maxPrice !== null && !isNaN(maxPrice)) params.maxPrice = Number(maxPrice);
+      if (tags.length > 0) params.tags = tags;
+      if (statuses.length > 0) params.status = statuses.join(','); // gửi dạng chuỗi phân cách bởi dấu phẩy
+
+      const response = await axios.get('http://localhost:8085/api/search/searchAdvanceSeller', {
+        params,
+      });
+
+      console.log('✅ Params gửi:', params);
+      setProducts(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error('❌ Lỗi khi gọi API:', error);
+      setProducts([]);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  },
+  []
+);
+
+
+	useEffect(() => {
+  fetchProductsData(0, 10, searchTerm, minPrice, maxPrice, selectedTags, selectedStatuses);
+}, [searchTerm, minPrice, maxPrice, selectedTags, selectedStatuses]);
+
+useEffect(() => {
+	console.log(products, 'product cua tao la');
+})
+
+	return (
+		<>
+			<div className="main-content">
+				<div className="row">
+
+					<div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+
+						<div className="page-title-wrapper">
+							<div className="page-title-box">
 								{/* All Product */}
-                                <h4 className="page-title">Tất cả sản phẩm</h4>
-                            </div>
-                            <div className="breadcrumb-list">
-                                <ul>
-                                    <li className="breadcrumb-link">
+								<h4 className="page-title">Tất cả sản phẩm</h4>
+							</div>
+							<button
+								onClick={handleClickAddShop}
+
+								style={{
+									background: 'linear-gradient(90deg, #3b82f6, #06b6d4)',
+									color: '#fff',
+									fontWeight: '600',
+									padding: '12px 24px',
+									borderRadius: '16px',
+									border: 'none',
+									cursor: 'pointer',
+									boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+									transition: 'transform 0.3s ease',
+								}}
+								onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+								onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+							>
+								➕ Thêm Sản Phẩm
+							</button>
+							<div className="breadcrumb-list">
+								<ul>
+									<li className="breadcrumb-link">
 										{/* Dashboard */}
-                                        <a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
-                                    </li>
+										<a href="index.html"><i className="fas fa-home mr-2"></i>Trang tổng quan</a>
+									</li>
 									{/* All Product */}
-                                    <li className="breadcrumb-link active">Tất cả sản phẩm</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* <!-- Table Start --> */}
-                <div className="row ad-btm-space">
-                    <div className="col-xl-3 col-lg-4 col-md-4 col-sm-12">
+									<li className="breadcrumb-link active">Tất cả sản phẩm</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				{/* <!-- Table Start --> */}
+				<div className="row ad-btm-space">
+					<div className="col-xl-3 col-lg-4 col-md-4 col-sm-12">
 						<div className="int-blog-sidebar">
 							<div className="int-sidebar-box">
 								<h4>Tìm kiếm</h4>
 								<div className="int-search-btn">
 									<div className="input-group">
-										<input type="text" placeholder="Tìm kiếm..."/>
+										<input type="text" placeholder="Tìm kiếm..." />
 										<div className="input-group-append">
-										  <button type="button">
-											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30.239 30.239" width="18" height="18"><g><g>
-												<path d="M20.194,3.46c-4.613-4.613-12.121-4.613-16.734,0c-4.612,4.614-4.612,12.121,0,16.735   c4.108,4.107,10.506,4.547,15.116,1.34c0.097,0.459,0.319,0.897,0.676,1.254l6.718,6.718c0.979,0.977,2.561,0.977,3.535,0   c0.978-0.978,0.978-2.56,0-3.535l-6.718-6.72c-0.355-0.354-0.794-0.577-1.253-0.674C24.743,13.967,24.303,7.57,20.194,3.46z    M18.073,18.074c-3.444,3.444-9.049,3.444-12.492,0c-3.442-3.444-3.442-9.048,0-12.492c3.443-3.443,9.048-3.443,12.492,0   C21.517,9.026,21.517,14.63,18.073,18.074z" data-original="#000000" className="active-path" data-old_color="#000000" fill="#ffffff"></path></g></g> 
-											</svg>
-										  </button>
+											<button type="button">
+												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30.239 30.239" width="18" height="18"><g><g>
+													<path d="M20.194,3.46c-4.613-4.613-12.121-4.613-16.734,0c-4.612,4.614-4.612,12.121,0,16.735   c4.108,4.107,10.506,4.547,15.116,1.34c0.097,0.459,0.319,0.897,0.676,1.254l6.718,6.718c0.979,0.977,2.561,0.977,3.535,0   c0.978-0.978,0.978-2.56,0-3.535l-6.718-6.72c-0.355-0.354-0.794-0.577-1.253-0.674C24.743,13.967,24.303,7.57,20.194,3.46z    M18.073,18.074c-3.444,3.444-9.049,3.444-12.492,0c-3.442-3.444-3.442-9.048,0-12.492c3.443-3.443,9.048-3.443,12.492,0   C21.517,9.026,21.517,14.63,18.073,18.074z" data-original="#000000" className="active-path" data-old_color="#000000" fill="#ffffff"></path></g></g>
+												</svg>
+											</button>
 										</div>
 									</div>
 								</div>
 							</div>
-							
+
 							<div className="int-sidebar-box recent-blog-one">
 								{/* Category */}
 								<h4>Loại</h4>
 								<div className="int-blog-category-mini">
 									<ul>
-										<li><a href="javascript:;"><svg 
-										 xmlns="http://www.w3.org/2000/svg"
-										 width="12px" height="8px">
-										<path fillRule="evenodd"  fill=" "
-										 d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "/>
+										<li><a href="javascript:;"><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="12px" height="8px">
+											<path fillRule="evenodd" fill=" "
+												d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 " />
 										</svg> Bảng </a><span>201</span></li>
-										<li><a href="javascript:;"><svg 
-										 xmlns="http://www.w3.org/2000/svg"
-										 width="12px" height="8px">
-										<path fillRule="evenodd"  fill=" "
-										 d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "/>
+										<li><a href="javascript:;"><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="12px" height="8px">
+											<path fillRule="evenodd" fill=" "
+												d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 " />
 										</svg> Sofas & Chairs </a><span>389</span></li>
-										<li><a href="javascript:;"><svg 
-										 xmlns="http://www.w3.org/2000/svg"
-										 width="12px" height="8px">
-										<path fillRule="evenodd"  fill=" "
-										 d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "/>
+										<li><a href="javascript:;"><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="12px" height="8px">
+											<path fillRule="evenodd" fill=" "
+												d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 " />
 										</svg> Wood Sofa </a><span>564</span></li>
-										<li><a href="javascript:;"><svg 
-										 xmlns="http://www.w3.org/2000/svg"
-										 width="12px" height="8px">
-										<path fillRule="evenodd"  fill=" "
-										 d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "/>
+										<li><a href="javascript:;"><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="12px" height="8px">
+											<path fillRule="evenodd" fill=" "
+												d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 " />
 										</svg> Decoration </a><span>59</span></li>
-										<li><a href="javascript:;"><svg 
-										 xmlns="http://www.w3.org/2000/svg"
-										 width="12px" height="8px">
-										<path fillRule="evenodd"  fill=" "
-										 d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "/>
+										<li><a href="javascript:;"><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="12px" height="8px">
+											<path fillRule="evenodd" fill=" "
+												d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 " />
 										</svg> Celling Light </a><span>965</span></li>
-										<li><a href="javascript:;"><svg 
-										 xmlns="http://www.w3.org/2000/svg"
-										 width="12px" height="8px">
-										<path fillRule="evenodd"  fill=" "
-										 d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "/>
+										<li><a href="javascript:;"><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="12px" height="8px">
+											<path fillRule="evenodd" fill=" "
+												d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 " />
 										</svg> Outdoor Furniture </a><span>653</span></li>
 										<li><a href="javascript:;"><svg xmlns="http://www.w3.org/2000/svg" width="12px" height="8px">
-										<path fillRule="evenodd" fill=" " d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "></path>
+											<path fillRule="evenodd" fill=" " d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "></path>
 										</svg> Hallway </a><span>201</span></li>
 										<li><a href="javascript:;"><svg xmlns="http://www.w3.org/2000/svg" width="12px" height="8px">
-										<path fillRule="evenodd" fill=" " d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "></path>
+											<path fillRule="evenodd" fill=" " d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "></path>
 										</svg> Hallway </a><span>201</span></li>
-										<li><a href="javascript:;"><svg 
-										 xmlns="http://www.w3.org/2000/svg"
-										 width="12px" height="8px">
-										<path fillRule="evenodd"  fill=" "
-										 d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "/>
+										<li><a href="javascript:;"><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="12px" height="8px">
+											<path fillRule="evenodd" fill=" "
+												d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 " />
 										</svg> Office Furniture </a><span>560</span></li>
 										<li><a href="javascript:;"><svg xmlns="http://www.w3.org/2000/svg" width="12px" height="8px">
-										<path fillRule="evenodd" fill=" " d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "></path>
+											<path fillRule="evenodd" fill=" " d="M0.038,4.720 L6.164,4.710 C6.558,4.710 6.878,4.392 6.878,3.999 L6.878,2.016 L9.967,3.999 L5.777,6.688 C5.445,6.901 5.349,7.342 5.563,7.673 C5.777,8.004 6.219,8.099 6.551,7.886 L11.673,4.597 C11.877,4.466 12.000,4.241 12.000,3.999 C12.000,3.756 11.877,3.531 11.673,3.400 L6.551,0.112 C6.331,-0.030 6.051,-0.040 5.822,0.085 C5.592,0.210 5.449,0.449 5.449,0.710 L5.449,3.286 L0.000,3.286 "></path>
 										</svg> Home Electronics </a><span>56</span></li>
 									</ul>
 								</div>
@@ -106,11 +204,11 @@ const AllProduct = () => (
 								<div className="int-blog-category-mini">
 									<div className="range-slider">
 										<div className="price-range"><p><span id="amount"></span></p></div>
-										<div id="slider-range" className="ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content"> 
-										<div className="ui-slider-range ui-corner-all ui-widget-header">
-										</div>
-										<span tabIndex="0" className="ui-slider-handle ui-corner-all ui-state-default">
-										</span><span tabIndex="0" className="ui-slider-handle ui-corner-all ui-state-default"></span>
+										<div id="slider-range" className="ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content">
+											<div className="ui-slider-range ui-corner-all ui-widget-header">
+											</div>
+											<span tabIndex="0" className="ui-slider-handle ui-corner-all ui-state-default">
+											</span><span tabIndex="0" className="ui-slider-handle ui-corner-all ui-state-default"></span>
 										</div>
 									</div>
 								</div>
@@ -121,329 +219,329 @@ const AllProduct = () => (
 								<div className="int-blog-category-mini">
 									<ul>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember" name="remember" value="1"/>
-										  <label for="auth_remember">Dưới 20%</label>
-										</div>
-										<span>12</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember" name="remember" value="1" />
+												<label for="auth_remember">Dưới 20%</label>
+											</div>
+											<span>12</span></li>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember2" name="remember" value="1"/>
-										  <label for="auth_remember2">10% hoặc hơn</label>
-										</div>
-										<span>18</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember2" name="remember" value="1" />
+												<label for="auth_remember2">10% hoặc hơn</label>
+											</div>
+											<span>18</span></li>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember21" name="remember" value="1"/>
-										  <label for="auth_remember21">20% hoặc hơn</label>
-										</div>
-										<span>16</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember21" name="remember" value="1" />
+												<label for="auth_remember21">20% hoặc hơn</label>
+											</div>
+											<span>16</span></li>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember3" name="remember" value="1"/>
-										  <label for="auth_remember3">30% hoặc hơn</label>
-										</div>
-										<span>156</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember3" name="remember" value="1" />
+												<label for="auth_remember3">30% hoặc hơn</label>
+											</div>
+											<span>156</span></li>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember4" name="remember" value="1"/>
-										  <label for="auth_remember4">40% hoặc hơn</label>
-										</div>
-										<span>260</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember4" name="remember" value="1" />
+												<label for="auth_remember4">40% hoặc hơn</label>
+											</div>
+											<span>260</span></li>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember5" name="remember" value="1"/>
-										  <label for="auth_remember5">50% hoặc hơn</label>
-										</div>
-										<span>96</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember5" name="remember" value="1" />
+												<label for="auth_remember5">50% hoặc hơn</label>
+											</div>
+											<span>96</span></li>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember6" name="remember" value="1"/>
-										  <label for="auth_remember6">75% hoặc hơn</label>
-										</div>
-										<span>14</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember6" name="remember" value="1" />
+												<label for="auth_remember6">75% hoặc hơn</label>
+											</div>
+											<span>14</span></li>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember7" name="remember" value="1"/>
-										  <label for="auth_remember7">90% hoặc hơn</label>
-										</div>
-										<span>44</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember7" name="remember" value="1" />
+												<label for="auth_remember7">90% hoặc hơn</label>
+											</div>
+											<span>44</span></li>
 										<li>
-										<div className="int-checkbox">
-										  <input type="checkbox" id="auth_remember8" name="remember" value="1"/>
-										  <label for="auth_remember8">100%</label>
-										</div>
-										<span>55</span></li>
+											<div className="int-checkbox">
+												<input type="checkbox" id="auth_remember8" name="remember" value="1" />
+												<label for="auth_remember8">100%</label>
+											</div>
+											<span>55</span></li>
 									</ul>
 								</div>
 							</div>
 							<div className="int-sidebar-box recent-blog-one">
-								<img src="../../assets/admin/images/thumb1.png" className="img-fluid" alt="Image"/>
+								<img src="../../assets/admin/images/thumb1.png" className="img-fluid" alt="Image" />
 							</div>
 						</div>
-					</div>        
+					</div>
 					<div className="col-xl-9 col-lg-8 col-md-8 col-sm-12">
 						<div className="main-product-grid">
 							<ul>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p1.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p1.png" alt="product-img" />
 											<div className="product-overlay"><h4>Giảm</h4></div>
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Ghế bệt</a></h3>
 											<h6>Ghế ngồi bệt</h6>
 											<p><span>$100 </span>$60</p>
-										</div>										
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p2.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p2.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Occasional Chair</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$80 </span>$50</p>
-										</div>										
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p3.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p3.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
 											</a>
 											<h3><a href="product-single.html">Ceiling Light</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$90 </span>$55</p>
-										</div>									
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p4.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p4.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Ceiling Light</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$110 </span>$90</p>
-										</div>									
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p5.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p5.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Yellow Chair</a></h3>
 											<h6>Simply dummy text of the printing</h6>
@@ -454,401 +552,406 @@ const AllProduct = () => (
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p6.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p6.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Ceiling Light</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$80 </span>$75</p>
-										</div>										
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p7.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p7.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Wooden Chair</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$120 </span>$110</p>
-										</div>										
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p8.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p8.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Ceiling Light</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$90 </span>$80</p>
-										</div>										
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p1.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p1.png" alt="product-img" />
 											<div className="product-overlay"><h4>sale</h4></div>
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Dining Chair</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$100 </span>$60</p>
-										</div>										
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p2.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p2.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Occasional Chair</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$80 </span>$50</p>
-										</div>										
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p3.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p3.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Ceiling Light</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$90 </span>$55</p>
-										</div>									
+										</div>
 									</div>
 								</li>
 								<li>
 									<div className="product-grid">
 										<div className="product-item">
-											<img src="../../assets/admin/images/product/p4.png" alt="product-img"/>
+											<img src="../../assets/admin/images/product/p4.png" alt="product-img" />
 											<div className="product-ovr-links">
 												<ul>
 													<li>
 														<a href="product-single.html">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="17px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="17px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M16.949,4.171 L14.077,11.019 C13.972,11.258 13.752,11.410 13.501,11.410 L5.608,11.410 C5.325,11.410 5.073,11.215 5.000,10.932 L2.432,1.301 L0.629,1.301 C0.283,1.301 -0.000,1.008 -0.000,0.650 C-0.000,0.291 0.283,-0.002 0.629,-0.002 L2.903,-0.002 C3.186,-0.002 3.438,0.193 3.511,0.476 L6.079,10.107 L13.081,10.107 L15.408,4.562 L7.652,4.562 C7.306,4.562 7.023,4.269 7.023,3.910 C7.023,3.552 7.306,3.259 7.652,3.259 L16.373,3.259 C16.582,3.259 16.781,3.366 16.897,3.552 C17.012,3.737 17.033,3.964 16.949,4.171 ZM5.010,13.040 C5.796,13.040 6.436,13.704 6.436,14.519 C6.436,15.334 5.796,15.998 5.010,15.998 C4.224,15.998 3.585,15.334 3.585,14.519 C3.585,13.704 4.224,13.040 5.010,13.040 ZM13.825,13.040 C14.612,12.987 15.293,13.606 15.345,14.410 C15.366,14.813 15.251,15.192 15.000,15.486 C14.748,15.791 14.402,15.965 14.025,15.998 C13.993,15.998 13.951,15.998 13.920,15.998 C13.176,15.998 12.557,15.389 12.505,14.617 C12.452,13.813 13.039,13.095 13.825,13.040 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="15px" height="16px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="15px" height="16px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M14.766,14.570 L11.069,10.609 C12.020,9.445 12.540,7.981 12.540,6.456 C12.540,2.894 9.727,-0.002 6.269,-0.002 C2.812,-0.002 -0.002,2.894 -0.002,6.456 C-0.002,10.018 2.812,12.916 6.269,12.916 C7.567,12.916 8.804,12.512 9.862,11.747 L13.587,15.738 C13.742,15.905 13.952,15.997 14.176,15.997 C14.389,15.997 14.590,15.914 14.743,15.761 C15.068,15.439 15.078,14.904 14.766,14.570 ZM6.269,1.682 C8.825,1.682 10.904,3.823 10.904,6.456 C10.904,9.090 8.825,11.231 6.269,11.231 C3.714,11.231 1.634,9.090 1.634,6.456 C1.634,3.823 3.714,1.682 6.269,1.682 Z" />
 															</svg>
 														</a>
 													</li>
 													<li>
 														<a href="javascript:;">
-															<svg 
-															 xmlns="http://www.w3.org/2000/svg"
-															 width="19px" height="17px">
-															<path fillRule="evenodd"  fill="rgb(255, 255, 255)"
-															 d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z"/>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																width="19px" height="17px">
+																<path fillRule="evenodd" fill="rgb(255, 255, 255)"
+																	d="M17.224,2.226 C16.374,1.364 15.199,0.933 13.698,0.933 C13.283,0.933 12.860,1.009 12.428,1.156 C11.996,1.307 11.594,1.509 11.223,1.762 C10.851,2.016 10.531,2.254 10.263,2.476 C9.995,2.698 9.741,2.935 9.500,3.184 C9.259,2.935 9.004,2.698 8.737,2.476 C8.469,2.254 8.149,2.016 7.777,1.762 C7.406,1.509 7.004,1.307 6.572,1.156 C6.140,1.009 5.716,0.933 5.301,0.933 C3.801,0.933 2.626,1.364 1.776,2.226 C0.925,3.087 0.500,4.281 0.500,5.810 C0.500,6.275 0.579,6.754 0.736,7.247 C0.893,7.740 1.073,8.161 1.273,8.507 C1.474,8.855 1.702,9.193 1.956,9.524 C2.211,9.853 2.397,10.080 2.514,10.206 C2.631,10.330 2.723,10.421 2.790,10.477 L9.058,16.749 C9.178,16.873 9.326,16.935 9.500,16.935 C9.674,16.935 9.821,16.873 9.942,16.749 L16.200,10.497 C17.733,8.906 18.500,7.344 18.500,5.809 C18.500,4.281 18.075,3.087 17.224,2.226 ZM15.326,9.519 L9.500,15.342 L3.664,9.508 C2.412,8.209 1.786,6.976 1.786,5.809 C1.786,5.248 1.858,4.751 2.002,4.320 C2.146,3.890 2.330,3.548 2.554,3.292 C2.779,3.039 3.051,2.833 3.373,2.673 C3.694,2.514 4.009,2.406 4.317,2.350 C4.625,2.295 4.953,2.268 5.301,2.268 C5.650,2.268 6.025,2.355 6.426,2.533 C6.828,2.710 7.198,2.933 7.536,3.200 C7.874,3.467 8.164,3.717 8.405,3.950 C8.646,4.182 8.847,4.396 9.008,4.591 C9.128,4.744 9.292,4.819 9.500,4.819 C9.708,4.819 9.872,4.744 9.992,4.591 C10.153,4.396 10.354,4.182 10.595,3.950 C10.836,3.717 11.126,3.468 11.464,3.200 C11.802,2.933 12.172,2.710 12.574,2.533 C12.975,2.355 13.351,2.268 13.699,2.268 C14.047,2.268 14.375,2.295 14.683,2.350 C14.991,2.406 15.306,2.514 15.627,2.673 C15.949,2.833 16.222,3.039 16.446,3.292 C16.670,3.548 16.854,3.890 16.998,4.320 C17.142,4.751 17.214,5.248 17.214,5.809 C17.214,6.976 16.585,8.212 15.326,9.519 Z" />
 															</svg>
 														</a>
-													</li>															
+													</li>
 												</ul>
 											</div>
 										</div>
 										<div className="product-text-rs">
 											<a href="javascript:;">
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="true"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
-											<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="true"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
+												<i className="fa fa-star" aria-hidden="fals"></i>
 											</a>
 											<h3><a href="product-single.html">Ceiling Light</a></h3>
 											<h6>Simply dummy text of the printing</h6>
 											<p><span>$110 </span>$90</p>
-										</div>										
+										</div>
 									</div>
 								</li>
 							</ul>
-						
+
 						</div>
 						<div className="card-footer pt-0">
 							<nav className="d-inline-block">
 								<ul className="pagination mb-0 ">
-								  <li className="page-item disabled ">
-									<a className="page-link" href="javascript:void(0);" tabIndex="-1"><i className="fas fa-chevron-left"></i></a>
-								  </li>
-								  <li className="page-item active "><a className="page-link " href="javascript:void(0); ">1</a></li>
-								  <li className="page-item ">
-									<a className="page-link " href="javascript:void(0); ">2</a>
-								  </li>
-								  <li className="page-item "><a className="page-link " href="javascript:void(0); ">3</a></li>
-								  <li className="page-item ">
-									<a className="page-link " href="javascript:void(0); "><i className="fas fa-chevron-right "></i></a>
-								  </li>
+									<li className="page-item disabled ">
+										<a className="page-link" href="javascript:void(0);" tabIndex="-1"><i className="fas fa-chevron-left"></i></a>
+									</li>
+									<li className="page-item active "><a className="page-link " href="javascript:void(0); ">1</a></li>
+									<li className="page-item ">
+										<a className="page-link " href="javascript:void(0); ">2</a>
+									</li>
+									<li className="page-item "><a className="page-link " href="javascript:void(0); ">3</a></li>
+									<li className="page-item ">
+										<a className="page-link " href="javascript:void(0); "><i className="fas fa-chevron-right "></i></a>
+									</li>
 								</ul>
 							</nav>
 						</div>
 					</div>
-                </div>
+				</div>
 				<div className="ad-footer-btm">
 					<p>Copyright 2022 © SplashDash All Rights Reserved.</p>
 				</div>
 			</div>
-  );
-  
-  export default AllProduct;
+		</>
+	)
+
+}
+
+
+
+export default AllProduct;

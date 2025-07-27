@@ -24,4 +24,5 @@ public interface SellerService {
     ShopResponseDTO addShopEdit(ShopRequestDTO shopRequestDTO);
     ResponseEntity<?> updateDiscountShop(ShopDiscountRequestDTO discountRequestDTO);
     ResponseEntity<?> deleteDiscountShop(String accessToken, Long shopDiscountId);
+    Long getIdShopByAuthId(String accessToken);
 }

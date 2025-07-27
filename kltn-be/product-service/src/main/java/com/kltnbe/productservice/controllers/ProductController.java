@@ -1,35 +1,34 @@
 package com.kltnbe.productservice.controllers;
 
 
+import com.kltnbe.productservice.clients.UploadServiceProxy;
 import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
-import com.kltnbe.productservice.dtos.req.InventoryReduceRequest;
-import com.kltnbe.productservice.dtos.req.ProductFileterAll;
-import com.kltnbe.productservice.dtos.req.ProductFilterRequest;
+import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.CategoryResponse;
 import com.kltnbe.productservice.dtos.res.CategoryWithImage;
 import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
-import com.kltnbe.productservice.entities.Product;
-import com.kltnbe.productservice.entities.ProductVariant;
-import com.kltnbe.productservice.repositories.ColorRepository;
-import com.kltnbe.productservice.repositories.ProductRepository;
-import com.kltnbe.productservice.repositories.ProductSizeRepository;
-import com.kltnbe.productservice.repositories.ProductVariantRepository;
+import com.kltnbe.productservice.entities.*;
+import com.kltnbe.productservice.repositories.*;
+import com.kltnbe.productservice.services.AsyncUploadService;
 import com.kltnbe.productservice.services.ProductService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.kltnbe.productservice.entities.Color;
-import com.kltnbe.productservice.entities.ProductSize;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 
 @RestController
 @RequestMapping("/api/products")
+@AllArgsConstructor
 public class ProductController {
 
     @Autowired
@@ -42,6 +41,10 @@ public class ProductController {
     private ProductSizeRepository productSizeRepository;
     @Autowired
     private ProductVariantRepository productVariantRepository;
+    @Autowired
+    private ProductImageRepository productImageRepository;
+    private final AsyncUploadService  asyncUploadService;
+    private final UploadServiceProxy  uploadServiceProxy;
     @GetMapping("/getAllProduct")
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
 //        System.out.print(productService.getAllProducts(productFileterAll).get().findFirst().get().getImages().get(0).getProduct());
@@ -52,7 +55,6 @@ public class ProductController {
 
         return productService.getAllProducts(productFileterAll);
     }
-
     @GetMapping("/getAllCategories")
     public CategoryResponse categoryResponse() {
         CategoryResponse categoryResponse = new CategoryResponse();
@@ -100,7 +102,6 @@ public class ProductController {
 
         return categoryResponse;
     }
-
     @GetMapping("/filterCategories")
     public ProductFilterResponse filterProductByCategories(ProductFilterRequest req) {
         Pageable pageable = PageRequest.of(req.getPage(), req.getSize());
@@ -168,7 +169,6 @@ public class ProductController {
                 .map(Color::getColorId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy màu: " + nameColor));
     }
-
     @GetMapping("/size-id")
     public Long getSizeIdByName(@RequestParam("sizeName") String sizeName) {
         return productSizeRepository.findBySizeName(sizeName)
@@ -220,5 +220,117 @@ public class ProductController {
 
         return ResponseEntity.ok("Đã trừ tồn kho");
     }
+    @GetMapping("/findMoreProductInfoById")
+    public ResponseEntity<MoreProductInfo> findMoreProductInfoById() {
+        MoreProductInfo moreProductInfo = productService.findMoreProductInfoById(1L);
+        return ResponseEntity.ok(moreProductInfo);
+    }
+    @GetMapping("/getAllColorStatus1")
+    public ResponseEntity<List<Color>> getAllColorStatus1() {
+        List<Color> colors = colorRepository.findAll();
+        return ResponseEntity.ok(colors);
+    }
+    @PostMapping("/addProduct")
+    public ResponseEntity<?> addProduct(@RequestBody ProductRequestDTO productRequestDTO) {
+        return ResponseEntity.ok(productService.createProduct(productRequestDTO));
+    }
+    @GetMapping("/productByAsin/{asin}")
+    public ResponseEntity<?> findProductByAsin(@PathVariable String asin) {
+        return productService.getProductDetail(asin)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    @PostMapping("/addSize")
+    public ResponseEntity<?> addSize(@RequestBody SizeRequest request) {
+        return productService.addSize(request);
+    }
+    @DeleteMapping("/deleteSize")
+    public ResponseEntity<?> deleteSize(@RequestParam Long sizeId) {
+        try {
+            productService.deleteSize(sizeId);
+            return ResponseEntity.ok(Map.of("message", "✅ Xóa size thành công"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "❌ Lỗi khi xóa size: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping(value = "/upload-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImagesAsync(
+            @RequestParam("asin") String asin,
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam("colorIds") List<Long> colorIds) {
+
+        if (files.size() != colorIds.size()) {
+            return ResponseEntity.badRequest().body("❌ Số lượng ảnh và colorId không khớp!");
+        }
+
+        Optional<Product> productOpt = productRepository.findProductByAsin(asin);
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("❌ Không tìm thấy sản phẩm.");
+        }
+
+        Product product = productOpt.get();
+
+        for (int i = 0; i < files.size(); i++) {
+            try {
+                MultipartFile file = files.get(i);
+                Long colorId = colorIds.get(i);
+
+                byte[] fileBytes = file.getBytes();
+                String filename = file.getOriginalFilename();
+
+                asyncUploadService.uploadAndSaveImage(
+                        product, fileBytes, filename, colorId,
+                        uploadServiceProxy, productImageRepository
+                );
+            } catch (IOException e) {
+                System.err.println("❌ Không đọc được file ảnh: " + e.getMessage());
+            }
+        }
+
+        return ResponseEntity.ok("✅ Ảnh đang được xử lý và lưu nền.");
+    }
+
+
+    @PutMapping(value = "/update-image/{imageId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> updateImage(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable Long imageId
+    ) {
+        productService.updateImage(file, imageId);
+        return ResponseEntity.accepted().body("Đang xử lý upload ảnh...");
+    }
+    @PutMapping("/updateProduct")
+    public ResponseEntity<?> updateProduct(@RequestBody ProductRequestDTO request) {
+        return productService.updateProduct(request);
+    }
+
+    @PutMapping("/set-thumbnail")
+    public ResponseEntity<?> setThumbnail(
+            @RequestParam String asin,
+            @RequestParam Long imageId
+    ) {
+        productService.setThumbnail(asin, imageId);
+        return ResponseEntity.ok("✅ Cập nhật thumbnail thành công!");
+    }
+    @DeleteMapping("/deleteImage/{imageId}")
+    public ResponseEntity<String> deleteImage(@PathVariable Long imageId) {
+        try {
+            productService.deleteImageById(imageId);
+            return ResponseEntity.ok("✅ Xoá ảnh thành công.");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("❌ Lỗi khi xoá ảnh: " + e.getMessage());
+        }
+    }
+    @PutMapping("/deleteProduct/{asin}")
+    public ResponseEntity<?> deleteProduct(@PathVariable String asin) {
+        return productService.deleteProductByAsin(asin);
+    }
+
+    
 
 }

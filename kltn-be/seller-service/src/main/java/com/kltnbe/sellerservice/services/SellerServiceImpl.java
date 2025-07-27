@@ -102,11 +102,7 @@ public class SellerServiceImpl implements SellerService {
                 if (authId == null) {
                     return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy tài khoản với email này"));
                 }
-
-                // Gọi bất đồng bộ từ bean khác
                 imageUploadService.processImageUploadAndStore(authId, sellerDTO);
-
-                // Trả về phản hồi ngay lập tức
                 return ResponseEntity.ok(Map.of("message", "Đăng ký tài khoản thành công, đang xử lý thông tin xác thực"));
             } else {
                 Map<String, String> responseMap = (Map<String, String>) registerAuth.getBody();
@@ -507,5 +503,15 @@ public class SellerServiceImpl implements SellerService {
         return ResponseEntity.ok(Map.of("message", "Xóa mã giảm giá thành công"));
     }
 
+    @Override
+    public Long getIdShopByAuthId(String accessToken) {
+        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
+        if (authId == null) {
+            throw new IllegalArgumentException("Invalid access token");
+        }
+        Shop shop = shopRepository.findByAuthId(authId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
+        return shop.getShopId();
+    }
 }
 

@@ -10,4 +10,8 @@ public interface UploadService {
     List<String> uploadImages(List<MultipartFile> files, String folderName) throws IOException;
     String generateSignedUrl(String publicId, int expiresInSeconds);
     String uploadImage(MultipartFile file, String folderName) throws IOException;
+    List<String> uploadImagesProducts(List<MultipartFile> files, String folderName) throws IOException;
+    public String uploadSingleImage(MultipartFile file, String folderName) throws IOException;
+    List<String> uploadImagesProductsBytes(List<byte[]> fileBytesList, List<String> filenames, String folderName) throws IOException;
+
 }

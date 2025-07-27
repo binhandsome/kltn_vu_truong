@@ -19,7 +19,7 @@ public class ProductSize {
     @Column(name = "size_name", length = 50)
     private String sizeName;
 
-    @Column(name = "size_sku", nullable = false, unique = true, length = 100)
+    @Column(name = "size_sku")
     private String sizeSku;
 
     public Long getSizeId() {

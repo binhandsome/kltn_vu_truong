@@ -17,6 +17,28 @@ public class ProductDto {
     private Double percentDiscount;
     private Integer stockQuantity;
     private String tags;
+    private String productStatus; // ACTIVE, DELETED,...
+    private Long storeId;
+
+    public void setStockQuantity(Integer stockQuantity) {
+        this.stockQuantity = stockQuantity;
+    }
+
+    public String getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(String productStatus) {
+        this.productStatus = productStatus;
+    }
+
+    public Long getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(Long storeId) {
+        this.storeId = storeId;
+    }
 
     public String getTags() {
         return tags;
