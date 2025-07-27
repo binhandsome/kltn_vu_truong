@@ -4,6 +4,7 @@ import com.kltnbe.orderservice.clients.CartClient;
 import com.kltnbe.orderservice.dtos.CartItemDTO;
 import com.kltnbe.orderservice.dtos.DeliveryAddressDTO;
 import com.kltnbe.orderservice.dtos.ProductSimpleDTO;
+import com.kltnbe.orderservice.dtos.SalesStatsDTO;
 import com.kltnbe.orderservice.dtos.req.*;
 import com.kltnbe.orderservice.dtos.res.CartResponse;
 import com.kltnbe.orderservice.dtos.res.OrderItemResponse;
@@ -26,8 +27,6 @@ import com.kltnbe.orderservice.repositories.OrderRepository;
 
 import com.kltnbe.orderservice.repositories.ShippingMethodRepository;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
@@ -515,6 +514,28 @@ public class OrderServiceImpl implements OrderService {
 
         return response;
     }
+    @Override
+    public List<SalesStatsDTO> getSalesStatsByToken(String accessToken, String type) {
+        String rawToken = accessToken != null && accessToken.startsWith("Bearer ")
+                ? accessToken.substring(7)
+                : accessToken;
+        Long userId = userServiceProxy.findUserIdByAccessToken(rawToken);
 
+        String pattern;
+        switch (type.toLowerCase()) {
+            case "day": pattern = "%Y-%m-%d"; break;
+            case "week": pattern = "%Y-%u"; break;
+            case "year": pattern = "%Y"; break;
+            default: pattern = "%Y-%m";
+        }
+
+        List<Object[]> rawData = orderRepository.getSalesStatsNative(pattern, userId);
+
+        return rawData.stream()
+                .map(row -> new SalesStatsDTO(
+                        (String) row[0],
+                        ((Number) row[1]).doubleValue()))
+                .toList();
+    }
 
 }

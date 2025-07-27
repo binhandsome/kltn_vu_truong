@@ -25,4 +25,20 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             @Param("productId") Long productId,
             @Param("colorName") String colorName,
             @Param("sizeName") String sizeName);
+    @Query("SELECT pv FROM ProductVariant pv WHERE pv.product.productId = :productId AND pv.size.sizeId = :sizeId AND pv.color.ColorId = :colorId")
+    Optional<ProductVariant> findByProductIdAndSizeIdAndColorId(@Param("productId") Long productId,
+                                                                @Param("sizeId") Long sizeId,
+                                                                @Param("colorId") Long colorId);
+
+    @Query("SELECT pv FROM ProductVariant pv WHERE pv.product.productId = :productId AND pv.size.sizeId = :sizeId AND pv.color IS NULL")
+    Optional<ProductVariant> findByProductIdAndSizeIdAndColorNull(@Param("productId") Long productId,
+                                                                  @Param("sizeId") Long sizeId);
+
+    @Query("SELECT pv FROM ProductVariant pv WHERE pv.product.productId = :productId AND pv.size IS NULL AND pv.color.ColorId = :colorId")
+    Optional<ProductVariant> findByProductIdAndSizeNullAndColorId(@Param("productId") Long productId,
+                                                                  @Param("colorId") Long colorId);
+
+    @Query("SELECT pv FROM ProductVariant pv WHERE pv.product.productId = :productId AND pv.size IS NULL AND pv.color IS NULL")
+    Optional<ProductVariant> findByProductIdAndSizeNullAndColorNull(@Param("productId") Long productId);
+
 }
