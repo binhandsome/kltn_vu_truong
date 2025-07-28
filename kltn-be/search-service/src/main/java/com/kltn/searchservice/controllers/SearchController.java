@@ -105,12 +105,13 @@ public class SearchController {
             @RequestParam(required = false) List<String> tags,
             @RequestParam(required = true) Long storeId,
             @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) List<Double> selectedDiscounts,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductDocument> result = searchService.searchAdvancedSeller(
-                keyword, minPrice, maxPrice, tags, storeId, status, pageable);
+                keyword, minPrice, maxPrice, tags, storeId, status,selectedDiscounts, pageable);
         return ResponseEntity.ok(result);
     }
 

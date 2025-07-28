@@ -58,8 +58,6 @@ public class ProductController {
     @GetMapping("/getAllCategories")
     public CategoryResponse categoryResponse() {
         CategoryResponse categoryResponse = new CategoryResponse();
-
-        // Lấy danh sách salesRank + count
         List<Object[]> results = productRepository.countProductsBySalesRanks();
         Map<String, Integer> salesRanksCount = new HashMap<>();
         List<CategoryWithImageAndCount> salesRankCategories = new ArrayList<>();
@@ -99,7 +97,6 @@ public class ProductController {
             tagsCount.put(tag, count.intValue());
         }
         categoryResponse.setTags(tagsCount);
-
         return categoryResponse;
     }
     @GetMapping("/filterCategories")
@@ -331,6 +328,6 @@ public class ProductController {
         return productService.deleteProductByAsin(asin);
     }
 
-    
+
 
 }

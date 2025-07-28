@@ -43,6 +43,7 @@ public interface SearchService {
             List<String> tags,
             Long storeId,
             List<String> status,
+            List<Double> percentDiscount,
             Pageable pageable
     );
 }
