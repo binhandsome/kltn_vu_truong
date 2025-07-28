@@ -20,6 +20,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Date;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -293,5 +296,139 @@ public class UserServiceImpl implements UserService{
             return userRepository.save(user);
         });
     }
+    @Override
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(this::toDTO) // Gọi trực tiếp hàm toDTO trong chính class này
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String toggleBanUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        Auth auth = user.getAuth(); // dùng đối tượng trực tiếp
+        if (auth == null) {
+            throw new RuntimeException("Không tìm thấy Auth tương ứng");
+        }
+
+        boolean newBanStatus = !Boolean.TRUE.equals(auth.getIsBanned());
+        auth.setIsBanned(newBanStatus);
+        authRepository.save(auth);
+
+        return newBanStatus ? "Tài khoản đã bị khoá" : "Tài khoản đã được mở khoá";
+    }
+    @Override
+    public String activateUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        Auth auth = user.getAuth();
+        if (auth == null) {
+            throw new RuntimeException("Không tìm thấy Auth tương ứng");
+        }
+
+        auth.setIsActive(true);
+        authRepository.save(auth);
+
+        return "Tài khoản đã được kích hoạt";
+    }
+
+    @Override
+    public String updateUserByAdmin(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setUserAddress(request.getUserAddress());
+        user.setGender(request.getGender());
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd"); // hoặc "dd/MM/yyyy" tùy bạn
+            Date dob = formatter.parse(request.getDateOfBirth());
+            user.setDateOfBirth(dob);
+        } catch (ParseException e) {
+            throw new RuntimeException("Định dạng ngày sinh không hợp lệ (yyyy-MM-dd)");
+        }
+        user.setProfilePicture(request.getProfilePicture());
+
+        userRepository.save(user);
+
+        return "Cập nhật hồ sơ người dùng thành công";
+    }
+    public UserDTO toDTO(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setUserId(user.getUserId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setEmail(user.getEmail());
+        dto.setGender(user.getGender() != null ? user.getGender().name() : null);
+        dto.setUserAddress(user.getUserAddress());
+        dto.setProfilePicture(user.getProfilePicture());
+        dto.setDateOfBirth(user.getDateOfBirth());
+
+        // Lấy thêm info từ Auth nếu cần
+        Auth auth = user.getAuth();
+        if (auth != null) {
+            dto.setIsBanned(auth.getIsBanned());
+            dto.setIsActive(auth.getIsActive());
+        }
+
+        return dto;
+    }
+    @Override
+    public List<UserDTO> searchUsers(String keyword) {
+        List<User> users = userRepository.searchByKeyword(keyword);
+
+        return users.stream().map(user -> {
+            UserDTO dto = new UserDTO();
+            dto.setUserId(user.getUserId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setPhoneNumber(user.getPhoneNumber());
+            dto.setEmail(user.getEmail());
+            dto.setDateOfBirth(user.getDateOfBirth());
+            dto.setGender(user.getGender()
+                    .name());
+            dto.setUserAddress(user.getUserAddress());
+
+            // ✅ Lấy dữ liệu từ bảng auth liên kết
+            Auth auth = user.getAuth();
+            if (auth != null) {
+                dto.setUsername(auth.getUsername());
+                dto.setRole(auth.getUserRole().name());
+                dto.setActive(auth.getIsActive());
+                dto.setBanned(auth.getIsBanned());
+            }
+
+            return dto;
+        }).toList();
+    }
+
+
+    @Override
+    public List<AddressInfo> getAllAddressesByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        List<Address> addresses = addressRepository.findAllByUser(user);
+
+        return addresses.stream().map(address -> {
+            AddressInfo info = new AddressInfo();
+            info.setAddressId(address.getAddressId());
+            info.setRecipientName(address.getRecipientName());
+            info.setRecipientPhone(address.getRecipientPhone());
+            info.setRecipientEmail(address.getRecipientEmail());
+            info.setDeliveryAddress(address.getDeliveryAddress());
+            info.setAddressDetails(address.getAddressDetails());
+            info.setIsPrimaryAddress(address.getIsPrimaryAddress() == 1?1:0);
+            return info;
+        }).toList();
+    }
+
 
 }

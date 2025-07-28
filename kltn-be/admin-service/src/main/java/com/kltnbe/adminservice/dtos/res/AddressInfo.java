@@ -1,6 +1,5 @@
-package com.kltnbe.userservice.dtos.res;
+package com.kltnbe.adminservice.dtos.res;
 
-import com.kltnbe.userservice.entities.Address;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

@@ -26,4 +26,13 @@ public interface UserService {
     ResponseEntity<?> getUserProfileById(Long userId);
     UserDTO getUserInfoById(Long userId);
     User getOrCreateUserByAuth(Auth auth);
+    List<UserDTO> getAllUsers();
+
+    String toggleBanUser(Long userId);
+
+    String activateUser(Long userId);
+
+    String updateUserByAdmin(Long userId, UpdateProfileRequest request);
+    List<UserDTO> searchUsers(String keyword);
+    List<AddressInfo> getAllAddressesByUserId(Long userId);
 }
