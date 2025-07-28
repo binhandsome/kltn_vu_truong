@@ -5,7 +5,9 @@ import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.dtos.res.UserProfileResponse;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
+import com.kltnbe.userservice.enums.UserRole;
 import com.kltnbe.userservice.helpers.EmailServiceProxy;
+import com.kltnbe.userservice.helpers.RandomNumberHelper;
 import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
 import com.kltnbe.userservice.utils.JwtUtil;
@@ -308,7 +310,6 @@ public class AuthServiceImpl implements AuthService {
         return "Đổi mật khẩu thành công";
     }
 
-
     @Override
     public boolean emailExists(String email) {
         return authRepository.findByEmail(email).isPresent();
@@ -337,6 +338,159 @@ public class AuthServiceImpl implements AuthService {
     public String findRoleUserByEmail(String email) {
         Optional<Auth> auth = authRepository.findIdByEmail(email);
         return String.valueOf(auth.get().getUserRole());
+    }
+    @Override
+    public LoginResponse loginAdmin(LoginRequest request) {
+        Auth auth = authRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Email hoặc mật khẩu không đúng"));
+
+        if (!passwordEncoder.matches(request.getPassword(), auth.getPasswordHash())) {
+            throw new RuntimeException("Email hoặc mật khẩu không đúng");
+        }
+
+        if (!"ADMIN".equalsIgnoreCase(String.valueOf(auth.getUserRole()))) {
+            throw new RuntimeException("Tài khoản không có quyền admin");
+        }
+
+        String accessToken = jwtUtil.generateAccessToken(auth.getUsername(), String.valueOf(auth.getUserRole()));
+        String refreshToken = jwtUtil.generateRefreshToken();
+        redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L, TimeUnit.DAYS);
+        return new LoginResponse(accessToken, refreshToken, auth.getUsername());
+    }
+    @Override
+    public ResponseEntity<?> forgotPasswordAdmin(String email) {
+        Optional<Auth> authOpt = authRepository.findByEmail(email);
+        if (authOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email không tồn tại");
+        }
+
+        if (!"ADMIN".equalsIgnoreCase(String.valueOf(authOpt.get().getUserRole()))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản không có quyền admin");
+        }
+
+        try {
+            RequestInfomation info = new RequestInfomation();
+            info.setEmail(email);
+            ResponseEntity<String> response = emailServiceProxy.sendEmailRegister(info);
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Gửi OTP thất bại: " + e.getMessage());
+        }
+    }
+    @Override
+    public ResponseEntity<?> resetPasswordAdmin(ResetPasswordRequest request) {
+        RequestInfomation info = new RequestInfomation();
+        info.setEmail(request.getEmail());
+        info.setOtp(request.getOtp());
+
+        try {
+            ResponseEntity<String> response = emailServiceProxy.checkOTP(info);
+            if (!response.getStatusCode().is2xxSuccessful() || !"OTP đúng".equalsIgnoreCase(response.getBody())) {
+                return ResponseEntity.badRequest().body("OTP không đúng hoặc đã hết hạn");
+            }
+
+            Auth auth = authRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+
+            if (!"ADMIN".equalsIgnoreCase(String.valueOf(auth.getUserRole()))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản không có quyền admin");
+            }
+
+            auth.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+            authRepository.save(auth);
+            return ResponseEntity.ok("Đặt lại mật khẩu thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi khi đặt lại mật khẩu: " + e.getMessage());
+        }
+    }
+    @Override
+    public ResponseEntity<?> changePasswordAdmin(String email, ChangePasswordRequest request) {
+        Auth auth = authRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+
+        if (!"ADMIN".equalsIgnoreCase(String.valueOf(auth.getUserRole()))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản không có quyền admin");
+        }
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), auth.getPasswordHash())) {
+            return ResponseEntity.badRequest().body("Mật khẩu hiện tại không chính xác");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Mật khẩu xác nhận không khớp với mật khẩu mới");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), auth.getPasswordHash())) {
+            return ResponseEntity.badRequest().body("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+
+        String password = request.getNewPassword();
+        String pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        if (!password.matches(pattern)) {
+            return ResponseEntity.badRequest().body("Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
+        }
+
+        auth.setPasswordHash(passwordEncoder.encode(password));
+        authRepository.save(auth);
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
+    }
+    @Override
+    public String changeUserRole(Long userId, String role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Auth auth = user.getAuth();
+
+        try {
+            UserRole newRole = UserRole.valueOf(role.toUpperCase());
+            auth.setUserRole(newRole);
+            authRepository.save(auth);
+            return "Thay đổi quyền thành công";
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Vai trò không hợp lệ");
+        }
+    }
+
+    @Override
+    public String resetPasswordByAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Auth auth = user.getAuth();
+
+        String defaultPassword = passwordEncoder.encode(RandomNumberHelper.generate6DigitString());
+        auth.setPasswordHash(defaultPassword);
+        authRepository.save(auth);
+
+        return "Mật khẩu đã được đặt lại về mặc định";
+    }
+    @Override
+    public void createUserWithoutOtp(RegisterRequest request) {
+        // Kiểm tra email hoặc username trùng
+        if (authRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email đã được sử dụng");
+        }
+
+        // Tạo tài khoản
+        Auth auth = new Auth();
+        auth.setEmail(request.getEmail());
+        auth.setUsername(request.getUsername());
+        auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        auth.setUserRole(UserRole.USER); // hoặc theo request.getRole() nếu có
+        auth.setIsActive(true); // 👉 không cần xác thực
+        auth.setIsBanned(false);
+        authRepository.save(auth);
+
+        // Tạo thông tin người dùng
+        User user = new User();
+        user.setAuth(auth);
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setUserAddress(request.getUserAddress());
+        user.setGender(Gender.valueOf(request.getGender()));
+        user.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
+        userRepository.save(user);
     }
 
 }

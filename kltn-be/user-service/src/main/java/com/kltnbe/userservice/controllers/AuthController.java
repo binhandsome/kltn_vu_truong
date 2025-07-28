@@ -225,5 +225,46 @@ public class AuthController {
     public Long findIdAuthByAccessToken(String accessToken) {
         return authService.findIdAuthByAccessToken(accessToken);
     }
+    @PostMapping("/loginAdmin")
+    public ResponseEntity<LoginResponse> loginAdmin(@RequestBody LoginRequest request) {
+        LoginResponse response = authService.loginAdmin(request);
+        return ResponseEntity.ok(response);
+    }
 
+    // ✅ Quên mật khẩu - gửi OTP
+    @PostMapping("/forgotPasswordAdmin")
+    public ResponseEntity<?> forgotPasswordAdmin(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        return authService.forgotPasswordAdmin(email);
+    }
+
+    // ✅ Đặt lại mật khẩu bằng OTP
+    @PostMapping("/resetPasswordAdmin")
+    public ResponseEntity<String> resetPasswordAdmin(@RequestBody ResetPasswordRequest request) {
+        return (ResponseEntity<String>) authService.resetPasswordAdmin(request);
+    }
+
+    // ✅ Đổi mật khẩu sau khi đã đăng nhập (đã có access token)
+    @PutMapping("/changePasswordAdmin")
+    public ResponseEntity<String> changePasswordAdmin(
+            @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return (ResponseEntity<String>) authService.changePasswordAdmin(userDetails.getUsername(), request);
+    }
+    @PutMapping("/changeRole/{userId}")
+    public ResponseEntity<String> changeUserRole(@PathVariable Long userId,
+                                                 @RequestParam String role) {
+        return ResponseEntity.ok(authService.changeUserRole(userId, role));
+    }
+
+    @PostMapping("/resetPassword/{userId}")
+    public ResponseEntity<String> resetUserPassword(@PathVariable Long userId) {
+        return ResponseEntity.ok(authService.resetPasswordByAdmin(userId));
+    }
+    @PostMapping("/admin/createUser")
+    public ResponseEntity<String> createUserByAdmin(@RequestBody RegisterRequest request) {
+        authService.createUserWithoutOtp(request);
+        return ResponseEntity.ok("Tạo người dùng thành công bởi admin");
+    }
 }

@@ -1,75 +1,139 @@
-const RecoverPassword = () => (
-<div className="ad-auth-wrapper">
-  <div className="ad-auth-box">
-    <div className="row align-items-center">
-      <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
-        <div className="ad-auth-img">
-          <img src="../../assets/admin/images/auth-img1.png" alt="" />
-        </div>
-      </div>
-      <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
-        <div className="ad-auth-content">
-          <form>
-            <a href="index.html" className="ad-auth-logo">
-              <img src="../../assets/admin/images/logo2.png" alt="" />
-            </a>
-            <h2>
-              <span className="primary">Xin chào,</span>Chào mừng!
-            </h2>
-            {/* Enter your email and we will send you a reset link */}
-            <p>Nhập email của bạn và chúng tôi sẽ gửi cho bạn một liên kết đặt lại</p>
-            <div className="ad-auth-form">
-              <div className="ad-auth-feilds mb-30">
-                <input
-                  type="text"
-                  placeholder="Địa chỉ Email"
-                  className="ad-input"
-                />
-                <div className="ad-auth-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 483.3 483.3"
-                  >
-                    <path
-                      d="M424.3,57.75H59.1c-32.6,0-59.1,26.5-59.1,59.1v249.6c0,32.6,26.5,59.1,59.1,59.1h365.1c32.6,0,59.1-26.5,59.1-59.1    v-249.5C483.4,84.35,456.9,57.75,424.3,57.75z M456.4,366.45c0,17.7-14.4,32.1-32.1,32.1H59.1c-17.7,0-32.1-14.4-32.1-32.1v-249.5    c0-17.7,14.4-32.1,32.1-32.1h365.1c17.7,0,32.1,14.4,32.1,32.1v249.5H456.4z"
-                      data-original="#000000"
-                      className="active-path"
-                      data-old_color="#000000"
-                      fill="#9abeed"
-                    />
-                    <path
-                      d="M304.8,238.55l118.2-106c5.5-5,6-13.5,1-19.1c-5-5.5-13.5-6-19.1-1l-163,146.3l-31.8-28.4c-0.1-0.1-0.2-0.2-0.2-0.3    c-0.7-0.7-1.4-1.3-2.2-1.9L78.3,112.35c-5.6-5-14.1-4.5-19.1,1.1c-5,5.6-4.5,14.1,1.1,19.1l119.6,106.9L60.8,350.95    c-5.4,5.1-5.7,13.6-0.6,19.1c2.7,2.8,6.3,4.3,9.9,4.3c3.3,0,6.6-1.2,9.2-3.6l120.9-113.1l32.8,29.3c2.6,2.3,5.8,3.4,9,3.4    c3.2,0,6.5-1.2,9-3.5l33.7-30.2l120.2,114.2c2.6,2.5,6,3.7,9.3,3.7c3.6,0,7.1-1.4,9.8-4.2c5.1-5.4,4.9-14-0.5-19.1L304.8,238.55z"
-                      data-original="#000000"
-                      className="active-path"
-                      data-old_color="#000000"
-                      fill="#9abeed"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="ad-auth-btn">
-              <a href="javascript:void(0);" className="ad-btn ad-login-member">
-                {/* Send Password */}
-                Gửi mật khẩu
-              </a>
-            </div>
-            <p className="ad-register-text">
-              {/* Already have an account ? */}
-              Bạn đã có tài khoản? <a href="login.html">Đăng nhập</a>
-            </p>
-          </form>
-        </div>
-      </div>
-    </div>
-    <div className="ad-notifications ad-error">
-      <p>
-        <span>Hừ!</span>Đã xảy ra lỗi
-      </p>
-    </div>
-  </div>
-</div>
+import React, { useState } from 'react';
+import axios from 'axios';
 
+const RecoverPassword = () => {
+  const [step, setStep] = useState(1); // 1: nhập email, 2: nhập OTP + password
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
+
+  const sendOtp = async () => {
+    if (!email) {
+      setMessage('❗ Vui lòng nhập email');
+      return;
+    }
+
+    try {
+      const res = await axios.post('http://localhost:8081/api/auth/forgotPasswordAdmin', { email });
+      setStep(2);
+      setMessage('✅ Mã OTP đã được gửi về email của bạn');
+    } catch (err) {
+      const msg = err?.response?.data || '❌ Gửi OTP thất bại';
+      setMessage(msg);
+    }
+  };
+
+  const resetPassword = async () => {
+    if (!otp || !newPassword || !confirmPassword) {
+      setMessage('❗ Vui lòng nhập đầy đủ thông tin');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setMessage('❗ Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    try {
+      const res = await axios.post('http://localhost:8081/api/auth/resetPasswordAdmin', {
+        email,
+        otp,
+        newPassword
+      });
+      setMessage('✅ Đặt lại mật khẩu thành công, vui lòng đăng nhập lại');
+    } catch (err) {
+      const msg = err?.response?.data || '❌ Đặt lại mật khẩu thất bại';
+      setMessage(msg);
+    }
+  };
+
+  return (
+    <div className="ad-auth-wrapper">
+      <div className="ad-auth-box">
+        <div className="row align-items-center">
+          <div className="col-xl-6">
+            <div className="ad-auth-img">
+              <img src="../../assets/admin/images/auth-img1.png" alt="Recover Password" />
+            </div>
+          </div>
+          <div className="col-xl-6">
+            <div className="ad-auth-content">
+              <form onSubmit={(e) => e.preventDefault()}>
+                <a href="/" className="ad-auth-logo">
+                  <img src="../../assets/admin/images/logo2.png" alt="Logo" />
+                </a>
+                <h2>
+                  <span className="primary">Khôi phục mật khẩu</span>
+                </h2>
+                <p>
+                  {step === 1
+                    ? 'Nhập email để nhận mã OTP đặt lại mật khẩu'
+                    : 'Nhập mã OTP và mật khẩu mới'}
+                </p>
+
+                <div className="ad-auth-form">
+                  <input
+                    type="email"
+                    className="ad-input mb-20"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={step === 2}
+                  />
+                  {step === 2 && (
+                    <>
+                      <input
+                        type="text"
+                        className="ad-input mb-20"
+                        placeholder="Mã OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                      />
+                      <input
+                        type="password"
+                        className="ad-input mb-20"
+                        placeholder="Mật khẩu mới"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <input
+                        type="password"
+                        className="ad-input mb-20"
+                        placeholder="Xác nhận mật khẩu"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                    </>
+                  )}
+                </div>
+
+                <div className="ad-auth-btn">
+                  <button
+                    className="ad-btn ad-login-member"
+                    onClick={step === 1 ? sendOtp : resetPassword}
+                  >
+                    {step === 1 ? 'Gửi mã OTP' : 'Đặt lại mật khẩu'}
+                  </button>
+                </div>
+
+                {message && (
+                  <p style={{ color: message.includes('✅') ? 'green' : 'red', marginTop: 10 }}>
+                    {message}
+                  </p>
+                )}
+
+                <p className="ad-register-text">
+                  Trở lại <a href="/admin/login">đăng nhập</a>
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
-  
-  export default RecoverPassword;
+};
+
+export default RecoverPassword;

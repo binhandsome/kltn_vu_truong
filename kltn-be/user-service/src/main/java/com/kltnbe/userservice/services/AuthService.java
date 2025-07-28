@@ -21,6 +21,13 @@ public interface AuthService {
     ResponseEntity<?> verifyLoginSeller(RequestInfomation requestInfomation);
     ResponseEntity<?> getUserWithAccessToken(String accessToken);
     Long findIdAuthByAccessToken(String accessToken);
+    LoginResponse loginAdmin(LoginRequest request);
+    ResponseEntity<?> forgotPasswordAdmin(String email);
+    ResponseEntity<?> resetPasswordAdmin(ResetPasswordRequest request);
+    ResponseEntity<?> changePasswordAdmin(String email, ChangePasswordRequest request);
+    String changeUserRole(Long userId, String role);
+    String resetPasswordByAdmin(Long userId);
+    void createUserWithoutOtp(RegisterRequest request);
 //    String verifyOtp(String username, String inputOtp);
 //    String registerSeller(RegisterRequest registerRequest);
 //

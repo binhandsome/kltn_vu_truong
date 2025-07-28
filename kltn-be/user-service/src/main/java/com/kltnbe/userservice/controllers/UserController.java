@@ -3,6 +3,7 @@ package com.kltnbe.userservice.controllers;
 import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.AddressRequest;
 import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
+import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
 import com.kltnbe.userservice.entities.Address;
@@ -69,6 +70,38 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserInfoById(@RequestParam Long userId) {
         return ResponseEntity.ok(userService.getUserInfoById(userId));
     }
+    // 📋 Lấy danh sách tất cả người dùng (cho admin)
+    @GetMapping("/allUsers")
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
 
+    // 🔒 Khoá / Mở khoá tài khoản
+    @PutMapping("/toggleBan/{userId}")
+    public ResponseEntity<String> toggleBanUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.toggleBanUser(userId));
+    }
 
+    // ✅ Kích hoạt tài khoản (ví dụ sau đăng ký)
+    @PutMapping("/activate/{userId}")
+    public ResponseEntity<String> activateUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.activateUser(userId));
+    }
+
+    // ✏️ Cập nhật thông tin hồ sơ người dùng (Admin)
+    @PutMapping("/adminUpdate/{userId}")
+    public ResponseEntity<String> updateUserByAdmin(
+            @PathVariable Long userId,
+            @RequestBody UpdateProfileRequest request
+    ) {
+        return ResponseEntity.ok(userService.updateUserByAdmin(userId, request));
+    }
+    @GetMapping("/{userId}/addresses")
+    public List<AddressInfo> getUserAddresses(@PathVariable Long userId) {
+        return userService.getAllAddressesByUserId(userId);
+    }
+    @GetMapping("/search")
+    public List<UserDTO> searchUsers(@RequestParam String keyword) {
+        return userService.searchUsers(keyword);
+    }
 }
