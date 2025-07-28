@@ -38,6 +38,25 @@ public class SearchController {
         searchService.indexProduct(productDto);
         return "index thanh cong";
     }
+    @GetMapping("/by-id/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable("id") Long id) {
+        try {
+            ProductDto dto = searchService.getProductById(id);
+            return ResponseEntity.ok(dto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/by-asin/{asin}")
+    public ResponseEntity<?> getProductByAsin(@PathVariable("asin") String asin) {
+        try {
+            ProductDto dto = searchService.getProductByAsin(asin);
+            return ResponseEntity.ok(dto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @GetMapping("/searchAdvance")
     public ResponseEntity<SearchResponse<ProductDocument>> searchProductAdvance(@RequestParam(required = false) String keyword, @RequestParam(required = false) BigDecimal minPrice, @RequestParam(required = false) BigDecimal maxPrice,@RequestParam(required = false) List<String> tags,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
@@ -68,4 +87,32 @@ public class SearchController {
         return  documents;
     }
 
+    @GetMapping("/store")
+    public ResponseEntity<?> searchByStoreIdAndStatus(
+            @RequestParam Long storeId,
+            @RequestParam String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<ProductDocument> result = searchService.searchProductsByStoreIdAndStatus(storeId, status, page, size);
+        return ResponseEntity.ok(result);
     }
+    @GetMapping("/searchAdvanceSeller")
+    public ResponseEntity<Page<ProductDocument>> searchAdvanced(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = true) Long storeId,
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) List<Double> selectedDiscounts,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductDocument> result = searchService.searchAdvancedSeller(
+                keyword, minPrice, maxPrice, tags, storeId, status,selectedDiscounts, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+}

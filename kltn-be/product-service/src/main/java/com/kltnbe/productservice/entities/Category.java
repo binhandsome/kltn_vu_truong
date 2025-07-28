@@ -24,7 +24,7 @@ public class Category {
     @JsonBackReference
     private Product product;
 
-    @Column(name = "categories", length = 255)
+    @Column(name = "categories",columnDefinition = "json")
     private String categories;
 
     @Column(name = "description", columnDefinition = "TEXT")

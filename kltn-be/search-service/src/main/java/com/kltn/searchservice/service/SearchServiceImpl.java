@@ -4,7 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.json.JsonData;
 import com.kltn.searchservice.dtos.ProductDocument;
 import com.kltn.searchservice.dtos.ProductDto;
@@ -26,6 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -35,6 +37,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,6 +103,61 @@ public class SearchServiceImpl implements SearchService {
                 .id(productDto.getProductId().toString()).document(productDto));
         elasticsearchClient.index(request);
     }
+
+    @Override
+    public ProductDto getProductById(Long productId) {
+        try {
+            GetRequest getRequest = GetRequest.of(g -> g
+                    .index(INDEX_NAME)
+                    .id(productId.toString()));
+
+            GetResponse<ProductDto> response = elasticsearchClient.get(getRequest, ProductDto.class);
+            if (response.found()) {
+                return response.source();
+            } else {
+                throw new RuntimeException("❌ Không tìm thấy sản phẩm với ID: " + productId);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("❌ Lỗi khi truy vấn Elasticsearch: " + e.getMessage());
+        }
+    }
+    @Override
+    public Page<ProductDocument> searchProductsByStoreIdAndStatus(Long storeId, String status, int page, int size) {
+        Criteria criteria = new Criteria("storeId").is(storeId).and("productStatus").is(status);
+        CriteriaQuery query = new CriteriaQuery(criteria, PageRequest.of(page, size));
+
+        SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(query, ProductDocument.class);
+
+        List<ProductDocument> products = searchHits.get().map(SearchHit::getContent).toList();
+        long totalHits = searchHits.getTotalHits();
+
+        return new PageImpl<>(products, PageRequest.of(page, size), totalHits);
+    }
+
+    @Override
+    public ProductDto getProductByAsin(String asin) {
+        try {
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                    .index(INDEX_NAME)
+                    .query(q -> q
+                            .term(t -> t
+                                    .field("asin") // đảm bảo field asin được index dạng keyword
+                                    .value(v -> v.stringValue(asin))
+                            )
+                    )
+            );
+
+            SearchResponse<ProductDto> response = elasticsearchClient.search(searchRequest, ProductDto.class);
+            if (!response.hits().hits().isEmpty()) {
+                return response.hits().hits().get(0).source();
+            } else {
+                throw new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + asin);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("❌ Lỗi khi truy vấn Elasticsearch: " + e.getMessage());
+        }
+    }
+
     public Page<ProductDocument> searchByKeywordAndPrice(
             String keyword,
             BigDecimal minPrice,
@@ -159,12 +217,16 @@ public class SearchServiceImpl implements SearchService {
                         .should(s -> s.match(match -> match
                                 .field("productTitle")
                                 .query(keyword)
-                                .fuzziness("AUTO")
+                                .fuzziness("AUTO")  // để sai chính tả vẫn tìm được
                         ))
-                        .should(s -> s.wildcard(wc -> wc
-                                .field("productTitle.keyword")
-                                .value("*" + loweredKeyword + "*")
-                                .caseInsensitive(true) // Ensure case-insensitive wildcard
+                        .should(s -> s.queryString(qs -> qs
+                                .defaultField("productTitle")
+                                .query("*" + loweredKeyword + "*") // hỗ trợ *keyword*
+                        ))
+                        .should(s -> s.multiMatch(mm -> mm
+                                .fields("productTitle") // nếu có field phụ ngram
+                                .query(keyword)
+                                .fuzziness("AUTO")
                         ))
                         .minimumShouldMatch("1")
                 ));
@@ -322,5 +384,111 @@ public class SearchServiceImpl implements SearchService {
             return Collections.emptyList();
         }
     }
+    public Page<ProductDocument> searchAdvancedSeller(
+            String keyword,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            List<String> tags,
+            Long storeId,
+            List<String> status,
+            List<Double> percentDiscount,
+
+            Pageable pageable
+    ) {
+        Query esQuery = Query.of(q -> q.bool(b -> {
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String loweredKeyword = keyword.toLowerCase();
+                b.must(m -> m.bool(inner -> inner
+                        .should(s -> s.match(match -> match
+                                .field("productTitle")
+                                .query(keyword)
+                                .fuzziness("AUTO")  // để sai chính tả vẫn tìm được
+                        ))
+                        .should(s -> s.queryString(qs -> qs
+                                .defaultField("productTitle")
+                                .query("*" + loweredKeyword + "*") // hỗ trợ *keyword*
+                        ))
+                        .should(s -> s.multiMatch(mm -> mm
+                                .fields("productTitle") // nếu có field phụ ngram
+                                .query(keyword)
+                                .fuzziness("AUTO")
+                        ))
+                        .minimumShouldMatch("1")
+                ));
+            }
+
+
+            if (minPrice != null || maxPrice != null) {
+                b.filter(f -> f.range(r -> {
+                    r.field("productPrice");
+                    if (minPrice != null) r.gte(JsonData.of(minPrice));
+                    if (maxPrice != null) r.lte(JsonData.of(maxPrice));
+                    return r;
+                }));
+            }
+
+            if (tags != null && !tags.isEmpty()) {
+                b.filter(f -> f.terms(t -> t
+                        .field("tags.keyword")
+                        .terms(ts -> ts.value(
+                                tags.stream()
+                                        .filter(Objects::nonNull)
+                                        .map(FieldValue::of)
+                                        .toList()
+                        ))
+                ));
+            }
+            if (percentDiscount != null && !percentDiscount.isEmpty()) {
+                b.filter(f -> f.bool(bool -> {
+                    percentDiscount.stream()
+                            .filter(Objects::nonNull)
+                            .forEach(val -> {
+                                if (val < 0) {
+                                    bool.should(s -> s.range(r -> r
+                                            .field("percentDiscount")
+                                            .lt(JsonData.of(Math.abs(val)))
+                                    ));
+                                } else {
+                                    bool.should(s -> s.range(r -> r
+                                            .field("percentDiscount")
+                                            .gte(JsonData.of(val))
+                                    ));
+                                }
+                            });
+
+                    return bool.minimumShouldMatch("1");
+                }));
+            }
+
+
+            if (storeId != null) {
+                b.filter(f -> f.term(t -> t.field("storeId").value(storeId)));
+            }
+
+            if (status != null && !status.isEmpty()) {
+                b.filter(f -> f.terms(t -> t
+                        .field("productStatus.keyword")
+                        .terms(ts -> ts.value(status.stream().map(FieldValue::of).toList()))
+                ));
+            }
+
+            return b;
+        }));
+
+        NativeQuery springQuery = NativeQuery.builder()
+                .withQuery(esQuery)
+                .withPageable(pageable)
+                .build();
+
+        try {
+            SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
+            List<ProductDocument> results = hits.getSearchHits().stream().map(SearchHit::getContent).toList();
+            return new PageImpl<>(results, pageable, hits.getTotalHits());
+        } catch (Exception e) {
+            log.error("🔥 Elasticsearch query failed: {}", e.getMessage());
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+    }
+
 
 }

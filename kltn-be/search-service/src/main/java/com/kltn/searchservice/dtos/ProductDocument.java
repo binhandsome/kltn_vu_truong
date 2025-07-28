@@ -33,6 +33,7 @@ public class ProductDocument {
     private Double percentDiscount;
     private Integer stockQuantity;
     private String tags;
-
+    private String productStatus; // ACTIVE, DELETED,...
+    private Long storeId;
 
 }

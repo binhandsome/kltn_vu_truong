@@ -101,4 +101,8 @@ public class SellerController {
     public ResponseEntity<?> deleteShopDiscount(@RequestParam String accessToken,  @RequestParam Long shopDiscountId) {
         return sellerService.deleteDiscountShop(accessToken,  shopDiscountId);
     }
+    @GetMapping("/get_id_shop_by_accessToken")
+    public ResponseEntity<Long> getIdShopByAccessToken(@RequestParam String accessToken) {
+        return ResponseEntity.ok(sellerService.getIdShopByAuthId(accessToken));
+    }
 }

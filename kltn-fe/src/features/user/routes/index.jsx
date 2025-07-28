@@ -41,7 +41,6 @@ import ShopStyle2 from '../pages/shop/ShopStyle2';
 import ShopStandard from '../pages/shop/ShopStandard';
 import ChangePassword from '../pages/auth/ChangePassword';
 import PaymentReturn from '../pages/shoppages/PaymentReturn';
-
 const UserRoutes = () => {
   return (
     <Routes>
