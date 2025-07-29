@@ -28,4 +28,36 @@ public class ColorDTO {
         this.codeColor = color.getCodeColor();
         this.status = color.getStatus();
     }
+
+    public String getCodeColor() {
+        return codeColor;
+    }
+
+    public void setCodeColor(String codeColor) {
+        this.codeColor = codeColor;
+    }
+
+    public Long getColorId() {
+        return colorId;
+    }
+
+    public void setColorId(Long colorId) {
+        this.colorId = colorId;
+    }
+
+    public String getNameColor() {
+        return nameColor;
+    }
+
+    public void setNameColor(String nameColor) {
+        this.nameColor = nameColor;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
 }

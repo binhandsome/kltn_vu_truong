@@ -5,6 +5,7 @@ import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.dtos.res.UserProfileResponse;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
+import com.kltnbe.userservice.enums.Gender;
 import com.kltnbe.userservice.enums.UserRole;
 import com.kltnbe.userservice.helpers.EmailServiceProxy;
 import com.kltnbe.userservice.helpers.RandomNumberHelper;
@@ -21,8 +22,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
@@ -456,15 +460,20 @@ public class AuthServiceImpl implements AuthService {
     public String resetPasswordByAdmin(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
         Auth auth = user.getAuth();
 
-        String defaultPassword = passwordEncoder.encode(RandomNumberHelper.generate6DigitString());
-        auth.setPasswordHash(defaultPassword);
+        // ✅ Đặt lại mật khẩu mặc định
+        String rawPassword = "123456";
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        auth.setPasswordHash(encodedPassword);
+
         authRepository.save(auth);
 
-        return "Mật khẩu đã được đặt lại về mặc định";
+        return "Mật khẩu đã được đặt lại về mặc định: " + rawPassword;
     }
     @Override
+    @Transactional
     public void createUserWithoutOtp(RegisterRequest request) {
         // Kiểm tra email hoặc username trùng
         if (authRepository.existsByEmail(request.getEmail())) {
@@ -484,12 +493,12 @@ public class AuthServiceImpl implements AuthService {
         // Tạo thông tin người dùng
         User user = new User();
         user.setAuth(auth);
+        user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setUserAddress(request.getUserAddress());
-        user.setGender(Gender.valueOf(request.getGender()));
-        user.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
+        user.setPhoneNumber(request.getSdt());
+        user.setCreatedAt(new Date());
+        user.setUpdatedAt(new Date());
         userRepository.save(user);
     }
 

@@ -13,5 +13,6 @@ public interface ProductSizeRepository extends JpaRepository<ProductSize, Long> 
         Optional<ProductSize> findBySizeName(String sizeName);
         List<ProductSize> findAllByProduct(Product product);
         boolean existsByProduct_AsinAndSizeName(String asin, String sizeName);
+        List<ProductSize> findByProductAsin(String asin);
 
 }

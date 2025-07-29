@@ -192,6 +192,11 @@ public class AuthController {
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", exists);
         return ResponseEntity.ok(response);
+
+    }
+    @GetMapping("/checkUsernameExists")
+    public Boolean usernameExists(String username) {
+        return authService.usernameExists(username);
     }
     @GetMapping("/findIdByUsername")
     public Long findIdByUsername(String username) {
@@ -201,10 +206,7 @@ public class AuthController {
     public Long findIdByEmail(String email) {
         return authService.findIdByEmail(email);
     }
-    @GetMapping("/checkUsernameExists")
-    public Boolean usernameExists(String username) {
-        return authService.usernameExists(username);
-    }
+
     @GetMapping("/findRoleByEmail")
     public String findRoleByEmail(String email) {
         return authService.findRoleUserByEmail(email);
@@ -266,5 +268,16 @@ public class AuthController {
     public ResponseEntity<String> createUserByAdmin(@RequestBody RegisterRequest request) {
         authService.createUserWithoutOtp(request);
         return ResponseEntity.ok("Tạo người dùng thành công bởi admin");
+    }
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        boolean exists = authRepository.existsByEmail(email);
+        return ResponseEntity.ok(Map.of("exists", exists));
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<?> checkUsername(@RequestParam String username) {
+        boolean exists = authRepository.existsByUsername(username);
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 }

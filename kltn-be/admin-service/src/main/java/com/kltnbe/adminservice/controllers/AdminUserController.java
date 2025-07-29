@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/users")
@@ -23,49 +24,61 @@ public class AdminUserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        return ResponseEntity.ok(adminUserService.getAllUsers());
+    public List<UserDTO> getAllUsers() {
+        return adminUserService.getAllUsers();
     }
 
-    @PutMapping("/toggleBan/{userId}")
-    public ResponseEntity<String> toggleBanUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(adminUserService.toggleBanUser(userId));
-    }
-
-    @PutMapping("/activate/{userId}")
-    public ResponseEntity<String> activateUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(adminUserService.activateUser(userId));
-    }
-
-    @PutMapping("/update/{userId}")
-    public ResponseEntity<String> updateUser(@PathVariable Long userId,
-                                             @RequestBody UpdateProfileRequest request) {
-        return ResponseEntity.ok(adminUserService.updateUserByAdmin(userId, request));
-    }
     @GetMapping("/search")
     public List<UserDTO> searchUsers(@RequestParam String keyword) {
         return adminUserService.searchUsers(keyword);
     }
 
-    @GetMapping("/{userId}/addresses")
-    public List<AddressInfo> getUserAddresses(@PathVariable Long userId) {
-        return adminUserService.getUserAddresses(userId);
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        return adminUserService.getUserById(id);
     }
 
-    @PutMapping("/changeRole/{userId}")
-    public ResponseEntity<String> changeUserRole(
-            @PathVariable Long userId,
-            @RequestParam String role
-    ) {
-        return ResponseEntity.ok(adminUserService.changeUserRole(userId, role));
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody UpdateProfileRequest request) {
+        return adminUserService.updateUser(id, request);
     }
 
-    @PostMapping("/resetPassword/{userId}")
-    public ResponseEntity<String> resetUserPassword(@PathVariable Long userId) {
-        return ResponseEntity.ok(adminUserService.resetUserPassword(userId));
+    @PutMapping("/{id}/toggle-ban")
+    public ResponseEntity<String> toggleUserBan(@PathVariable Long id) {
+        return adminUserService.toggleUserBan(id);
     }
+
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<String> resetPassword(@PathVariable Long id) {
+        return adminUserService.resetPassword(id);
+    }
+
+    @PutMapping("/{id}/change-role")
+    public ResponseEntity<String> changeUserRole(@PathVariable Long id, @RequestParam String role) {
+        return adminUserService.changeUserRole(id, role);
+    }
+
     @PostMapping("/create")
-    public ResponseEntity<String> createUserByAdmin(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(adminUserService.createUserByAdmin(request));
+    public ResponseEntity<String> createUser(@RequestBody RegisterRequest request) {
+        return adminUserService.createUser(request);
+    }
+
+    @GetMapping("/{id}/addresses")
+    public List<AddressInfo> getUserAddresses(@PathVariable Long id) {
+        return adminUserService.getUserAddresses(id);
+    }
+    @GetMapping("/check-email")
+    public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) {
+        return ResponseEntity.ok(Map.of("exists", adminUserService.isEmailUsed(email)));
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<Map<String, Boolean>> checkUsername(@RequestParam String username) {
+        return ResponseEntity.ok(Map.of("exists", adminUserService.isUsernameUsed(username)));
+    }
+    @PutMapping("/upgradeToSeller/{userId}")
+    public ResponseEntity<String> upgradeToSeller(@PathVariable Long userId) {
+        String result = adminUserService.upgradeToSeller(userId);
+        return ResponseEntity.ok(result);
     }
 }

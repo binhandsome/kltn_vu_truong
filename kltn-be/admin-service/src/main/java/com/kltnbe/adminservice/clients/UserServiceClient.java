@@ -10,38 +10,42 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(name = "user-service", url = "http://localhost:8081")
 public interface UserServiceClient {
 
-    @GetMapping("/allUsers")
+    @GetMapping("/api/user/allUsers")
     List<UserDTO> getAllUsers();
 
-    @PutMapping("/toggleBan/{userId}")
-    String toggleBanUser(@PathVariable("userId") Long userId);
+    @GetMapping("/api/user/getUserById/{userId}")
+    ResponseEntity<UserDTO> getUserById(@PathVariable Long userId);
 
-    @PutMapping("/activate/{userId}")
-    String activateUser(@PathVariable("userId") Long userId);
+    @PutMapping("/api/user/adminUpdate/{userId}")
+    ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody UpdateProfileRequest request);
 
-    @PutMapping("/adminUpdate/{userId}")
-    String updateUserByAdmin(@PathVariable("userId") Long userId,
-                              @RequestBody UpdateProfileRequest request);
-    // ✅ API MỚI — tìm kiếm user
-    @GetMapping("/api/user/admin/search")
-    List<UserDTO> searchUsers(@RequestParam("keyword") String keyword);
+    @PutMapping("/api/user/toggleBan/{userId}")
+    ResponseEntity<String> toggleUserBan(@PathVariable Long userId);
 
-    // ✅ API MỚI — lấy danh sách địa chỉ
-    @GetMapping("/api/user/admin/{userId}/addresses")
-    List<AddressInfo> getUserAddresses(@PathVariable Long userId);
-
-    // ✅ API MỚI — đổi role user
-    @PutMapping("/api/auth/changeRole/{userId}")
-    String changeUserRole(@PathVariable Long userId, @RequestParam("role") String role);
-
-    // ✅ API MỚI — reset mật khẩu user
     @PostMapping("/api/auth/resetPassword/{userId}")
-    String resetUserPassword(@PathVariable Long userId);
+    ResponseEntity<String> resetPassword(@PathVariable Long userId);
+
+    @PutMapping("/api/auth/changeRole/{userId}")
+    ResponseEntity<String> changeUserRole(@PathVariable Long userId, @RequestParam String role);
 
     @PostMapping("/api/auth/admin/createUser")
-    ResponseEntity<String> createUserByAdmin(@RequestBody RegisterRequest request);
+    ResponseEntity<String> createUser(@RequestBody RegisterRequest request);
+
+    @GetMapping("/api/user/{userId}/addresses")
+    List<AddressInfo> getUserAddresses(@PathVariable Long userId);
+
+    @GetMapping("/api/user/search")
+    List<UserDTO> searchUsers(@RequestParam String keyword);
+    @PostMapping("/api/auth/checkEmailExists")
+    Map<String, Boolean> checkEmailExists(@RequestBody Map<String, String> request);
+
+    @GetMapping("/api/auth/checkUsernameExists")
+    Boolean checkUsernameExists(@RequestParam("username") String username);
+    @PutMapping("/api/user/upgradeToSeller/{userId}")
+    String upgradeToSeller(@PathVariable("userId") Long userId);
 }

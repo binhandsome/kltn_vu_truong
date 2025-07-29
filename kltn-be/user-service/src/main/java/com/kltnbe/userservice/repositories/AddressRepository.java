@@ -3,11 +3,14 @@ package com.kltnbe.userservice.repositories;
 import com.kltnbe.userservice.entities.Address;
 import com.kltnbe.userservice.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface AddressRepository extends JpaRepository<Address, Long> {
     List<Address> findAllByUser(User user);
-    List<Address> findAllByUserId(Long id);
+    @Query("SELECT a FROM Address a WHERE a.user.userId = :userId")
+    List<Address> findByUserId(@Param("userId") Long userId);
 
 }

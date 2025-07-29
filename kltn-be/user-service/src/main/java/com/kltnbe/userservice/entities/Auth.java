@@ -29,11 +29,11 @@ public class Auth implements Serializable {
     @Column(name = "password_hash", nullable = true, length = 255)
     private String passwordHash;
 
-    @Column(name = "user_role", nullable = true, insertable = false, updatable = false)
+    @Column(name = "user_role", nullable = true)
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    @Column(name = "is_banned", nullable = true, insertable = false, updatable = false)
+    @Column(name = "is_banned")
     private Boolean isBanned;
 
     @Column(name = "is_active", nullable = true, insertable = false, updatable = false)

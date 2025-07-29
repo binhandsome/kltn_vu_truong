@@ -10,6 +10,7 @@ import com.kltnbe.userservice.dtos.res.UserProfileResponse;
 import com.kltnbe.userservice.entities.Address;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
+import com.kltnbe.userservice.enums.UserRole;
 import com.kltnbe.userservice.repositories.AddressRepository;
 import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
@@ -20,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -305,20 +308,21 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional
     public String toggleBanUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-        Auth auth = user.getAuth(); // dùng đối tượng trực tiếp
-        if (auth == null) {
-            throw new RuntimeException("Không tìm thấy Auth tương ứng");
-        }
+        Long authId = user.getAuth().getAuthId();
+        Auth auth = authRepository.findById(authId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Auth tương ứng"));
 
         boolean newBanStatus = !Boolean.TRUE.equals(auth.getIsBanned());
         auth.setIsBanned(newBanStatus);
         authRepository.save(auth);
 
         return newBanStatus ? "Tài khoản đã bị khoá" : "Tài khoản đã được mở khoá";
+
     }
     @Override
     public String activateUser(Long userId) {
@@ -334,6 +338,27 @@ public class UserServiceImpl implements UserService{
         authRepository.save(auth);
 
         return "Tài khoản đã được kích hoạt";
+    }
+    @Override
+    @Transactional
+    public String upgradeToSeller(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        Auth auth = user.getAuth();
+        if (auth == null) {
+            throw new RuntimeException("Không tìm thấy Auth tương ứng");
+        }
+
+        // Chỉ nâng cấp nếu đang là USER
+        if (auth.getUserRole() != UserRole.USER) {
+            throw new RuntimeException("Tài khoản không phải USER hoặc đã là SELLER");
+        }
+
+        auth.setUserRole(UserRole.SELLER);
+        authRepository.save(auth);
+
+        return "Tài khoản đã được nâng cấp thành SELLER";
     }
 
     @Override
@@ -370,6 +395,7 @@ public class UserServiceImpl implements UserService{
         dto.setUserAddress(user.getUserAddress());
         dto.setProfilePicture(user.getProfilePicture());
         dto.setDateOfBirth(user.getDateOfBirth());
+        dto.setRole(user.getAuth().getUserRole().name());
 
         // Lấy thêm info từ Auth nếu cần
         Auth auth = user.getAuth();
@@ -382,25 +408,25 @@ public class UserServiceImpl implements UserService{
     }
     @Override
     public List<UserDTO> searchUsers(String keyword) {
-        List<User> users = userRepository.searchByKeyword(keyword);
+        String escapedKeyword = escapeLikeKeyword(keyword.toLowerCase());
+
+        List<User> users = userRepository.searchByKeyword(escapedKeyword);
 
         return users.stream().map(user -> {
             UserDTO dto = new UserDTO();
             dto.setUserId(user.getUserId());
             dto.setFirstName(user.getFirstName());
             dto.setLastName(user.getLastName());
-            dto.setPhoneNumber(user.getPhoneNumber());
+            dto.setPhoneNumber(user.getPhoneNumber() != null ? user.getPhoneNumber() : "");
             dto.setEmail(user.getEmail());
             dto.setDateOfBirth(user.getDateOfBirth());
-            dto.setGender(user.getGender()
-                    .name());
-            dto.setUserAddress(user.getUserAddress());
+            dto.setGender(user.getGender() != null ? user.getGender().name() : null);
+            dto.setUserAddress(user.getUserAddress() != null ? user.getUserAddress() : "");
 
-            // ✅ Lấy dữ liệu từ bảng auth liên kết
             Auth auth = user.getAuth();
             if (auth != null) {
                 dto.setUsername(auth.getUsername());
-                dto.setRole(auth.getUserRole().name());
+                dto.setRole(auth.getUserRole() != null ? auth.getUserRole().name() : null);
                 dto.setActive(auth.getIsActive());
                 dto.setBanned(auth.getIsBanned());
             }
@@ -408,7 +434,6 @@ public class UserServiceImpl implements UserService{
             return dto;
         }).toList();
     }
-
 
     @Override
     public List<AddressInfo> getAllAddressesByUserId(Long userId) {
@@ -429,6 +454,12 @@ public class UserServiceImpl implements UserService{
             return info;
         }).toList();
     }
-
+//fix search
+private String escapeLikeKeyword(String keyword) {
+    return keyword
+            .replace("\\", "\\\\")
+            .replace("_", "\\_")
+            .replace("%", "\\%");
+}
 
 }

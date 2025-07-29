@@ -44,6 +44,21 @@ public class UserDTO {
         this.userId = userId;
         this.username = username;
     }
+    public UserDTO(Date dateOfBirth, String email, String firstName, String gender, Boolean isActive, Boolean isBanned, String lastName, String phoneNumber, String profilePicture, String userAddress, Long userId, String username,String role) {
+        this.dateOfBirth = dateOfBirth;
+        this.email = email;
+        this.firstName = firstName;
+        this.gender = gender;
+        this.isActive = isActive;
+        this.isBanned = isBanned;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.profilePicture = profilePicture;
+        this.userAddress = userAddress;
+        this.userId = userId;
+        this.username = username;
+        this.role = role;
+    }
 
     public Date getDateOfBirth() {
         return dateOfBirth;

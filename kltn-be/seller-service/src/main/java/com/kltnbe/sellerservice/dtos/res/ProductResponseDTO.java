@@ -1,18 +1,14 @@
-package com.kltnbe.productservice.dtos.res;
+package com.kltnbe.sellerservice.dtos.res;
 
-import com.kltnbe.productservice.dtos.ColorDTO;
-import com.kltnbe.productservice.dtos.req.ImageDTO;
-import com.kltnbe.productservice.entities.ProductSize;
-import lombok.AllArgsConstructor;
+import com.kltnbe.sellerservice.dtos.ColorDTO;
+import com.kltnbe.sellerservice.dtos.ProductSizeDTO;
+import com.kltnbe.sellerservice.dtos.req.ImageDTO;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ProductResponse {
+public class ProductResponseDTO {
     private Long productId;
     private String asin;
     private String nameProduct;
@@ -28,5 +24,5 @@ public class ProductResponse {
     private String description;
     private String thumbnail;
     private List<ImageDTO> listColorAndThumbnail;
-    private List<ProductSize> size;
+    private List<ProductSizeDTO> size;
 }

@@ -87,6 +87,10 @@ public class UserController {
     public ResponseEntity<String> activateUser(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.activateUser(userId));
     }
+    @PostMapping("/upgradeToSeller/{userId}")
+    public ResponseEntity<String> upgradeToSeller(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.upgradeToSeller(userId));
+    }
 
     // ✏️ Cập nhật thông tin hồ sơ người dùng (Admin)
     @PutMapping("/adminUpdate/{userId}")

@@ -10,57 +10,73 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AdminUserServiceImpl implements AdminUserService {
 
-    private final UserServiceClient userServiceClient;
+    private final UserServiceClient userClient;
 
-    public AdminUserServiceImpl(UserServiceClient userServiceClient) {
-        this.userServiceClient = userServiceClient;
+    public AdminUserServiceImpl(UserServiceClient userClient) {
+        this.userClient = userClient;
     }
 
     @Override
     public List<UserDTO> getAllUsers() {
-        return userServiceClient.getAllUsers();
+        return userClient.getAllUsers();
     }
 
-    @Override
-    public String toggleBanUser(Long userId) {
-        return userServiceClient.toggleBanUser(userId);
-    }
-
-    @Override
-    public String activateUser(Long userId) {
-        return userServiceClient.activateUser(userId);
-    }
-
-    @Override
-    public String updateUserByAdmin(Long userId, UpdateProfileRequest request) {
-        return userServiceClient.updateUserByAdmin(userId, request);
-    }
     @Override
     public List<UserDTO> searchUsers(String keyword) {
-        return userServiceClient.searchUsers(keyword);
+        return userClient.searchUsers(keyword);
+    }
+
+    @Override
+    public ResponseEntity<UserDTO> getUserById(Long id) {
+        return userClient.getUserById(id);
+    }
+
+    @Override
+    public ResponseEntity<String> updateUser(Long id, UpdateProfileRequest request) {
+        return userClient.updateUser(id, request);
+    }
+
+    @Override
+    public ResponseEntity<String> toggleUserBan(Long id) {
+        return userClient.toggleUserBan(id);
+    }
+
+    @Override
+    public ResponseEntity<String> resetPassword(Long id) {
+        return userClient.resetPassword(id);
+    }
+
+    @Override
+    public ResponseEntity<String> changeUserRole(Long id, String role) {
+        return userClient.changeUserRole(id, role);
+    }
+
+    @Override
+    public ResponseEntity<String> createUser(RegisterRequest request) {
+        return userClient.createUser(request);
     }
 
     @Override
     public List<AddressInfo> getUserAddresses(Long userId) {
-        return userServiceClient.getUserAddresses(userId);
+        return userClient.getUserAddresses(userId);
+    }
+    @Override
+    public boolean isEmailUsed(String email) {
+        Map<String, String> req = Map.of("email", email);
+        return userClient.checkEmailExists(req).getOrDefault("exists", false);
     }
 
     @Override
-    public String changeUserRole(Long userId, String role) {
-        return userServiceClient.changeUserRole(userId, role);
-    }
-
-    @Override
-    public String resetUserPassword(Long userId) {
-        return userServiceClient.resetUserPassword(userId);
+    public boolean isUsernameUsed(String username) {
+        return userClient.checkUsernameExists(username);
     }
     @Override
-    public String createUserByAdmin(RegisterRequest request) {
-        ResponseEntity<String> response = userServiceClient.createUserByAdmin(request);
-        return response.getBody();
+    public String upgradeToSeller(Long userId) {
+        return userClient.upgradeToSeller(userId);
     }
 }

@@ -4,9 +4,11 @@ import com.kltnbe.productservice.dtos.ProductVariantDTO;
 import com.kltnbe.productservice.entities.ProductVariant;
 import com.kltnbe.productservice.services.ProductVariantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,4 +51,43 @@ public class ProductVariantController {
         int quantityInStock = variantOpt.get().getQuantityInStock();
         return ResponseEntity.ok(quantityInStock);
     }
+    @PutMapping("/variants/{variantId}")
+    public ResponseEntity<?> updateVariant(@PathVariable Long variantId,
+                                           @RequestParam BigDecimal price,
+                                           @RequestParam int quantity) {
+        productVariantService.updateVariant(variantId, price, quantity);
+        return ResponseEntity.ok("Đã cập nhật biến thể");
+    }
+
+    @GetMapping("/detail/{variantId}")
+    public ResponseEntity<?> getVariant(@PathVariable Long variantId) {
+        Optional<ProductVariant> optionalVariant = productVariantService.getVariantById(variantId);
+        if (optionalVariant.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Variant not found");
+        }
+
+        try {
+            ProductVariant variant = optionalVariant.get();
+
+            ProductVariantDTO dto = new ProductVariantDTO();
+            dto.setVariantId(variant.getVariantId());
+            dto.setSizeId(variant.getSize() != null ? variant.getSize().getSizeId() : null);
+            dto.setColorId(variant.getColor() != null ? variant.getColor().getColorId() : null);
+            dto.setPrice(variant.getPrice());
+            dto.setQuantityInStock(variant.getQuantityInStock());
+            dto.setQuantitySold(variant.getQuantitySold());
+            dto.setStatus(variant.getStatus().name());
+
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi khi xử lý biến thể");
+        }
+    }
+    @DeleteMapping("/variants/{variantId}")
+    public ResponseEntity<?> deleteVariant(@PathVariable Long variantId) {
+        productVariantService.deleteVariant(variantId);
+        return ResponseEntity.ok("Đã xoá biến thể");
+    }
+
 }

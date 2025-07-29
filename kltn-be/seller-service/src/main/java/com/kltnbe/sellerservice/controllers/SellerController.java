@@ -1,6 +1,8 @@
 package com.kltnbe.sellerservice.controllers;
 
 import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.dtos.req.ProductRequestDTO;
+import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.entities.Shop;
 import com.kltnbe.sellerservice.entities.ShopDiscount;
 import com.kltnbe.sellerservice.entities.UserUseDiscount;
@@ -104,5 +106,70 @@ public class SellerController {
     @GetMapping("/get_id_shop_by_accessToken")
     public ResponseEntity<Long> getIdShopByAccessToken(@RequestParam String accessToken) {
         return ResponseEntity.ok(sellerService.getIdShopByAuthId(accessToken));
+    }
+    @GetMapping("/products")
+    public List<ProductResponseDTO> getMyProducts(@RequestParam String accessToken) {
+        Long storeId = sellerService.getIdShopByAuthId(accessToken);
+        return sellerService.getProductsBySeller(storeId);
+    }
+    @PostMapping("/variants")
+    public ResponseEntity<ProductVariantDTO> createVariant(@RequestBody ProductVariantDTO dto) {
+        ProductVariantDTO created = sellerService.createVariant(dto);
+        return ResponseEntity.ok(created);
+    }
+
+    @GetMapping("/variants/{productId}")
+    public List<ProductVariantDTO> getVariants(@PathVariable Long productId) {
+        return sellerService.getVariantsByProduct(productId);
+    }
+
+    @GetMapping("/variant/{variantId}")
+    public ProductVariantDTO getVariant(@PathVariable Long variantId) {
+        return sellerService.getVariant(variantId);
+    }
+
+    @PutMapping("/variants/{variantId}")
+    public ResponseEntity<?> updateVariant(@PathVariable Long variantId,
+                                           @RequestParam BigDecimal price,
+                                           @RequestParam int quantity) {
+        sellerService.updateVariantInfo(variantId, price, quantity);
+        return ResponseEntity.ok("✅ Cập nhật biến thể thành công!");
+    }
+
+    @PatchMapping("/products/{productId}/status")
+    public void updateProductStatus(@PathVariable Long productId,
+                                    @RequestParam String status) {
+        sellerService.updateProductStatus(productId, status);
+    }
+
+    @DeleteMapping("/variants/{variantId}")
+    public void deleteVariant(@PathVariable Long variantId) {
+        sellerService.deleteVariant(variantId);
+    }
+
+    @DeleteMapping("/products/{asin}")
+    public void deleteProduct(@PathVariable String asin) {
+        sellerService.deleteProduct(asin);
+    }
+
+    @PostMapping("/products")
+    public void addProduct(@RequestBody ProductRequestDTO requestDTO) {
+        sellerService.addProduct(requestDTO);
+    }
+
+    @PutMapping("/products")
+    public void updateProduct(@RequestBody ProductRequestDTO requestDTO) {
+        sellerService.updateProduct(requestDTO);
+    }
+
+    @PutMapping("/variants/{variantId}/sell")
+    public ProductVariantDTO sellVariant(@PathVariable Long variantId,
+                                         @RequestParam int quantity) {
+        return sellerService.sellVariant(variantId, quantity);
+    }
+    @GetMapping("/products/{asin}/sizes")
+    public ResponseEntity<List<ProductSizeDTO>> getSizes(@PathVariable String asin) {
+        List<ProductSizeDTO> sizes = sellerService.getSizesByAsin(asin);
+        return ResponseEntity.ok(sizes);
     }
 }
