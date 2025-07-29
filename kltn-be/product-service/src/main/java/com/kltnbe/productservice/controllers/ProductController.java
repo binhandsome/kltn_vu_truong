@@ -8,6 +8,7 @@ import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.CategoryResponse;
 import com.kltnbe.productservice.dtos.res.CategoryWithImage;
 import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
+import com.kltnbe.productservice.dtos.res.ProductResponse;
 import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.repositories.*;
 import com.kltnbe.productservice.services.AsyncUploadService;
@@ -348,4 +349,27 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable String asin,@RequestParam Long authId) {
         return productService.deleteProductByAsin(asin, authId);
     }
+    @GetMapping("/by-seller/{storeId}")
+    public ResponseEntity<List<ProductResponse>> getProductsBySeller(@PathVariable Long storeId) {
+        return ResponseEntity.ok(productService.getProductsByStoreId(storeId));
+    }
+
+    @PatchMapping("/{productId}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long productId,
+            @RequestParam String status) {
+        productService.updateStatus(productId, status);
+        return ResponseEntity.ok("Trạng thái sản phẩm đã được cập nhật");
+    }
+    @GetMapping("/colors")
+    public ResponseEntity<List<Color>> getAllActiveColors() {
+        List<Color> colors = colorRepository.findAllByStatus(1);
+        return ResponseEntity.ok(colors);
+    }
+
+    @GetMapping("/{asin}/sizes")
+    public List<ProductSize> getSizesByAsin(@PathVariable String asin) {
+        return productSizeRepository.findByProductAsin(asin);
+    }
+
 }

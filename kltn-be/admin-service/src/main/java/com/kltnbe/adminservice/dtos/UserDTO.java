@@ -19,6 +19,7 @@ public class UserDTO {
     private Boolean isBanned;
     private Boolean isActive;
     private Date dateOfBirth;
+    private String role;
 
     public UserDTO() {
     }
@@ -30,7 +31,7 @@ public class UserDTO {
         this.username = username;
     }
 
-    public UserDTO(Date dateOfBirth, String email, String firstName, String gender, Boolean isActive, Boolean isBanned, String lastName, String phoneNumber, String profilePicture, String userAddress, Long userId, String username) {
+    public UserDTO(Date dateOfBirth, String email, String firstName, String gender, Boolean isActive, Boolean isBanned, String lastName, String phoneNumber, String profilePicture, String userAddress, Long userId, String username,String role) {
         this.dateOfBirth = dateOfBirth;
         this.email = email;
         this.firstName = firstName;
@@ -43,6 +44,7 @@ public class UserDTO {
         this.userAddress = userAddress;
         this.userId = userId;
         this.username = username;
+        this.role = role;
     }
 
     public Date getDateOfBirth() {
@@ -139,5 +141,13 @@ public class UserDTO {
 
     public void setProfilePicture(String profilePicture) {
         this.profilePicture = profilePicture;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

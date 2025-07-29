@@ -42,4 +42,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT COALESCE(p.tags, 'Other'), COUNT(p) FROM Product p GROUP BY COALESCE(p.tags, 'Other')")
     List<Object[]> countProductsByTags();
     Page<Product> findProductByProductTitleContains(String productTitle, Pageable pageable);
+    List<Product> findByStoreId(Long storeId);
 }

@@ -13,6 +13,7 @@ import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
 import com.kltnbe.userservice.services.AuthService;
 import com.kltnbe.userservice.services.UserService;
+import com.kltnbe.userservice.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -175,6 +176,7 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(authService.changePassword(userDetails.getUsername(), request));
     }
+
     @PutMapping("/profile")
     public ResponseEntity<String> updateProfile(@RequestBody UpdateProfileRequest request, @RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
@@ -192,6 +194,11 @@ public class AuthController {
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", exists);
         return ResponseEntity.ok(response);
+
+    }
+    @GetMapping("/checkUsernameExists")
+    public Boolean usernameExists(String username) {
+        return authService.usernameExists(username);
     }
     @InternalApi
     @GetMapping("/findIdByUsername")
@@ -211,6 +218,7 @@ public class AuthController {
         return authService.usernameExists(username);
     }
     @InternalApi
+
     @GetMapping("/findRoleByEmail")
     public String findRoleByEmail(String email) {
         return authService.findRoleUserByEmail(email);
@@ -276,5 +284,16 @@ public class AuthController {
     public ResponseEntity<String> createUserByAdmin(@RequestBody RegisterRequest request) {
         authService.createUserWithoutOtp(request);
         return ResponseEntity.ok("Tạo người dùng thành công bởi admin");
+    }
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        boolean exists = authRepository.existsByEmail(email);
+        return ResponseEntity.ok(Map.of("exists", exists));
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<?> checkUsername(@RequestParam String username) {
+        boolean exists = authRepository.existsByUsername(username);
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 }

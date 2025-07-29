@@ -35,4 +35,5 @@ public interface UserService {
     String updateUserByAdmin(Long userId, UpdateProfileRequest request);
     List<UserDTO> searchUsers(String keyword);
     List<AddressInfo> getAllAddressesByUserId(Long userId);
+    String upgradeToSeller(Long userId);
 }

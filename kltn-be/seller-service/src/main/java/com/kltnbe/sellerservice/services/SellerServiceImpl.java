@@ -3,32 +3,29 @@ package com.kltnbe.sellerservice.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kltnbe.sellerservice.clients.ProductServiceProxy;
+import com.kltnbe.sellerservice.clients.ProductFeignClient;
 import com.kltnbe.sellerservice.clients.UploadServiceProxy;
 import com.kltnbe.sellerservice.clients.UserServiceProxy;
 import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
+import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import com.kltnbe.sellerservice.entities.*;
 import com.kltnbe.sellerservice.repositories.*;
 
 import feign.FeignException;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +47,8 @@ public class SellerServiceImpl implements SellerService {
     private final ShopDiscountRepository shopDiscountRepository;
     private final UserUseDiscountRepository userUseDiscountRepository;
     private final ImageUploadService imageUploadService; // Bean mới
+    private final ProductFeignClient productFeignClient;
+
     @Autowired
     private final UploadServiceProxy uploadServiceProxy;
     private final StoreAuthenticRepository storeAuthenticRepository;
@@ -571,5 +570,80 @@ public class SellerServiceImpl implements SellerService {
     public ResponseEntity<?> deleteProduct(String asin, Long authId) {
         return productServiceProxy.deleteProduct(asin, authId);
     }
+    @Override
+    public List<ProductResponseDTO> getProductsBySeller(Long storeId) {
+        return productFeignClient.getProductsBySeller(storeId);
+    }
+
+    @Override
+    public List<ProductVariantDTO> getVariantsByProduct(Long productId) {
+        return productFeignClient.getVariantsByProduct(productId);
+    }
+
+    @Override
+    public ProductVariantDTO getVariant(Long variantId) {
+        return productFeignClient.getVariant(variantId);
+    }
+    @Override
+    public void updateProductStatus(Long productId, String status) {
+        productFeignClient.updateStatus(productId, status);
+    }
+
+    @Override
+    public void deleteVariant(Long variantId) {
+        productFeignClient.deleteVariant(variantId);
+    }
+
+    @Override
+    public void deleteProduct(String asin) {
+        productFeignClient.deleteProduct(asin);
+    }
+
+    @Override
+    public void addProduct(ProductRequestDTO product) {
+        productFeignClient.addProduct(product);
+    }
+
+    @Override
+    public void updateProduct(ProductRequestDTO product) {
+        productFeignClient.updateProduct(product);
+    }
+
+    @Override
+    public ProductVariantDTO sellVariant(Long variantId, int quantity) {
+        return productFeignClient.sellVariant(variantId, quantity);
+    }
+    public ProductResponseDTO getProductWithSizes(String asin, Long storeId) {
+        List<ProductResponseDTO> allProducts = productFeignClient.getProductsBySeller(storeId);
+        ProductResponseDTO product = allProducts.stream()
+                .filter(p -> p.getAsin().equals(asin))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với asin: " + asin));
+
+        // Gọi API lấy size theo ASIN
+        List<ProductSizeDTO> sizes = productFeignClient.getSizesByAsin(asin);
+
+        // Gán size vào product response
+        product.setSize(sizes);
+
+        return product;
+    }
+    @Override
+    public void updateVariantInfo(Long variantId, BigDecimal price, int quantity) {
+        ProductVariantDTO variant = productFeignClient.getVariant(variantId);
+        int currentQuantity = variant.getQuantityInStock();
+        int newQuantity = currentQuantity + quantity;
+
+        productFeignClient.updateVariant(variantId,price,newQuantity);
+    }
+    @Override
+    public ProductVariantDTO createVariant(ProductVariantDTO dto) {
+        return productFeignClient.createVariant(dto);
+    }
+    @Override
+    public List<ProductSizeDTO> getSizesByAsin(String asin) {
+        return productFeignClient.getSizesByAsin(asin);
+    }
+
 }
 

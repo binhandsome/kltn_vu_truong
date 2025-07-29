@@ -13,8 +13,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,18 +36,32 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         Color color = colorRepository.findById(dto.getColorId())
                 .orElseThrow(() -> new EntityNotFoundException("Color not found"));
 
+        // Check trùng biến thể
+        variantRepository.findByProductIdAndSizeIdAndColorId(
+                        product.getProductId(), size.getSizeId(), color.getColorId())
+                .ifPresent(v -> {
+                    throw new IllegalArgumentException("❌ Biến thể đã tồn tại.");
+                });
+
         ProductVariant variant = new ProductVariant();
         variant.setProduct(product);
         variant.setSize(size);
         variant.setColor(color);
         variant.setPrice(dto.getPrice());
         variant.setQuantityInStock(dto.getQuantityInStock());
-        variant.setQuantitySold(dto.getQuantitySold());
-        variant.setStatus(ProductVariant.VariantStatus.valueOf(dto.getStatus()));
+        variant.setQuantitySold(dto.getQuantitySold() != null ? dto.getQuantitySold() : 0);
+        variant.setStatus(
+                dto.getStatus() != null
+                        ? ProductVariant.VariantStatus.valueOf(dto.getStatus())
+                        : (dto.getQuantityInStock() != null && dto.getQuantityInStock() > 0
+                        ? ProductVariant.VariantStatus.IN_STOCK
+                        : ProductVariant.VariantStatus.OUT_OF_STOCK)
+        );
 
         ProductVariant saved = variantRepository.save(variant);
         return mapToDTO(saved);
     }
+
 
     @Override
     public ProductVariantDTO updateStock(Long variantId, int quantitySold) {
@@ -81,10 +97,30 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         dto.setQuantityInStock(v.getQuantityInStock());
         dto.setQuantitySold(v.getQuantitySold());
         dto.setStatus(v.getStatus().name());
+        dto.setAsin(v.getProduct().getAsin());
         return dto;
     }
     @Override
     public Optional<ProductVariant> findByProductVariant(Long productId, Long sizeId, Long colorId) {
         return variantRepository.findByProductVariant(productId, sizeId, colorId);
+    }
+    @Override
+    public void updateVariant(Long variantId, BigDecimal price, int quantity) {
+        Optional<ProductVariant> opt = variantRepository.findById(variantId);
+        if (opt.isPresent()) {
+            ProductVariant variant = opt.get();
+            variant.setQuantityInStock(quantity);
+            variant.setPrice(price);
+            variantRepository.save(variant);
+        }
+    }
+
+    @Override
+    public Optional<ProductVariant> getVariantById(Long variantId) {
+        return variantRepository.findById(variantId);
+    }
+    @Override
+    public void deleteVariant(Long variantId) {
+        variantRepository.deleteById(variantId);
     }
 }

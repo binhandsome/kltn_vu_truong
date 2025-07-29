@@ -4,21 +4,30 @@ import com.kltnbe.adminservice.dtos.UserDTO;
 import com.kltnbe.adminservice.dtos.req.RegisterRequest;
 import com.kltnbe.adminservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.adminservice.dtos.res.AddressInfo;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface AdminUserService {
     List<UserDTO> getAllUsers();
 
-    String toggleBanUser(Long userId);
-
-    String activateUser(Long userId);
-
-    String updateUserByAdmin(Long userId, UpdateProfileRequest request);
     List<UserDTO> searchUsers(String keyword);
+
+    ResponseEntity<UserDTO> getUserById(Long id);
+
+    ResponseEntity<String> updateUser(Long id, UpdateProfileRequest request);
+
+    ResponseEntity<String> toggleUserBan(Long id);
+
+    ResponseEntity<String> resetPassword(Long id);
+
+    ResponseEntity<String> changeUserRole(Long id, String role);
+
+    ResponseEntity<String> createUser(RegisterRequest request);
+
     List<AddressInfo> getUserAddresses(Long userId);
-    String changeUserRole(Long userId, String role);
-    String resetUserPassword(Long userId);
-    String createUserByAdmin(RegisterRequest request);
+    boolean isEmailUsed(String email);
+    boolean isUsernameUsed(String username);
+    String upgradeToSeller(Long userId);
 
 }

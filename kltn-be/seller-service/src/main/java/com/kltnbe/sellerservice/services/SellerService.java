@@ -1,12 +1,12 @@
 package com.kltnbe.sellerservice.services;
 
 import com.kltnbe.sellerservice.dtos.*;
-import com.kltnbe.sellerservice.entities.Shop;
-import com.kltnbe.sellerservice.entities.ShopDiscount;
-import com.kltnbe.sellerservice.entities.UserUseDiscount;
+import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
+import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface SellerService {
@@ -37,4 +37,16 @@ public interface SellerService {
     ResponseEntity<?> setThumbnail(String asin, Long imageId, Long authId);
     ResponseEntity<String> deleteImage(Long imageId, Long authId);
     ResponseEntity<?> deleteProduct(String asin, Long authId);
+    List<ProductResponseDTO> getProductsBySeller(Long storeId);
+    List<ProductVariantDTO> getVariantsByProduct(Long productId);
+    ProductVariantDTO getVariant(Long variantId);
+    void updateProductStatus(Long productId, String status);
+    void deleteVariant(Long variantId);
+    void deleteProduct(String asin);
+    void addProduct(ProductRequestDTO product);
+    void updateProduct(ProductRequestDTO product);
+    ProductVariantDTO sellVariant(Long variantId, int quantity);
+    void updateVariantInfo(Long variantId, BigDecimal price, int quantity);
+    ProductVariantDTO createVariant(ProductVariantDTO dto);
+    List<ProductSizeDTO> getSizesByAsin(String asin);
 }

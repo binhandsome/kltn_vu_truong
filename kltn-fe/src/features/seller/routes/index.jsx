@@ -48,6 +48,9 @@ import Chart from '../pages/chart/Chart';
 import CreateShop from '../pages/shop/CreateShop'
 import AddProduct from '../pages/product/AddProduct'
 import ActionProduct from '../pages/product/ActionProduct'
+import InventoryProduct from '../pages/inventory/InventoryProduct';
+import ProductVariantPage from '../pages/inventory/ProductVariantPage';
+import AddProductVariant from '../pages/inventory/AddProductVariant';
 const SellerRoutes = () => {
   return (
     <Routes>
@@ -81,6 +84,9 @@ const SellerRoutes = () => {
         <Route path="map/vectorMap" element={<VectorMap />} />
         <Route path="order/order" element={<Order />} />
         <Route path="product/allProduct" element={<AllProduct />} />
+        <Route path="inventory/inventoryProduct" element={<InventoryProduct />} />
+        <Route path="inventory/product/:productId/variants" element={<ProductVariantPage />} />
+        <Route path="/inventory/product/:asin/variants/add" element={<AddProductVariant />} />
         <Route path="support/support" element={<Support />} />
         <Route path="table/advanceTable" element={<AdvanceTable />} />
         <Route path="table/basicTable" element={<BasicTable />} />

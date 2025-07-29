@@ -3,16 +3,13 @@ package com.kltnbe.sellerservice.controllers;
 import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
 import com.kltnbe.sellerservice.dtos.*;
-import com.kltnbe.sellerservice.entities.Shop;
-import com.kltnbe.sellerservice.entities.ShopDiscount;
-import com.kltnbe.sellerservice.entities.UserUseDiscount;
+import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.services.SellerService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -156,6 +153,72 @@ public class SellerController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         System.out.println(userDetails.getAuthId() + "user detail");
         return sellerService.deleteSize(sizeId, userDetails.getAuthId());
+    }
+    @GetMapping("/products")
+    public ResponseEntity<List<ProductResponseDTO>> getMyProducts(@RequestParam Long authId) {
+        Long storeId = sellerService.getIdShopByAuthId(authId);
+        List<ProductResponseDTO> products = sellerService.getProductsBySeller(storeId);
+        return ResponseEntity.ok(products);
+    }
+    @PostMapping("/variants")
+    public ResponseEntity<ProductVariantDTO> createVariant(@RequestBody ProductVariantDTO dto) {
+        ProductVariantDTO created = sellerService.createVariant(dto);
+        return ResponseEntity.ok(created);
+    }
+
+    @GetMapping("/variants/{productId}")
+    public List<ProductVariantDTO> getVariants(@PathVariable Long productId) {
+        return sellerService.getVariantsByProduct(productId);
+    }
+
+    @GetMapping("/variant/{variantId}")
+    public ProductVariantDTO getVariant(@PathVariable Long variantId) {
+        return sellerService.getVariant(variantId);
+    }
+
+    @PutMapping("/variants/{variantId}")
+    public ResponseEntity<?> updateVariant(@PathVariable Long variantId,
+                                           @RequestParam BigDecimal price,
+                                           @RequestParam int quantity) {
+        sellerService.updateVariantInfo(variantId, price, quantity);
+        return ResponseEntity.ok("✅ Cập nhật biến thể thành công!");
+    }
+
+    @PatchMapping("/products/{productId}/status")
+    public void updateProductStatus(@PathVariable Long productId,
+                                    @RequestParam String status) {
+        sellerService.updateProductStatus(productId, status);
+    }
+
+    @DeleteMapping("/variants/{variantId}")
+    public void deleteVariant(@PathVariable Long variantId) {
+        sellerService.deleteVariant(variantId);
+    }
+
+    @DeleteMapping("/products/{asin}")
+    public void deleteProduct(@PathVariable String asin) {
+        sellerService.deleteProduct(asin);
+    }
+
+    @PostMapping("/products")
+    public void addProduct(@RequestBody ProductRequestDTO requestDTO) {
+        sellerService.addProduct(requestDTO);
+    }
+
+    @PutMapping("/products")
+    public void updateProduct(@RequestBody ProductRequestDTO requestDTO) {
+        sellerService.updateProduct(requestDTO);
+    }
+
+    @PutMapping("/variants/{variantId}/sell")
+    public ProductVariantDTO sellVariant(@PathVariable Long variantId,
+                                         @RequestParam int quantity) {
+        return sellerService.sellVariant(variantId, quantity);
+    }
+    @GetMapping("/products/{asin}/sizes")
+    public ResponseEntity<List<ProductSizeDTO>> getSizes(@PathVariable String asin) {
+        List<ProductSizeDTO> sizes = sellerService.getSizesByAsin(asin);
+        return ResponseEntity.ok(sizes);
     }
 
     @PostMapping(value = "/upload-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

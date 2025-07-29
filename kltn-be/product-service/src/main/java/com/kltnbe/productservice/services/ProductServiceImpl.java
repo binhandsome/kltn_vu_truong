@@ -10,6 +10,7 @@ import com.kltnbe.productservice.dtos.res.ProductResponse;
 import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.enums.ProductStatus;
 import com.kltnbe.productservice.repositories.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -227,7 +228,7 @@ validateShopOwnership(product.getStoreId(), authId);
 
         Product product = productByAsin.get();
         ProductResponse response = new ProductResponse();
-
+        response.setProductId(product.getProductId());
         response.setAsin(product.getAsin());
         response.setNameProduct(product.getProductTitle());
         response.setNameBrand(product.getBrandName());
@@ -435,6 +436,91 @@ validateShopOwnership(product.getStoreId(), authId);
             throw new RuntimeException("❌ Bạn không có quyền thao tác với shop này");
         }
     }
+    @Override
+    public List<ProductResponse> getProductsByStoreId(Long storeId) {
+        List<Product> products = productRepository.findByStoreId(storeId);
+        return products.stream()
+                .map(this::mapProductToDTO)
+                .collect(Collectors.toList());
+    }
 
+    @Override
+    public void updateStatus(Long productId, String status) {
+        Optional<Product> productOpt = productRepository.findById(productId);
+        if (productOpt.isPresent()) {
+            Product product = productOpt.get();
+            product.setProductStatus(ProductStatus.valueOf(status));
+            productRepository.save(product);
+        }
+    }
+    public ProductResponse mapProductToDTO(Product product) {
+        ProductResponse dto = new ProductResponse();
+        dto.setProductId(product.getProductId());
+        dto.setAsin(product.getAsin());
+        dto.setNameProduct(product.getProductTitle());
+        dto.setNameBrand(product.getBrandName());
+        dto.setPrice(product.getProductPrice() != null ? product.getProductPrice().doubleValue() : null);
+        dto.setProductStatus(product.getProductStatus() != null ? product.getProductStatus().name() : null);
+        dto.setSelectedType(product.getProductType());
+        dto.setDiscountPercent(product.getPercentDiscount() != null ? product.getPercentDiscount().intValue() : 0);
+        dto.setDescription(product.getTags());
+        dto.setThumbnail(product.getProductThumbnail());
+        dto.setSize(product.getSizes());
+
+        // Category list
+        if (product.getCategory() != null) {
+            List<List<String>> categoryList = new ArrayList<>();
+            for (Category c : product.getCategory()) {
+                if (c.getCategories() != null) {
+                    categoryList.add(List.of(c.getCategories()));
+                }
+            }
+            dto.setCategoryList(categoryList);
+        }
+
+        // === Map selectedColors ===
+        Set<Long> addedColorIds = new HashSet<>();
+        List<ColorDTO> selectedColors = new ArrayList<>();
+
+        if (product.getImages() != null) {
+            for (ProductImage img : product.getImages()) {
+                Long colorId = img.getColorId();
+                if (colorId != null && !addedColorIds.contains(colorId)) {
+                    colorRepository.findById(colorId).ifPresent(color -> {
+                        selectedColors.add(new ColorDTO(color));
+                        addedColorIds.add(colorId);
+                    });
+                }
+            }
+        }
+        dto.setSelectedColors(selectedColors);
+
+        Map<Long, List<ImageInfoDTO>> imageMap = new HashMap<>();
+
+        for (ProductImage image : product.getImages()) {
+            Long colorId = image.getColorId();
+            if (colorId == null) continue;
+
+            imageMap.putIfAbsent(colorId, new ArrayList<>());
+
+            ImageInfoDTO imageInfo = new ImageInfoDTO();
+            imageInfo.setImageUrl(image.getImageData()); // tên ảnh hoặc URL
+            imageInfo.setImage_id(image.getImageId());
+            imageInfo.setIsMainImage(image.getIsMainImage());
+
+            imageMap.get(colorId).add(imageInfo);
+        }
+
+        List<ImageDTO> imageDTOList = new ArrayList<>();
+        for (Map.Entry<Long, List<ImageInfoDTO>> entry : imageMap.entrySet()) {
+            ImageDTO imageDTO = new ImageDTO();
+            imageDTO.setIdColor(entry.getKey());
+            imageDTO.setListImageByColor(entry.getValue());
+            imageDTOList.add(imageDTO);
+        }
+        dto.setListColorAndThumbnail(imageDTOList);
+
+        return dto;
+    }
 
 }

@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 public class ProductVariantDTO {
     private Long variantId;
     private Long productId;
+    private String asin;
     private Long sizeId;
     private Long colorId;
     private BigDecimal price;
@@ -77,5 +78,13 @@ public class ProductVariantDTO {
 
     public void setVariantId(Long variantId) {
         this.variantId = variantId;
+    }
+
+    public String getAsin() {
+        return asin;
+    }
+
+    public void setAsin(String asin) {
+        this.asin = asin;
     }
 }

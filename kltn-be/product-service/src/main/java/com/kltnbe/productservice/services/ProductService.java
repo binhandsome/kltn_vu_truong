@@ -8,6 +8,7 @@ import com.kltnbe.productservice.dtos.res.ProductResponse;
 import com.kltnbe.productservice.entities.Color;
 import com.kltnbe.productservice.entities.MoreProductInfo;
 import com.kltnbe.productservice.entities.Product;
+import com.kltnbe.productservice.entities.ProductSize;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -38,4 +39,6 @@ public interface ProductService {
     void deleteImageById(Long imageId, Long authId);
     ResponseEntity<?> updateProduct(ProductRequestDTO request, Long authId);
     ResponseEntity<?> deleteProductByAsin(String asin, Long authId);
+    List<ProductResponse> getProductsByStoreId(Long storeId);
+    void updateStatus(Long productId, String status);
 }
