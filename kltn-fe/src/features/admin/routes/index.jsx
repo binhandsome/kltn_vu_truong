@@ -45,6 +45,7 @@ import ProgressBars from '../pages/uiKit/ProgressBars';
 import Tabs from '../pages/uiKit/Tabs';
 import Typography from '../pages/uiKit/Typography';
 import Chart from '../pages/chart/Chart';
+import ChangePassword from '../pages/authentication/ChangePassword';
 
 const AdminRoutes = () => {
   return (
@@ -54,6 +55,7 @@ const AdminRoutes = () => {
         <Route path="dashboard/userDashboard" element={<UserDashboard />} />
         <Route path="authentication/login" element={<Login />} />
         <Route path="authentication/register" element={<Register />} />
+        <Route path="authentication/changePassword" element={<ChangePassword />} />=
         <Route path="authentication/myProfile" element={<MyProfile />} />
         <Route path="authentication/setting" element={<MyProfile />} />
         <Route path="authentication/recoverPassword" element={<RecoverPassword />} />
