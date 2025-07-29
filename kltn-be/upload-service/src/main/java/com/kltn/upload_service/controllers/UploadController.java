@@ -2,6 +2,7 @@ package com.kltn.upload_service.controllers;
 
 import com.kltn.upload_service.helps.ByteArrayMultipartFile;
 import com.kltn.upload_service.services.UploadService;
+import com.kltnbe.security.utils.InternalApi;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,9 +16,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/upload")
+@InternalApi
 @AllArgsConstructor
 public class UploadController {
     private final UploadService service;
+
     @PostMapping("/uploadListImage")
     public ResponseEntity<List<String>> uploadImages(
             @RequestParam List<MultipartFile> files,

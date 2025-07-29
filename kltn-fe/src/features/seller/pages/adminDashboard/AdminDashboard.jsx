@@ -104,6 +104,7 @@ function toDatetimeLocal(date) {
       const response = await axios.put(`${API_URL}/update-discount-shop`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
         },
       });
       setMessage(response.data.message);
@@ -125,8 +126,12 @@ function toDatetimeLocal(date) {
     }
     try {
       await axios.delete(`${API_URL}/delete-discount-shop`, {
-        params: { accessToken,
+        params: { 
           shopDiscountId: selectedDiscount.discountShopId,
+         },
+         headers :{
+                          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+
          }
       });
       setMessage('✅ Đã xóa mã giảm giá thành công. ');
@@ -146,7 +151,6 @@ function toDatetimeLocal(date) {
     }
 
     const formData = new FormData();
-    formData.append('accessToken', accessToken);
     formData.append('nameShop', nameShop);
     if (thumbnailShop instanceof File) {
       formData.append('thumbnailShop', thumbnailShop);
@@ -160,10 +164,11 @@ function toDatetimeLocal(date) {
     try {
       const response = await axios.post(`${API_URL}/create-shop-edit`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+                          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+
         }
       });
-      setShopInfo(response.data);
       setMessage('✅ Cập nhật shop thành công.');
       setShowEditModal(false);
     } catch (error) {
@@ -187,7 +192,10 @@ function toDatetimeLocal(date) {
 
     try {
       await axios.delete(`${API_URL}/delete-shop`, {
-        params: { accessToken }
+        headers : {
+                          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+
+        }
       });
       setShopInfo(null);
       setMessage('✅ Đã xóa shop thành công.');
@@ -215,7 +223,6 @@ function toDatetimeLocal(date) {
       setMessage('❌ Vui lòng đăng nhập để tạo mã giảm giá.');
       return;
     }
-
     // Validate inputs
     if (!nameDiscount.trim()) {
       setMessage('❌ Tên mã giảm giá không được để trống.');
@@ -237,16 +244,7 @@ function toDatetimeLocal(date) {
       setMessage('❌ Vui lòng chọn trạng thái.');
       return;
     }
-
-    // const convertToVNISOString = (localDateTimeStr) => {
-    //   const date = new Date(localDateTimeStr);
-    //   const vnOffset = 7 * 60 * 60000; // 7h -> ms
-    //   const vnTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000 + vnOffset);
-    //   return vnTime.toISOString().slice(0, 19); 
-    // };
-
     const discountData = {
-      accessToken,
       nameDiscount,
       minPrice: parseFloat(minPrice),
       percentValue: parseInt(percentValue),
@@ -255,11 +253,12 @@ function toDatetimeLocal(date) {
       status
     };
 
-
     try {
       const response = await axios.post(`${API_URL}/create-discount`, discountData, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',                
+          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+
         }
       });
       setMessage('✅ Tạo mã giảm giá thành công!');
@@ -288,8 +287,10 @@ function toDatetimeLocal(date) {
 
       try {
         const response = await axios.get(`${API_URL}/get-shop-discounts`, {
-          params: { accessToken }
-        });
+  headers: {
+                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+            },
+                  });
         setDiscounts(response.data);
         setMessage(response.data.length > 0 ? '✅ Đã tải danh sách mã giảm giá.' : '⚠️ Chưa có mã giảm giá nào.');
       } catch (error) {
@@ -315,8 +316,9 @@ function toDatetimeLocal(date) {
 
       try {
         const response = await axios.get(`${API_URL}/has-shop`, {
-          params: { accessToken }
-        });
+  headers: {
+                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+            },        });
         setShopStatus(response.data);
         if (response.data.hasShop) {
           switch (response.data.shopStatus) {
@@ -354,7 +356,9 @@ function toDatetimeLocal(date) {
 
       try {
         const response = await axios.get(`${API_URL}/get-shop-info`, {
-          params: { accessToken }
+           headers: {
+                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+            },
         });
         setShopInfo(response.data);
         setMessage('✅ Đã tải thông tin shop thành công.');
@@ -1967,7 +1971,7 @@ function toDatetimeLocal(date) {
                                   <td colSpan="8" style={{ textAlign: 'center' }}>
                                     <p>Chưa có mã giảm giá nào.</p>
                                     <p>{message}</p>
-                                    <a href="/create-discount">Thêm mã giảm giá</a>
+                                    {/* <a href="/create-discount">Thêm mã giảm giá</a> */}
                                   </td>
                                 </tr>
                               )}

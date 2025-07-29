@@ -32,13 +32,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "AND p.productThumbnail IS NOT NULL " +
             "ORDER BY FUNCTION('RAND')")
     List<String> findRandomThumbnailByProductType(@Param("productType") String productType, Pageable pageable);
+
     Optional<Product> findProductByAsin(String asin);
     List<Product> findAllByAsinIn(List<String> asins);
-    @Query("SELECT p.salesRank, COUNT(p) FROM Product p GROUP BY p.salesRank")
+    @Query("SELECT COALESCE(p.salesRank, 'Other'), COUNT(p) FROM Product p GROUP BY COALESCE(p.salesRank, 'Other')")
     List<Object[]> countProductsBySalesRanks();
-    @Query("SELECT p.productType, COUNT(p) FROM Product p GROUP BY p.productType")
+    @Query("SELECT COALESCE(p.productType, 'Other'), COUNT(p) FROM Product p GROUP BY COALESCE(p.productType, 'Other')")
     List<Object[]> countProductsByProductType();
-    @Query("SELECT p.tags, COUNT(p) FROM Product p GROUP BY p.tags")
+    @Query("SELECT COALESCE(p.tags, 'Other'), COUNT(p) FROM Product p GROUP BY COALESCE(p.tags, 'Other')")
     List<Object[]> countProductsByTags();
     Page<Product> findProductByProductTitleContains(String productTitle, Pageable pageable);
 }

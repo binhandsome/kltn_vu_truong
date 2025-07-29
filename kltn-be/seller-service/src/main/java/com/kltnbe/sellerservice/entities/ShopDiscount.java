@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 @Entity
 @Table(name = "shop_discount")
@@ -59,5 +61,12 @@ public class ShopDiscount {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
+//
+//    public static void main(String[] args) {
+//            byte[] key = new byte[64]; // 64 bytes = 512 bits
+//            new SecureRandom().nextBytes(key);
+//            String base64Key = Base64.getEncoder().encodeToString(key);
+//            System.out.println("Internal Secret (512-bit): " + base64Key);
+//
+//    }
 }

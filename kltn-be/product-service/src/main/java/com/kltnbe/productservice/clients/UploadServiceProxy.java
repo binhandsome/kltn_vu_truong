@@ -1,5 +1,6 @@
 package com.kltnbe.productservice.clients;
 
+import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@FeignClient(name = "upload-service")
+@FeignClient(name = "upload-service", configuration = FeignInternalAuthConfig.class)
 public interface UploadServiceProxy {
     @PostMapping(value = "api/upload/uploadListImageProduct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<String>> uploadImagesProduct(
