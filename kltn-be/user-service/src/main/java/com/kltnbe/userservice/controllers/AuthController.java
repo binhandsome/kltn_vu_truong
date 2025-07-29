@@ -13,7 +13,6 @@ import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
 import com.kltnbe.userservice.services.AuthService;
 import com.kltnbe.userservice.services.UserService;
-import com.kltnbe.userservice.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,10 +195,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
 
     }
-    @GetMapping("/checkUsernameExists")
-    public Boolean usernameExists(String username) {
-        return authService.usernameExists(username);
-    }
     @InternalApi
     @GetMapping("/findIdByUsername")
     public Long findIdByUsername(String username) {
@@ -244,9 +239,8 @@ public class AuthController {
         return authService.findIdAuthByAccessToken(accessToken);
     }
     @PostMapping("/loginAdmin")
-    public ResponseEntity<LoginResponse> loginAdmin(@RequestBody LoginRequest request) {
-        LoginResponse response = authService.loginAdmin(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> loginAdmin(@RequestBody LoginRequest request) {
+        return authService.loginAdmin(request);
     }
 
     // ✅ Quên mật khẩu - gửi OTP

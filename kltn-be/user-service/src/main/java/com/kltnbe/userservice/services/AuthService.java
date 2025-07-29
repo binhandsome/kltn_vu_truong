@@ -21,7 +21,7 @@ public interface AuthService {
     ResponseEntity<?> verifyLoginSeller(RequestInfomation requestInfomation);
     ResponseEntity<?> getUserWithAccessToken(String accessToken);
     Long findIdAuthByAccessToken(String accessToken);
-    LoginResponse loginAdmin(LoginRequest request);
+    ResponseEntity<?> loginAdmin(LoginRequest request);
     ResponseEntity<?> forgotPasswordAdmin(String email);
     ResponseEntity<?> resetPasswordAdmin(ResetPasswordRequest request);
     ResponseEntity<?> changePasswordAdmin(String email, ChangePasswordRequest request);
