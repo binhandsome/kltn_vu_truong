@@ -9,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class ShopRequestDTO {
-    private String accessToken;
     private String nameShop;
     private MultipartFile thumbnailShop;
     private String descriptionShop;

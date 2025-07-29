@@ -12,27 +12,28 @@ function AdminHeader() {
   localStorage.removeItem('username');
   window.dispatchEvent(new Event('loggedOut'));
 };
-    const getInfoSeller = async() => {
-        const accessToken = localStorage.getItem("accessToken");
-        try {
-            const response = await axios.get("http://localhost:8089/api/seller/userProfileResponse", {
-                params: {
-                    accessToken: accessToken,
-                }
-            });
-            console.log(response.data.email);
-            setEmail(response.data.email);
-            setUsername(response.data.username);
-            setFirstName(response.data.firstName);
-            setLastName(response.data.lastName);
-        }catch(error) {
-            console.log(error);
-        }
+   const getInfoSeller = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+    try {
+        const response = await axios.get("http://localhost:8089/api/seller/userProfileResponse", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+            },
+        });
+        console.log(response.data.email);
+        setEmail(response.data.email);
+        setUsername(response.data.username);
+        setFirstName(response.data.firstName);
+        setLastName(response.data.lastName);
+    } catch (error) {
+        console.log(error);
     }
-    useEffect(() => {
-        getInfoSeller();
-    }, [])
-    
+};
+
+useEffect(() => {
+    getInfoSeller();
+}, []);
+
 return (
     <>
        <header className="header-wrapper main-header">

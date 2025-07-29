@@ -10,7 +10,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRequestDTO {
-    private String accessToken;
     private String nameProduct;
     private String nameBrand;
     private Double price;
@@ -23,4 +22,5 @@ public class ProductRequestDTO {
     private List<List<String>> categoryList;
     private String description;
     private String asin;
+    private Long shopId;
 }

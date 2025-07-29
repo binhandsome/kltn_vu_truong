@@ -91,7 +91,6 @@ const AddProduct = () => {
     return [];
   });
     const data = {
-      accessToken: accessToken,
       nameProduct,
       nameBrand,
       price,
@@ -106,12 +105,15 @@ const AddProduct = () => {
     };
     console.log('📤 Dữ liệu gửi lên server:');
     console.log(JSON.stringify(data, null, 2));
-    try {
-      const res = await axios.post(`${API_URL_PRODUCT}/addProduct`, data);
+   try {
+    const res = await axios.post(`${API_URL}/add-product`, data, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // ✅ Gửi token qua header
+        'Content-Type': 'application/json'
+      }
+    });
       console.log('✅ Server phản hồi:', res.data.body.message);
       setMessage(res.data.body.message);
-
-      // ✅ Reset form về rỗng
       setNameProduct('');
       setNameBrand('');
       setPrice('');

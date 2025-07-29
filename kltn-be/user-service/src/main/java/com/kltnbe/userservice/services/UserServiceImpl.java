@@ -1,5 +1,6 @@
 package com.kltnbe.userservice.services;
 
+import com.kltnbe.security.utils.JwtUtil;
 import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.AddressRequest;
 import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
@@ -13,7 +14,6 @@ import com.kltnbe.userservice.entities.User;
 import com.kltnbe.userservice.repositories.AddressRepository;
 import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
-import com.kltnbe.userservice.utils.JwtUtil;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package com.kltnbe.productservice.utils;
+package com.kltnbe.security.utils;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -20,20 +20,34 @@ public class JwtUtil {
     @Value("${jwt.refresh.expiration}")
     private long refreshTokenExpiration;
 
-    private static final long CLOCK_SKEW_SECONDS = 5; // Cho phép lệch 5 giây
+    private static final long CLOCK_SKEW_SECONDS = 5; // Cho phép lệch thời gian 5 giây
 
-    public String generateAccessToken(String username) {
+    // Tạo access token với username và role (chỉ một role: USER, SELLER, hoặc ADMIN)
+    public String generateAccessToken(String username, Long authId, String role) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(username) // ✅ giữ username là subject
+                .claim("auth_id", authId) // ✅ thêm auth_id làm claim riêng
+                .claim("role", "ROLE_" + role) // ROLE_SELLER, ROLE_ADMIN
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
+    // Tạo refresh token
     public String generateRefreshToken() {
         return UUID.randomUUID().toString();
     }
 
+    public Long getAuthIdFromToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("auth_id", Long.class);
+    }
+
+
+    // Lấy username từ token
     public String getUsernameFromToken(String token) {
         try {
             return Jwts.parser()
@@ -43,7 +57,21 @@ public class JwtUtil {
                     .getBody()
                     .getSubject();
         } catch (ExpiredJwtException e) {
-            return e.getClaims().getSubject(); // Still extract username for refresh
+            return e.getClaims().getSubject(); // Vẫn lấy username khi token hết hạn
+        }
+    }
+
+    // Lấy role từ token
+    public String getRoleFromToken(String token) {
+        try {
+            return Jwts.parser()
+                    .setSigningKey(secret)
+                    .setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS)
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("role", String.class);
+        } catch (ExpiredJwtException e) {
+            return e.getClaims().get("role", String.class);
         }
     }
 
@@ -55,9 +83,10 @@ public class JwtUtil {
                     .parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException e) {
-            throw new ExpiredJwtException(e.getHeader(), e.getClaims(), "Token đã hết hạn");
+            return false; // Token hết hạn
         } catch (Exception e) {
-            throw new RuntimeException("Token không hợp lệ", e);
+            return false; // Token không hợp lệ
         }
     }
+
 }

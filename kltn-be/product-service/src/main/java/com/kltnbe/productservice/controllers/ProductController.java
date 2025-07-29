@@ -1,6 +1,7 @@
 package com.kltnbe.productservice.controllers;
 
 
+import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.clients.UploadServiceProxy;
 import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
 import com.kltnbe.productservice.dtos.req.*;
@@ -11,6 +12,7 @@ import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.repositories.*;
 import com.kltnbe.productservice.services.AsyncUploadService;
 import com.kltnbe.productservice.services.ProductService;
+import com.kltnbe.security.utils.InternalApi;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -45,6 +47,7 @@ public class ProductController {
     private ProductImageRepository productImageRepository;
     private final AsyncUploadService  asyncUploadService;
     private final UploadServiceProxy  uploadServiceProxy;
+    private final SellerServiceProxy sellerServiceProxy;
     @GetMapping("/getAllProduct")
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
 //        System.out.print(productService.getAllProducts(productFileterAll).get().findFirst().get().getImages().get(0).getProduct());
@@ -227,36 +230,41 @@ public class ProductController {
         List<Color> colors = colorRepository.findAll();
         return ResponseEntity.ok(colors);
     }
-    @PostMapping("/addProduct")
-    public ResponseEntity<?> addProduct(@RequestBody ProductRequestDTO productRequestDTO) {
-        return ResponseEntity.ok(productService.createProduct(productRequestDTO));
-    }
-    @GetMapping("/productByAsin/{asin}")
-    public ResponseEntity<?> findProductByAsin(@PathVariable String asin) {
-        return productService.getProductDetail(asin)
+    @InternalApi
+    @PostMapping("/internal/addProduct")
+        public ResponseEntity<?> addProduct(@RequestBody ProductRequestDTO productRequestDTO, @RequestParam Long authId) {
+            return ResponseEntity.ok(productService.createProduct(productRequestDTO, authId));
+        }
+    @InternalApi
+
+    @GetMapping("/internal/productByAsin/{asin}")
+    public ResponseEntity<?> findProductByAsin(@PathVariable String asin,@RequestParam Long  authId) {
+        return productService.getProductDetail(asin, authId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-    @PostMapping("/addSize")
-    public ResponseEntity<?> addSize(@RequestBody SizeRequest request) {
-        return productService.addSize(request);
+    @InternalApi
+    @PostMapping("/internal/addSize")
+    public ResponseEntity<?> addSize(@RequestBody SizeRequest request,@RequestParam Long  authId) {
+        return productService.addSize(request, authId);
     }
-    @DeleteMapping("/deleteSize")
-    public ResponseEntity<?> deleteSize(@RequestParam Long sizeId) {
+    @InternalApi
+    @DeleteMapping("/internal/deleteSize")
+    public ResponseEntity<?> deleteSize(@RequestParam Long sizeId,@RequestParam Long  authId) {
         try {
-            productService.deleteSize(sizeId);
+            productService.deleteSize(sizeId, authId);
             return ResponseEntity.ok(Map.of("message", "✅ Xóa size thành công"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("message", "❌ Lỗi khi xóa size: " + e.getMessage()));
         }
     }
-
-    @PostMapping(value = "/upload-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @InternalApi
+    @PostMapping(value = "/internal/upload-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadImagesAsync(
             @RequestParam("asin") String asin,
             @RequestParam("files") List<MultipartFile> files,
-            @RequestParam("colorIds") List<Long> colorIds) {
+            @RequestParam("colorIds") List<Long> colorIds, @RequestParam Long authId) {
 
         if (files.size() != colorIds.size()) {
             return ResponseEntity.badRequest().body("❌ Số lượng ảnh và colorId không khớp!");
@@ -268,6 +276,15 @@ public class ProductController {
         }
 
         Product product = productOpt.get();
+        Object body = sellerServiceProxy.getAuthIdByStore(product.getStoreId()).getBody();
+        Long storeOwnerAuth = (body instanceof Integer)
+                ? ((Integer) body).longValue()
+                : (Long) body;
+
+        if (!authId.equals(storeOwnerAuth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("❌ Bạn không có quyền upload ảnh cho sản phẩm này");
+        }
 
         for (int i = 0; i < files.size(); i++) {
             try {
@@ -286,35 +303,38 @@ public class ProductController {
             }
         }
 
-        return ResponseEntity.ok("✅ Ảnh đang được xử lý và lưu nền.");
+        return ResponseEntity.ok(Map.of("message", "✅ Ảnh đang được xử lý và lưu nền."));
     }
 
-
-    @PutMapping(value = "/update-image/{imageId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @InternalApi
+    @PutMapping(value = "/internal/update-image/{imageId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updateImage(
             @RequestParam("file") MultipartFile file,
-            @PathVariable Long imageId
+            @PathVariable Long imageId, @RequestParam Long authId
     ) {
-        productService.updateImage(file, imageId);
+        productService.updateImage(file, imageId, authId);
         return ResponseEntity.accepted().body("Đang xử lý upload ảnh...");
     }
-    @PutMapping("/updateProduct")
-    public ResponseEntity<?> updateProduct(@RequestBody ProductRequestDTO request) {
-        return productService.updateProduct(request);
+    @InternalApi
+    @PutMapping("/internal/updateProduct")
+    public ResponseEntity<?> updateProduct(@RequestBody ProductRequestDTO request,@RequestParam Long  authId) {
+        return productService.updateProduct(request, authId);
     }
-
-    @PutMapping("/set-thumbnail")
+    @InternalApi
+    @PutMapping("/internal/set-thumbnail")
     public ResponseEntity<?> setThumbnail(
             @RequestParam String asin,
-            @RequestParam Long imageId
+            @RequestParam Long imageId,
+            @RequestParam Long authId
     ) {
-        productService.setThumbnail(asin, imageId);
-        return ResponseEntity.ok("✅ Cập nhật thumbnail thành công!");
+        productService.setThumbnail(asin, imageId, authId);
+        return ResponseEntity.ok(Map.of("message", "✅ Cập nhật thumbnail thành công!"));
     }
-    @DeleteMapping("/deleteImage/{imageId}")
-    public ResponseEntity<String> deleteImage(@PathVariable Long imageId) {
+    @InternalApi
+    @DeleteMapping("/internal/deleteImage/{imageId}")
+    public ResponseEntity<String> deleteImage(@PathVariable Long imageId,@RequestParam Long  authId) {
         try {
-            productService.deleteImageById(imageId);
+            productService.deleteImageById(imageId, authId);
             return ResponseEntity.ok("✅ Xoá ảnh thành công.");
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -323,11 +343,9 @@ public class ProductController {
                     .body("❌ Lỗi khi xoá ảnh: " + e.getMessage());
         }
     }
-    @PutMapping("/deleteProduct/{asin}")
-    public ResponseEntity<?> deleteProduct(@PathVariable String asin) {
-        return productService.deleteProductByAsin(asin);
+    @InternalApi
+    @PutMapping("/internal/deleteProduct/{asin}")
+    public ResponseEntity<?> deleteProduct(@PathVariable String asin,@RequestParam Long authId) {
+        return productService.deleteProductByAsin(asin, authId);
     }
-
-
-
 }
