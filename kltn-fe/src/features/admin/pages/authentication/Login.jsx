@@ -8,7 +8,8 @@ const Login = () => {
 
   const loginAdmin = async () => {
     if (!email || !password) {
-      return setMessage('❗ Vui lòng nhập email và mật khẩu');
+      setMessage('❗ Vui lòng nhập email và mật khẩu');
+      return;
     }
 
     try {
@@ -19,13 +20,25 @@ const Login = () => {
 
       const { accessToken, refreshToken, username } = response.data;
 
+      // ✅ Lưu token
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('username', username);
 
-      window.location.href = '/admin'; // 👉 điều hướng vào trang admin
+      // ✅ Decode token để lấy authId nếu cần (ví dụ để gọi API khác)
+      try {
+        const jwtDecode = (await import('jwt-decode')).default;
+        const decoded = jwtDecode(accessToken);
+        const authId = decoded.auth_id;
+        localStorage.setItem('authId', authId);
+      } catch (err) {
+        console.warn('⚠️ Không thể decode accessToken:', err);
+      }
+
+      // ✅ Chuyển đến trang admin chính
+      window.location.href = '/admin';
     } catch (error) {
-      const msg = error?.response?.data?.message || 'Đăng nhập thất bại';
+      const msg = error?.response?.data?.message || '❌ Đăng nhập thất bại';
       setMessage(msg);
     }
   };
@@ -39,6 +52,7 @@ const Login = () => {
               <img src="../../assets/admin/images/auth-img1.png" alt="" />
             </div>
           </div>
+
           <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
             <div className="ad-auth-content">
               <form onSubmit={(e) => e.preventDefault()}>
@@ -86,7 +100,7 @@ const Login = () => {
                 </div>
 
                 <div className="ad-auth-btn">
-                  <button className="ad-btn ad-login-member" onClick={loginAdmin}>
+                  <button type="button" className="ad-btn ad-login-member" onClick={loginAdmin}>
                     Đăng nhập
                   </button>
                 </div>
@@ -112,4 +126,3 @@ const Login = () => {
 };
 
 export default Login;
-  

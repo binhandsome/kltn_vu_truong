@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import jwtDecode from "jwt-decode";
 
 const InventoryProduct = () => {
   const [products, setProducts] = useState([]);
@@ -9,11 +10,16 @@ const InventoryProduct = () => {
 
   const fetchProducts = async () => {
     try {
+      const accessToken = localStorage.getItem("accessToken");
+      const decoded = jwtDecode(accessToken);
+      const authId = decoded.auth_id; // ✅ lấy authId từ token
+  
       const res = await axios.get("http://localhost:8089/api/seller/products", {
-        params: { accessToken }
+        params: { authId }, // gửi authId lên
       });
+  
       setProducts(res.data);
-	  console.log(res.data);
+      console.log(res.data);
     } catch (error) {
       console.error("❌ Lỗi khi lấy danh sách sản phẩm:", error);
     }

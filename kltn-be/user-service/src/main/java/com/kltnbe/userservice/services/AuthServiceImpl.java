@@ -344,23 +344,47 @@ public class AuthServiceImpl implements AuthService {
         return String.valueOf(auth.get().getUserRole());
     }
     @Override
-    public LoginResponse loginAdmin(LoginRequest request) {
+    public ResponseEntity<?> loginAdmin(LoginRequest request) {
         Auth auth = authRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Email hoặc mật khẩu không đúng"));
+                .orElse(null);
 
-        if (!passwordEncoder.matches(request.getPassword(), auth.getPasswordHash())) {
-            throw new RuntimeException("Email hoặc mật khẩu không đúng");
+        if (auth == null || !passwordEncoder.matches(request.getPassword(), auth.getPasswordHash())) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("message", "Email hoặc mật khẩu không đúng"));
         }
 
         if (!"ADMIN".equalsIgnoreCase(String.valueOf(auth.getUserRole()))) {
-            throw new RuntimeException("Tài khoản không có quyền admin");
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("message", "Tài khoản không có quyền admin"));
         }
 
-        String accessToken = jwtUtil.generateAccessToken(auth.getUsername(), String.valueOf(auth.getUserRole()));
+        String accessToken = jwtUtil.generateAccessToken(
+                auth.getUsername(),
+                auth.getAuthId(),
+                String.valueOf(auth.getUserRole())
+        );
+
         String refreshToken = jwtUtil.generateRefreshToken();
-        redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L, TimeUnit.DAYS);
-        return new LoginResponse(accessToken, refreshToken, auth.getUsername());
+
+        redisTemplate.opsForValue().set(
+                "refresh:" + auth.getUsername(),
+                refreshToken,
+                7L, TimeUnit.DAYS
+        );
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of(
+                        "accessToken", accessToken,
+                        "refreshToken", refreshToken,
+                        "username", auth.getUsername()
+                ));
     }
+
     @Override
     public ResponseEntity<?> forgotPasswordAdmin(String email) {
         Optional<Auth> authOpt = authRepository.findByEmail(email);
