@@ -40,12 +40,19 @@ const AddProduct = () => {
   const searchParams = new URLSearchParams(location.search);
   const [productByAsin, setProductByAsin] = useState([]);
   const { asin } = useParams();
+  const accessToken = localStorage.getItem('accessToken');
 const handleDeleteSize = async (sizeId) => {
   if (!window.confirm("Bạn có chắc muốn xóa size này?")) return;
 
   try {
-    await axios.delete(`http://localhost:8083/api/products/deleteSize`, {
+    await axios.delete(`${API_URL}/delete-size`, {
+      
       params: { sizeId }
+    ,
+    headers: {
+        Authorization: `Bearer ${accessToken}`, // ✅ Gửi token qua header
+        'Content-Type': 'application/json'
+      }
     });
 
     setMessage('✅ Xóa size thành công');
@@ -79,9 +86,11 @@ const handleEditImage = async (img) => {
         formData.append('file', file);
 
         try {
-            const response = await axios.put(`${API_URL_PRODUCT}/update-image/${img.image_id}`, formData, {
+            const response = await axios.put(`${API_URL}/update-image/${img.image_id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${accessToken}`, // ✅ Thêm token auth
+
                 },
             });
             alert(response.data); // "Đang xử lý upload ảnh..."
@@ -105,12 +114,17 @@ const handleSubmitSizes = async () => {
 
   try {
     const response = await axios.post(
-      `http://localhost:8083/api/products/addSize`,
+      `${API_URL}/add-size`,
       {
         asin: asin,
         sizes: validSizes
       },
-      {
+      
+         {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // ✅ Thêm token JWT
+          'Content-Type': 'application/json'      // ✅ Gửi JSON chuẩn
+        }
       }
     );
 
@@ -127,19 +141,30 @@ const handleDeleteImage = async (imageId) => {
   if (!confirmed) return;
 
   try {
-    const response = await axios.delete(`${API_URL_PRODUCT}/deleteImage/${imageId}`);
-    alert(response.data); // hoặc dùng toast
-    getProductByAsin();
+    const response = await axios.delete(
+      `${API_URL}/delete-image/${imageId}`, // ✅ endpoint đúng format
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // ✅ token bắt buộc
+        }
+      }
+    );
+
+    alert(response.data || "✅ Xoá ảnh thành công."); 
+    getProductByAsin(); // 🔄 reload danh sách ảnh
   } catch (error) {
     console.error("❌ Lỗi khi xoá ảnh:", error);
-    alert(error.response?.data || "❌ Lỗi không xác định.");
+    alert(error.response?.data?.message || "❌ Lỗi khi xoá ảnh.");
   }
 };
 
 const handleSetThumbnail = async (asin, imageId) => {
   try {
-    await axios.put(`http://localhost:8083/api/products/set-thumbnail`, null, {
+    await axios.put(`${API_URL}/set-thumbnail`, null, {
       params: { asin, imageId },
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // ✅ gửi token xác thực
+        },
     });
 getProductByAsin();
   } catch (error) {
@@ -179,16 +204,17 @@ useEffect(() => {
   if (!confirmDelete) return;
 
   try {
-    const accessToken = localStorage.getItem('accessToken');
-    await axios.put(`http://localhost:8083/api/products/deleteProduct/${asin}`, {}, {
+    await axios.put(`${API_URL}/delete-product/${asin}`, null, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     alert("✅ Đã xoá sản phẩm thành công");
-    // Có thể reload danh sách hoặc gọi lại useEffect để cập nhật
+    // Reload danh sách sản phẩm
   } catch (err) {
+    console.error("❌ Lỗi khi xoá sản phẩm:", err);
     alert("❌ Lỗi khi xoá sản phẩm");
   }
 };
+
 
 
 useEffect(() => {
@@ -254,9 +280,10 @@ const handleSubmitUploadImages = async () => {
   });
 
   try {
-    await axios.post("http://localhost:8083/api/products/upload-images", formData, {
+    await axios.post(`${API_URL}/upload-images`, formData, {
       headers: {
-        "Content-Type": "multipart/form-data"
+        "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${accessToken}` // ✅ Thêm token JWT
       }
     });
     alert("✅ Upload ảnh thành công!");
@@ -357,27 +384,35 @@ const handleSubmitUploadImages = async () => {
 };
 const getProductByAsin = async () => {
   try {
-    const response = await axios.get(`http://localhost:8083/api/products/productByAsin/${asin}`);
-    const product = response.data;
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      alert("❌ Bạn cần đăng nhập để xem chi tiết sản phẩm.");
+      return;
+    }
 
+    const response = await axios.get(`${API_URL}/product-by-asin/${asin}`, {  // ✅ Gọi API từ seller-service
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const product = response.data;
     setProductByAsin(product);
 
-    if (product.selectedColors) {
-      setColors(product.selectedColors);
-    } else {
-      setColors([]);
-    }
-    if(product.listColorAndThumbnail) {
-      setAllImageWithColor(product.listColorAndThumbnail);
-    }else{
-      setAllImageWithColor([]);
-    }
+    // ✅ Set màu sắc
+    setColors(product.selectedColors || []);
 
+    // ✅ Set danh sách ảnh theo màu
+    setAllImageWithColor(product.listColorAndThumbnail || []);
+    
   } catch (error) {
-    console.log("❌ Error getting product:", error);
+    console.error("❌ Lỗi khi lấy chi tiết sản phẩm:", error);
     setColors([]);
+    setAllImageWithColor([]);
+    alert(error.response?.data?.message || "❌ Lỗi khi tải chi tiết sản phẩm");
   }
 };
+
 useEffect(() => {
   if (productByAsin) {
     setNameProduct(productByAsin.nameProduct || '');
@@ -408,8 +443,6 @@ useEffect(() => {
 }, [productByAsin]); // 👈 Đảm bảo chỉ log khi productByAsin thay đổi
 const handleSubmitEditProduct = async (e) => {
   e.preventDefault();
-
-  const accessToken = localStorage.getItem('accessToken');
   if (!accessToken) {
     setMessage('❌ Vui lòng đăng nhập');
     return;
@@ -428,7 +461,6 @@ const handleSubmitEditProduct = async (e) => {
   try {
     const payload = {
       asin: productByAsin.asin,
-      accessToken: accessToken,
       nameProduct,
       nameBrand,
       price,
@@ -443,7 +475,7 @@ const handleSubmitEditProduct = async (e) => {
     };
 
     const response = await axios.put(
-      `http://localhost:8083/api/products/updateProduct`,
+      `${API_URL}/update-product`,
       payload,
       {
         headers: {
@@ -1196,14 +1228,20 @@ const handleSubmitEditProduct = async (e) => {
   <button type="submit" className="ad-btn ad-login-member">
     Sửa Sản Phẩm
   </button>
-  <button onClick={() => handleDeleteProduct(productByAsin.asin)} className="ad-btn ad-login-member">
-    🗑️ Xoá sản phẩm
-  </button>
+  <button 
+  type="button"  // ❗ Không submit form
+  onClick={() => handleDeleteProduct(productByAsin.asin)} 
+  className="ad-btn ad-login-member"
+>
+  🗑️ Xoá sản phẩm
+</button>
+
 </div>
 
             </div>
                 {message && <p className="ad-register-text">{message}</p>}
           </form>
+          
         </div>
       </div>
 

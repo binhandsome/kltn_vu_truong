@@ -29,16 +29,16 @@ public interface ProductService {
     List<Product> getProductsByIds(List<Long> ids);
     MoreProductInfo findMoreProductInfoById(Long id);
     List<Color> findColorByStatus(Integer status);
-    ResponseEntity<?> createProduct(ProductRequestDTO productRequestDTO);
-    Optional<ProductResponse> getProductDetail(String asin);
-    ResponseEntity<?> addSize(SizeRequest request);
-    void deleteSize(Long sizeId);
-    void saveImageForColor(String asin, Long colorId, MultipartFile file);
-    void setThumbnail(String asin, Long imageId);
-    void updateImage(MultipartFile file, Long imageId);
-    void deleteImageById(Long imageId);
-    ResponseEntity<?> updateProduct(ProductRequestDTO request);
-    ResponseEntity<?> deleteProductByAsin(String asin);
+    ResponseEntity<?> createProduct(ProductRequestDTO productRequestDTO, Long authId);
+    Optional<ProductResponse> getProductDetail(String asin, Long authId);
+    ResponseEntity<?> addSize(SizeRequest request, Long authId);
+    void deleteSize(Long sizeId, Long authId);
+    void saveImageForColor(String asin, Long colorId, MultipartFile file, Long authId);
+    void setThumbnail(String asin, Long imageId, Long authId);
+    void updateImage(MultipartFile file, Long imageId, Long authId);
+    void deleteImageById(Long imageId, Long authId);
+    ResponseEntity<?> updateProduct(ProductRequestDTO request, Long authId);
+    ResponseEntity<?> deleteProductByAsin(String asin, Long authId);
     List<ProductResponse> getProductsByStoreId(Long storeId);
     void updateStatus(Long productId, String status);
 }

@@ -1,5 +1,7 @@
 package com.kltnbe.userservice.controllers;
 
+import com.kltnbe.security.utils.InternalApi;
+import com.kltnbe.security.utils.JwtUtil;
 import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
@@ -100,10 +102,10 @@ public class AuthController {
         return ResponseEntity.ok(profile);
     }
 
-    @GetMapping("/getUserByUsername")
-    public Auth getUserByUsername(@RequestParam String username) {
-        return authService.getUserByUsername(username);
-    }
+//    @GetMapping("/getUserByUsername")
+//    public Auth getUserByUsername(@RequestParam String username) {
+//        return authService.getUserByUsername(username);
+//    }
 
 
 
@@ -137,7 +139,7 @@ public class AuthController {
                 throw new RuntimeException("Invalid refresh token");
             }
             Optional<Auth> authOptional = authRepository.findByUsername(username);
-            String newAccessToken = jwtUtil.generateAccessToken(username, String.valueOf(authOptional.get().getUserRole()));
+            String newAccessToken = jwtUtil.generateAccessToken(username,authOptional.get().getAuthId(), String.valueOf(authOptional.get().getUserRole()));
             String newRefreshToken = jwtUtil.generateRefreshToken();
             redisTemplate.opsForValue().set("refresh:" + username, newRefreshToken, 7L, TimeUnit.DAYS);
             System.out.println("Token refreshed successfully for user: " + username);
@@ -198,31 +200,45 @@ public class AuthController {
     public Boolean usernameExists(String username) {
         return authService.usernameExists(username);
     }
+    @InternalApi
     @GetMapping("/findIdByUsername")
     public Long findIdByUsername(String username) {
         return authService.findIdByUsername(username);
     }
+    @InternalApi
+
     @GetMapping("/findIdByEmail")
     public Long findIdByEmail(String email) {
         return authService.findIdByEmail(email);
     }
 
+    @InternalApi
+    @GetMapping("/checkUsernameExists")
+    public Boolean usernameExists(String username) {
+        return authService.usernameExists(username);
+    }
+    @InternalApi
+
     @GetMapping("/findRoleByEmail")
     public String findRoleByEmail(String email) {
         return authService.findRoleUserByEmail(email);
     }
+    @InternalApi
     @PostMapping("/checkLoginSeller")
     public ResponseEntity<?> checkLoginSeller(@RequestBody LoginRequest request) {
         return authService.checkLoginSeller(request);
     }
+    @InternalApi
     @PostMapping("/verifyLoginSeller")
     public ResponseEntity<?> verifyLoginSeller(@RequestBody RequestInfomation requestInfomation) {
         return authService.verifyLoginSeller(requestInfomation);
     }
+    @InternalApi
     @GetMapping("/getUserWithAccessToken")
     public ResponseEntity<?> getUserWithAccessToken(String accessToken) {
         return authService.getUserWithAccessToken(accessToken);
     }
+    @InternalApi
     @GetMapping("/findIdAuthByAccessToken")
     public Long findIdAuthByAccessToken(String accessToken) {
         return authService.findIdAuthByAccessToken(accessToken);

@@ -5,7 +5,7 @@ import com.kltnbe.productservice.entities.Product;
 import com.kltnbe.productservice.entities.Wishlist;
 import com.kltnbe.productservice.repositories.ProductRepository;
 import com.kltnbe.productservice.repositories.WishlistRepository;
-import com.kltnbe.productservice.utils.JwtUtil;
+import com.kltnbe.security.utils.JwtUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

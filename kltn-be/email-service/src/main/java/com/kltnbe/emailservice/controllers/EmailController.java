@@ -21,6 +21,7 @@ public class EmailController {
     @Autowired
     private EmailRepository emailRepository;
 
+
     @PostMapping("/sendEmailRegister")
     public ResponseEntity<String> sendEmailRegister(@RequestBody RequestInfomation requestInfomation) {
         try {
@@ -67,8 +68,4 @@ public class EmailController {
     public void deleteByEmail(@RequestParam String email) {
         emailService.deleteByEmail(email);
     }
-
-
-
-
 }

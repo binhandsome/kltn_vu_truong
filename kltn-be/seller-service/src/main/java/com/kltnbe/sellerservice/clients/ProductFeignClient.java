@@ -1,8 +1,8 @@
 package com.kltnbe.sellerservice.clients;
 
+import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import com.kltnbe.sellerservice.dtos.ProductSizeDTO;
 import com.kltnbe.sellerservice.dtos.ProductVariantDTO;
-import com.kltnbe.sellerservice.dtos.req.ProductRequestDTO;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

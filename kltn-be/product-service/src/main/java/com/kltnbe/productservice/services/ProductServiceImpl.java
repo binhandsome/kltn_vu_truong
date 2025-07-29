@@ -12,10 +12,13 @@ import com.kltnbe.productservice.enums.ProductStatus;
 import com.kltnbe.productservice.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSizeRepository productSizeRepository;
     private final ProductSizeRepository sizeRepository;
     private final ProductImageRepository productImageRepository;
+    private final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
     @Autowired
     private ObjectMapper objectMapper; // từ Jackson
     @Autowired
@@ -99,13 +103,17 @@ public class ProductServiceImpl implements ProductService {
     public List<Color> findColorByStatus(Integer status) {
         return colorRepository.findAllByStatus(1);
     }
-
+    @Transactional
     @Override
-    public ResponseEntity<?> createProduct(ProductRequestDTO request) {
-        String asin = generateRandomAsin(10);
-        Long idShop = sellerServiceProxy.getIdShopByAccessToken(request.getAccessToken()).getBody();
+    public ResponseEntity<?> createProduct(ProductRequestDTO request, Long authId) {
+        if (request.getShopId() == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "❌ Thất bại: Chưa có shop"));
+        }
+        validateShopOwnership(request.getShopId(), authId);
 
-        if (idShop == null) {
+        String asin = generateRandomAsin(10);
+
+        if (request.getShopId() == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "❌ Thất bại: Chưa có shop"));
         }
 
@@ -127,6 +135,7 @@ public class ProductServiceImpl implements ProductService {
             product.setColorAsin(json);
             product.setTags(request.getSelectedGender());
             product.setProductType(request.getSelectedType());
+            product.setStoreId(request.getShopId());
             productRepository.save(product);
 
             if (request.getCategoryList() != null && !request.getCategoryList().isEmpty()) {
@@ -145,7 +154,11 @@ public class ProductServiceImpl implements ProductService {
             return ResponseEntity.internalServerError().body(Map.of("message", "❌ Lỗi server: " + e.getMessage()));
         }
     }
-    public ResponseEntity<?> updateProduct(ProductRequestDTO request) {
+
+    @Transactional
+    @Override
+    public ResponseEntity<?> updateProduct(ProductRequestDTO request, Long authId) {
+
         System.out.println("📥 Dữ liệu nhận từ client:");
         System.out.println("ASIN: " + request.getAsin());
         System.out.println("Name: " + request.getNameProduct());
@@ -160,7 +173,7 @@ public class ProductServiceImpl implements ProductService {
             // Tìm sản phẩm theo ASIN
             Product product = productRepository.findProductByAsin(request.getAsin())
                     .orElseThrow(() -> new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + request.getAsin()));
-
+validateShopOwnership(product.getStoreId(), authId);
             // Lấy danh sách màu từ selectedColors (dựa theo tên màu)
             List<Color> colors = colorRepository.findByNameColorIn(request.getSelectedColors());
             List<ColorDTO> colorDTOs = colors.stream()
@@ -204,11 +217,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Optional<ProductResponse> getProductDetail(String asin) {
-        Optional<Product> productOpt = productRepository.findProductByAsin(asin);
-        if (productOpt.isEmpty()) return Optional.empty();
+    public Optional<ProductResponse> getProductDetail(String asin, Long authId) {
+        Optional<Product> productByAsin = productRepository.findProductByAsin(asin);
 
-        Product product = productOpt.get();
+        if (productByAsin.isEmpty()) {
+            throw new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + asin);
+        }
+        validateShopOwnership(productByAsin.get().getStoreId(), authId);
+
+
+        Product product = productByAsin.get();
         ProductResponse response = new ProductResponse();
         response.setProductId(product.getProductId());
         response.setAsin(product.getAsin());
@@ -285,8 +303,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> addSize(SizeRequest request) {
+    public ResponseEntity<?> addSize(SizeRequest request, Long authId) {
         Optional<Product> optionalProduct = productRepository.findProductByAsin(request.getAsin());
+
+        if (optionalProduct.isEmpty()) {
+            throw new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + request.getAsin());
+        }
+        validateShopOwnership(optionalProduct.get().getStoreId(), authId);
         if (optionalProduct.isEmpty()) {
             return ResponseEntity.badRequest().body("❌ Không tìm thấy sản phẩm với ASIN: " + request.getAsin());
         }
@@ -301,31 +324,48 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
 
         productSizeRepository.saveAll(sizeEntities);
-        return ResponseEntity.ok("✅ Đã thêm " + sizeEntities.size() + " size cho sản phẩm.");
+        return ResponseEntity.ok(Map.of("message","✅ Đã thêm " + sizeEntities.size() + " size cho sản phẩm."));
     }
 
     @Override
-    public void deleteSize(Long sizeId) {
+    public void deleteSize(Long sizeId, Long authId) {
         Optional<ProductSize> sizeOpt = sizeRepository.findById(sizeId);
         if (sizeOpt.isEmpty()) {
             throw new RuntimeException("Size không tồn tại");
         }
+        Product product = sizeOpt.get().getProduct();
+        validateShopOwnership(product.getStoreId(), authId);
+
+
         sizeRepository.deleteById(sizeId);
     }
     @Override
-    public void updateImage(MultipartFile file, Long imageId) {
+    public void updateImage(MultipartFile file, Long imageId, Long authId) {
+        // 1. Kiểm tra imageId có tồn tại
+        ProductImage productImage = productImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("❌ Không tìm thấy ảnh với ID: " + imageId));
+
+        // 2. Lấy sản phẩm từ ảnh
+        Product product = productImage.getProduct();
+
+        validateShopOwnership(product.getStoreId(), authId);
+
+
         try {
             byte[] fileBytes = file.getBytes();
             String originalFilename = file.getOriginalFilename();
             asyncUploadService.editImage(fileBytes, originalFilename, imageId);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("❌ Lỗi khi đọc file upload: " + e.getMessage(), e);
         }
     }
+
     @Override
-    public void saveImageForColor(String asin, Long colorId, MultipartFile file) {
+    public void saveImageForColor(String asin, Long colorId, MultipartFile file, Long authId) {
         Product product = productRepository.findProductByAsin(asin)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ASIN: " + asin));
+        validateShopOwnership(product.getStoreId(), authId);
+
         String filename = file.getOriginalFilename(); // hoặc tự generate tên
         ProductImage image = new ProductImage();
         image.setProduct(product);
@@ -339,7 +379,11 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     @Transactional
-    public void setThumbnail(String asin, Long imageId) {
+    public void setThumbnail(String asin, Long imageId, Long authId) {
+        Product product = productRepository.findProductByAsin(asin)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ASIN: " + asin));
+        validateShopOwnership(product.getStoreId(), authId);
+
         productImageRepository.resetMainImageByAsin(asin);
         productImageRepository.setMainImage(imageId);
     }
@@ -353,26 +397,43 @@ public class ProductServiceImpl implements ProductService {
         return asin.toString();
     }
     @Override
-    public void deleteImageById(Long imageId) {
-        if (!productImageRepository.existsById(imageId)) {
-            throw new NoSuchElementException("❌ Không tìm thấy ảnh với ID: " + imageId);
-        }
+    public void deleteImageById(Long imageId, Long authId) {
+        ProductImage productImage = productImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("❌ Không tìm thấy ảnh với ID: " + imageId));
+
+        // 2. Lấy sản phẩm từ ảnh
+        Product product = productImage.getProduct();
+
+        validateShopOwnership(product.getStoreId(), authId);
+
+
         productImageRepository.deleteById(imageId);
     }
+    @Transactional
     @Override
-    public ResponseEntity<?> deleteProductByAsin(String asin) {
-        try {
-            Product product = productRepository.findProductByAsin(asin)
-                    .orElseThrow(() -> new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + asin));
+    public ResponseEntity<?> deleteProductByAsin(String asin, Long authId) {
+        Product product = productRepository.findProductByAsin(asin)
+                .orElseThrow(() -> new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + asin));
 
-            product.setProductStatus(ProductStatus.deleted);
-            product.setUpdatedAt(LocalDateTime.now());
-            productRepository.save(product);
+        validateShopOwnership(product.getStoreId(), authId);
 
-            return ResponseEntity.ok(Map.of("message", "✅ Đã xoá sản phẩm (mềm) thành công."));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("message", "❌ Lỗi khi xoá sản phẩm: " + e.getMessage()));
+        product.setProductStatus(ProductStatus.deleted);
+        product.setUpdatedAt(LocalDateTime.now());
+        productRepository.save(product); // 🔥 Save + flush
+        log.info("🔎 DB Check: {}", productRepository.findProductByAsin(asin).get().getProductStatus());
+
+        log.info("🔄 Product {} status updated to {}", asin, product.getProductStatus());
+
+        return ResponseEntity.ok(Map.of("message", "✅ Đã xoá sản phẩm (mềm) thành công."));
+    }
+
+    private void validateShopOwnership(Long storeId, Long authId) {
+        Object body = sellerServiceProxy.getAuthIdByStore(storeId).getBody();
+        Long storeOwnerAuth = (body instanceof Integer)
+                ? ((Integer) body).longValue()
+                : (Long) body;
+        if (!authId.equals(storeOwnerAuth)) {
+            throw new RuntimeException("❌ Bạn không có quyền thao tác với shop này");
         }
     }
     @Override

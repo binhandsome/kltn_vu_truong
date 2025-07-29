@@ -1,36 +1,41 @@
 package com.kltnbe.sellerservice.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kltnbe.sellerservice.clients.ProductServiceProxy;
 import com.kltnbe.sellerservice.clients.ProductFeignClient;
 import com.kltnbe.sellerservice.clients.UploadServiceProxy;
 import com.kltnbe.sellerservice.clients.UserServiceProxy;
 import com.kltnbe.sellerservice.dtos.*;
-import com.kltnbe.sellerservice.dtos.req.ProductRequestDTO;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
+import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import com.kltnbe.sellerservice.entities.*;
 import com.kltnbe.sellerservice.repositories.*;
 
 import feign.FeignException;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 
 public class SellerServiceImpl implements SellerService {
-
 
     private static final Logger log = LoggerFactory.getLogger(SellerServiceImpl.class);
 
@@ -48,6 +53,12 @@ public class SellerServiceImpl implements SellerService {
     private final UploadServiceProxy uploadServiceProxy;
     private final StoreAuthenticRepository storeAuthenticRepository;
     private final ShopEditRepository shopEditRepository;
+    @Autowired
+    private ProductServiceProxy productServiceProxy;
+
+    @Value("${internal.secret}")
+    private String internalSecretKey;
+
     @Override
     public ResponseEntity<?> registerSeller(SellerDTO sellerDTO) {
         System.out.println("📥 Nhận request đăng ký seller:");
@@ -155,14 +166,12 @@ public class SellerServiceImpl implements SellerService {
         return response;
     }
     @Override
-    public ShopResponseDTO createShop(String accessToken, ShopRequestDTO shopRequestDTO) {
+    public ShopResponseDTO createShop(Long authId, ShopRequestDTO shopRequestDTO) {
         // Lấy authId từ accessToken
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
 
-        // Kiểm tra xem authId đã có shop chưa
         if (shopRepository.existsByAuthId(authId)) {
             throw new IllegalStateException("User already has a shop");
         }
@@ -202,13 +211,11 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public ShopDiscountResponseDTO createShopDiscount(String accessToken, ShopDiscountRequestDTO discountRequestDTO) {
+    public ShopDiscountResponseDTO createShopDiscount(Long authId, ShopDiscountRequestDTO discountRequestDTO) {
         // Lấy authId từ accessToken
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
-
         Shop shop = shopRepository.findByAuthId(authId)
                 .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
         ShopDiscount discount = new ShopDiscount();
@@ -238,9 +245,8 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public UseDiscountResponseDTO useDiscount(String accessToken, UseDiscountRequestDTO useDiscountRequestDTO) {
+    public UseDiscountResponseDTO useDiscount(Long authId, UseDiscountRequestDTO useDiscountRequestDTO) {
         // Lấy authId từ accessToken
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
@@ -271,8 +277,7 @@ public class SellerServiceImpl implements SellerService {
         return response;
     }
     @Override
-    public ShopStatusResponseDTO hasShop(String accessToken) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
+    public ShopStatusResponseDTO hasShop(Long authId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
@@ -290,8 +295,7 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public ShopResponseDTO getShopInfo(String accessToken) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
+    public ShopResponseDTO getShopInfo(Long authId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
@@ -315,8 +319,7 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public List<ShopDiscountResponseDTO> getShopDiscounts(String accessToken) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
+    public List<ShopDiscountResponseDTO> getShopDiscounts(Long authId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
@@ -340,8 +343,7 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public ShopResponseDTO updateShop(ShopRequestDTO shopUpdateRequestDTO) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(shopUpdateRequestDTO.getAccessToken());
+    public ShopResponseDTO updateShop(ShopRequestDTO shopUpdateRequestDTO, Long authId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
@@ -391,23 +393,18 @@ public class SellerServiceImpl implements SellerService {
 
     @Override
     @Transactional
-    public void deleteShop(String accessToken) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
+    public void deleteShop(Long authId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
-
         Shop shop = shopRepository.findByAuthId(authId)
                 .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
-
-        // Xóa tất cả mã giảm giá liên quan trước
         shopDiscountRepository.deleteByShopId(shop.getShopId());
         shopRepository.delete(shop);
     }
 
     @Override
-    public ShopResponseDTO addShopEdit(ShopRequestDTO shopRequestDTO) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(shopRequestDTO.getAccessToken());
+    public ShopResponseDTO addShopEdit(ShopRequestDTO shopRequestDTO, Long authId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
@@ -455,8 +452,7 @@ public class SellerServiceImpl implements SellerService {
 
         return response;
     }
-    public ResponseEntity<?> updateDiscountShop(ShopDiscountRequestDTO discountRequestDTO) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(discountRequestDTO.getAccessToken());
+    public ResponseEntity<?> updateDiscountShop(ShopDiscountRequestDTO discountRequestDTO, Long authId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
@@ -487,8 +483,7 @@ public class SellerServiceImpl implements SellerService {
     }
     @Override
     @Transactional
-    public ResponseEntity<?> deleteDiscountShop(String accessToken, Long shopDiscountId) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
+    public ResponseEntity<?> deleteDiscountShop(Long authId, Long shopDiscountId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
@@ -503,14 +498,77 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public Long getIdShopByAuthId(String accessToken) {
-        Long authId = userServiceProxy.findIdAuthByAccessToken(accessToken);
+    public Long getIdShopByAuthId(Long authId) {
         if (authId == null) {
             throw new IllegalArgumentException("Invalid access token");
         }
         Shop shop = shopRepository.findByAuthId(authId)
                 .orElseThrow(() -> new IllegalArgumentException("Shop not found for this user"));
         return shop.getShopId();
+    }
+
+    @Override
+    public ResponseEntity<?> createProduct(ProductRequestDTO productRequestDTO, Long authId) {
+        try {
+            System.out.println("📤 Feign gửi qua Product-service: " + new ObjectMapper().writeValueAsString(productRequestDTO));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        Optional<Shop> shop = Optional.ofNullable(shopRepository.findByAuthId(authId).orElseThrow(() -> new RuntimeException("❌ Không tìm thấy store của seller này")));
+        productRequestDTO.setShopId(shop.get().getShopId());
+        return productServiceProxy.addProduct(productRequestDTO, authId);
+    }
+
+    @Override
+    public ResponseEntity<?> authIdGetToProduct(Long shopId) {
+        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> new RuntimeException("Shop not found for this user"));
+        return ResponseEntity.ok(shop.getAuthId());
+    }
+    @Override
+    public ResponseEntity<?> findProductByAsin(String asin, Long authId) {
+        return productServiceProxy.findProductByAsin(asin, authId);
+    }
+
+    @Override
+    public ResponseEntity<?> addSize(SizeRequest request, Long authId) {
+        return productServiceProxy.addSize(request, authId);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> deleteSize(Long sizeId, Long authId) {
+        return productServiceProxy.deleteSize(sizeId, authId);
+    }
+
+    @Override
+    public ResponseEntity<?> uploadImagesAsync(String asin, List<MultipartFile> files, List<Long> colorIds, Long authId) {
+        return productServiceProxy.uploadImagesAsync(asin, files, colorIds, authId);
+    }
+
+    @Override
+    public ResponseEntity<String> updateImage(Long imageId, MultipartFile file, Long authId) {
+        return productServiceProxy.updateImage(file, imageId,authId);
+    }
+
+    @Override
+    public ResponseEntity<?> updateProduct(ProductRequestDTO request, Long authId) {
+        return productServiceProxy.updateProduct(request, authId);
+    }
+
+    @Override
+    public ResponseEntity<?> setThumbnail(String asin, Long imageId, Long authId) {
+        return productServiceProxy.setThumbnail(asin, imageId, authId);
+    }
+
+    @Override
+    public ResponseEntity<String> deleteImage(Long imageId, Long authId) {
+        return productServiceProxy.deleteImage(imageId, authId);
+    }
+
+    @Override
+    public ResponseEntity<?> deleteProduct(String asin, Long authId) {
+        return productServiceProxy.deleteProduct(asin, authId);
     }
     @Override
     public List<ProductResponseDTO> getProductsBySeller(Long storeId) {

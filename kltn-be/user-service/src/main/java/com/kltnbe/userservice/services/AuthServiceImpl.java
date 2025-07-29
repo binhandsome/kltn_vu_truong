@@ -1,5 +1,6 @@
 package com.kltnbe.userservice.services;
 
+import com.kltnbe.security.utils.JwtUtil;
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.LoginResponse;
 import com.kltnbe.userservice.dtos.res.UserProfileResponse;
@@ -11,7 +12,6 @@ import com.kltnbe.userservice.helpers.EmailServiceProxy;
 import com.kltnbe.userservice.helpers.RandomNumberHelper;
 import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
-import com.kltnbe.userservice.utils.JwtUtil;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final EmailServiceProxy emailServiceProxy;
     private Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
     @Autowired
-    public AuthServiceImpl(AuthRepository authRepository,UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate, RedisTemplate<String, Auth> authRedisTemplate, EmailServiceProxy emailServiceProxy) {
+    public AuthServiceImpl(AuthRepository authRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate, RedisTemplate<String, Auth> authRedisTemplate, EmailServiceProxy emailServiceProxy) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -155,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Tên người dùng hoặc mật khẩu không đúng");
         }
 
-        String accessToken = jwtUtil.generateAccessToken(auth.getUsername(), String.valueOf(auth.getUserRole()));
+        String accessToken = jwtUtil.generateAccessToken(auth.getUsername(), auth.getAuthId(), auth.getUserRole().toString());
         String refreshToken = jwtUtil.generateRefreshToken();
         redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L, TimeUnit.DAYS);
         return new LoginResponse(accessToken, refreshToken, auth.getUsername());
@@ -211,7 +211,7 @@ public class AuthServiceImpl implements AuthService {
                         .body(Map.of("message", "Không tìm thấy tài khoản"));
             }
             Auth auth = authOpt.get();
-            String accessToken = jwtUtil.generateAccessToken(auth.getUsername(), String.valueOf(auth.getUserRole()));
+            String accessToken = jwtUtil.generateAccessToken(auth.getUsername(),auth.getAuthId(), String.valueOf(auth.getUserRole()));
             String refreshToken = jwtUtil.generateRefreshToken();
             redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L, TimeUnit.DAYS);
             LoginResponse loginResponse = new LoginResponse(accessToken, refreshToken, auth.getUsername());

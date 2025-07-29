@@ -25,7 +25,6 @@ const CreateShop = () => {
 
     // Tạo dữ liệu gửi đi
     const shopData = {
-      accessToken,
       nameShop,
       thumbnailShop,
       descriptionShop,
@@ -37,7 +36,9 @@ const CreateShop = () => {
     try {
       const response = await axios.post(`${API_URL}/create-shop`, shopData, {
     headers: {
-    'Content-Type': 'multipart/form-data'
+    'Content-Type': 'multipart/form-data',
+  Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+          
   }
       });
       setMessage('✅ Tạo shop thành công!');

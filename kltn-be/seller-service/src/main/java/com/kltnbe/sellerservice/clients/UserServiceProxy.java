@@ -1,5 +1,6 @@
 package com.kltnbe.sellerservice.clients;
 
+import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import com.kltnbe.sellerservice.configs.FeignConfig;
 import com.kltnbe.sellerservice.dtos.LoginRequest;
 import com.kltnbe.sellerservice.dtos.LoginResponse;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "user-service", configuration = FeignConfig.class)
+@FeignClient(name = "user-service", configuration = FeignInternalAuthConfig.class)
 public interface UserServiceProxy {
     @PostMapping("/api/auth/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request);
