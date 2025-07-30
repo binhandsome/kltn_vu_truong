@@ -5,13 +5,16 @@ import com.kltn.searchservice.dtos.ProductDto;
 import com.kltn.searchservice.dtos.req.RequestRecommend;
 import com.kltn.searchservice.dtos.res.SearchResponse;
 import com.kltn.searchservice.helpers.ProductServiceProxy;
+import com.kltn.searchservice.helpers.SellerServiceProxy;
 import com.kltn.searchservice.service.SearchService;
+import com.kltnbe.security.utils.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -27,7 +30,7 @@ public class SearchController {
     private ProductServiceProxy productServiceProxy;
     @Autowired
     private SearchService searchService;
-
+    private final SellerServiceProxy sellerServiceProxy;
     @PostMapping("/sync")
     public String syncProducts() throws IOException {
         searchService.syncProducts();
@@ -103,15 +106,17 @@ public class SearchController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) List<String> tags,
-            @RequestParam(required = true) Long storeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false) List<String> status,
             @RequestParam(required = false) List<Double> selectedDiscounts,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        Long authId = userDetails.getAuthId();
+        Long shopId = sellerServiceProxy.getIdShopByAccessToken(authId).getBody();
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductDocument> result = searchService.searchAdvancedSeller(
-                keyword, minPrice, maxPrice, tags, storeId, status,selectedDiscounts, pageable);
+                keyword, minPrice, maxPrice, tags, shopId, status,selectedDiscounts, pageable);
         return ResponseEntity.ok(result);
     }
 
