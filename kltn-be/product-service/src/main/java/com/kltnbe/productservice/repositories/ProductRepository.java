@@ -43,4 +43,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Object[]> countProductsByTags();
     Page<Product> findProductByProductTitleContains(String productTitle, Pageable pageable);
     List<Product> findByStoreId(Long storeId);
+    @Query("SELECT p.storeId FROM Product p WHERE p.productId = :productId")
+    Optional<Long> findStoreIdByProductId(@Param("productId") Long productId);
 }

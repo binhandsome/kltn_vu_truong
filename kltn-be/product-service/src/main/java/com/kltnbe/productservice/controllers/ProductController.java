@@ -13,6 +13,7 @@ import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.repositories.*;
 import com.kltnbe.productservice.services.AsyncUploadService;
 import com.kltnbe.productservice.services.ProductService;
+import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -350,15 +352,20 @@ public class ProductController {
         return productService.deleteProductByAsin(asin, authId);
     }
     @GetMapping("/by-seller/{storeId}")
-    public ResponseEntity<List<ProductResponse>> getProductsBySeller(@PathVariable Long storeId) {
-        return ResponseEntity.ok(productService.getProductsByStoreId(storeId));
+    public ResponseEntity<List<ProductResponse>> getProductsBySeller(
+            @PathVariable Long storeId,
+            @RequestParam Long authId
+    ) {
+        return ResponseEntity.ok(productService.getProductsByStoreId(storeId, authId));
     }
 
-    @PatchMapping("/{productId}/status")
+    @PutMapping("/{productId}/status")
     public ResponseEntity<?> updateStatus(
             @PathVariable Long productId,
-            @RequestParam String status) {
-        productService.updateStatus(productId, status);
+            @RequestParam String status,@RequestParam Long authId
+
+    ) {
+        productService.updateStatus(productId, status, authId);
         return ResponseEntity.ok("Trạng thái sản phẩm đã được cập nhật");
     }
     @GetMapping("/colors")

@@ -3,9 +3,11 @@ package com.kltnbe.productservice.controllers;
 import com.kltnbe.productservice.dtos.ProductVariantDTO;
 import com.kltnbe.productservice.entities.ProductVariant;
 import com.kltnbe.productservice.services.ProductVariantService;
+import com.kltnbe.security.utils.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -20,21 +22,28 @@ public class ProductVariantController {
     private final ProductVariantService productVariantService;
 
     @PostMapping
-    public ResponseEntity<ProductVariantDTO> createVariant(@RequestBody ProductVariantDTO dto) {
-        return ResponseEntity.ok(productVariantService.createVariant(dto));
+    public ResponseEntity<ProductVariantDTO> createVariant(
+            @RequestBody ProductVariantDTO dto,
+            @RequestParam Long authId
+    ) {
+        return ResponseEntity.ok(productVariantService.createVariant(dto, authId));
     }
 
     @PutMapping("/{variantId}/sell")
     public ResponseEntity<ProductVariantDTO> sellVariant(
-        @PathVariable Long variantId,
-        @RequestParam int quantity
+            @PathVariable Long variantId,
+            @RequestParam int quantity,
+            @RequestParam Long authId
     ) {
-        return ResponseEntity.ok(productVariantService.updateStock(variantId, quantity));
+        return ResponseEntity.ok(productVariantService.updateStock(variantId, quantity, authId));
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<List<ProductVariantDTO>> getVariantsByProduct(@PathVariable Long productId) {
-        return ResponseEntity.ok(productVariantService.getVariantsByProduct(productId));
+    public ResponseEntity<List<ProductVariantDTO>> getVariantsByProduct(
+            @PathVariable Long productId,
+            @RequestParam Long authId
+    ) {
+        return ResponseEntity.ok(productVariantService.getVariantsByProduct(productId, authId));
     }
     @GetMapping("/available-stock")
     public ResponseEntity<Integer> getAvailableStock(
@@ -52,10 +61,13 @@ public class ProductVariantController {
         return ResponseEntity.ok(quantityInStock);
     }
     @PutMapping("/variants/{variantId}")
-    public ResponseEntity<?> updateVariant(@PathVariable Long variantId,
-                                           @RequestParam BigDecimal price,
-                                           @RequestParam int quantity) {
-        productVariantService.updateVariant(variantId, price, quantity);
+    public ResponseEntity<?> updateVariant(
+            @PathVariable Long variantId,
+            @RequestParam BigDecimal price,
+            @RequestParam Integer quantity,
+            @RequestParam Long authId
+    ) {
+        productVariantService.updateVariant(variantId, price, quantity, authId);
         return ResponseEntity.ok("Đã cập nhật biến thể");
     }
 
@@ -85,8 +97,11 @@ public class ProductVariantController {
         }
     }
     @DeleteMapping("/variants/{variantId}")
-    public ResponseEntity<?> deleteVariant(@PathVariable Long variantId) {
-        productVariantService.deleteVariant(variantId);
+    public ResponseEntity<?> deleteVariant(
+            @PathVariable Long variantId,
+            @RequestParam Long authId
+    ) {
+        productVariantService.deleteVariant(variantId, authId);
         return ResponseEntity.ok("Đã xoá biến thể");
     }
 

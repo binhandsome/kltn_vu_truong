@@ -36,14 +36,42 @@ const AddProductVariant = () => {
       }
     };
 
+    const decodeJwt = (token) => {
+      try {
+        const payloadBase64 = token.split('.')[1];
+        const payloadJson = atob(payloadBase64);
+        return JSON.parse(payloadJson);
+      } catch (error) {
+        console.error("❌ Lỗi khi decode token:", error);
+        return null;
+      }
+    };
     const fetchProductId = async () => {
       try {
-        const res = await axios.get(`http://localhost:8083/api/products/productByAsin/${asin}`);
+        const token = localStorage.getItem("accessToken");
+        const decoded = token ? JSON.parse(atob(token.split('.')[1])) : null;
+        const authId = decoded?.auth_id;
+    
+        if (!authId) {
+          console.error("❌ Không tìm thấy authId trong token!");
+          return;
+        }
+    
+        const res = await axios.get(
+          `http://localhost:8083/api/products/internal/productByAsin/${asin}?authId=${authId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+    
         setProductId(res.data.productId);
       } catch (err) {
         console.error("❌ Không lấy được productId từ asin:", err);
       }
     };
+    
 
     fetchSizes();
     fetchColors();
@@ -54,16 +82,17 @@ const AddProductVariant = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!productId) {
       alert("❌ Chưa có productId. Vui lòng thử lại sau.");
       return;
     }
-
+  
     try {
+      const token = localStorage.getItem("accessToken"); // 🟢 Lấy token
+  
       const payload = {
         productId,
         sizeId: parseInt(formData.sizeId),
@@ -73,8 +102,17 @@ const AddProductVariant = () => {
         quantitySold: 0,
         status: "IN_STOCK"
       };
-
-      await axios.post("http://localhost:8089/api/seller/variants", payload);
+  
+      await axios.post(
+        "http://localhost:8089/api/seller/variants",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}` // 🟢 Gửi token vào đây
+          }
+        }
+      );
+  
       alert("✅ Thêm biến thể thành công!");
       navigate(`/seller/inventory/product/${productId}/variants`);
     } catch (err) {
@@ -82,6 +120,7 @@ const AddProductVariant = () => {
       alert("❌ Không thể thêm biến thể.");
     }
   };
+  
 
   return (
     <div className="main-content">
