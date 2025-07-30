@@ -3,7 +3,6 @@ package com.kltnbe.sellerservice.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kltnbe.sellerservice.clients.ProductServiceProxy;
-import com.kltnbe.sellerservice.clients.ProductFeignClient;
 import com.kltnbe.sellerservice.clients.UploadServiceProxy;
 import com.kltnbe.sellerservice.clients.UserServiceProxy;
 import com.kltnbe.sellerservice.dtos.*;
@@ -47,7 +46,7 @@ public class SellerServiceImpl implements SellerService {
     private final ShopDiscountRepository shopDiscountRepository;
     private final UserUseDiscountRepository userUseDiscountRepository;
     private final ImageUploadService imageUploadService; // Bean mới
-    private final ProductFeignClient productFeignClient;
+    private final ProductServiceProxy productFeignClient;
 
     @Autowired
     private final UploadServiceProxy uploadServiceProxy;
