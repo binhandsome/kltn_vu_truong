@@ -46,6 +46,7 @@ import Tabs from '../pages/uiKit/Tabs';
 import Typography from '../pages/uiKit/Typography';
 import Chart from '../pages/chart/Chart';
 import ChangePassword from '../pages/authentication/ChangePassword';
+import SellerDashboard from '../pages/adminDashboard/SellerDashboard';
 
 const AdminRoutes = () => {
   return (
@@ -53,6 +54,7 @@ const AdminRoutes = () => {
       <Route path="/" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="dashboard/userDashboard" element={<UserDashboard />} />
+        <Route path="dashboard/sellerDashboard" element={<SellerDashboard />} />
         <Route path="authentication/login" element={<Login />} />
         <Route path="authentication/register" element={<Register />} />
         <Route path="authentication/changePassword" element={<ChangePassword />} />=

@@ -9,6 +9,7 @@ import com.kltnbe.productservice.repositories.ColorRepository;
 import com.kltnbe.productservice.repositories.ProductRepository;
 import com.kltnbe.productservice.repositories.ProductSizeRepository;
 import com.kltnbe.productservice.repositories.ProductVariantRepository;
+import com.kltnbe.productservice.clients.SellerServiceProxy;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,17 +26,30 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     private final ProductRepository productRepository;
     private final ProductSizeRepository sizeRepository;
     private final ColorRepository colorRepository;
+    private final SellerServiceProxy sellerServiceProxy;
+
+    // ✅ Helper để kiểm tra quyền sở hữu
+    private void validateShopOwnership(Long storeId, Long authId) {
+        Object body = sellerServiceProxy.getAuthIdByStore(storeId).getBody();
+        Long storeOwnerAuth = (body instanceof Integer) ? ((Integer) body).longValue() : (Long) body;
+        if (!authId.equals(storeOwnerAuth)) {
+            throw new RuntimeException("❌ Bạn không có quyền thao tác với shop này");
+        }
+    }
 
     @Override
-    public ProductVariantDTO createVariant(ProductVariantDTO dto) {
+    public ProductVariantDTO createVariant(ProductVariantDTO dto, Long authId) {
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+        // ✅ Kiểm tra quyền sở hữu
+        validateShopOwnership(product.getStoreId(), authId);
+
         ProductSize size = sizeRepository.findById(dto.getSizeId())
                 .orElseThrow(() -> new EntityNotFoundException("Size not found"));
         Color color = colorRepository.findById(dto.getColorId())
                 .orElseThrow(() -> new EntityNotFoundException("Color not found"));
 
-        // Check trùng biến thể
         variantRepository.findByProductIdAndSizeIdAndColorId(
                         product.getProductId(), size.getSizeId(), color.getColorId())
                 .ifPresent(v -> {
@@ -62,11 +75,12 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         return mapToDTO(saved);
     }
 
-
     @Override
-    public ProductVariantDTO updateStock(Long variantId, int quantitySold) {
+    public ProductVariantDTO updateStock(Long variantId, int quantitySold, Long authId) {
         ProductVariant variant = variantRepository.findById(variantId)
                 .orElseThrow(() -> new EntityNotFoundException("Variant not found"));
+
+        validateShopOwnership(variant.getProduct().getStoreId(), authId);
 
         variant.setQuantitySold(variant.getQuantitySold() + quantitySold);
         variant.setQuantityInStock(variant.getQuantityInStock() - quantitySold);
@@ -80,11 +94,49 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     }
 
     @Override
-    public List<ProductVariantDTO> getVariantsByProduct(Long productId) {
+    public List<ProductVariantDTO> getVariantsByProduct(Long productId, Long authId) {
+        Long storeId = productRepository.findStoreIdByProductId(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy store của sản phẩm"));
+
+        validateShopOwnership(storeId, authId); // Kiểm tra quyền sở hữu
+
         return variantRepository.findByProduct_ProductId(productId)
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
+    }
+
+
+    @Override
+    public Optional<ProductVariant> findByProductVariant(Long productId, Long sizeId, Long colorId) {
+        return variantRepository.findByProductVariant(productId, sizeId, colorId);
+    }
+
+    @Override
+    public void updateVariant(Long variantId, BigDecimal price, int quantity, Long authId) {
+        Optional<ProductVariant> opt = variantRepository.findById(variantId);
+        if (opt.isPresent()) {
+            ProductVariant variant = opt.get();
+
+            validateShopOwnership(variant.getProduct().getStoreId(), authId);
+
+            variant.setQuantityInStock(quantity);
+            variant.setPrice(price);
+            variantRepository.save(variant);
+        }
+    }
+
+    @Override
+    public Optional<ProductVariant> getVariantById(Long variantId) {
+        return variantRepository.findById(variantId);
+    }
+
+    @Override
+    public void deleteVariant(Long variantId, Long authId) {
+        ProductVariant variant = variantRepository.findById(variantId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy biến thể"));
+        validateShopOwnership(variant.getProduct().getStoreId(), authId);
+        variantRepository.deleteById(variantId);
     }
 
     private ProductVariantDTO mapToDTO(ProductVariant v) {
@@ -99,28 +151,5 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         dto.setStatus(v.getStatus().name());
         dto.setAsin(v.getProduct().getAsin());
         return dto;
-    }
-    @Override
-    public Optional<ProductVariant> findByProductVariant(Long productId, Long sizeId, Long colorId) {
-        return variantRepository.findByProductVariant(productId, sizeId, colorId);
-    }
-    @Override
-    public void updateVariant(Long variantId, BigDecimal price, int quantity) {
-        Optional<ProductVariant> opt = variantRepository.findById(variantId);
-        if (opt.isPresent()) {
-            ProductVariant variant = opt.get();
-            variant.setQuantityInStock(quantity);
-            variant.setPrice(price);
-            variantRepository.save(variant);
-        }
-    }
-
-    @Override
-    public Optional<ProductVariant> getVariantById(Long variantId) {
-        return variantRepository.findById(variantId);
-    }
-    @Override
-    public void deleteVariant(Long variantId) {
-        variantRepository.deleteById(variantId);
     }
 }

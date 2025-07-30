@@ -48,11 +48,13 @@ public interface ProductServiceProxy {
     @PutMapping("/api/products/internal/deleteProduct/{asin}")
     public ResponseEntity<?> deleteProduct(@PathVariable String asin,@RequestParam Long authId);
     @GetMapping("/api/products/by-seller/{storeId}")
-    List<ProductResponseDTO> getProductsBySeller(@PathVariable("storeId") Long storeId);
+    List<ProductResponseDTO> getProductsBySeller(@PathVariable("storeId") Long storeId, @RequestParam Long authId);
 
-    @PatchMapping("/api/products/{productId}/status")
+
+    @PutMapping("/api/products/{productId}/status")
     void updateStatus(@PathVariable("productId") Long productId,
-                      @RequestParam("status") String status);
+                      @RequestParam("status") String status,
+                      @RequestParam("authId") Long authId);
 
     @PostMapping("/api/products/addProduct")
     ResponseEntity<?> addProduct(@RequestBody ProductRequestDTO dto);
@@ -63,28 +65,29 @@ public interface ProductServiceProxy {
     @PutMapping("/api/products/deleteProduct/{asin}")
     ResponseEntity<?> deleteProduct(@PathVariable("asin") String asin);
     @PutMapping("/api/product-variants/variants/{variantId}")
-    void updateVariant(
-            @PathVariable("variantId") Long variantId,
-            @RequestParam("price") BigDecimal price,
-            @RequestParam("quantity") int quantity
-    );
+    void updateVariant(@PathVariable("variantId") Long variantId,
+                       @RequestParam(value = "price", required = false) BigDecimal price,
+                       @RequestParam(value = "quantity", required = false) Integer quantity,
+                       @RequestParam("authId") Long authId);
     @DeleteMapping("/api/product-variants/variants/{variantId}")
-    void deleteVariant(@PathVariable("variantId") Long variantId);
+    void deleteVariant(@PathVariable("variantId") Long variantId, @RequestParam Long authId);
 
     @GetMapping("/api/product-variants/detail/{variantId}")
     ProductVariantDTO getVariant(@PathVariable("variantId") Long variantId);
 
     @GetMapping("/api/product-variants/{productId}")
-    List<ProductVariantDTO> getVariantsByProduct(@PathVariable("productId") Long productId);
+    List<ProductVariantDTO> getVariantsByProduct(@PathVariable("productId") Long productId,
+                                                 @RequestParam Long authId);
 
     @PutMapping("/api/product-variants/{variantId}/sell")
     ProductVariantDTO sellVariant(@PathVariable("variantId") Long variantId,
-                                  @RequestParam("quantity") int quantity);
+                                  @RequestParam("quantity") int quantity,
+                                  @RequestParam Long authId);
 
 
     @GetMapping("/api/products/{asin}/sizes")
     List<ProductSizeDTO> getSizesByAsin(@PathVariable("asin") String asin);
     @PostMapping("/api/product-variants")
-    ProductVariantDTO createVariant(@RequestBody ProductVariantDTO dto);
+    ProductVariantDTO createVariant(@RequestBody ProductVariantDTO dto, @RequestParam Long authId);
 
 }

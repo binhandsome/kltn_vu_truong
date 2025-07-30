@@ -22,7 +22,7 @@ const UserDashboard = () => {
     else if (!emailRegex.test(form.email)) newErrors.email = 'Email không đúng định dạng';
     else {
       try {
-        const res = await axios.get(`http://localhost:8090/api/admin/users/check-email?email=${form.email}`);
+        const res = await axios.get(`http://localhost:8091/api/admin/users/check-email?email=${form.email}`);
         if (res.data.exists) newErrors.email = 'Email đã tồn tại';
       } catch {
         newErrors.email = 'Không thể kiểm tra email';
@@ -33,7 +33,7 @@ const UserDashboard = () => {
     else if (form.username.length < 4) newErrors.username = 'Username phải có ít nhất 4 ký tự';
     else {
       try {
-        const res = await axios.get(`http://localhost:8090/api/admin/users/check-username?username=${form.username}`);
+        const res = await axios.get(`http://localhost:8091/api/admin/users/check-username?username=${form.username}`);
         if (res.data.exists) newErrors.username = 'Username đã tồn tại';
       } catch {
         newErrors.username = 'Không thể kiểm tra username';
@@ -49,7 +49,7 @@ const UserDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:8090/api/admin/users');
+      const res = await axios.get('http://localhost:8091/api/admin/users');
       setUsers(res.data);
     } catch (err) {
       console.error('Lỗi khi tải danh sách người dùng:', err);
@@ -60,7 +60,7 @@ const UserDashboard = () => {
   
     if (!keyword.trim()) return fetchUsers();
     try {
-      const res = await axios.get(`http://localhost:8090/api/admin/users/search?keyword=${keyword}`);
+      const res = await axios.get(`http://localhost:8091/api/admin/users/search?keyword=${keyword}`);
       setUsers(res.data);
     } catch (err) {
       console.error('Lỗi khi tìm kiếm:', err);
@@ -68,18 +68,18 @@ const UserDashboard = () => {
   };
 
   const toggleBan = async (id) => {
-    await axios.put(`http://localhost:8090/api/admin/users/${id}/toggle-ban`);
+    await axios.put(`http://localhost:8091/api/admin/users/${id}/toggle-ban`);
     fetchUsers();
   };
 
   const resetPassword = async (id) => {
-    await axios.post(`http://localhost:8090/api/admin/users/${id}/reset-password`);
+    await axios.post(`http://localhost:8091/api/admin/users/${id}/reset-password`);
     alert('Đã reset mật khẩu người dùng');
   };
 
   const upgradeToSeller = async (userId) => {
     try {
-      const res = await axios.put(`http://localhost:8090/api/admin/users/upgradeToSeller/${userId}`);
+      const res = await axios.put(`http://localhost:8091/api/admin/users/upgradeToSeller/${userId}`);
       alert(res.data);
       fetchUsers();
     } catch (err) {
@@ -93,7 +93,7 @@ const UserDashboard = () => {
     if (!isValid) return;
 
     try {
-      await axios.post('http://localhost:8090/api/admin/users/create', form);
+      await axios.post('http://localhost:8091/api/admin/users/create', form);
       setShowModal(false);
       setForm({ email: '', username: '', password: '', firstName: '', lastName: '' });
       setErrors({});

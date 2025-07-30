@@ -39,6 +39,6 @@ public interface ProductService {
     void deleteImageById(Long imageId, Long authId);
     ResponseEntity<?> updateProduct(ProductRequestDTO request, Long authId);
     ResponseEntity<?> deleteProductByAsin(String asin, Long authId);
-    List<ProductResponse> getProductsByStoreId(Long storeId);
-    void updateStatus(Long productId, String status);
+    List<ProductResponse> getProductsByStoreId(Long storeId, Long authId);
+    void updateStatus(Long productId, String status, Long authId);
 }

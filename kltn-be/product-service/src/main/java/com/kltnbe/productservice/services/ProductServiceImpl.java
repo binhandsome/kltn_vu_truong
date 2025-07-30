@@ -437,7 +437,9 @@ validateShopOwnership(product.getStoreId(), authId);
         }
     }
     @Override
-    public List<ProductResponse> getProductsByStoreId(Long storeId) {
+    public List<ProductResponse> getProductsByStoreId(Long storeId, Long authId) {
+        validateShopOwnership(storeId, authId); // Kiểm tra quyền truy cập
+
         List<Product> products = productRepository.findByStoreId(storeId);
         return products.stream()
                 .map(this::mapProductToDTO)
@@ -445,13 +447,15 @@ validateShopOwnership(product.getStoreId(), authId);
     }
 
     @Override
-    public void updateStatus(Long productId, String status) {
-        Optional<Product> productOpt = productRepository.findById(productId);
-        if (productOpt.isPresent()) {
-            Product product = productOpt.get();
-            product.setProductStatus(ProductStatus.valueOf(status));
-            productRepository.save(product);
-        }
+    public void updateStatus(Long productId, String status, Long authId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Sản phẩm không tồn tại"));
+
+        Long storeId = product.getStoreId();
+        validateShopOwnership(storeId, authId); // Xác thực người sở hữu
+
+        product.setProductStatus(ProductStatus.valueOf(status));
+        productRepository.save(product);
     }
     public ProductResponse mapProductToDTO(Product product) {
         ProductResponse dto = new ProductResponse();
