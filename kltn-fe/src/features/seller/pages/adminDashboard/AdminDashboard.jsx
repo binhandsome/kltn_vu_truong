@@ -24,6 +24,7 @@ function AdminDashboard() {
   const handleCloseModal = () => setShowModal(false);
   const API_URL = 'http://localhost:8089/api/seller';
   const navigate = useNavigate();
+  
   const [nameDiscount, setNameDiscount] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [percentValue, setPercentValue] = useState('');
@@ -32,7 +33,7 @@ function AdminDashboard() {
   const [status, setStatus] = useState('');
   const [shopDiscountId, setShopDiscountId] = useState();
   const [showEditModal, setShowEditModal] = useState(false);
-
+  const [dashboardSeller, setDashboardSeller] = useState([]);
   const handleOpenModalEdit = () => setShowEditModal(true);
   const handleCloseModalEdit = () => setShowEditModal(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -43,7 +44,10 @@ function AdminDashboard() {
   const handleCloseModalConfirmDiscount = () => setShowConfirmModalDiscount(false);
   const [showEditDiscountModal, setShowEditDiscountModal] = useState(false);
   const [showConfirmDeleteModalDiscount, setShowConfirmDeleteModalDiscount] = useState(false);
-
+  const [pageSize, setPageSize] = useState(20);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [totalPage, settotalPage]  = useState(1);// quản lý trạng thái modal
   const [selectedDiscount, setSelectedDiscount] = useState({
     discountShopId: '',
     nameDiscount: '',
@@ -53,6 +57,42 @@ function AdminDashboard() {
     dayEnd: '',
     status: ''
   });
+const [showDetailModal, setShowDetailModal] = useState(false);
+const [selectedOrder, setSelectedOrder] = useState(null);
+	const maxPagesToShow = 10;
+
+const handleViewDetail = (order) => {
+  setSelectedOrder(order);
+  setShowDetailModal(true);
+};
+
+const handleCloseDetailModal = () => {
+  setShowDetailModal(false);
+  setSelectedOrder(null);
+};
+	const handlePageChange = (pageNumber) => {
+		if (pageNumber >= 0 && pageNumber < totalPage) {
+			setPageNumber(pageNumber);
+		}
+	};
+  const statusColors = {
+    pending: "badge-warning",       // vàng
+    processing: "badge-info",       // xanh dương nhạt
+    shipped: "badge-primary",       // xanh dương
+    completed: "badge-success",     // xanh lá
+    cancelled: "badge-danger",      // đỏ
+  };
+const getPageRange = () => {
+  if (!totalPage || totalPage <= 0) return []; // Không có trang nào
+
+  const safeMaxPages = maxPagesToShow || 5; // mặc định nếu maxPagesToShow chưa được set
+  const startPage = Math.floor(pageNumber / safeMaxPages) * safeMaxPages;
+  const endPage = Math.min(startPage + safeMaxPages, totalPage);
+
+  // ✅ Đảm bảo không bị âm
+  if (endPage <= startPage) return [0]; 
+  return Array.from({ length: endPage - startPage }, (_, i) => startPage + i);
+};
 
   const handleOpenModalDiscount = (discount) => {
     setSelectedDiscount(discount);
@@ -72,11 +112,11 @@ function AdminDashboard() {
     setShowEditDiscountModal(false);
     setSelectedDiscount(null);
   };
-function toDatetimeLocal(date) {
-  const offset = date.getTimezoneOffset(); // phút lệch UTC
-  const localDate = new Date(date.getTime() - offset * 60000);
-  return localDate.toISOString().slice(0, 16);
-}
+  function toDatetimeLocal(date) {
+    const offset = date.getTimezoneOffset(); // phút lệch UTC
+    const localDate = new Date(date.getTime() - offset * 60000);
+    return localDate.toISOString().slice(0, 16);
+  }
 
 
 
@@ -104,7 +144,7 @@ function toDatetimeLocal(date) {
       const response = await axios.put(`${API_URL}/update-discount-shop`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
         },
       });
       setMessage(response.data.message);
@@ -126,13 +166,13 @@ function toDatetimeLocal(date) {
     }
     try {
       await axios.delete(`${API_URL}/delete-discount-shop`, {
-        params: { 
+        params: {
           shopDiscountId: selectedDiscount.discountShopId,
-         },
-         headers :{
-                          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
 
-         }
+        }
       });
       setMessage('✅ Đã xóa mã giảm giá thành công. ');
       setShowConfirmDeleteModalDiscount(false);
@@ -165,7 +205,7 @@ function toDatetimeLocal(date) {
       const response = await axios.post(`${API_URL}/create-shop-edit`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-                          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
 
         }
       });
@@ -192,8 +232,8 @@ function toDatetimeLocal(date) {
 
     try {
       await axios.delete(`${API_URL}/delete-shop`, {
-        headers : {
-                          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
 
         }
       });
@@ -248,7 +288,7 @@ function toDatetimeLocal(date) {
       nameDiscount,
       minPrice: parseFloat(minPrice),
       percentValue: parseInt(percentValue),
-      dayStart: dayStart , 
+      dayStart: dayStart,
       dayEnd: dayEnd,
       status
     };
@@ -256,7 +296,7 @@ function toDatetimeLocal(date) {
     try {
       const response = await axios.post(`${API_URL}/create-discount`, discountData, {
         headers: {
-          'Content-Type': 'application/json',                
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
 
         }
@@ -277,35 +317,49 @@ function toDatetimeLocal(date) {
       setMessage(error.response?.data || '❌ Lỗi khi tạo mã giảm giá, vui lòng thử lại.');
     }
   };
-      const fetchShopDiscounts = async () => {
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) {
-        setMessage('❌ Vui lòng đăng nhập để xem mã giảm giá.');
-        setIsLoading(false);
-        return;
-      }
+  const fetchShopDiscounts = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      setMessage('❌ Vui lòng đăng nhập để xem mã giảm giá.');
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        const response = await axios.get(`${API_URL}/get-shop-discounts`, {
-  headers: {
-                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-            },
-                  });
-        setDiscounts(response.data);
-        setMessage(response.data.length > 0 ? '✅ Đã tải danh sách mã giảm giá.' : '⚠️ Chưa có mã giảm giá nào.');
-      } catch (error) {
-        console.error('Error fetching shop discounts:', error);
-        setMessage(error.response?.data || '❌ Lỗi khi tải danh sách mã giảm giá.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    try {
+      const response = await axios.get(`${API_URL}/get-shop-discounts`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+        },
+      });
+      setDiscounts(response.data);
+      setMessage(response.data.length > 0 ? '✅ Đã tải danh sách mã giảm giá.' : '⚠️ Chưa có mã giảm giá nào.');
+    } catch (error) {
+      console.error('Error fetching shop discounts:', error);
+      setMessage(error.response?.data || '❌ Lỗi khi tải danh sách mã giảm giá.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
     fetchShopDiscounts();
   }, []);
   const handleAddDiscount = () => {
     navigate('/seller/shop/createShop');
   };
+  const getPaymentInfo = (method) => {
+    switch (method?.toLowerCase()) {
+      case "paypal":
+        return { icon: "fab fa-cc-paypal", text: "PayPal", color: "text-primary" };
+      case "cod":
+        return { icon: "fas fa-money-bill-wave", text: "COD", color: "text-success" };
+      case "bank":
+      case "ngân hàng":
+        return { icon: "fas fa-university", text: "Ngân hàng", color: "text-info" };
+      default:
+        return { icon: "fas fa-credit-card", text: "Khác", color: "text-secondary" };
+    }
+  };
+
   useEffect(() => {
     const checkShopStatus = async () => {
       const accessToken = localStorage.getItem('accessToken');
@@ -316,9 +370,10 @@ function toDatetimeLocal(date) {
 
       try {
         const response = await axios.get(`${API_URL}/has-shop`, {
-  headers: {
-                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-            },        });
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+          },
+        });
         setShopStatus(response.data);
         if (response.data.hasShop) {
           switch (response.data.shopStatus) {
@@ -346,6 +401,42 @@ function toDatetimeLocal(date) {
     checkShopStatus();
   }, []);
   useEffect(() => {
+    console.log("useEffect chạy"); // ✅ Kiểm tra xem hook có chạy không
+
+    const getDashboardSeller = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        setMessage('❌ Vui lòng đăng nhập để xem thông tin shop.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${API_URL}/getDashboard`, {
+          params: {
+            page: pageNumber,
+            size: pageSize,
+          },
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+          },
+        });
+        setDashboardSeller(response.data);
+        setMessage('✅ Đã tải thông tin dashboard thành công.');
+        settotalPage(response.data.totalPages); // backend trả về
+
+      } catch (error) {
+        console.error('Error fetching shop info:', error);
+        setMessage(error.response?.data || '❌ Lỗi khi tải thông tin shop.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getDashboardSeller();
+}, [pageNumber, pageSize]); // 👈 Thêm pageNumber vào đây
+
+  useEffect(() => {
     const fetchShopInfo = async () => {
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
@@ -356,9 +447,9 @@ function toDatetimeLocal(date) {
 
       try {
         const response = await axios.get(`${API_URL}/get-shop-info`, {
-           headers: {
-                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-            },
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+          },
         });
         setShopInfo(response.data);
         setMessage('✅ Đã tải thông tin shop thành công.');
@@ -372,7 +463,9 @@ function toDatetimeLocal(date) {
 
     fetchShopInfo();
   }, []);
-
+useEffect(() => {
+  console.log('fasjbfaskhbfas', totalPage);
+})
   return (
     <>
 
@@ -599,7 +692,7 @@ function toDatetimeLocal(date) {
                       <div className="icon-info-text">
                         {/* Happy Customers */}
                         <h5 className="ad-title">Số Lượng Người Theo Dõi</h5>
-                        <h4 className="ad-card-title">66k</h4>
+                        <h4 className="ad-card-title">{dashboardSeller.followers}</h4>
                       </div>
                     </div>
                   </div>
@@ -618,7 +711,7 @@ function toDatetimeLocal(date) {
                       <div className="icon-info-text">
                         {/* Daily Orders */}
                         <h5 className="ad-title">Đơn hàng hôm nay</h5>
-                        <h4 className="ad-card-title">15k</h4>
+                        <h4 className="ad-card-title">{dashboardSeller.ordersToday}</h4>
                       </div>
                     </div>
                   </div>
@@ -643,7 +736,7 @@ function toDatetimeLocal(date) {
                       <div className="icon-info-text">
                         {/* Total Sales */}
                         <h5 className="ad-title">Đơn hàng tháng này</h5>
-                        <h4 className="ad-card-title">420k</h4>
+                        <h4 className="ad-card-title">{dashboardSeller.ordersThisMonth}</h4>
                       </div>
                     </div>
                   </div>
@@ -672,7 +765,7 @@ function toDatetimeLocal(date) {
                       <div className="icon-info-text">
                         {/* Total Revenue */}
                         <h5 className="ad-title">Tổng doanh thu</h5>
-                        <h4 className="ad-card-title">10k</h4>
+                        <h4 className="ad-card-title">{dashboardSeller.totalRevenue}$</h4>
                       </div>
                     </div>
                   </div>
@@ -688,12 +781,7 @@ function toDatetimeLocal(date) {
                         {/* Total Revanue */}
                         Tổng lợi nhuận{" "}
                         <span>
-                          <button
-                            type="button"
-                            className="btn btn-primary squer-btn sm-btn"
-                          >
-                            Tải xuống
-                          </button>
+                    
                         </span>
                       </h4>
                     </div>
@@ -1014,7 +1102,7 @@ function toDatetimeLocal(date) {
                   </div>
                 </div>
               )}
-               {showConfirmDeleteModalDiscount && (
+              {showConfirmDeleteModalDiscount && (
                 <div
                   className="modal-backdrop "
                   style={{
@@ -1271,7 +1359,7 @@ function toDatetimeLocal(date) {
                   </div>
                 </div>
               )}
-                  {showConfirmModalDiscount && (
+              {showConfirmModalDiscount && (
                 <div
                   className="modal-backdrop "
                   style={{
@@ -1284,7 +1372,7 @@ function toDatetimeLocal(date) {
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-      zIndex: 2000, // ✅ cao hơn modal khác
+                    zIndex: 2000, // ✅ cao hơn modal khác
                   }}
                 >
                   <div className="modal-dialog modal-xl" role="document">
@@ -1345,6 +1433,133 @@ function toDatetimeLocal(date) {
                   </div>
                 </div>
               )}
+         {showDetailModal && selectedOrder && (
+  <div
+    className="modal-backdrop"
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100vw",
+      height: "100vh",
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 1050,
+    }}
+  >
+    <div className="modal-dialog modal-lg" role="document">
+      <div className="modal-content" style={{ borderRadius: "12px" }}>
+        <div className="modal-header">
+          <h5 className="modal-title">
+            🛒 Chi tiết Order #{selectedOrder.orderId}
+          </h5>
+          <button
+            type="button"
+            className="close"
+            onClick={handleCloseDetailModal}
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div className="modal-body" style={{ maxHeight: "75vh", overflowY: "auto" }}>
+          {/* Grid layout */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            
+            {/* 1️⃣ Order Info */}
+            <div className="card p-3 shadow-sm">
+              <h6 className="mb-3">📦 Thông tin đơn hàng</h6>
+              <p><b>Ngày tạo:</b> {selectedOrder.createdAt}</p>
+              <p><b>Tổng tiền:</b> ${selectedOrder.totalPrice}</p>
+              <p><b>Trạng thái:</b> 
+                <span className={`badge ${statusColors[selectedOrder.status]}`}>
+                  {selectedOrder.status}
+                </span>
+              </p>
+              <p><b>Số sản phẩm:</b> {selectedOrder.itemCount}</p>
+            </div>
+ {/* 🛍 Danh sách sản phẩm */}
+<div className="card p-3 shadow-sm mt-3">
+  <h6 className="mb-3">🛍 Danh sách sản phẩm</h6>
+  {selectedOrder?.items && selectedOrder.items.length > 0 ? (
+    selectedOrder.items.map((item, idx) => (
+      <div key={idx} className="border rounded p-3 mb-2">
+        <p><b>ASIN:</b> {item.asin}</p>
+        <p><b>Tên sản phẩm:</b> {item.titleProduct}</p>
+        <p><b>Màu:</b> {item.color || <span className="text-muted">-</span>}</p>
+        <p><b>Size:</b> {item.size || <span className="text-muted">-</span>}</p>
+        <p><b>Số lượng:</b> {item.quantity}</p>
+        <p>
+          <b>Đơn giá:</b> 
+          <span className="text-success fw-bold">
+            ${Number(item.unitPrice).toLocaleString()}
+          </span>
+        </p>
+      </div>
+    ))
+  ) : (
+    <p className="text-muted text-center my-2">Không có sản phẩm trong đơn hàng.</p>
+  )}
+</div>
+
+
+            {/* 2️⃣ Recipient Info */}
+            <div className="card p-3 shadow-sm">
+              <h6 className="mb-3">👤 Người nhận</h6>
+              <p><b>Tên:</b> {selectedOrder.recipientName}</p>
+              <p><b>Email:</b> {selectedOrder.recipientEmail}</p>
+              <p><b>SĐT:</b> {selectedOrder.recipientPhone}</p>
+              <p><b>Địa chỉ:</b> {selectedOrder.deliveryAddress}</p>
+              <p><b>Chi tiết:</b> {selectedOrder.addressDetails}</p>
+            </div>
+
+            {/* 3️⃣ Delivery Info */}
+            <div className="card p-3 shadow-sm">
+              <h6 className="mb-3">🚚 Giao hàng</h6>
+              <p><b>Trạng thái:</b> {selectedOrder.deliveryStatus || "Chưa có"}</p>
+              <p><b>Mã tracking:</b> {selectedOrder.trackingNumber || "Chưa có"}</p>
+              <p><b>Phí ship:</b> ${selectedOrder.shippingFee || 0}</p>
+              <p><b>Ngày dự kiến:</b> {selectedOrder.estimatedDeliveryDate || "Chưa có"}</p>
+            </div>
+
+            {/* 4️⃣ Shipping Method */}
+            <div className="card p-3 shadow-sm">
+              <h6 className="mb-3">🚀 Phương thức vận chuyển</h6>
+              <p><b>Tên:</b> {selectedOrder.shippingMethodName || "Chưa chọn"}</p>
+              <p><b>Mô tả:</b> {selectedOrder.shippingDescription || "N/A"}</p>
+              <p><b>Thời gian dự kiến:</b> {selectedOrder.shippingEstimatedDays || 0} ngày</p>
+            </div>
+
+            {/* 5️⃣ Payment Info */}
+            <div className="card p-3 shadow-sm" >
+              <h6 className="mb-3">💳 Thanh toán</h6>
+              <p><b>Phương thức:</b> {selectedOrder.paymentMethod}</p>
+              <p><b>Trạng thái:</b> 
+                <span className="badge badge-success">{selectedOrder.statusPayment}</span>
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleCloseDetailModal}
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+
               <div className="row">
                 <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                   <div className="card chart-card">
@@ -1411,7 +1626,7 @@ function toDatetimeLocal(date) {
                               overflowY: 'auto',       // thêm cuộn khi vượt quá
                               paddingRight: '10px'
                             }}>
-<form onSubmit={handleSubmit}>
+                              <form onSubmit={handleSubmit}>
 
                                 <div className="ad-auth-form">
                                   {/* Tên Shop */}
@@ -1978,8 +2193,11 @@ function toDatetimeLocal(date) {
 
                             </tbody>
                           </table>
+                          
                         </div>
+                        
                       </div>
+                      
                     </div>
 
 
@@ -1987,23 +2205,25 @@ function toDatetimeLocal(date) {
                 </div>
               </div>
               <div className="row">
+                
                 <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                   <div className="card chart-card">
                     <div className="card-header">
                       <h4>Newest Orders</h4>
                     </div>
                     <div className="card-body pb-4">
+
                       <div className="chart-holder">
                         <div className="table-responsive">
                           <table className="table table-styled mb-0">
                             <thead>
                               <tr>
-                                <th>
+                                {/* <th>
                                   <div className="checkbox">
                                     <input id="checkbox1" type="checkbox" />
                                     <label htmlFor="checkbox1" />
                                   </div>
-                                </th>
+                                </th> */}
                                 {/*  Order ID */}
                                 <th>ID đơn hàng</th>
                                 {/* Billing Name */}
@@ -2019,89 +2239,92 @@ function toDatetimeLocal(date) {
                                 {/* View Details */}
                                 <th>Xem chi tiết</th>
                                 {/* Action */}
-                                <th>Hoạt động</th>
+                                {/* <th>Hoạt động</th> */}
                               </tr>
                             </thead>
                             <tbody>
-                              <tr>
-                                <td>
-                                  <div className="checkbox">
-                                    <input id="checkbox2" type="checkbox" />
-                                    <label htmlFor="checkbox2" />
-                                  </div>
-                                </td>
-                                <td>#JH2033</td>
-                                <td>
-                                  <span className="img-thumb ">
-                                    <img src="../../assets/admin/images/table/1.jpg" alt=" " />
-                                    <span className="ml-2 ">Emily Arnold</span>
-                                  </span>
-                                </td>
-                                <td>22/06/2022</td>
-                                <td>$600</td>
-                                <td>
-                                  <label
-                                    className="mb-0 badge badge-primary"
-                                    title=""
-                                    data-original-title="Pending"
-                                  >
-                                    Pending
-                                  </label>
-                                </td>
-                                <td>
-                                  <span className="img-thumb">
-                                    <i className="fab fa-cc-paypal" />
-                                    <span className="ml-2">Paypal</span>
-                                  </span>
-                                </td>
-                                <td>
-                                  <label
-                                    className="mb-0 badge badge-primary"
-                                    title=""
-                                    data-original-title="Pending"
-                                  >
-                                    View Detail
-                                  </label>
-                                </td>
-                                <td className="relative">
-                                  <a
-                                    className="action-btn "
-                                    href="javascript:void(0); "
-                                  >
-                                    <svg
-                                      className="default-size "
-                                      viewBox="0 0 341.333 341.333 "
+                              {dashboardSeller?.recentOrders?.map((order, index) => (
+                                <tr>
+                                  {/* <td>
+                                    <div className="checkbox">
+                                      <input id="checkbox2" type="checkbox" />
+                                      <label htmlFor="checkbox2" />
+                                    </div>
+
+                                  </td> */}
+                                  <td>#{order.orderId}</td>
+                                  <td>
+                                    <span className="img-thumb ">
+                                      <img src="../../assets/admin/images/table/1.jpg" alt=" " />
+                                      <span className="ml-2 ">{order.recipientName}</span>
+                                    </span>
+                                  </td>
+                                  <td>{order.createdAt}</td>
+                                  <td>${order.totalPrice}</td>
+                                  <td>
+                                    <label
+                                      className={`mb-0 badge ${statusColors[order.status] || "badge-secondary"}`}
                                     >
-                                      <g>
+                                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                    </label>
+                                  </td>
+                                  <td>
+                                    <span className="img-thumb">
+                                      <i className={`${getPaymentInfo(order.paymentMethod).icon} ${getPaymentInfo(order.paymentMethod).color}`} />
+                                      <span className="ml-2">{getPaymentInfo(order.paymentMethod).text}</span>
+                                    </span>
+                                  </td>
+
+                          <td>
+  <button
+    className="mb-0 badge badge-primary"
+    onClick={() => handleViewDetail(order)} // Gọi hàm khi click
+  >
+    View Detail
+  </button>
+</td>
+
+                                  {/* <td className="relative">
+                                    <a
+                                      className="action-btn "
+                                      href="javascript:void(0); "
+                                    >
+                                      <svg
+                                        className="default-size "
+                                        viewBox="0 0 341.333 341.333 "
+                                      >
                                         <g>
                                           <g>
-                                            <path d="M170.667,85.333c23.573,0,42.667-19.093,42.667-42.667C213.333,19.093,194.24,0,170.667,0S128,19.093,128,42.667 C128,66.24,147.093,85.333,170.667,85.333z " />
-                                            <path d="M170.667,128C147.093,128,128,147.093,128,170.667s19.093,42.667,42.667,42.667s42.667-19.093,42.667-42.667 S194.24,128,170.667,128z " />
-                                            <path d="M170.667,256C147.093,256,128,275.093,128,298.667c0,23.573,19.093,42.667,42.667,42.667s42.667-19.093,42.667-42.667 C213.333,275.093,194.24,256,170.667,256z " />
+                                            <g>
+                                              <path d="M170.667,85.333c23.573,0,42.667-19.093,42.667-42.667C213.333,19.093,194.24,0,170.667,0S128,19.093,128,42.667 C128,66.24,147.093,85.333,170.667,85.333z " />
+                                              <path d="M170.667,128C147.093,128,128,147.093,128,170.667s19.093,42.667,42.667,42.667s42.667-19.093,42.667-42.667 S194.24,128,170.667,128z " />
+                                              <path d="M170.667,256C147.093,256,128,275.093,128,298.667c0,23.573,19.093,42.667,42.667,42.667s42.667-19.093,42.667-42.667 C213.333,275.093,194.24,256,170.667,256z " />
+                                            </g>
                                           </g>
                                         </g>
-                                      </g>
-                                    </svg>
-                                  </a>
-                                  <div className="action-option ">
-                                    <ul>
-                                      <li>
-                                        <a href="javascript:void(0); ">
-                                          <i className="far fa-edit mr-2 " />
-                                          Edit
-                                        </a>
-                                      </li>
-                                      <li>
-                                        <a href="javascript:void(0); ">
-                                          <i className="far fa-trash-alt mr-2 " />
-                                          Delete
-                                        </a>
-                                      </li>
-                                    </ul>
-                                  </div>
-                                </td>
-                              </tr>
-                              <tr>
+                                      </svg>
+                                    </a>
+                                    <div className="action-option ">
+                                      <ul>
+                                        <li>
+                                          <a href="javascript:void(0); ">
+                                            <i className="far fa-edit mr-2 " />
+                                            Edit
+                                          </a>
+                                        </li>
+                                        <li>
+                                          <a href="javascript:void(0); ">
+                                            <i className="far fa-trash-alt mr-2 " />
+                                            Delete
+                                          </a>
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </td> */}
+                                </tr>
+                              ))}
+
+                              {/* <tr>
                                 <td>
                                   <div className="checkbox">
                                     <input id="checkbox3" type="checkbox" />
@@ -2646,17 +2869,58 @@ function toDatetimeLocal(date) {
                                     </ul>
                                   </div>
                                 </td>
-                              </tr>
+                              </tr> */}
                             </tbody>
                           </table>
+
                         </div>
                       </div>
+                             <div className="col-md-6">
+							<nav aria-label="Product Pagination">
+								<ul className="pagination style-1">
+									{/* Nút Previous */}
+					<li className="page-item">
+  <a
+    className={`page-link ${pageNumber === 0 ? 'disabled' : ''}`}
+    onClick={() => handlePageChange(pageNumber - 1)}
+  >
+    <i className="fas fa-chevron-left mr-1"></i> 
+  </a>
+</li>
+									{/* Các số trang trong phạm vi */}
+									{getPageRange().map((page) => (
+										<li className="page-item" key={page}>
+											<a
+												className={`page-link ${page === pageNumber ? 'active' : ''}`}
+												onClick={() => handlePageChange(page)}
+											>
+												{page + 1}
+											</a>
+										</li>
+									))}
+									{/* Nút Next */}
+									<li className="page-item">
+  <a
+    className={`page-link next ${pageNumber >= totalPage - 1 ? 'disabled' : ''}`}
+    onClick={() => handlePageChange(pageNumber + 1)}
+  >
+     <i className="fas fa-chevron-right ml-1"></i>
+  </a>
+</li>
+								</ul>
+							</nav>
+						</div>
                     </div>
+               
                   </div>
+                  
                 </div>
+              
               </div>
             </>
           )}
+       
+
           <div className="ad-footer-btm">
             <p>Copyright 2022 © SplashDash All Rights Reserved.</p>
           </div>

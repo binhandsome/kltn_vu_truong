@@ -362,6 +362,35 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public AddressInfo findByAddressId(Long addressId) {
+        Address address = addressRepository.findByAddressId(addressId);
+        AddressInfo addressInfo = new AddressInfo();
+        addressInfo.setAddressId(addressId);
+        addressInfo.setAddressDetails(address.getAddressDetails());
+        addressInfo.setRecipientName(address.getRecipientName());
+        addressInfo.setDeliveryAddress(address.getDeliveryAddress());
+        addressInfo.setRecipientPhone(address.getRecipientPhone());
+        addressInfo.setRecipientEmail(address.getRecipientEmail());
+        return addressInfo;
+    }
+
+    @Override
+    public List<AddressInfo> findByAddressIds(List<Long> addressId) {
+        List<Address> addresses = addressRepository.findByAddressIdIn(addressId);
+        List<AddressInfo> result = addresses.stream()
+                .map(a -> new AddressInfo(
+                        a.getAddressId(),
+                        a.getRecipientName(),
+                        a.getRecipientPhone(),
+                        a.getRecipientEmail(),
+                        a.getDeliveryAddress(),
+                        a.getAddressDetails()
+                ))
+                .toList();
+        return result;
+    }
+
+    @Override
     public String updateUserByAdmin(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));

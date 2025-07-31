@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -378,5 +379,22 @@ public class ProductController {
     public List<ProductSize> getSizesByAsin(@PathVariable String asin) {
         return productSizeRepository.findByProductAsin(asin);
     }
+    @InternalApi
+    @GetMapping("/internal/by-store/{storeId}")
+    public ResponseEntity<List<Long>> getProductIdsByStore(@PathVariable Long storeId) {
+        List<Long> productIds = productService.getProductIdsByStore(storeId);
+        return ResponseEntity.ok(productIds);
+    }
+    @InternalApi
+    @GetMapping("/findProductNameById")
+    public ResponseEntity<Optional<String>> findProductNameById(@RequestParam Long productId) {
+        return ResponseEntity.ok(productService.findProductNameById(productId));
+    }
+    @InternalApi
+    @GetMapping("/getProductById")
+    public ResponseEntity<ProductResponse> getProductById(@RequestParam Long idProduct ) {
+        return ResponseEntity.ok(productService.getProductById(idProduct));
+    }
+
 
 }

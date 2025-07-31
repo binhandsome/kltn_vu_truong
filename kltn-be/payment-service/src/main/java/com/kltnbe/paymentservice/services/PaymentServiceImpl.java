@@ -2,6 +2,7 @@ package com.kltnbe.paymentservice.services;
 
 import com.kltnbe.paymentservice.configs.PayPalConfig;
 import com.kltnbe.paymentservice.configs.VnpayConfig;
+import com.kltnbe.paymentservice.dtos.req.PaymentInfo;
 import com.kltnbe.paymentservice.dtos.req.PaymentRequest;
 import com.kltnbe.paymentservice.entities.*;
 import com.kltnbe.paymentservice.entities.Transaction;
@@ -234,6 +235,21 @@ public class PaymentServiceImpl implements PaymentService {
 
         return payment.execute(payPalConfig.apiContext(), paymentExecution);
     }
+
+    @Override
+    public PaymentInfo findByOrderId(Long orderId) {
+        return transactionRepository.findByOrderId(orderId)
+                .map(tx -> {
+                    System.out.println("Payment Status: " + tx.getStatus()); // ✅ Check status ở đây
+                    return PaymentInfo.builder()
+                            .paymentMethod(tx.getPaymentMethod().name())
+                            .paymentStatus(tx.getStatus())
+                            .build();
+                })
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thanh toán cho orderId: " + orderId));
+    }
+
+
 
     // Hàm removeAccents: loại bỏ dấu tiếng Việt
     private String removeAccents(String text) {
