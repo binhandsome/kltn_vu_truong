@@ -3,6 +3,7 @@ package com.kltnbe.sellerservice.controllers;
 import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
 import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.services.SellerService;
 import lombok.AllArgsConstructor;
@@ -253,6 +254,9 @@ public class SellerController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return sellerService.deleteImage(imageId, userDetails.getAuthId());
     }
-
+    @GetMapping("/getDashboard")
+    public ResponseEntity<DashboardStatsResponse> getDashboard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page, @RequestParam int size) {
+        return sellerService.getSellerDashboard(userDetails.getAuthId(), page, size);
+    }
 
 }

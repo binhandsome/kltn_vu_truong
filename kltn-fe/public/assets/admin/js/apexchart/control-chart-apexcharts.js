@@ -18,10 +18,33 @@ $(function() {
     renderRevenueChart('line', 'chartGG3');
 });
 
-function renderRevenueChart(chartType, elementId) {
-    // Dữ liệu chung
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const revenueData = [5000000, 6000000, 5500000, 7000000, 6500000, 8000000, 7500000, 9000000, 8500000, 10000000, 9500000, 11000000];
+async function renderRevenueChart(chartType, elementId) {
+    // Month names for mapping
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    // Fetch data from the API
+    let revenueData = [];
+    let months = monthNames;
+
+    try {
+        const response = await fetch('http://localhost:8086/api/orders/getRevenueByStore?storeId=20');
+        const apiData = await response.json();
+
+        // Initialize revenueData with zeros for all 12 months
+        revenueData = new Array(12).fill(0);
+
+        // Map API data to the corresponding months
+        apiData.forEach(item => {
+            const monthIndex = item.month - 1; // API months are 1-based, arrays are 0-based
+            if (monthIndex >= 0 && monthIndex < 12) {
+                revenueData[monthIndex] = item.revenue;
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching revenue data:', error);
+        // Fallback to empty data if API fails
+        revenueData = new Array(12).fill(0);
+    }
 
     // Cấu hình cơ bản
     let options = {
@@ -77,7 +100,7 @@ function renderRevenueChart(chartType, elementId) {
         options.dataLabels = {
             enabled: true,
             formatter: function(val) {
-                return val.toLocaleString() + " VNĐ";
+                return val.toLocaleString() + " $";
             },
             offsetY: -20,
             style: { fontSize: '12px', colors: ["#10163a"], fontFamily: 'Poppins, sans-serif' }
@@ -115,9 +138,9 @@ function renderRevenueChart(chartType, elementId) {
         if (elementId === 'chartH') {
             options.dataLabels = { enabled: true };
             options.markers = { size: 6 };
-            options.yaxis.title = { text: 'VNĐ' };
+            options.yaxis.title = { text: '$' };
             options.yaxis.min = 0;
-            options.yaxis.max = 12000000;
+            options.yaxis.max = Math.max(...revenueData) * 1.2; // Dynamically set max based on data
         }
     } else if (chartType === 'mixed') {
         options.series = [{
@@ -132,7 +155,7 @@ function renderRevenueChart(chartType, elementId) {
             labels: {
                 style: { color: '#10163a' },
                 formatter: function(val) {
-                    return val.toLocaleString() + " VNĐ";
+                    return val.toLocaleString() + " $";
                 }
             }
         }];
@@ -146,14 +169,15 @@ function renderRevenueChart(chartType, elementId) {
                         show: true,
                         label: 'Tổng doanh thu',
                         formatter: function() {
-                            return '72000000 VNĐ';
+                            const total = revenueData.reduce((sum, val) => sum + val, 0);
+                            return total.toLocaleString() + ' $';
                         }
                     }
                 }
             }
         };
-        options.series = [20, 25, 30, 25];
-        options.labels = ['Sản phẩm A', 'Sản phẩm B', 'Sản phẩm C', 'Sản phẩm D'];
+        options.series = revenueData.slice(0, 4); // Use first 4 months for radialBar
+        options.labels = months.slice(0, 4);
         options.colors = ['#1b4962', '#ffa000', '#11a0fd', '#8dbf42'];
     } else if (chartType === 'radar') {
         options.series = [{

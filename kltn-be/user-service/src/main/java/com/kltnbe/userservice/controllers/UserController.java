@@ -108,4 +108,12 @@ public class UserController {
     public List<UserDTO> searchUsers(@RequestParam String keyword) {
         return userService.searchUsers(keyword);
     }
+    @GetMapping("/findByAddressId")
+    public ResponseEntity<AddressInfo> findByAddressId(@RequestParam Long addressId) {
+        return ResponseEntity.ok(userService.findByAddressId(addressId));
+    }
+    @GetMapping("/findByAddressIds")
+    public ResponseEntity<List<AddressInfo>> findByAddressIds(@RequestParam List<Long> addressId) {
+        return ResponseEntity.ok(userService.findByAddressIds(addressId));
+    }
 }

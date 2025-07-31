@@ -2,10 +2,12 @@ package com.kltnbe.sellerservice.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kltnbe.sellerservice.clients.OrderServiceProxy;
 import com.kltnbe.sellerservice.clients.ProductServiceProxy;
 import com.kltnbe.sellerservice.clients.UploadServiceProxy;
 import com.kltnbe.sellerservice.clients.UserServiceProxy;
 import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import com.kltnbe.sellerservice.entities.*;
@@ -20,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -54,7 +58,7 @@ public class SellerServiceImpl implements SellerService {
     private final ShopEditRepository shopEditRepository;
     @Autowired
     private ProductServiceProxy productServiceProxy;
-
+    private final OrderServiceProxy  orderServiceProxy;
     @Value("${internal.secret}")
     private String internalSecretKey;
 
@@ -643,6 +647,13 @@ public class SellerServiceImpl implements SellerService {
     public List<ProductSizeDTO> getSizesByAsin(String asin) {
         return productFeignClient.getSizesByAsin(asin);
     }
+    public ResponseEntity<DashboardStatsResponse> getSellerDashboard(Long authId, int page, int size) {
+        Optional<Shop> shop = shopRepository.findByAuthId(authId);
+        DashboardStatsResponse response = orderServiceProxy.getSellerDashboard(shop.get().getShopId(),page, size).getBody();
+        response.setFollowers(shop.get().getFollowersShop());
+        return ResponseEntity.ok(response);
+    }
+
 
 }
 

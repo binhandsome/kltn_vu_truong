@@ -23,13 +23,14 @@ const AllProduct = () => {
 	const [inputValue, setInputValue] = useState("");
 	const [selectedDiscounts, setSelectedDiscounts] = useState([]);
 	const maxPagesToShow = 10;
-const statusOptions = ['active', 'inactive', 'discontinued', 'deleted'];
-const statusLabels = {
-  active: 'Đang hoạt động',
-  inactive: 'Ngưng hoạt động',
-  discontinued: 'Ngừng kinh doanh',
-  deleted: 'Đã xóa'
-};
+	const accessToken = localStorage.getItem('accessToken');
+	const statusOptions = ['active', 'inactive', 'discontinued', 'deleted'];
+	const statusLabels = {
+		active: 'Đang hoạt động',
+		inactive: 'Ngưng hoạt động',
+		discontinued: 'Ngừng kinh doanh',
+		deleted: 'Đã xóa'
+	};
 
 	const discountOptions = [
 		{ label: 'Dưới 20%', value: -20 },
@@ -43,12 +44,12 @@ const statusLabels = {
 		{ label: '100%', value: 100 },
 	];
 	const handleStatusToggle = (status) => {
-  setSelectedStatuses((prev) =>
-    prev.includes(status)
-      ? prev.filter((s) => s !== status) // Bỏ chọn nếu đã có
-      : [...prev, status] // Thêm nếu chưa có
-  );
-};
+		setSelectedStatuses((prev) =>
+			prev.includes(status)
+				? prev.filter((s) => s !== status) // Bỏ chọn nếu đã có
+				: [...prev, status] // Thêm nếu chưa có
+		);
+	};
 
 	const handleToggleDiscount = (value) => {
 		setSelectedDiscounts((prev) =>
@@ -66,7 +67,7 @@ const statusLabels = {
 	};
 	const navigateChangeProduct = (asin) => {
 		navigate(`/seller/product/ActionProduct/${asin}`);
-	} 
+	}
 	const getPageRange = () => {
 		const startPage = Math.floor(currentPage / maxPagesToShow) * maxPagesToShow;
 		const endPage = Math.min(startPage + maxPagesToShow, totalPages);
@@ -176,7 +177,11 @@ const statusLabels = {
 
 				const response = await axios.get('http://localhost:8085/api/search/searchAdvanceSeller', {
 					params,
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
 				});
+
 				console.log('🔍 Input:', { searchTerm, minPrice, maxPrice, tags, selectedDiscounts });
 				setProducts(response.data.content);
 				setTotalPages(response.data.totalPages);
@@ -194,7 +199,7 @@ const statusLabels = {
 
 	useEffect(() => {
 		fetchProductsData(currentPage, pageSize, keyword, minPrice, maxPrice, selectedTags, selectedDiscounts, selectedStatuses);
-	}, [currentPage, pageSize,keyword, minPrice, maxPrice, selectedTags, selectedDiscounts, selectedStatuses]);
+	}, [currentPage, pageSize, keyword, minPrice, maxPrice, selectedTags, selectedDiscounts, selectedStatuses]);
 
 	useEffect(() => {
 		console.log(products, 'product cua tao la');
@@ -264,31 +269,31 @@ const statusLabels = {
 									</div>
 								</div>
 							</div>
-									<div className="widget widget_tag_cloud" >
+							<div className="widget widget_tag_cloud" >
 								<h6 className="widget-title">Trạng Thái</h6>
-<div className="tagcloud">
-{statusOptions.map((status) => (
-  <span
-    key={status}
-    onClick={() => handleStatusToggle(status)}
-    style={{
-      cursor: 'pointer',
-      padding: '5px 14px',
-      margin: '5px',
-      border: '1px solid #000',
-      borderRadius: '12px',
-      display: 'inline-block',
-      backgroundColor: selectedStatuses.includes(status) ? '#000' : '#fff',
-      color: selectedStatuses.includes(status) ? '#fff' : '#000',
-      transition: 'all 0.2s ease',
-      fontSize: '13px',
-    }}
-  >
-    {statusLabels[status] || status} {/* Hiển thị tiếng Việt */}
-  </span>
-))}
+								<div className="tagcloud">
+									{statusOptions.map((status) => (
+										<span
+											key={status}
+											onClick={() => handleStatusToggle(status)}
+											style={{
+												cursor: 'pointer',
+												padding: '5px 14px',
+												margin: '5px',
+												border: '1px solid #000',
+												borderRadius: '12px',
+												display: 'inline-block',
+												backgroundColor: selectedStatuses.includes(status) ? '#000' : '#fff',
+												color: selectedStatuses.includes(status) ? '#fff' : '#000',
+												transition: 'all 0.2s ease',
+												fontSize: '13px',
+											}}
+										>
+											{statusLabels[status] || status} {/* Hiển thị tiếng Việt */}
+										</span>
+									))}
 
-</div>
+								</div>
 
 							</div>
 							<div className="widget widget_tag_cloud" >
@@ -439,57 +444,57 @@ const statusLabels = {
 					</div>
 					<div className="col-xl-9 col-lg-8 col-md-8 col-sm-12">
 						<div className="main-product-grid">
-							<ul   style={{
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)', // 4 sản phẩm/hàng
-    gap: '20px',                           // khoảng cách giữa các item
-    listStyle: 'none',
-    padding: 0,
-    margin: 0
-  }}
->
+							<ul style={{
+								display: 'grid',
+								gridTemplateColumns: 'repeat(4, 1fr)', // 4 sản phẩm/hàng
+								gap: '20px',                           // khoảng cách giữa các item
+								listStyle: 'none',
+								padding: 0,
+								margin: 0
+							}}
+							>
 								{products.length > 0 ? (
 									products.map((product, index) => (
 										<li>
 											<div className="product-grid">
 												<div className="product-item">
-<img
-  src={
-    product.productThumbnail.startsWith('http')
-      ? product.productThumbnail
-      : product.productThumbnail.endsWith('.jpg')
-        ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${product.productThumbnail}`
-        : `/uploads/${product.productThumbnail}`
-  } />													<div className="product-overlay"><h4>-{product.percentDiscount}%</h4></div>
-<div
-  className="product-ovr-links"
-  style={{
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Nền màu đen mờ 50%
-    padding: '15px',
-    borderRadius: '8px',
-    textAlign: 'center',
-    transition: 'background-color 0.3s ease'
-  }}
->											<ul
-  onClick={() => navigateChangeProduct(product.asin)} // ✅ Bao bằng arrow function
-  style={{
-    cursor: 'pointer',
-    color: '#fff',
-    backgroundColor: '#3b82f6', // Màu xanh
-    padding: '10px 20px',
-    borderRadius: '8px',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-    userSelect: 'none',
-    display: 'inline-block',
-    transition: 'all 0.2s ease-in-out'
-  }}
-  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
-  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
->
-  SỬA SẢN PHẨM
-</ul>
+													<img
+														src={
+															product.productThumbnail.startsWith('http')
+																? product.productThumbnail
+																: product.productThumbnail.endsWith('.jpg')
+																	? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${product.productThumbnail}`
+																	: `/uploads/${product.productThumbnail}`
+														} />													<div className="product-overlay"><h4>-{product.percentDiscount}%</h4></div>
+													<div
+														className="product-ovr-links"
+														style={{
+															backgroundColor: 'rgba(0, 0, 0, 0.5)', // Nền màu đen mờ 50%
+															padding: '15px',
+															borderRadius: '8px',
+															textAlign: 'center',
+															transition: 'background-color 0.3s ease'
+														}}
+													>											<ul
+														onClick={() => navigateChangeProduct(product.asin)} // ✅ Bao bằng arrow function
+														style={{
+															cursor: 'pointer',
+															color: '#fff',
+															backgroundColor: '#3b82f6', // Màu xanh
+															padding: '10px 20px',
+															borderRadius: '8px',
+															textAlign: 'center',
+															fontWeight: 'bold',
+															boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+															userSelect: 'none',
+															display: 'inline-block',
+															transition: 'all 0.2s ease-in-out'
+														}}
+														onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+														onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+													>
+															SỬA SẢN PHẨM
+														</ul>
 
 
 													</div>
@@ -502,39 +507,39 @@ const statusLabels = {
 														<i className="fa fa-star" aria-hidden="fals"></i>
 														<i className="fa fa-star" aria-hidden="fals"></i>
 													</a>
-												<h3
-  style={{
-    fontSize: '16px',
-    fontWeight: '600',
-    margin: '8px 0 4px 0',
-    lineHeight: '1.4em',
-    height: '2.8em',                 // Giới hạn chiều cao = 2 dòng
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,              // Tối đa 2 dòng
-    WebkitBoxOrient: 'vertical',
-  }}
->
-  <a
-    title={product.productTitle}
-    style={{
-      color: '#333',
-      textDecoration: 'none',
-      display: 'inline-block',
-      maxWidth: '90%',
-      whiteSpace: 'normal',
-      wordWrap: 'break-word'
-    }}
-  >
-    {product.productTitle}
-  </a>
-</h3>
+													<h3
+														style={{
+															fontSize: '16px',
+															fontWeight: '600',
+															margin: '8px 0 4px 0',
+															lineHeight: '1.4em',
+															height: '2.8em',                 // Giới hạn chiều cao = 2 dòng
+															overflow: 'hidden',
+															textOverflow: 'ellipsis',
+															display: '-webkit-box',
+															WebkitLineClamp: 2,              // Tối đa 2 dòng
+															WebkitBoxOrient: 'vertical',
+														}}
+													>
+														<a
+															title={product.productTitle}
+															style={{
+																color: '#333',
+																textDecoration: 'none',
+																display: 'inline-block',
+																maxWidth: '90%',
+																whiteSpace: 'normal',
+																wordWrap: 'break-word'
+															}}
+														>
+															{product.productTitle}
+														</a>
+													</h3>
 
 													<p><span>${product.productPrice}</span>${(
-                      product.productPrice -
-                      product.productPrice * product.percentDiscount / 100
-                    ).toFixed(2)} </p>
+														product.productPrice -
+														product.productPrice * product.percentDiscount / 100
+													).toFixed(2)} </p>
 												</div>
 											</div>
 										</li>

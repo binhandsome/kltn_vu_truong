@@ -1,9 +1,12 @@
 package com.kltnbe.sellerservice.services;
 
 import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -49,4 +52,5 @@ public interface SellerService {
     void updateVariantInfo(Long variantId, BigDecimal price, int quantity);
     ProductVariantDTO createVariant(ProductVariantDTO dto);
     List<ProductSizeDTO> getSizesByAsin(String asin);
+    ResponseEntity<DashboardStatsResponse> getSellerDashboard(Long authId, int page, int size);
 }

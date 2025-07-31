@@ -11,6 +11,7 @@ import com.kltnbe.productservice.entities.Product;
 import com.kltnbe.productservice.entities.ProductSize;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,4 +42,7 @@ public interface ProductService {
     ResponseEntity<?> deleteProductByAsin(String asin, Long authId);
     List<ProductResponse> getProductsByStoreId(Long storeId);
     void updateStatus(Long productId, String status);
+    List<Long> getProductIdsByStore(Long storeId);
+    Optional<String> findProductNameById(Long productId);
+    ProductResponse getProductById(Long idProduct);
 }

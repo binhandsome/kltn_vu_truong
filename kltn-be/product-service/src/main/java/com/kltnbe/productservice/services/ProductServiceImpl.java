@@ -453,6 +453,31 @@ validateShopOwnership(product.getStoreId(), authId);
             productRepository.save(product);
         }
     }
+
+    @Override
+    public List<Long> getProductIdsByStore(Long storeId) {
+        return productRepository.findProductIdsByStoreId(storeId);
+    }
+
+    @Override
+    public Optional<String> findProductNameById(Long productId) {
+        return productRepository.findProductNameById(productId);
+    }
+
+    @Override
+    public ProductResponse getProductById(Long idProduct) {
+        ProductResponse  productResponse = new ProductResponse();
+        Optional<Product> productOpt = productRepository.findById(idProduct);
+        if (productOpt.isPresent()) {
+            Product product = productOpt.get();
+            productResponse.setAsin(product.getAsin());
+            productResponse.setNameProduct(product.getProductTitle());
+            return productResponse;
+        }
+        return null;
+    }
+
+
     public ProductResponse mapProductToDTO(Product product) {
         ProductResponse dto = new ProductResponse();
         dto.setProductId(product.getProductId());

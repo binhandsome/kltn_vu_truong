@@ -1,6 +1,7 @@
 package com.kltnbe.paymentservice.controller;
 
 import com.kltnbe.paymentservice.configs.VnpayConfig;
+import com.kltnbe.paymentservice.dtos.req.PaymentInfo;
 import com.kltnbe.paymentservice.dtos.req.PaymentRequest;
 import com.kltnbe.paymentservice.entities.Transaction;
 import com.kltnbe.paymentservice.repositories.TransactionRepository;
@@ -111,4 +112,8 @@ public class PaymentController {
         return new RedirectView(redirectUrl);
     }
 
+    @GetMapping("/findByOrderId")
+    public ResponseEntity<PaymentInfo> findByOrderId(@RequestParam Long orderId) {
+        return ResponseEntity.ok(paymentService.findByOrderId(orderId));
+    }
 }
