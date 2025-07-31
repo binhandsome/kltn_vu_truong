@@ -1,4 +1,4 @@
-package com.kltnbe.productservice.dtos.req;
+package com.kltnbe.sellerservice.dtos.req;
 
 public class ReviewRequest {
     private String productAsin;

@@ -5,7 +5,9 @@ import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import com.kltnbe.sellerservice.dtos.ProductSizeDTO;
 import com.kltnbe.sellerservice.dtos.ProductVariantDTO;
 import com.kltnbe.sellerservice.dtos.SizeRequest;
+import com.kltnbe.sellerservice.dtos.req.ReviewRequest;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
+import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -89,5 +91,11 @@ public interface ProductServiceProxy {
     List<ProductSizeDTO> getSizesByAsin(@PathVariable("asin") String asin);
     @PostMapping("/api/product-variants")
     ProductVariantDTO createVariant(@RequestBody ProductVariantDTO dto, @RequestParam Long authId);
+//    Review
+    @GetMapping("/api/reviews/{asin}")
+    List<ReviewResponse> getReviewsByAsin(@PathVariable String asin, @RequestParam Long authId);
+
+    @PostMapping("/api/reviews/{reviewId}/reply")
+    ReviewResponse replyToReview(@PathVariable Long reviewId, @RequestBody ReviewRequest request, @RequestParam Long authId);
 
 }

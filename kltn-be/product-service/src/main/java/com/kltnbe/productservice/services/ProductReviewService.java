@@ -6,6 +6,7 @@ import com.kltnbe.productservice.dtos.res.ReviewResponse;
 import java.util.List;
 
 public interface ProductReviewService {
-    ReviewResponse createReview(String token, ReviewRequest request);
-    List<ReviewResponse> getReviewsByProduct(String asin);
+    ReviewResponse createReview(ReviewRequest request);
+
+    List<ReviewResponse> getReviewsByProduct(String asin, Long authId);
 }
