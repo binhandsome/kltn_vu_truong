@@ -781,12 +781,7 @@ useEffect(() => {
                         {/* Total Revanue */}
                         Tổng lợi nhuận{" "}
                         <span>
-                          <button
-                            type="button"
-                            className="btn btn-primary squer-btn sm-btn"
-                          >
-                            Tải xuống
-                          </button>
+                    
                         </span>
                       </h4>
                     </div>
