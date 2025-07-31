@@ -8,4 +8,10 @@ import java.util.List;
 public interface ProductReviewRepository extends JpaRepository<ProductReview, Long> {
     List<ProductReview> findByProductAsin(String asin);
     boolean existsByProductAsinAndUserId(String asin, Long userId);
+
+    // Lấy review gốc (parent_id IS NULL)
+    List<ProductReview> findByProductAsinAndParentIdIsNull(String asin);
+
+    // Lấy reply theo parent_id
+    List<ProductReview> findByParentId(Long parentId);
 }

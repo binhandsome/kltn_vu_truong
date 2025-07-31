@@ -6,8 +6,11 @@ import com.kltnbe.sellerservice.clients.ProductServiceProxy;
 import com.kltnbe.sellerservice.clients.UploadServiceProxy;
 import com.kltnbe.sellerservice.clients.UserServiceProxy;
 import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.dtos.req.ReviewRequest;
+import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
+import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import com.kltnbe.sellerservice.entities.*;
 import com.kltnbe.sellerservice.repositories.*;
 
@@ -19,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
@@ -748,6 +754,41 @@ public class SellerServiceImpl implements SellerService {
         dto.setBackCccdUrl(a.getBackCccdUrl());
         dto.setRealFaceImageUrl(a.getRealFaceImageUrl());
         return dto;
+    }
+    @Override
+    public List<ReviewResponse> getReviewsForSellerProduct(String asin, Long authId) {
+        ShopResponseDTO shop = getShopInfo(authId);
+        if (shop == null || shop.getShopId() == null) {
+            throw new IllegalArgumentException("Shop không tồn tại");
+        }
+
+        ResponseEntity<?> productResp = productServiceProxy.findProductByAsin(asin, authId);
+        if (!productResp.getStatusCode().is2xxSuccessful() || productResp.getBody() == null) {
+            throw new AccessDeniedException("Không có quyền xem review của sản phẩm này.");
+        }
+
+        return productServiceProxy.getReviewsByAsin(asin, authId); // ✅ truyền authId qua query param
+    }
+
+    @Override
+    public ReviewResponse replyToReview(Long reviewId, SellerReplyRequest body, Long authId) {
+        ShopResponseDTO shop = getShopInfo(authId);
+        if (shop == null || shop.getShopId() == null) {
+            throw new IllegalArgumentException("Shop không tồn tại");
+        }
+
+        ResponseEntity<?> productResp = productServiceProxy.findProductByAsin(body.getProductAsin(), authId);
+        if (!productResp.getStatusCode().is2xxSuccessful() || productResp.getBody() == null) {
+            throw new AccessDeniedException("Không có quyền phản hồi review của sản phẩm này.");
+        }
+
+        ReviewRequest reviewReq = new ReviewRequest();
+        reviewReq.setUserId(authId);
+        reviewReq.setProductAsin(body.getProductAsin());
+        reviewReq.setComment(body.getComment());
+        reviewReq.setParentId(reviewId);
+
+        return productServiceProxy.replyToReview(reviewId, reviewReq, authId); // ✅ truyền authId
     }
 
 }

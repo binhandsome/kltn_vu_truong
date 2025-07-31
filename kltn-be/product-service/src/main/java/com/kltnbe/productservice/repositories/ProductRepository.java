@@ -45,4 +45,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByStoreId(Long storeId);
     @Query("SELECT p.storeId FROM Product p WHERE p.productId = :productId")
     Optional<Long> findStoreIdByProductId(@Param("productId") Long productId);
+    Optional<Product> findByAsin(String asin);
 }

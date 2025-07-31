@@ -3,7 +3,9 @@ package com.kltnbe.sellerservice.controllers;
 import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
 import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
+import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import com.kltnbe.sellerservice.services.SellerService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -336,6 +339,24 @@ public class SellerController {
         sellerService.rejectAuthentication(id);
         return ResponseEntity.ok(Map.of("message", "🚫 Đã gọi từ chối xác thực seller"));
     }
+    @GetMapping("/reviews")
+    public ResponseEntity<List<ReviewResponse>> getReviewsForProduct(
+            @RequestParam String asin,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long authId = userDetails.getAuthId();
+        List<ReviewResponse> reviews = sellerService.getReviewsForSellerProduct(asin, authId);
+        return ResponseEntity.ok(reviews);
+    }
 
+    // Seller phản hồi review
+    @PostMapping("/reviews/{reviewId}/reply")
+    public ResponseEntity<ReviewResponse> replyToReview(
+            @PathVariable Long reviewId,
+            @RequestBody SellerReplyRequest body,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long authId = userDetails.getAuthId();
+        ReviewResponse response = sellerService.replyToReview(reviewId, body, authId);
+        return ResponseEntity.ok(response);
+    }
 
 }

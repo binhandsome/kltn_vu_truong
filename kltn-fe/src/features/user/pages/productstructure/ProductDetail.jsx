@@ -52,7 +52,7 @@ function ProductDetail() {
 	// ✅ Load review
 	useEffect(() => {
 		if (asin) {
-			axios.get(`http://localhost:8083/api/reviews/${asin}`)
+			axios.get(`http://localhost:8083/api/reviews/public/${asin}`)  // ✅ Gọi endpoint public không yêu cầu authId
 				.then(res => setReviews(res.data))
 				.catch(err => console.error("Lỗi khi fetch reviews:", err));
 		}
@@ -88,7 +88,7 @@ function ProductDetail() {
 
 	const fetchReviews = async () => {
 		try {
-			const res = await axios.get(`http://localhost:8083/api/reviews/${asin}`);
+			const res = await axios.get(`http://localhost:8083/api/reviews/public/${asin}`); // ✅ sửa giống trên
 			setReviews(res.data);
 		} catch (err) {
 			console.error("Lỗi khi fetch reviews:", err);
@@ -809,187 +809,143 @@ function ProductDetail() {
 										</div>
 									</div>
 									<div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex="0">
-										<div className="clear" id="comment-list">
-											<div className="post-comments comments-area style-1 clearfix">
-												<h4 className="comments-title mb-2">Bình luận ({reviews.length})</h4>
-												<p className="dz-title-text">
-													Có rất nhiều phiên bản khác nhau của Lorem Ipsum.
-													{/* There are many variations of passages of Lorem Ipsum available. */}
-												</p>
-												<div id="comment">
-													<ol className="comment-list">
-														{reviews
-															.filter((review) => !review.parentId)
-															.map((parent) => (
-																<li className="comment depth-1" key={parent.reviewId}>
-																	<div className="comment-body">
-																		<div className="comment-author vcard">
-																			<img
-																				src={parent.avatar || "/assets/user/images/default-avatar.png"}
-																				alt="/"
-																				className="avatar"
-																			/>
-																			<cite className="fn">{parent.username}</cite>
-																		</div>
+  <div className="clear" id="comment-list">
+    <div className="post-comments comments-area style-1 clearfix">
+      <h4 className="comments-title mb-2">
+        Bình luận ({reviews.filter((r) => !r.parentId).length})
+      </h4>
+      <p className="dz-title-text">
+        Chia sẻ cảm nhận thực tế của người dùng về sản phẩm.
+      </p>
+      <div id="comment">
+        <ol className="comment-list">
+          {reviews.filter((r) => !r.parentId).length === 0 && (
+            <div className="text-muted mb-3">
+              Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!
+            </div>
+          )}
+          {reviews
+            .filter((review) => !review.parentId)
+            .map((parent) => (
+              <li className="comment depth-1" key={parent.reviewId}>
+                <div className="comment-body">
+                  <div className="comment-author vcard">
+                    <img
+                      src={parent.avatar || "/assets/user/images/default-avatar.png"}
+                      alt="/"
+                      className="avatar"
+                    />
+                    <cite className="fn">{parent.username}</cite>
+                  </div>
 
-																		<div className="comment-content dz-page-text">
-																			<p>{parent.comment}</p>
+                  <div className="comment-content dz-page-text">
+                    <div className="text-warning mt-1">
+                      {Array.from({ length: parent.rating || 0 }, (_, i) => (
+                        <i key={i} className="fas fa-star" />
+                      ))}
+                    </div>
+                    <p>{parent.comment}</p>
+                  </div>
+                </div>
 
-																			{/* ✅ Nút reply đặt ngay sau nội dung */}
-																			<div className="mt-2">
-																				<button
-																					type="button"
-																					className="comment-reply-link btn btn-link p-0"
-																					onClick={() => setReplyTo(parent.reviewId)}
-																				>
-																					Phản hồi
-																				</button>
-																			</div>
+                {/* Seller reply nếu có */}
+                {parent.sellerReply && (
+                  <ol className="children">
+                    <li className="comment depth-2 seller-reply" key={parent.sellerReply.reviewId}>
+                      <div className="comment-body">
+                        <div className="comment-author vcard">
+                          <img
+                            src={parent.sellerReply.avatar || "/assets/user/images/default-avatar.png"}
+                            alt="/"
+                            className="avatar"
+                          />
+                          <cite className="fn">
+                            <span className="badge bg-secondary ms-1">Cửa hàng</span>
+                          </cite>
+                        </div>
+                        <div className="comment-content dz-page-text">
+                          <div className="small text-muted">Phản hồi chính thức từ cửa hàng</div>
+                          <p>{parent.sellerReply.comment}</p>
+                        </div>
+                      </div>
+                    </li>
+                  </ol>
+                )}
+              </li>
+            ))}
+        </ol>
+      </div>
 
-																			{/* ⭐ Hiển thị sao */}
-																			<div className="text-warning mt-1">
-																				{Array.from({ length: parent.rating }, (_, i) => (
-																					<i key={i} className="fas fa-star" />
-																				))}
-																			</div>
-																		</div>
+      {/* Form đánh giá của user */}
+      <div className="default-form comment-respond style-1" id="respond">
+        <h4 className="comment-reply-title mb-2" id="reply-title">
+          Đánh giá sản phẩm
+        </h4>
+        <p className="dz-title-text">
+          Chia sẻ trải nghiệm của bạn về sản phẩm.
+        </p>
 
-																		{/* ✅ Form reply nếu đang reply comment này */}
-																		{replyTo === parent.reviewId && (
-																			<div className="reply-form mt-3">
-																				<textarea
-																					className="form-control mb-2"
-																					placeholder="Nhập câu trả lời của bạn..."
-																					value={newReply}
-																					onChange={(e) => setNewReply(e.target.value)}
-																					rows="3"
-																				/>
+        <div className="comment-form-rating d-flex">
+          <label className="pull-left m-r10 m-b20 text-secondary">
+            Đánh giá của bạn
+          </label>
+          <div className="rating-widget">
+            <div className="rating-stars">
+              <ul id="stars">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <li
+                    key={value}
+                    className={`star ${rating >= value ? 'selected' : ''}`}
+                    onClick={() => setRating(value)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <i className="fas fa-star fa-fw"></i>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
 
-																				{/* ⭐ Không chọn rating khi reply */}
-																				<div>
-																					<button
-																						type="button"
-																						className="btn btn-secondary btn-sm"
-																						onClick={() => handleSubmitReply(parent.reviewId)}
-																					>
-																						Gửi trả lời
-																						{/* Submit Reply */}
-																					</button>
-																					<button
-																						type="button"
-																						className="btn btn-outline-secondary btn-sm ms-2"
-																						onClick={() => {
-																							setReplyTo(null);
-																							setNewReply('');
-																						}}
-																					>
-																						Cancel
-																					</button>
-																				</div>
-																			</div>
-																		)}
-																	</div>
-
-																	{/* ✅ Danh sách reply con */}
-																	<ol className="children">
-																		{reviews
-																			.filter((r) => r.parentId === parent.reviewId)
-																			.map((reply) => (
-																				<li className="comment depth-2" key={reply.reviewId}>
-																					<div className="comment-body">
-																						<div className="comment-author vcard">
-																							<img
-																								src={reply.avatar || "/assets/user/images/default-avatar.png"}
-																								alt="/"
-																								className="avatar"
-																							/>
-																							<cite className="fn">{reply.username}</cite>
-																						</div>
-																						<div className="comment-content dz-page-text">
-																							<p>{reply.comment}</p>
-																						</div>
-																					</div>
-																				</li>
-																			))}
-																	</ol>
-																</li>
-															))}
-													</ol>
-												</div>
-
-												<div className="default-form comment-respond style-1" id="respond">
-													<h4 className="comment-reply-title mb-2" id="reply-title">
-														Bình luận tốt
-														{/* Good Comments */}
-													</h4>
-													<p className="dz-title-text">
-														Có rất nhiều phiên bản khác nhau của Lorem Ipsum.
-														{/* There are many variations of passages of Lorem Ipsum available. */}
-													</p>
-
-													<div className="comment-form-rating d-flex">
-														<label className="pull-left m-r10 m-b20 text-secondary">
-															Đánh giá của bạn
-															{/* Your Rating */}
-														</label>
-														<div className="rating-widget">
-															<div className="rating-stars">
-																<ul id="stars">
-																	{[1, 2, 3, 4, 5].map((value) => (
-																		<li
-																			key={value}
-																			className={`star ${rating >= value ? 'selected' : ''}`}
-																			onClick={() => setRating(value)}
-																			style={{ cursor: 'pointer' }}
-																		>
-																			<i className="fas fa-star fa-fw"></i>
-																		</li>
-																	))}
-																</ul>
-															</div>
-														</div>
-													</div>
-
-													<div className="clearfix">
-														{user ? (
-															<form
-																onSubmit={(e) => {
-																	e.preventDefault();
-																	handleSubmitReview();
-																}}
-																className="comment-form"
-																noValidate
-															>
-																<p className="comment-form-author">
-																	<input type="text" value={user.username} readOnly />
-																</p>
-																<p className="comment-form-comment">
-																	<textarea
-																		className="form-control4"
-																		placeholder="Nhập bình luận ở đây"
-																		value={newReview}
-																		onChange={(e) => setNewReview(e.target.value)}
-																		required
-																		rows="3"
-																	></textarea>
-																</p>
-																<p className="col-md-12 col-sm-12 col-xs-12 form-submit">
-																	<button type="submit" className="submit btn btn-secondary btnhover3 filled">
-																		Gửi ngay
-																		{/* Submit Now */}
-																	</button>
-																</p>
-															</form>
-														) : (
-															<p className="text-danger">
-																Please <a href="/user/auth/login">Đăng nhập</a> để đăng bài đánh giá.
-															</p>
-														)}
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
+        <div className="clearfix">
+          {user ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitReview();
+              }}
+              className="comment-form"
+              noValidate
+            >
+              <p className="comment-form-author">
+                <input type="text" value={user.username} readOnly />
+              </p>
+              <p className="comment-form-comment">
+                <textarea
+                  className="form-control4"
+                  placeholder="Nhập đánh giá của bạn"
+                  value={newReview}
+                  onChange={(e) => setNewReview(e.target.value)}
+                  required
+                  rows="3"
+                ></textarea>
+              </p>
+              <p className="col-md-12 col-sm-12 col-xs-12 form-submit">
+                <button type="submit" className="submit btn btn-secondary btnhover3 filled">
+                  Gửi ngay
+                </button>
+              </p>
+            </form>
+          ) : (
+            <p className="text-danger">
+              Vui lòng <a href="/user/auth/login">Đăng nhập</a> để đăng bài đánh giá.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 								</div>
 							</div>
