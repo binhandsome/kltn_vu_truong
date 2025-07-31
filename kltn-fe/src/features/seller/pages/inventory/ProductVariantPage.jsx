@@ -14,11 +14,23 @@ const ProductVariantPage = () => {
 
   const fetchVariants = async () => {
     try {
-      const res = await axios.get(`http://localhost:8089/api/seller/variants/${productId}`);
+      const token = localStorage.getItem("accessToken");
+      const res = await axios.get(
+        `http://localhost:8089/api/seller/variants/${productId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const sorted = res.data.sort((a, b) => a.variantId - b.variantId);
       setVariants(sorted);
     } catch (err) {
       console.error("❌ Lỗi khi lấy biến thể:", err);
+      alert("Không thể lấy dữ liệu biến thể. Vui lòng đăng nhập lại.");
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        navigate("/seller/authentication/login"); // hoặc route tới trang seller login
+      }
     }
   };
 
@@ -38,24 +50,36 @@ const ProductVariantPage = () => {
 
   const handleSave = async (variant) => {
     const { variantId, newPrice, newQuantity } = variant;
-
+    const token = localStorage.getItem("accessToken");
+  
     try {
       if (!isNaN(newPrice) && newPrice > 0) {
         await axios.put(
-          `http://localhost:8089/api/seller/variants/${variantId}/price`,
+          `http://localhost:8089/api/seller/variants/${variantId}`,
           null,
-          { params: { price: newPrice } }
+          {
+            params: { price: newPrice, quantity: newQuantity || 0 },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-      }
-
-      if (!isNaN(newQuantity) && newQuantity > 0) {
+      } else if (!isNaN(newQuantity) && newQuantity > 0) {
         await axios.put(
-          `http://localhost:8089/api/seller/variants/${variantId}/quantity`,
+          `http://localhost:8089/api/seller/variants/${variantId}`,
           null,
-          { params: { quantity: newQuantity } }
+          {
+            params: { quantity: newQuantity },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+      } else {
+        alert("⚠️ Giá hoặc số lượng không hợp lệ!");
+        return;
       }
-
+  
       alert("✅ Lưu thành công!");
       fetchVariants();
     } catch (err) {
@@ -66,8 +90,13 @@ const ProductVariantPage = () => {
 
   const handleDeleteVariant = async (variantId) => {
     if (!window.confirm("Bạn có chắc muốn xoá biến thể này không?")) return;
+  
     try {
-      await axios.delete(`http://localhost:8089/api/seller/variants/${variantId}`);
+      await axios.delete(`http://localhost:8089/api/seller/variants/${variantId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
       alert("✅ Đã xoá biến thể");
       fetchVariants();
     } catch (err) {
@@ -75,6 +104,7 @@ const ProductVariantPage = () => {
       alert("❌ Không thể xoá biến thể");
     }
   };
+  
 
   const getColorLabel = (colorId) => {
     const color = colors.find((c) => c.colorId === colorId);

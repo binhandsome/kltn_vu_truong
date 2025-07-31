@@ -1,4 +1,4 @@
-package com.kltnbe.sellerservice.dtos;
+package com.kltnbe.adminservice.dtos.res;
 
 import lombok.Data;
 import lombok.Getter;

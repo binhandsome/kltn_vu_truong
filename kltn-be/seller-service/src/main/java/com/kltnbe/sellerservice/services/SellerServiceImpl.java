@@ -574,50 +574,54 @@ public class SellerServiceImpl implements SellerService {
         return productServiceProxy.deleteProduct(asin, authId);
     }
     @Override
-    public List<ProductResponseDTO> getProductsBySeller(Long storeId) {
-        return productFeignClient.getProductsBySeller(storeId);
-    }
-
-    @Override
-    public List<ProductVariantDTO> getVariantsByProduct(Long productId) {
-        return productFeignClient.getVariantsByProduct(productId);
-    }
-
-    @Override
     public ProductVariantDTO getVariant(Long variantId) {
         return productFeignClient.getVariant(variantId);
     }
     @Override
-    public void updateProductStatus(Long productId, String status) {
-        productFeignClient.updateStatus(productId, status);
+    public List<ProductResponseDTO> getProductsBySeller(Long storeId, Long authId) {
+        return productFeignClient.getProductsBySeller(storeId, authId);
     }
 
     @Override
-    public void deleteVariant(Long variantId) {
-        productFeignClient.deleteVariant(variantId);
+    public List<ProductVariantDTO> getVariantsByProduct(Long productId, Long authId) {
+        return productFeignClient.getVariantsByProduct(productId, authId);
+    }
+
+
+    @Override
+    public void updateProductStatus(Long productId, String status, Long authId) {
+        productFeignClient.updateStatus(productId, status, authId);
     }
 
     @Override
-    public void deleteProduct(String asin) {
-        productFeignClient.deleteProduct(asin);
+    public void deleteVariant(Long variantId, Long authId) {
+        productFeignClient.deleteVariant(variantId, authId);
+    }
+
+
+    @Override
+    public void addProduct(ProductRequestDTO product, Long authId) {
+        productFeignClient.addProduct(product, authId);
+    }
+
+
+    @Override
+    public ProductVariantDTO sellVariant(Long variantId, int quantity, Long authId) {
+        return productFeignClient.sellVariant(variantId, quantity, authId);
     }
 
     @Override
-    public void addProduct(ProductRequestDTO product) {
-        productFeignClient.addProduct(product);
+    public void updateVariantInfo(Long variantId, BigDecimal price, Integer quantity, Long authId) {
+        ProductVariantDTO variant = productFeignClient.getVariant(variantId);
+
+        BigDecimal newPrice = price != null ? price : variant.getPrice();
+        int newQuantity = quantity != null ? variant.getQuantityInStock() + quantity : variant.getQuantityInStock();
+
+        productFeignClient.updateVariant(variantId, newPrice, newQuantity, authId);
     }
 
-    @Override
-    public void updateProduct(ProductRequestDTO product) {
-        productFeignClient.updateProduct(product);
-    }
-
-    @Override
-    public ProductVariantDTO sellVariant(Long variantId, int quantity) {
-        return productFeignClient.sellVariant(variantId, quantity);
-    }
-    public ProductResponseDTO getProductWithSizes(String asin, Long storeId) {
-        List<ProductResponseDTO> allProducts = productFeignClient.getProductsBySeller(storeId);
+    public ProductResponseDTO getProductWithSizes(String asin, Long storeId, Long authId) {
+        List<ProductResponseDTO> allProducts = productFeignClient.getProductsBySeller(storeId, authId);
         ProductResponseDTO product = allProducts.stream()
                 .filter(p -> p.getAsin().equals(asin))
                 .findFirst()
@@ -632,17 +636,10 @@ public class SellerServiceImpl implements SellerService {
         return product;
     }
     @Override
-    public void updateVariantInfo(Long variantId, BigDecimal price, int quantity) {
-        ProductVariantDTO variant = productFeignClient.getVariant(variantId);
-        int currentQuantity = variant.getQuantityInStock();
-        int newQuantity = currentQuantity + quantity;
+    public ProductVariantDTO createVariant(ProductVariantDTO dto, Long authId) {
+        return productFeignClient.createVariant(dto, authId);
+    }
 
-        productFeignClient.updateVariant(variantId,price,newQuantity);
-    }
-    @Override
-    public ProductVariantDTO createVariant(ProductVariantDTO dto) {
-        return productFeignClient.createVariant(dto);
-    }
     @Override
     public List<ProductSizeDTO> getSizesByAsin(String asin) {
         return productFeignClient.getSizesByAsin(asin);
@@ -654,6 +651,115 @@ public class SellerServiceImpl implements SellerService {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public List<ShopResponseDTO> getAllPendingShops() {
+        return shopRepository.findByShopStatus(Shop.ShopStatus.pending)
+                .stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public void approveShop(Long shopId) {
+        Shop shop = shopRepository.findById(shopId).orElseThrow();
+        shop.setShopStatus(Shop.ShopStatus.active);
+        shopRepository.save(shop);
+    }
+
+    @Override
+    public void banShop(Long shopId) {
+        Shop shop = shopRepository.findById(shopId).orElseThrow();
+        shop.setShopStatus(Shop.ShopStatus.suspended);
+        shopRepository.save(shop);
+    }
+
+    @Override
+    public List<ShopEditRequestDTO> getAllPendingEdits() {
+        return shopEditRepository.findByStatus(0)
+                .stream().map(this::mapEditToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public void approveEdit(Long editId) {
+        ShopEdit edit = shopEditRepository.findById(editId).orElseThrow();
+        Shop shop = shopRepository.findById(edit.getShopId()).orElseThrow();
+
+        shop.setNameShop(edit.getNameShop());
+        shop.setDescriptionShop(edit.getDescriptionShop());
+        shop.setThumbnailShop(edit.getThumbnailShop());
+        shop.setShopAddress(edit.getShopAddress());
+        shop.setShopPhone(edit.getShopPhone());
+        shop.setShopEmail(edit.getShopEmail());
+
+        shopRepository.save(shop);
+        edit.setStatus(1L);
+        shopEditRepository.save(edit);
+    }
+
+    @Override
+    public void rejectEdit(Long editId) {
+        ShopEdit edit = shopEditRepository.findById(editId).orElseThrow();
+        edit.setStatus(2L);
+        shopEditRepository.save(edit);
+    }
+
+    @Override
+    public List<AuthenticationDTO> getAllAuthentications() {
+        return storeAuthenticRepository.findAllByOrderByIdDesc()
+                .stream().map(this::mapAuthToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public void approveAuthentication(Long id) {
+        // Placeholder logic — cần flag hoặc status xác thực
+    }
+
+    @Override
+    public void rejectAuthentication(Long id) {
+        // Placeholder logic — cần flag hoặc status xác thực
+    }
+
+    private ShopResponseDTO mapToDTO(Shop s) {
+        ShopResponseDTO dto = new ShopResponseDTO();
+        dto.setShopId(s.getShopId());
+        dto.setAuthId(s.getAuthId());
+        dto.setNameShop(s.getNameShop());
+        dto.setThumbnailShop(s.getThumbnailShop());
+        dto.setAvaluate(s.getEvaluateShop());
+        dto.setFollowers(s.getFollowersShop());
+        dto.setDescriptionShop(s.getDescriptionShop());
+        dto.setShopStatus(s.getShopStatus().name());
+        dto.setShopAddress(s.getShopAddress());
+        dto.setShopPhone(s.getShopPhone());
+        dto.setShopEmail(s.getShopEmail());
+        dto.setCreatedAt(s.getCreatedAt());
+        dto.setUpdatedAt(s.getUpdatedAt());
+        return dto;
+    }
+
+    private ShopEditRequestDTO mapEditToDTO(ShopEdit e) {
+        ShopEditRequestDTO dto = new ShopEditRequestDTO();
+        dto.setShopEditId(e.getShopEditId());
+        dto.setShopId(e.getShopId());
+        dto.setNameShop(e.getNameShop());
+        dto.setThumbnailShop(e.getThumbnailShop());
+        dto.setDescriptionShop(e.getDescriptionShop());
+        dto.setShopAddress(e.getShopAddress());
+        dto.setShopPhone(e.getShopPhone());
+        dto.setShopEmail(e.getShopEmail());
+        dto.setStatus(e.getStatus() != null ? e.getStatus().intValue() : null);
+        return dto;
+    }
+
+    private AuthenticationDTO mapAuthToDTO(StoreAuthentic a) {
+        AuthenticationDTO dto = new AuthenticationDTO();
+        dto.setId(a.getId());
+        dto.setAuthId(a.getAuthId());
+        dto.setAddressHouse(a.getAddressHouse());
+        dto.setAddressDelivery(a.getAddressDelivery());
+        dto.setFontCccdUrl(a.getFrontCccdUrl());
+        dto.setBackCccdUrl(a.getBackCccdUrl());
+        dto.setRealFaceImageUrl(a.getRealFaceImageUrl());
+        return dto;
+    }
 
 }
 

@@ -111,6 +111,8 @@ public class AuthServiceImpl implements AuthService {
             auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             auth.setCreatedAt(new Date());
             auth.setUpdatedAt(new Date());
+            auth.setUserRole(UserRole.USER);
+            auth.setIsBanned(false);
             Auth savedAuth = authRepository.save(auth);
             User user = new User();
             user.setAuth(savedAuth);

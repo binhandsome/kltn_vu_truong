@@ -62,6 +62,13 @@ const Sidebar = () => {
               <span className="menu-text">Người dùng</span>
             </a>
           </li>
+          <li>
+            {/* User */}
+            <a href="/admin/dashboard/sellerDashboard">
+              <span className="icon-dash"></span>
+              <span className="menu-text">Cửa hàng</span>
+            </a>
+          </li>
         </ul>
       </li>
       <li>

@@ -427,15 +427,6 @@ validateShopOwnership(product.getStoreId(), authId);
         return ResponseEntity.ok(Map.of("message", "✅ Đã xoá sản phẩm (mềm) thành công."));
     }
 
-    private void validateShopOwnership(Long storeId, Long authId) {
-        Object body = sellerServiceProxy.getAuthIdByStore(storeId).getBody();
-        Long storeOwnerAuth = (body instanceof Integer)
-                ? ((Integer) body).longValue()
-                : (Long) body;
-        if (!authId.equals(storeOwnerAuth)) {
-            throw new RuntimeException("❌ Bạn không có quyền thao tác với shop này");
-        }
-    }
     @Override
     public List<ProductResponse> getProductsByStoreId(Long storeId) {
         List<Product> products = productRepository.findByStoreId(storeId);
@@ -452,6 +443,38 @@ validateShopOwnership(product.getStoreId(), authId);
             product.setProductStatus(ProductStatus.valueOf(status));
             productRepository.save(product);
         }
+    }
+
+
+    private void validateShopOwnership(Long storeId, Long authId) {
+        Object body = sellerServiceProxy.getAuthIdByStore(storeId).getBody();
+        Long storeOwnerAuth = (body instanceof Integer)
+                ? ((Integer) body).longValue()
+                : (Long) body;
+        if (!authId.equals(storeOwnerAuth)) {
+            throw new RuntimeException("❌ Bạn không có quyền thao tác với shop này");
+        }
+    }
+    @Override
+    public List<ProductResponse> getProductsByStoreId(Long storeId, Long authId) {
+        validateShopOwnership(storeId, authId); // Kiểm tra quyền truy cập
+
+        List<Product> products = productRepository.findByStoreId(storeId);
+        return products.stream()
+                .map(this::mapProductToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateStatus(Long productId, String status, Long authId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Sản phẩm không tồn tại"));
+
+        Long storeId = product.getStoreId();
+        validateShopOwnership(storeId, authId); // Xác thực người sở hữu
+
+        product.setProductStatus(ProductStatus.valueOf(status));
+        productRepository.save(product);
     }
 
     @Override
@@ -476,7 +499,6 @@ validateShopOwnership(product.getStoreId(), authId);
         }
         return null;
     }
-
 
     public ProductResponse mapProductToDTO(Product product) {
         ProductResponse dto = new ProductResponse();

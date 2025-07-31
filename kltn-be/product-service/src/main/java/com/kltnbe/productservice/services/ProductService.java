@@ -45,4 +45,6 @@ public interface ProductService {
     List<Long> getProductIdsByStore(Long storeId);
     Optional<String> findProductNameById(Long productId);
     ProductResponse getProductById(Long idProduct);
+    List<ProductResponse> getProductsByStoreId(Long storeId, Long authId);
+    void updateStatus(Long productId, String status, Long authId);
 }

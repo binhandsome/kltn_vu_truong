@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/seller")
@@ -155,66 +156,81 @@ public class SellerController {
         System.out.println(userDetails.getAuthId() + "user detail");
         return sellerService.deleteSize(sizeId, userDetails.getAuthId());
     }
-    @GetMapping("/products")
-    public ResponseEntity<List<ProductResponseDTO>> getMyProducts(@RequestParam Long authId) {
-        Long storeId = sellerService.getIdShopByAuthId(authId);
-        List<ProductResponseDTO> products = sellerService.getProductsBySeller(storeId);
-        return ResponseEntity.ok(products);
-    }
-    @PostMapping("/variants")
-    public ResponseEntity<ProductVariantDTO> createVariant(@RequestBody ProductVariantDTO dto) {
-        ProductVariantDTO created = sellerService.createVariant(dto);
-        return ResponseEntity.ok(created);
-    }
-
-    @GetMapping("/variants/{productId}")
-    public List<ProductVariantDTO> getVariants(@PathVariable Long productId) {
-        return sellerService.getVariantsByProduct(productId);
-    }
-
     @GetMapping("/variant/{variantId}")
     public ProductVariantDTO getVariant(@PathVariable Long variantId) {
         return sellerService.getVariant(variantId);
     }
+    @GetMapping("/products")
+    public ResponseEntity<List<ProductResponseDTO>> getMyProducts(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long authId = userDetails.getAuthId();
+        Long storeId = sellerService.getIdShopByAuthId(authId);
+
+        List<ProductResponseDTO> products = sellerService.getProductsBySeller(storeId, authId);
+        return ResponseEntity.ok(products);
+    }
+
+    @PostMapping("/variants")
+    public ResponseEntity<ProductVariantDTO> createVariant(
+            @RequestBody ProductVariantDTO dto,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long authId = userDetails.getAuthId();
+        ProductVariantDTO created = sellerService.createVariant(dto, authId);
+        return ResponseEntity.ok(created);
+    }
+
+    @GetMapping("/variants/{productId}")
+    public List<ProductVariantDTO> getVariants(@PathVariable Long productId,
+                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long authId = userDetails.getAuthId();
+        return sellerService.getVariantsByProduct(productId, authId);
+    }
 
     @PutMapping("/variants/{variantId}")
     public ResponseEntity<?> updateVariant(@PathVariable Long variantId,
-                                           @RequestParam BigDecimal price,
-                                           @RequestParam int quantity) {
-        sellerService.updateVariantInfo(variantId, price, quantity);
+                                           @RequestParam(required = false) BigDecimal price,
+                                           @RequestParam(required = false) Integer quantity,
+                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long authId = userDetails.getAuthId();
+        sellerService.updateVariantInfo(variantId, price, quantity, authId);
         return ResponseEntity.ok("✅ Cập nhật biến thể thành công!");
     }
 
-    @PatchMapping("/products/{productId}/status")
+    @PutMapping("/products/{productId}/status")
     public void updateProductStatus(@PathVariable Long productId,
-                                    @RequestParam String status) {
-        sellerService.updateProductStatus(productId, status);
+                                    @RequestParam String status,
+                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long authId = userDetails.getAuthId();
+        sellerService.updateProductStatus(productId, status, authId);
     }
 
     @DeleteMapping("/variants/{variantId}")
-    public void deleteVariant(@PathVariable Long variantId) {
-        sellerService.deleteVariant(variantId);
-    }
+    public void deleteVariant(@PathVariable Long variantId,
+                              @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-    @DeleteMapping("/products/{asin}")
-    public void deleteProduct(@PathVariable String asin) {
-        sellerService.deleteProduct(asin);
+        Long authId = userDetails.getAuthId();
+        sellerService.deleteVariant(variantId, authId);
     }
 
     @PostMapping("/products")
-    public void addProduct(@RequestBody ProductRequestDTO requestDTO) {
-        sellerService.addProduct(requestDTO);
+    public void addProduct(@RequestBody ProductRequestDTO requestDTO,
+                           @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long authId = userDetails.getAuthId();
+        sellerService.addProduct(requestDTO, authId);
     }
 
-    @PutMapping("/products")
-    public void updateProduct(@RequestBody ProductRequestDTO requestDTO) {
-        sellerService.updateProduct(requestDTO);
-    }
 
     @PutMapping("/variants/{variantId}/sell")
     public ProductVariantDTO sellVariant(@PathVariable Long variantId,
-                                         @RequestParam int quantity) {
-        return sellerService.sellVariant(variantId, quantity);
+                                         @RequestParam int quantity,
+                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long authId = userDetails.getAuthId();
+        return sellerService.sellVariant(variantId, quantity, authId);
     }
     @GetMapping("/products/{asin}/sizes")
     public ResponseEntity<List<ProductSizeDTO>> getSizes(@PathVariable String asin) {
@@ -258,5 +274,73 @@ public class SellerController {
     public ResponseEntity<DashboardStatsResponse> getDashboard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page, @RequestParam int size) {
         return sellerService.getSellerDashboard(userDetails.getAuthId(), page, size);
     }
+    @InternalApi
+    @GetMapping("/internal/pending-shops")
+    public ResponseEntity<List<ShopResponseDTO>> getAllPendingShops() {
+        return ResponseEntity.ok(sellerService.getAllPendingShops());
+    }
+
+    // ✅ 2. Duyệt shop
+    @InternalApi
+    @PutMapping("/internal/approve-shop/{shopId}")
+    public ResponseEntity<?> approveShop(@PathVariable Long shopId) {
+        sellerService.approveShop(shopId);
+        return ResponseEntity.ok(Map.of("message", "✅ Shop đã được duyệt"));
+    }
+
+    // ✅ 3. Ban shop
+    @InternalApi
+    @PutMapping("/internal/ban-shop/{shopId}")
+    public ResponseEntity<?> banShop(@PathVariable Long shopId) {
+        sellerService.banShop(shopId);
+        return ResponseEntity.ok(Map.of("message", "🚫 Shop đã bị khóa"));
+    }
+
+    // ✅ 4. Lấy tất cả yêu cầu chỉnh sửa shop đang chờ duyệt
+    @InternalApi
+    @GetMapping("/internal/pending-shop-edits")
+    public ResponseEntity<List<ShopEditRequestDTO>> getAllPendingEdits() {
+        return ResponseEntity.ok(sellerService.getAllPendingEdits());
+    }
+
+    // ✅ 5. Duyệt chỉnh sửa shop
+    @InternalApi
+    @PutMapping("/internal/approve-edit/{editId}")
+    public ResponseEntity<?> approveEdit(@PathVariable Long editId) {
+        sellerService.approveEdit(editId);
+        return ResponseEntity.ok(Map.of("message", "✅ Đã duyệt chỉnh sửa"));
+    }
+
+    // ✅ 6. Từ chối chỉnh sửa shop
+    @InternalApi
+    @PutMapping("/internal/reject-edit/{editId}")
+    public ResponseEntity<?> rejectEdit(@PathVariable Long editId) {
+        sellerService.rejectEdit(editId);
+        return ResponseEntity.ok(Map.of("message", "🚫 Đã từ chối chỉnh sửa"));
+    }
+
+    // ✅ 7. Lấy tất cả yêu cầu xác thực (CCCĐ + ảnh thật)
+    @InternalApi
+    @GetMapping("/internal/authentications")
+    public ResponseEntity<List<AuthenticationDTO>> getAllAuthentications() {
+        return ResponseEntity.ok(sellerService.getAllAuthentications());
+    }
+
+    // ✅ 8. Duyệt xác thực (placeholder)
+    @InternalApi
+    @PutMapping("/internal/approve-authentication/{id}")
+    public ResponseEntity<?> approveAuthentication(@PathVariable Long id) {
+        sellerService.approveAuthentication(id);
+        return ResponseEntity.ok(Map.of("message", "✅ Đã gọi duyệt xác thực seller"));
+    }
+
+    // ✅ 9. Từ chối xác thực (placeholder)
+    @InternalApi
+    @PutMapping("/internal/reject-authentication/{id}")
+    public ResponseEntity<?> rejectAuthentication(@PathVariable Long id) {
+        sellerService.rejectAuthentication(id);
+        return ResponseEntity.ok(Map.of("message", "🚫 Đã gọi từ chối xác thực seller"));
+    }
+
 
 }

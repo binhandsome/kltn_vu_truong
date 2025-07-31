@@ -40,17 +40,25 @@ public interface SellerService {
     ResponseEntity<?> setThumbnail(String asin, Long imageId, Long authId);
     ResponseEntity<String> deleteImage(Long imageId, Long authId);
     ResponseEntity<?> deleteProduct(String asin, Long authId);
-    List<ProductResponseDTO> getProductsBySeller(Long storeId);
-    List<ProductVariantDTO> getVariantsByProduct(Long productId);
+    List<ProductResponseDTO> getProductsBySeller(Long storeId, Long authId);
+    List<ProductVariantDTO> getVariantsByProduct(Long productId, Long authId);
     ProductVariantDTO getVariant(Long variantId);
-    void updateProductStatus(Long productId, String status);
-    void deleteVariant(Long variantId);
-    void deleteProduct(String asin);
-    void addProduct(ProductRequestDTO product);
-    void updateProduct(ProductRequestDTO product);
-    ProductVariantDTO sellVariant(Long variantId, int quantity);
-    void updateVariantInfo(Long variantId, BigDecimal price, int quantity);
-    ProductVariantDTO createVariant(ProductVariantDTO dto);
-    List<ProductSizeDTO> getSizesByAsin(String asin);
+
     ResponseEntity<DashboardStatsResponse> getSellerDashboard(Long authId, int page, int size);
+    void updateProductStatus(Long productId, String status, Long authId);
+    void deleteVariant(Long variantId, Long authId);
+    void addProduct(ProductRequestDTO product, Long authId);
+    ProductVariantDTO sellVariant(Long variantId, int quantity, Long authId);
+    void updateVariantInfo(Long variantId, BigDecimal price, Integer quantity, Long authId);
+    ProductVariantDTO createVariant(ProductVariantDTO dto, Long authId);
+    List<ProductSizeDTO> getSizesByAsin(String asin); // Không cần authId
+    List<ShopResponseDTO> getAllPendingShops();
+    void approveShop(Long shopId);
+    void banShop(Long shopId);
+    List<ShopEditRequestDTO> getAllPendingEdits();
+    void approveEdit(Long editId);
+    void rejectEdit(Long editId);
+    List<AuthenticationDTO> getAllAuthentications();
+    void approveAuthentication(Long id);
+    void rejectAuthentication(Long id);
 }
