@@ -1,6 +1,5 @@
-package com.kltnbe.userservice.dtos.res;
+package com.kltnbe.orderservice.dtos.res;
 
-import com.kltnbe.userservice.entities.Address;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -14,15 +13,6 @@ public class AddressInfo {
     private int isPrimaryAddress;
 
     public AddressInfo() {
-    }
-
-    public AddressInfo(Long addressId, String recipientName, String recipientPhone, String recipientEmail, String deliveryAddress, String addressDetails) {
-        this.addressId = addressId;
-        this.recipientName = recipientName;
-        this.recipientPhone = recipientPhone;
-        this.recipientEmail = recipientEmail;
-        this.deliveryAddress = deliveryAddress;
-        this.addressDetails = addressDetails;
     }
 
     public int getIsPrimaryAddress() {

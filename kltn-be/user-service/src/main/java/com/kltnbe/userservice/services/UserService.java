@@ -36,4 +36,7 @@ public interface UserService {
     List<UserDTO> searchUsers(String keyword);
     List<AddressInfo> getAllAddressesByUserId(Long userId);
     String upgradeToSeller(Long userId);
+    AddressInfo findByAddressId(Long addressId);
+    List<AddressInfo> findByAddressIds(List<Long> addressId);
+
 }

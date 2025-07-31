@@ -1,9 +1,12 @@
 package com.kltnbe.orderservice.controllers;
 
 import com.kltnbe.orderservice.dtos.SalesStatsDTO;
+import com.kltnbe.orderservice.dtos.req.DashboardStatsResponse;
 import com.kltnbe.orderservice.dtos.req.OrderRequest;
+import com.kltnbe.orderservice.dtos.res.MonthlyRevenueDTO;
 import com.kltnbe.orderservice.dtos.res.OrderResponse;
 import com.kltnbe.orderservice.services.OrderService;
+import com.kltnbe.security.utils.InternalApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -63,5 +66,16 @@ public class OrderController {
             @RequestParam(defaultValue = "month") String type) {
         List<SalesStatsDTO> stats = orderService.getSalesStatsByToken(token, type);
         return ResponseEntity.ok(stats);
+    }
+    @InternalApi
+    @GetMapping("/dashboardSeller")
+    public ResponseEntity<DashboardStatsResponse> getSellerDashboard(@RequestParam Long storeId, @RequestParam int page, @RequestParam int size) {
+        DashboardStatsResponse response = orderService.getSellerDashboard(storeId,page,size);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/getRevenueByStore")
+    public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByStore(@RequestParam Long storeId) {
+        List<MonthlyRevenueDTO> revenue = orderService.getRevenueByStore(storeId);
+        return ResponseEntity.ok(revenue);
     }
 }

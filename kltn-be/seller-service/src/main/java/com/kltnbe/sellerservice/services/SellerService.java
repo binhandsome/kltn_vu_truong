@@ -2,10 +2,13 @@ package com.kltnbe.sellerservice.services;
 
 import com.kltnbe.sellerservice.dtos.*;
 import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
+import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -42,6 +45,8 @@ public interface SellerService {
     List<ProductResponseDTO> getProductsBySeller(Long storeId, Long authId);
     List<ProductVariantDTO> getVariantsByProduct(Long productId, Long authId);
     ProductVariantDTO getVariant(Long variantId);
+
+    ResponseEntity<DashboardStatsResponse> getSellerDashboard(Long authId, int page, int size);
     void updateProductStatus(Long productId, String status, Long authId);
     void deleteVariant(Long variantId, Long authId);
     void addProduct(ProductRequestDTO product, Long authId);
@@ -49,15 +54,12 @@ public interface SellerService {
     void updateVariantInfo(Long variantId, BigDecimal price, Integer quantity, Long authId);
     ProductVariantDTO createVariant(ProductVariantDTO dto, Long authId);
     List<ProductSizeDTO> getSizesByAsin(String asin); // Không cần authId
-
     List<ShopResponseDTO> getAllPendingShops();
     void approveShop(Long shopId);
     void banShop(Long shopId);
-
     List<ShopEditRequestDTO> getAllPendingEdits();
     void approveEdit(Long editId);
     void rejectEdit(Long editId);
-
     List<AuthenticationDTO> getAllAuthentications();
     void approveAuthentication(Long id);
     void rejectAuthentication(Long id);
