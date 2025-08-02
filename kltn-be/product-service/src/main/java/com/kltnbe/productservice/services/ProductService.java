@@ -48,7 +48,7 @@ public interface ProductService {
     ProductResponse getProductById(Long idProduct);
     List<ProductResponse> getProductsByStoreId(Long storeId, Long authId);
     void updateStatus(Long productId, String status, Long authId);
-
+    Optional<Long> getStoreIdByProductId(Long productId);
     List<ProductStatsDTO> getProductCountByStatus();
     List<ProductStatsDTO> getProductCountByType();
     Long getTotalProductCount();

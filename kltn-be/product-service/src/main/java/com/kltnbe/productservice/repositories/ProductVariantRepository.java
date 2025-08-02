@@ -13,10 +13,17 @@ import java.util.Optional;
 public interface ProductVariantRepository extends JpaRepository<ProductVariant, Long> {
     List<ProductVariant> findByProduct_ProductId(Long productId);
 
-    @Query("SELECT pv FROM ProductVariant pv WHERE pv.product.productId = :productId AND pv.size.sizeId = :sizeId AND pv.color.ColorId = :colorId")
+    @Query("""
+    SELECT pv 
+    FROM ProductVariant pv 
+    WHERE pv.product.productId = :productId
+    AND (:sizeId IS NULL OR pv.size.sizeId = :sizeId)
+    AND (:colorId IS NULL OR pv.color.ColorId = :colorId)
+""")
     Optional<ProductVariant> findByProductVariant(@Param("productId") Long productId,
                                                   @Param("sizeId") Long sizeId,
                                                   @Param("colorId") Long colorId);
+
     @Query("SELECT pv FROM ProductVariant pv " +
             "WHERE pv.product.productId = :productId " +
             "AND pv.color.nameColor = :colorName " +

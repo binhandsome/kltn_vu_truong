@@ -44,49 +44,150 @@ function Checkout() {
   const [availableStock, setAvailableStock] = useState(null);
   const [prevQuantity, setPrevQuantity] = useState(1);
   const [stockStatus, setStockStatus] = useState('in_stock');
-  // Lấy số lượng tồn kho
-  const fetchAvailableStock = async (productId, sizeId = null, colorId = null) => {
-    if (!productId) {
-      console.warn("⚠️ Thiếu productId:", { productId });
-      setAvailableStock(0);
-      setStockStatus('out_of_stock');
-      return;
-    }
-  
+  const [shopSubtotals, setShopSubtotals] = useState([]);
+  const [selectedDiscounts, setSelectedDiscounts] = useState({});
+  const [totalPages, setTotalPages] = useState([]);
+
+const formatDateTime = (dateTimeString) => {
+  if (!dateTimeString) return "N/A";
+  const date = new Date(dateTimeString);
+  return date.toLocaleString("vi-VN", { hour12: false });
+};
+useEffect(() => {
+  const fetchDiscountsForShops = async (shops) => {
     try {
-      const response = await axios.get("http://localhost:8083/api/product-variants/available-stock", {
-        params: {
-          productId,
-          sizeId,    // có thể là null
-          colorId    // có thể là null
-        }
-      });
-  
-      console.log("✅ API tồn kho:", response.data);
-  
-      let qty, status;
-      if (typeof response.data === 'number') {
-        qty = response.data;
-        status = qty > 0 ? 'in_stock' : 'out_of_stock';
-      } else {
-        qty = response.data.quantityInStock ?? response.data.quantity ?? 0;
-        status = response.data.status || (qty > 0 ? 'in_stock' : 'out_of_stock');
-      }
-  
-      setAvailableStock(qty);
-      setStockStatus(status);
-      if (editQuantity > qty) {
-        setEditQuantity(qty);
-      }
-  
-    } catch (err) {
-      console.error("❌ Lỗi khi lấy tồn kho:", err.response?.data || err.message);
-      setAvailableStock(0);
-      setStockStatus('out_of_stock');
-      alert("Không thể lấy số lượng tồn kho. Vui lòng thử lại.");
+      const updatedShops = await Promise.all(
+        shops.map(async (shop) => {
+          try {
+            const res = await axios.get(
+              `http://localhost:8089/api/seller/getDiscountToUser?shopId=${shop.storeId}`
+            );
+
+            const discounts = res.data || [];
+
+            // ✅ Tính discountedSubtotal ngay sau khi lấy discount
+            const selectedId = selectedDiscounts[shop.storeId];
+            let discountedSubtotal = shop.subtotal;
+            if (selectedId) {
+              const disc = discounts.find((d) => d.discountShopId === selectedId);
+              if (disc && shop.subtotal >= disc.minPrice) {
+                discountedSubtotal = shop.subtotal * (1 - disc.percentValue / 100);
+              }
+            }
+
+            return { ...shop, discounts, discountedSubtotal };
+          } catch (err) {
+            console.error(`❌ Lỗi khi lấy discount cho shop ${shop.storeId}:`, err);
+            return { ...shop, discounts: [], discountedSubtotal: shop.subtotal };
+          }
+        })
+      );
+      setShopSubtotals(updatedShops);
+    } catch (error) {
+      console.error("❌ Lỗi tổng khi lấy discount:", error);
     }
   };
-  
+
+  if (listCartById?.items?.length > 0) {
+    const grouped = Object.entries(
+      listCartById.items.reduce((acc, item) => {
+        const storeId = item.storeId || "unknown";
+        if (!acc[storeId]) {
+          acc[storeId] = { items: [], storeInfo: null };
+        }
+        acc[storeId].items.push(item);
+
+        if (item.storeThumTitle && !acc[storeId].storeInfo) {
+          try {
+            acc[storeId].storeInfo = JSON.parse(item.storeThumTitle);
+          } catch (e) {
+            console.error("Invalid storeThumTitle JSON:", item.storeThumTitle);
+          }
+        }
+        return acc;
+      }, {})
+    );
+
+    // Tạo mảng subtotal theo shop
+    const subtotals = grouped.map(([storeId, { items, storeInfo }]) => ({
+      storeId,
+      title: storeInfo?.title || "Unknown Shop",
+      thumbnail: storeInfo?.thumbnail || "",
+      subtotal: items.reduce((sum, item) => sum + (item.itemTotalPrice || 0), 0),
+    }));
+
+    // ✅ Fetch discount & tính discountedSubtotal
+    fetchDiscountsForShops(subtotals);
+  } else {
+    setShopSubtotals([]);
+  }
+}, [listCartById, selectedDiscounts]); 
+const getDiscountedSubtotal = (shop) => {
+  const selectedId = selectedDiscounts[shop.storeId];
+  if (selectedId) {
+    const disc = shop.discounts.find(d => d.discountShopId === selectedId);
+    if (disc && shop.subtotal >= disc.minPrice) {
+      return shop.subtotal * (1 - disc.percentValue / 100);
+    }
+  }
+  return shop.subtotal;
+};
+useEffect(() => {
+  const uniqueShops = shopSubtotals.length;
+  const shippingCost = selectedShippingMethod 
+    ? parseFloat(selectedShippingMethod.cost) * uniqueShops 
+    : 0;
+  const subtotal = shopSubtotals.reduce((sum, shop) => sum + getDiscountedSubtotal(shop), 0);
+
+  setTotalPrice(subtotal + shippingCost); // ✅ Lưu vào state
+}, [shopSubtotals, selectedShippingMethod]);
+
+const fetchAvailableStock = async (productId, sizeId = null, colorId = null) => {
+  if (!productId) {
+    console.warn("⚠️ Thiếu productId:", { productId });
+    setAvailableStock(0);
+    setStockStatus('out_of_stock');
+    return;
+  }
+
+  // Gán sizeId mặc định nếu null (nếu backend yêu cầu)
+  const effectiveSizeId = sizeId !== null ? sizeId : undefined; // undefined sẽ bị axios bỏ qua
+
+  console.log("🔍 Gửi request fetchAvailableStock:", { productId, sizeId: effectiveSizeId, colorId });
+
+  try {
+    const response = await axios.get("http://localhost:8083/api/product-variants/available-stock", {
+      params: {
+        productId,
+        sizeId: effectiveSizeId, // Chỉ gửi nếu có giá trị
+        colorId
+      }
+    });
+
+    console.log("✅ API tồn kho:", response.data);
+
+    let qty, status;
+    if (typeof response.data === 'number') {
+      qty = response.data;
+      status = qty > 0 ? 'in_stock' : 'out_of_stock';
+    } else {
+      qty = response.data.quantityInStock ?? response.data.quantity ?? 0;
+      status = response.data.status || (qty > 0 ? 'in_stock' : 'out_of_stock');
+    }
+
+    setAvailableStock(qty);
+    setStockStatus(status);
+    if (editQuantity > qty) {
+      setEditQuantity(qty);
+    }
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy tồn kho:", err.response?.data || err.message);
+    setAvailableStock(0);
+    setStockStatus('out_of_stock');
+    alert(`Không thể lấy số lượng tồn kho. Lỗi: ${err.message}`);
+  }
+};
+
   useEffect(() => {
     if (editingItem) {
       // ✅ Tìm sizeId nếu có size
@@ -120,7 +221,16 @@ function Checkout() {
     }
     setEditQuantity(prev => prev + 1);
   };
-
+const groupedByShop = listCartById?.items?.reduce((acc, item) => {
+  const shopInfo = item.storeThumTitle ? JSON.parse(item.storeThumTitle) : { title: 'Unknown Shop', thumbnail: '' };
+  const shopKey = shopInfo.title; // Dùng title hoặc có thể dùng shopId nếu có
+  
+  if (!acc[shopKey]) {
+    acc[shopKey] = { shopInfo, items: [] };
+  }
+  acc[shopKey].items.push(item);
+  return acc;
+}, {});
   // Xử lý giảm số lượng
   const handleDecrease = () => {
     if (editQuantity > 1) {
@@ -153,6 +263,9 @@ function Checkout() {
       })
       .catch(err => console.error('Shipping method error:', err));
   }, []);
+  useEffect(() => {
+    console.log('fasjbfaiusbfas', selectedDiscounts);
+  })
   const saveOrder = async () => {
     try {
       const tokenAccess = localStorage.getItem("accessToken");
@@ -206,7 +319,11 @@ function Checkout() {
           size: item.size,
           color: item.nameColor,
         };
+      // Convert từ shopSubtotals sang list TotalPages
       
+
+
+
         // ✅ Tìm ID tương ứng nếu chưa có
         const sizeObj = item.sizes?.find(s => s.sizeName === item.size);
         req.sizeId = sizeObj?.sizeId || null;
@@ -229,7 +346,9 @@ function Checkout() {
         selectBank,
         ipAddress: ip,
         shippingMethodId: selectedShippingMethod?.id,
-        shippingFee: selectedShippingMethod?.cost || 0
+        shippingFee: selectedShippingMethod?.cost || 0,
+        totalPages: totalPages,
+        selectedDiscounts
       };
   
       let endpoint = "";
@@ -260,7 +379,9 @@ function Checkout() {
           guestName: `${firstName} ${lastName}`,
           guestPhone: phone,
           guestEmail: email,
-          guestAddress
+          guestAddress,
+           totalPages: totalPages,
+        selectedDiscounts
         };
         endpoint = "http://localhost:8086/api/orders/placeGuestOrder";
       }
@@ -289,7 +410,18 @@ function Checkout() {
       alert(error.response?.data?.error || error.message);
     }
   };
-  
+  useEffect(()=> {
+    console.log('selectedShippingMethod', selectedShippingMethod);
+  }
+)
+useEffect(() => {
+  const totalPagesData = shopSubtotals.map(shop => ({
+    discountedSubtotal: shop.discountedSubtotal,
+    storeId: parseInt(shop.storeId, 10),
+    subtotal: shop.subtotal
+  }));
+  setTotalPages(totalPagesData);
+}, [shopSubtotals]);
 // Xử lý mở modal chỉnh sửa
 const openEditModal = (item) => {
   setEditingItem(item);
@@ -345,6 +477,70 @@ const [provinces, setProvinces] = useState([]);
 
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
+    const shops = [
+    {
+      title: "Thanh Vu Shop",
+      thumbnail: "https://via.placeholder.com/50",
+      discounts: [
+        {
+          nameDiscount: "Giảm 10% cho đơn từ 200k",
+          minPrice: 200000,
+          percentValue: 10,
+          dayStart: "2025-08-01T08:00:00",
+          dayEnd: "2025-08-10T23:59:59",
+        },
+        {
+          nameDiscount: "Giảm 20% cho đơn từ 500k",
+          minPrice: 500000,
+          percentValue: 20,
+          dayStart: "2025-08-05T08:00:00",
+          dayEnd: "2025-08-15T23:59:59",
+        },
+      ],
+    },
+    {
+      title: "ABC Store",
+      thumbnail: "https://via.placeholder.com/50",
+      discounts: [],
+    },
+    {
+      title: "Shop 3",
+      thumbnail: "https://via.placeholder.com/50",
+      discounts: [
+        {
+          nameDiscount: "Giảm 5%",
+          minPrice: 100000,
+          percentValue: 5,
+          dayStart: "2025-08-02T08:00:00",
+          dayEnd: "2025-08-12T23:59:59",
+        },
+          {
+          nameDiscount: "Giảm 5%",
+          minPrice: 100000,
+          percentValue: 5,
+          dayStart: "2025-08-02T08:00:00",
+          dayEnd: "2025-08-12T23:59:59",
+        },
+          {
+          nameDiscount: "Giảm 5%",
+          minPrice: 100000,
+          percentValue: 5,
+          dayStart: "2025-08-02T08:00:00",
+          dayEnd: "2025-08-12T23:59:59",
+        },
+          {
+          nameDiscount: "Giảm 5%",
+          minPrice: 100000,
+          percentValue: 5,
+          dayStart: "2025-08-02T08:00:00",
+          dayEnd: "2025-08-12T23:59:59",
+        },
+      ],
+    },
+  ];
+useEffect(() => {
+  console.log('total price', shopSubtotals);
+})
 useEffect(() => {
   const fetchProvinces = async () => {
     try {
@@ -459,26 +655,26 @@ paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
       params: { asins }
     });
     const combined = cartItems
-    .map(item => {
-      const product = products.find(p => p.asin === item.asin);
-      if (!product) return null;
-  
-      const unitPrice = product.productPrice;
-      const discount = product.percentDiscount || 0;
-      const discountedUnitPrice = unitPrice * (1 - discount / 100);
-      const itemTotalPrice = (discountedUnitPrice * item.quantity).toFixed(2);
-  
-      return {
-        ...item,
-        ...product,
-        unitPrice,
-        discountedUnitPrice,
-        itemTotalPrice: parseFloat(itemTotalPrice),
-        hasSize: !!(product.sizes && product.sizes.length > 0),
-        hasColor: !!(product.colors && product.colors.length > 0)
-      };
-    })
-    .filter(Boolean);
+  .map(item => {
+    const product = products.find(p => p.asin === item.asin);
+    if (!product) return null;
+
+    const unitPrice = product.productPrice;
+    const discount = product.percentDiscount || 0;
+    const discountedUnitPrice = unitPrice * (1 - discount / 100);
+    const itemTotalPrice = (discountedUnitPrice * item.quantity).toFixed(2);
+
+    return {
+      ...item,
+      ...product,
+      unitPrice,
+      discountedUnitPrice,
+      itemTotalPrice: parseFloat(itemTotalPrice),
+      hasSize: !!(product.sizes && product.sizes.length > 0),
+      hasColor: !!(product.colorAsin && product.colorAsin.length > 0) // ✅ Sửa: Kiểm tra colorAsin
+    };
+  })
+  .filter(Boolean);
   
 
     const totalPrice = combined
@@ -528,7 +724,10 @@ useEffect(() => {
 			//wow.sync(); // sync and remove the DOM
 		};
 	  }, []);
-    
+  useEffect(() => {
+  console.log('listcart by Id', listCartById);
+}, [listCartById]);
+
   return (
     <>
     
@@ -601,12 +800,7 @@ useEffect(() => {
                 data-bs-parent="#accordionFaq"
               >
                 <div className="accordion-body">
-                  <p className="m-b0">
-                  Nếu đơn hàng của bạn chưa được giao, bạn có thể liên hệ với chúng tôi để
-                  thay đổi địa chỉ giao hàng
-                   {/*  If your order has not yet shipped, you can contact us to
-                    change your shipping address */}
-                  </p>
+            
                 </div>
               </div>
             </div>
@@ -632,12 +826,131 @@ useEffect(() => {
                 data-bs-parent="#accordionFaq"
               >
                 <div className="accordion-body">
-                  <p className="m-b0">
-                    Nếu đơn hàng của bạn chưa được giao, bạn có thể liên hệ với chúng tôi để
-thay đổi địa chỉ giao hàng.
-                    {/* If your order has not yet shipped, you can contact us to
-                    change your shipping address */}
-                  </p>
+<div style={{ margin: "10px" }}>
+      <h3 style={{ marginBottom: "10px" }}>Danh sách Discount theo Shop</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+        {shopSubtotals.length > 0 ? (
+          shopSubtotals.map((shop, index) => (
+            <div
+              key={index}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                padding: "10px",
+                background: "#fff",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  borderBottom: "1px solid #eee",
+                  paddingBottom: "8px",
+                  marginBottom: "8px",
+                }}
+              >
+                <img
+                  src={shop.thumbnail || "https://via.placeholder.com/40"}
+                  alt={shop.title}
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "6px",
+                    border: "1px solid #ddd",
+                  }}
+                />
+                <span style={{ fontWeight: "bold", fontSize: "15px" }}>
+                  {shop.title}
+                </span>
+                <span style={{ marginLeft: "auto", fontSize: "14px", color: "#555" }}>
+                  Tổng: {getDiscountedSubtotal(shop).toLocaleString("vi-VN")}$
+                </span>
+              </div>
+              {shop.discounts.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {shop.discounts.map((d, i) => (
+                    <label
+                      key={i}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        background: "#f9f9f9",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: "1px solid #eee",
+                        fontSize: "13px",
+                        cursor: shop.subtotal >= d.minPrice ? "pointer" : "not-allowed",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name={`discount-${shop.storeId}`}
+                        value={d.discountShopId}
+                        checked={selectedDiscounts[shop.storeId] === d.discountShopId}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setSelectedDiscounts((prev) => {
+                            const newPrev = { ...prev };
+                            newPrev[shop.storeId] = value;
+                            return newPrev;
+                          });
+                        }}
+                        disabled={shop.subtotal < d.minPrice}
+                      />
+                      <div>
+                        <p style={{ margin: "4px 0" }}><strong>Giảm Giá :</strong> {d.nameDiscount}</p>
+                        <p style={{ margin: "4px 0" }}><strong>Đơn Hàng Từ:</strong> {d.minPrice.toLocaleString("vi-VN")}$</p>
+                        <p style={{ margin: "4px 0" }}><strong>Percent:</strong> {d.percentValue}%</p>
+                        <p style={{ margin: "4px 0" }}><strong>Bắt đầu:</strong> {new Date(d.dayStart).toLocaleDateString("vi-VN")}</p>
+                        <p style={{ margin: "4px 0" }}><strong>Kết thúc:</strong> {new Date(d.dayEnd).toLocaleDateString("vi-VN")}</p>
+                      </div>
+                    </label>
+                  ))}
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      background: "#f9f9f9",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #eee",
+                      fontSize: "13px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name={`discount-${shop.storeId}`}
+                      value={0}
+                      checked={selectedDiscounts[shop.storeId] === undefined}
+                      onChange={(e) => {
+                        setSelectedDiscounts((prev) => {
+                          const newPrev = { ...prev };
+                          delete newPrev[shop.storeId];
+                          return newPrev;
+                        });
+                      }}
+                    />
+                    Không sử dụng mã giảm giá
+                  </label>
+                </div>
+              ) : (
+                <p style={{ textAlign: "center", color: "#888", fontSize: "13px" }}>
+                  🛒 Chưa có discount nào.
+                </p>
+              )}
+            </div>
+          ))
+        ) : (
+          <p>Không có shop nào.</p>
+        )}
+      </div>
+    </div>
+
+
                 </div>
               </div>
             </div>
@@ -1048,256 +1361,278 @@ console.log(ward)}
             </div>
           </form>
         </div>
-        <div className="col-xl-4 side-bar">
-          <h4 className="title m-b15">Đơn hàng của bạn</h4>
-          <div className="order-detail sticky-top">
-           {listCartById?.items?.length > 0 ? (          
-  listCartById.items.map((item, index) => ( 
-    <div key={item.asin || index} className="cart-item style-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div className="dz-media">
-          <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_350,h_350/imgProduct/IMG/${item.productThumbnail}`} alt={item.productTitle || 'Product'} />
-        </div>
-        <div className="dz-content" style={{ display: 'block' }}>
-          <h6 className="title mb-0">{item.productTitle || item.productName || 'Unnamed Product'}</h6>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.9rem', color: '#666' }}>
-            <span style={{ fontWeight: 400 }}>Quantity: {item.quantity || 'N/A'}</span>
-            <span style={{ fontWeight: 400 }}>Color: {item.nameColor || item.color || 'N/A'}</span>
-            <span style={{ fontWeight: 400 }}>Size: {item.size || 'No Size'}</span>
-          </div>
-          <span className="price">${item.itemTotalPrice?.toFixed(2) || '0.00'}</span>
-        </div>
-      </div>
-      <button
-  className="edit-cart-btn"
-  onClick={() => openEditModal(item)}
-  style={{
-    padding: '5px 10px',
-    backgroundColor: '#065084ff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  }}
->
-  <i className="fa fa-pencil-alt" aria-hidden="true"></i>
-</button>
-    </div>
-  ))
-) : (
-  <li>🛒 Giỏ hàng trống</li>
-)}
-            <table>
-              <tbody>
-                <tr className="subtotal">
-                  <td>Tổng phụ</td>
-                  <td className="price">${listCartById.totalPrice}</td>
-                </tr>
-                <tr className="title">
-                  <td>
-                    <h6 className="title font-weight-500">Vận chuyển</h6>
-                  </td>
-                  <td />
-                </tr>
-        <tr className="shipping">
-        <td>
-  {shippingMethods.map((method, index) => (
-    <div className="custom-control custom-checkbox" key={method.id}>
-      <input
-        className="form-check-input radio"
-        type="radio"
-        name="shippingMethod"
-        id={`shipping-${method.id}`}
-        value={method.id}
-        checked={selectedShippingMethod?.id === method.id}
-        onChange={handleShippingChange}
-      />
-      <label className="form-check-label" htmlFor={`shipping-${method.id}`}>
-        {method.methodName} ({method.estimatedDays} ngày) - 
-        {parseFloat(method.cost) === 0 ? "Miễn phí" : `$${method.cost}`}
-      </label>
-    </div>
-  ))}
-</td>
-
-  <td className="price">25.75</td>
-</tr>
-
-                <tr className="total">
-                  <td>Tổng</td>
-                  <td className="price">${totalPrice}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div
-              className="accordion dz-accordion accordion-sm"
-              id="accordionFaq1"
-            >
-              <div className="accordion-item">
-                <div className="accordion-header" id="heading1">
-                  <div
-                    className="accordion-button collapsed custom-control custom-checkbox border-0"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapse1"
-                    role="navigation"
-                    aria-expanded="true"
-                    aria-controls="collapse1"
-                  >
-                    <input
-                      className="form-check-input radio"
-                      type="radio"
-                      name="flexRadioDefault1"
-                      id="flexRadioDefault3"
-                      value="BANK"
-                      onChange={(e) => setSelectBank(e.target.value)} />
-                    <label
-                      className="form-check-label"
-                      htmlFor="flexRadioDefault3">
-                      Chuyển khoản ngân hàng trực tiếp
-                    </label>
-                  </div>
-                </div>
-                <div
-                  id="collapse1"
-                  className="accordion-collapse collapse show"
-                  aria-labelledby="heading1"
-                  data-bs-parent="#accordionFaq1"
-                >
-                  <div className="accordion-body">
-                    <p className="m-b0">
-                      Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
-sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
-sẽ không được giao cho đến khi tiền được chuyển vào
-tài khoản của chúng tôi.
-                      {/* Make your payment directly into our bank account. Please
-                      use your Order ID as the payment reference. Your order
-                      will not be shipped until the funds have cleared in our
-                      account. */}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="accordion-item">
-                <div className="accordion-header" id="heading2">
-                  <div
-                    className="accordion-button collapsed custom-control custom-checkbox border-0"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapse2"
-                    role="navigation"
-                    aria-expanded="true"
-                    aria-controls="collapse2"
-                  >
-                    <input
-                      className="form-check-input radio"
-                      type="radio"
-                      name="flexRadioDefault1"
-                      id="flexRadioDefault5"
-                      value="COD"
-                      onChange={(e) => setSelectBank(e.target.value)}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor="flexRadioDefault5"
-                    >
-                      Tiền mặt khi giao hàng
-                      {/* Cash on delivery */}
-                    </label>
-                  </div>
-                </div>
-                <div
-                  id="collapse2"
-                  className="accordion-collapse collapse"
-                  aria-labelledby="collapse2"
-                  data-bs-parent="#accordionFaq1"
-                >
-                  <div className="accordion-body">
-                    <p className="m-b0">
-                     Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
-sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
-sẽ không được giao cho đến khi tiền được chuyển vào
-tài khoản của chúng tôi.
-                     {/*  Make your payment directly into our bank account. Please
-                      use your Order ID as the payment reference. Your order
-                      will not be shipped until the funds have cleared in our
-                      account. */}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="accordion-item">
-                <div className="accordion-header" id="heading3">
-                  <div
-                    className="accordion-button collapsed custom-control custom-checkbox border-0"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapse3"
-                    role="navigation"
-                    aria-expanded="true"
-                    aria-controls="collapse3"
-                  >
-                    <input
-                      className="form-check-input radio"
-                      type="radio"
-                      name="flexRadioDefault1"
-                      id="flexRadioDefault4"
-                          value="PAYPAL"
-                      onChange={(e) => setSelectBank(e.target.value)}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor="flexRadioDefault4"
-                  
-                    >
-                      Paypal
-                    </label>
-                    <img src="../../assets/user/images/shop/payment.jpg" alt="/" />
-                    <a href="javascript:void(0);">PayPal là gì?</a>
-                  </div>
-                </div>
-                <div
-                  id="collapse3"
-                  className="accordion-collapse collapse"
-                  aria-labelledby="heading3"
-                  data-bs-parent="#accordionFaq1"
-                >
-                  <div className="accordion-body">
-                    <p className="m-b0">
-                    Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
-sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
-sẽ không được giao cho đến khi tiền được chuyển vào
-tài khoản của chúng tôi.
-                      {/* Make your payment directly into our bank account. Please
-                      use your Order ID as the payment reference. Your order
-                      will not be shipped until the funds have cleared in our
-                      account. */}
-                    </p>
-                  </div>
-                </div>
-              </div>
+<div className="col-xl-4 side-bar">
+  <h4 className="title m-b15">Đơn hàng của bạn</h4>
+  <div className="order-detail sticky-top">
+    {listCartById?.items?.length > 0 ? (
+      Object.entries(
+        listCartById.items.reduce((acc, item) => {
+          const storeId = item.storeId || 'unknown';
+          if (!acc[storeId]) {
+            acc[storeId] = { items: [], storeInfo: null };
+          }
+          acc[storeId].items.push(item);
+          if (item.storeThumTitle && !acc[storeId].storeInfo) {
+            try {
+              acc[storeId].storeInfo = JSON.parse(item.storeThumTitle);
+            } catch (e) {
+              console.error('Invalid storeThumTitle JSON:', item.storeThumTitle);
+            }
+          }
+          return acc;
+        }, {})
+      ).map(([storeId, { items, storeInfo }], shopIndex) => (
+        <div key={storeId} className="shop-group" style={{ marginBottom: '20px', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>
+          {storeInfo ? (
+            <div className="shop-header" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+              <img 
+                src={storeInfo.thumbnail} 
+                alt={storeInfo.title} 
+                style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '10px' }} 
+              />
+              <h5 className="shop-title" style={{ margin: 0 }}>{storeInfo.title}</h5>
             </div>
-            <p className="text">
-            Dữ liệu cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng của bạn, hỗ trợ
-trải nghiệm của bạn trên toàn bộ trang web này và cho các mục đích khác
-được mô tả trong <a href="javascript:void(0);">chính sách bảo mật.</a>
-            </p>
-            <div className="form-group">
-              <div className="custom-control custom-checkbox d-flex m-b15">
+          ) : (
+            <h5 className="shop-title" style={{ marginBottom: '10px' }}>Unknown Shop (ID: {storeId})</h5>
+          )}
+          {items.map((item, index) => (
+            <div key={item.asin || index} className="cart-item style-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="dz-media">
+                  <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_350,h_350/imgProduct/IMG/${item.productThumbnail}`} alt={item.productTitle || 'Product'} />
+                </div>
+                <div className="dz-content" style={{ display: 'block' }}>
+                  <h6 className="title mb-0">{item.productTitle || item.productName || 'Unnamed Product'}</h6>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.9rem', color: '#666' }}>
+                    <span style={{ fontWeight: 400 }}>Quantity: {item.quantity || 'N/A'}</span>
+                    <span style={{ fontWeight: 400 }}>Color: {item.nameColor || item.color || 'N/A'}</span>
+                    <span style={{ fontWeight: 400 }}>Size: {item.size || 'No Size'}</span>
+                  </div>
+                  <span className="price">${item.itemTotalPrice?.toFixed(2) || '0.00'}</span>
+                </div>
+              </div>
+              <button
+                className="edit-cart-btn"
+                onClick={() => openEditModal(item)}
+                style={{
+                  padding: '5px 10px',
+                  backgroundColor: '#065084ff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                <i className="fa fa-pencil-alt" aria-hidden="true"></i>
+              </button>
+            </div>
+          ))}
+          <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
+            Subtotal for this shop: ${items.reduce((sum, item) => sum + (item.itemTotalPrice || 0), 0).toFixed(2)}
+          </div>
+        </div>
+      ))
+    ) : (
+      <li>🛒 Giỏ hàng trống</li>
+    )}
+<table>
+      <tbody>
+        <tr className="subtotal">
+          <td>Tổng phụ</td>
+          <td className="price">${shopSubtotals.reduce((sum, shop) => sum + getDiscountedSubtotal(shop), 0).toFixed(2)}</td>
+        </tr>
+        <tr className="title">
+          <td>
+            <h6 className="title font-weight-500">Vận chuyển</h6>
+          </td>
+          <td />
+        </tr>
+        <tr className="shipping">
+          <td>
+            {shippingMethods.map((method, index) => (
+              <div className="custom-control custom-checkbox" key={method.id}>
                 <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="basic_checkbox_3"
+                  className="form-check-input radio"
+                  type="radio"
+                  name="shippingMethod"
+                  id={`shipping-${method.id}`}
+                  value={method.id}
+                  checked={selectedShippingMethod?.id === method.id}
+                  onChange={handleShippingChange}
                 />
-                <label className="form-check-label" htmlFor="basic_checkbox_3">
-                Tôi đã đọc và đồng ý với các điều khoản và điều kiện của trang web{" "}
-                  {/* I have read and agree to the website terms and conditions{" "} */}
+                <label className="form-check-label" htmlFor={`shipping-${method.id}`}>
+                  {method.methodName} ({method.estimatedDays} ngày) - 
+                  {parseFloat(method.cost) === 0 ? "Miễn phí" : `$${method.cost}`}
                 </label>
               </div>
-            </div>
-            <button href="/user/shop/shopStandard" className="btn btn-secondary w-100" onClick={saveOrder}>
-              ĐẶT HÀNG
-              {/* PLACE ORDER */}
-            </button>
+            ))}
+          </td>
+          {(() => {
+            const uniqueShops = shopSubtotals.length;
+            const shippingCost = selectedShippingMethod ? parseFloat(selectedShippingMethod.cost) * uniqueShops : 0;
+            return <td className="price">${shippingCost.toFixed(2)}</td>;
+          })()}
+        </tr>
+        <tr className="total">
+          <td>Tổng</td>
+       <td className="price">${totalPrice.toFixed(2)}</td>
+
+        </tr>
+      </tbody>
+    </table>
+    <div
+      className="accordion dz-accordion accordion-sm"
+      id="accordionFaq1"
+    >
+      <div className="accordion-item">
+        <div className="accordion-header" id="heading1">
+          <div
+            className="accordion-button collapsed custom-control custom-checkbox border-0"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapse1"
+            role="navigation"
+            aria-expanded="true"
+            aria-controls="collapse1"
+          >
+            <input
+              className="form-check-input radio"
+              type="radio"
+              name="flexRadioDefault1"
+              id="flexRadioDefault3"
+              value="BANK"
+              onChange={(e) => setSelectBank(e.target.value)} />
+            <label
+              className="form-check-label"
+              htmlFor="flexRadioDefault3">
+              Chuyển khoản ngân hàng trực tiếp
+            </label>
           </div>
         </div>
+        <div
+          id="collapse1"
+          className="accordion-collapse collapse show"
+          aria-labelledby="heading1"
+          data-bs-parent="#accordionFaq1"
+        >
+          <div className="accordion-body">
+            <p className="m-b0">
+              Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
+sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
+sẽ không được giao cho đến khi tiền được chuyển vào
+tài khoản của chúng tôi.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="accordion-item">
+        <div className="accordion-header" id="heading2">
+          <div
+            className="accordion-button collapsed custom-control custom-checkbox border-0"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapse2"
+            role="navigation"
+            aria-expanded="true"
+            aria-controls="collapse2"
+          >
+            <input
+              className="form-check-input radio"
+              type="radio"
+              name="flexRadioDefault1"
+              id="flexRadioDefault5"
+              value="COD"
+              onChange={(e) => setSelectBank(e.target.value)}
+            />
+            <label
+              className="form-check-label"
+              htmlFor="flexRadioDefault5"
+            >
+              Tiền mặt khi giao hàng
+            </label>
+          </div>
+        </div>
+        <div
+          id="collapse2"
+          className="accordion-collapse collapse"
+          aria-labelledby="collapse2"
+          data-bs-parent="#accordionFaq1"
+        >
+          <div className="accordion-body">
+            <p className="m-b0">
+              Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
+sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
+sẽ không được giao cho đến khi tiền được chuyển vào
+tài khoản của chúng tôi.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="accordion-item">
+        <div className="accordion-header" id="heading3">
+          <div
+            className="accordion-button collapsed custom-control custom-checkbox border-0"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapse3"
+            role="navigation"
+            aria-expanded="true"
+            aria-controls="collapse3"
+          >
+            <input
+              className="form-check-input radio"
+              type="radio"
+              name="flexRadioDefault1"
+              id="flexRadioDefault4"
+              value="PAYPAL"
+              onChange={(e) => setSelectBank(e.target.value)}
+            />
+            <label
+              className="form-check-label"
+              htmlFor="flexRadioDefault4"
+            >
+              Paypal
+            </label>
+            <img src="../../assets/user/images/shop/payment.jpg" alt="/" />
+            <a href="javascript:void(0);">PayPal là gì?</a>
+          </div>
+        </div>
+        <div
+          id="collapse3"
+          className="accordion-collapse collapse"
+          aria-labelledby="heading3"
+          data-bs-parent="#accordionFaq1"
+        >
+          <div className="accordion-body">
+            <p className="m-b0">
+              Vui lòng thanh toán trực tiếp vào tài khoản ngân hàng của chúng tôi. Vui lòng
+sử dụng Mã đơn hàng của bạn làm tham chiếu thanh toán. Đơn hàng của bạn
+sẽ không được giao cho đến khi tiền được chuyển vào
+tài khoản của chúng tôi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p className="text">
+      Dữ liệu cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng của bạn, hỗ trợ
+trải nghiệm của bạn trên toàn bộ trang web này và cho các mục đích khác
+được mô tả trong <a href="javascript:void(0);">chính sách bảo mật.</a>
+    </p>
+    <div className="form-group">
+      <div className="custom-control custom-checkbox d-flex m-b15">
+        <input
+          type="checkbox"
+          className="form-check-input"
+          id="basic_checkbox_3"
+        />
+        <label className="form-check-label" htmlFor="basic_checkbox_3">
+          Tôi đã đọc và đồng ý với các điều khoản và điều kiện của trang web{" "}
+        </label>
+      </div>
+    </div>
+    <button href="/user/shop/shopStandard" className="btn btn-secondary w-100" onClick={saveOrder}>
+      ĐẶT HÀNG
+    </button>
+  </div>
+</div>
       </div>
     </div>
   </div>

@@ -6,6 +6,7 @@ import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
 import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
+import com.kltnbe.sellerservice.dtos.res.TitleAndImgSeller;
 import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,6 +68,8 @@ public interface SellerService {
     List<AuthenticationDTO> getAllAuthentications();
     void approveAuthentication(Long id);
     void rejectAuthentication(Long id);
+    TitleAndImgSeller getTitleAndImgSeller(Long shopId);
+    List<ResponseDiscountToUser> getListDiscountToUser(Long shopId);
 
     List<ReviewResponse> getReviewsForSellerProduct(String asin, Long authId);
     ReviewResponse replyToReview(Long reviewId, SellerReplyRequest body, Long authId);

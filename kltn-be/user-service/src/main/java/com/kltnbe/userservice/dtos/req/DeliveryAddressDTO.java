@@ -1,15 +1,14 @@
-package com.kltnbe.orderservice.dtos.req;
+package com.kltnbe.userservice.dtos.req;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class GuestAddressRequest {
+@NoArgsConstructor
+public class DeliveryAddressDTO {
+    private Long id;
     private String recipientName;
     private String recipientPhone;
     private String recipientEmail;

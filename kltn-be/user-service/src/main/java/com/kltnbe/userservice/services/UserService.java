@@ -2,6 +2,7 @@ package com.kltnbe.userservice.services;
 
 import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.AddressRequest;
+import com.kltnbe.userservice.dtos.req.DeliveryAddressDTO;
 import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
 import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
@@ -38,5 +39,6 @@ public interface UserService {
     String upgradeToSeller(Long userId);
     AddressInfo findByAddressId(Long addressId);
     List<AddressInfo> findByAddressIds(List<Long> addressId);
-
+    Long findUserIdByAuthId(Long authId);
+    String updateAddress(DeliveryAddressDTO deliveryAddressDTO);
 }

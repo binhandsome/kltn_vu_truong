@@ -1,6 +1,7 @@
 package com.kltnbe.sellerservice.configs;
 
 import com.kltnbe.security.utils.JwtAuthenticationFilter;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +37,9 @@ public class RestTemplateConfig {
                                 "/api/seller/registerSeller",
                                 "/api/seller/verifyLoginSeller",
                                 "/api/seller/checkLoginSeller"
+
                         ).permitAll()
+                                .requestMatchers(HttpMethod.GET,"api/seller/getDiscountToUser").permitAll()
                                 .requestMatchers("/api/seller/internal/**").permitAll()
 
                         .requestMatchers("/api/seller/**").hasRole("SELLER")
@@ -47,7 +50,10 @@ public class RestTemplateConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

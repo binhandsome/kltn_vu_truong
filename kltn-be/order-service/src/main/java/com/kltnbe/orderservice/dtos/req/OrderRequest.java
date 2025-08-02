@@ -4,6 +4,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class OrderRequest {
@@ -20,7 +21,10 @@ public class OrderRequest {
     private Long shippingMethodId;
     private Double shippingFee;
 
-//    Rieng cho khach hang k login
+    private List<TotalPages> totalPages;
+    private Map<Long, Long> selectedDiscounts;
+
+    //    Rieng cho khach hang k login
     private String cartId;
     private String guestName;
     private String guestPhone;
@@ -161,5 +165,31 @@ public class OrderRequest {
 
     public void setShippingMethodId(Long shippingMethodId) {
         this.shippingMethodId = shippingMethodId;
+
+
+    }
+
+    @Override
+    public String toString() {
+        return "OrderRequest{" +
+                "accessToken='" + accessToken + '\'' +
+                ", addressId=" + addressId +
+                ", orderNotes='" + orderNotes + '\'' +
+                ", totalPrice=" + totalPrice +
+                ", orderItemRequests=" + orderItemRequests +
+                ", selectBank='" + selectBank + '\'' +
+                ", cardNumber='" + cardNumber + '\'' +
+                ", cardholderName='" + cardholderName + '\'' +
+                ", bankName='" + bankName + '\'' +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", shippingMethodId=" + shippingMethodId +
+                ", shippingFee=" + shippingFee +
+                ", totalPages=" + totalPages +
+                ", cartId='" + cartId + '\'' +
+                ", guestName='" + guestName + '\'' +
+                ", guestPhone='" + guestPhone + '\'' +
+                ", guestEmail='" + guestEmail + '\'' +
+                ", guestAddress='" + guestAddress + '\'' +
+                '}';
     }
 }

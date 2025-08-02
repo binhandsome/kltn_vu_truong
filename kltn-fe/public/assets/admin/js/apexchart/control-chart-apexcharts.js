@@ -102,16 +102,18 @@ async function renderRevenueChart(chartType, elementId) {
                 style: { color: '#1F2937', fontSize: '14px', fontWeight: 600 }
             }
         },
-        title: {
-            text: '2025 Revenue Overview',
-            align: 'left',
-            style: {
-                color: '#1F2937',
-                fontSize: '18px',
-                fontWeight: 700,
-                fontFamily: 'Inter, sans-serif'
-            }
-        },
+      title: {
+    text: `2025 Revenue Overview - Total: ${revenueData.reduce((sum, val) => sum + val, 0)
+        .toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}`,
+    align: 'left',
+    style: {
+        color: '#1F2937',
+        fontSize: '18px',
+        fontWeight: 700,
+        fontFamily: 'Inter, sans-serif'
+    }
+},
+
         subtitle: {
             text: 'Monthly Performance',
             align: 'left',

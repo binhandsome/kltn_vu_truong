@@ -23,8 +23,10 @@ public interface ProductServiceProxy {
     );
     @GetMapping("/api/products/color-id")
     Long getColorIdByName(@RequestParam("nameColor") String nameColor);
+
     @GetMapping("/api/products/size-id")
     Long getSizeIdByName(@RequestParam("sizeName") String sizeName);
+
     @GetMapping("/api/products/color-name")
     String getColorNameById(@RequestParam("id") Long colorId);
     @PostMapping("/api/products/reduce-inventory")
@@ -35,4 +37,7 @@ public interface ProductServiceProxy {
     ResponseEntity<Optional<String>> findProductNameById(@RequestParam Long productId);
     @GetMapping("/api/products/getProductById")
     ResponseEntity<ProductResponse> getProductById(@RequestParam Long idProduct );
+
+    @GetMapping("/api/products/getStoreIdByProductId")
+    public ResponseEntity<Long> getStoreIdByProductId(@RequestParam Long productId);
 }

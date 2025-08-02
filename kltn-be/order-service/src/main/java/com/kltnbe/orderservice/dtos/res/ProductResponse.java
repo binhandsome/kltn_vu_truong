@@ -20,5 +20,6 @@ public class ProductResponse {
     private String selectedType;
     private String selectedGender;
     private Integer discountPercent;
+    private String thumbnail;
 
 }

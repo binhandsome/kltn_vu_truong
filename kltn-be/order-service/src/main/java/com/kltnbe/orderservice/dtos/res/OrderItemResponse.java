@@ -1,11 +1,16 @@
 package com.kltnbe.orderservice.dtos.res;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderItemResponse {
+
     private String asin;
     private String productTitle;
     private String productThumbnail;

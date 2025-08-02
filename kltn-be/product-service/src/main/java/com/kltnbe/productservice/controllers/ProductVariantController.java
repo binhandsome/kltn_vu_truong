@@ -48,17 +48,13 @@ public class ProductVariantController {
     @GetMapping("/available-stock")
     public ResponseEntity<Integer> getAvailableStock(
             @RequestParam Long productId,
-            @RequestParam Long sizeId,
-            @RequestParam Long colorId) {
+            @RequestParam(required = false) Long sizeId,
+            @RequestParam(required = false) Long colorId) {
         Optional<ProductVariant> variantOpt = productVariantService
                 .findByProductVariant(productId, sizeId, colorId);
 
-        if (variantOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        int quantityInStock = variantOpt.get().getQuantityInStock();
-        return ResponseEntity.ok(quantityInStock);
+        return variantOpt.map(variant -> ResponseEntity.ok(variant.getQuantityInStock()))
+                .orElseGet(() -> ResponseEntity.ok(0)); // Trả 0 nếu không tìm thấy
     }
     @PutMapping("/variants/{variantId}")
     public ResponseEntity<?> updateVariant(
