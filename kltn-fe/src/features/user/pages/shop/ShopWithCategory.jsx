@@ -469,30 +469,38 @@ const [selectedSizeId, setSelectedSizeId] = useState(null);
       triggerToast("❌ Không lấy được chi tiết sản phẩm", "error");
     }
   };
-// ✅ Xử lý tồn kho sản phẩm khi chọn size & color
-// ✅ Xu lý tồn kho y như trang Cart
+// ✅ Xử lý tồn kho sản phẩm cho mọi trường hợp (có/không size, color)
 useEffect(() => {
-  if (!selectedProduct || !selectedSizeId || !selectedColorId) {
-    setAvailableStock(selectedProduct?.stockQuantity || 0);
+  if (!selectedProduct) {
+    setAvailableStock(0); // Không có sản phẩm, đặt tồn kho = 0
     return;
   }
 
   const fetchAvailableStock = async () => {
     try {
+      // Xây dựng query string động dựa trên selectedSizeId và selectedColorId
+      const queryParams = new URLSearchParams({
+        productId: selectedProduct.productId,
+        ...(selectedSizeId && { sizeId: selectedSizeId }), // Chỉ thêm nếu có sizeId
+        ...(selectedColorId && { colorId: selectedColorId }), // Chỉ thêm nếu có colorId
+      });
+
+      // Gọi API với các tham số tùy chọn
       const res = await fetch(
-        `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}&sizeId=${selectedSizeId}&colorId=${selectedColorId}`
+        `http://localhost:8083/api/product-variants/available-stock?${queryParams.toString()}`
       );
       if (!res.ok) throw new Error("Lỗi gọi API tồn kho");
       const quantity = await res.json();
       setAvailableStock(quantity);
-      setQuantity(q => Math.min(q, quantity));
+      setQuantity(q => Math.min(q, quantity)); // Đảm bảo quantity không vượt quá tồn kho
     } catch (err) {
       console.error("❌ Lỗi lấy tồn kho biến thể:", err);
       setAvailableStock(null);
     }
   };
+
   fetchAvailableStock();
-}, [selectedProduct, selectedSizeId, selectedColorId]); // ✅ đúng key
+}, [selectedProduct, selectedSizeId, selectedColorId]); // ✅ Giữ dependency array
   return (
     <>
       <div className="page-wraper">

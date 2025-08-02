@@ -3,7 +3,6 @@ package com.kltnbe.userservice.dtos.res;
 import com.kltnbe.userservice.entities.Address;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
 public class AddressInfo {
     private Long addressId;
     private String recipientName;
@@ -23,6 +22,16 @@ public class AddressInfo {
         this.recipientEmail = recipientEmail;
         this.deliveryAddress = deliveryAddress;
         this.addressDetails = addressDetails;
+    }
+    public AddressInfo(Long addressId, String recipientName, String recipientPhone, String recipientEmail,
+                       String deliveryAddress, String addressDetails, int isPrimaryAddress) {
+        this.addressId = addressId;
+        this.recipientName = recipientName;
+        this.recipientPhone = recipientPhone;
+        this.recipientEmail = recipientEmail;
+        this.deliveryAddress = deliveryAddress;
+        this.addressDetails = addressDetails;
+        this.isPrimaryAddress = isPrimaryAddress;
     }
 
     public int getIsPrimaryAddress() {
