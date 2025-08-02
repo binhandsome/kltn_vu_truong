@@ -46,29 +46,61 @@ public class OrderController {
     }
     @PutMapping("/updateMethodOrder")
     public ResponseEntity<String> updateMethodOrder(
-            @RequestParam Long orderId,
+            @RequestParam("id") Long id,  // 👈 đổi thành "id" trung lập
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam String method,
             @RequestBody(required = false) DeliveryAddressDTO deliveryAddressDTO) {
+
         String result;
-        log.debug("authId: {}", userDetails.getAuthId());
-        log.debug("order userId: {}", orderId);
 
         switch (method.toLowerCase()) {
             case "cancel":
-                result = orderService.cancelOrder(orderId, userDetails.getAuthId());
+                // id ở đây là masterOrderId
+                result = orderService.cancelOrder(id, userDetails.getAuthId());
                 break;
+
             case "updateaddress":
+                // id ở đây là orderId
                 if (deliveryAddressDTO == null) {
                     return ResponseEntity.badRequest().body("Thiếu thông tin địa chỉ để cập nhật");
                 }
-                result = orderService.updateAddress(orderId, userDetails.getAuthId(), deliveryAddressDTO);
+                result = orderService.updateAddress(id, userDetails.getAuthId(), deliveryAddressDTO);
                 break;
+
             default:
                 return ResponseEntity.badRequest().body("Phương thức cập nhật không hợp lệ: " + method);
         }
+
         return ResponseEntity.ok(result);
     }
+
+
+
+//     @PutMapping("/updateMethodOrder")
+//    public ResponseEntity<String> updateMethodOrder(
+//            @RequestParam Long orderId,
+//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @RequestParam String method,
+//            @RequestBody(required = false) DeliveryAddressDTO deliveryAddressDTO) {
+//        String result;
+//        log.debug("authId: {}", userDetails.getAuthId());
+//        log.debug("order userId: {}", orderId);
+//
+//        switch (method.toLowerCase()) {
+//            case "cancel":
+//                result = orderService.cancelOrder(orderId, userDetails.getAuthId());
+//                break;
+//            case "updateaddress":
+//                if (deliveryAddressDTO == null) {
+//                    return ResponseEntity.badRequest().body("Thiếu thông tin địa chỉ để cập nhật");
+//                }
+//                result = orderService.updateAddress(orderId, userDetails.getAuthId(), deliveryAddressDTO);
+//                break;
+//            default:
+//                return ResponseEntity.badRequest().body("Phương thức cập nhật không hợp lệ: " + method);
+//        }
+//        return ResponseEntity.ok(result);
+//    }
 ////    @GetMapping("/user")
 ////    public Page<OrderResponse> getOrdersByAccessToken(
 ////            @RequestHeader("Authorization") String token,

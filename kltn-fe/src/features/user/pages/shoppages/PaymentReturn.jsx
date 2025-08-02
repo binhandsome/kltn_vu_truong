@@ -1,21 +1,31 @@
-// src/pages/PaymentReturn.jsx
+// src/pages/payment/PaymentReturn.js
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import queryString from "query-string";
- const PaymentReturn = () => {
-  const location = useLocation();   const navigate = useNavigate();
- const [paymentStatus, setPaymentStatus] = useState(null);
- const [message, setMessage] = useState("Đang xác minh giao dịch...");
+import axios from "axios";
+
+const PaymentReturn = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [message, setMessage] = useState("Đang xác minh giao dịch...");
+  const [loading, setLoading] = useState(false);
+
   const parsed = queryString.parse(location.search);
-  const orderId = parsed.orderId;
+  const rawMasterOrderId = parsed.masterOrderId || localStorage.getItem("pendingOrderId");
+  const masterOrderId = rawMasterOrderId ? Number(rawMasterOrderId) : null;
 
   useEffect(() => {
-    const parsed = queryString.parse(location.search);
+    const maybeId = parsed.masterOrderId;
+    if (maybeId) {
+      localStorage.setItem("pendingOrderId", maybeId);
+    }
+
     const responseCode = parsed.vnp_ResponseCode;
-    const success = parsed.success; // ✅ đúng key từ URL
+    const success = parsed.success;
 
     const isVnpSuccess = responseCode === "00";
-    const isPaypalSuccess = success === "true"; // ✅ check key "success"
+    const isPaypalSuccess = success === "true";
 
     if (isVnpSuccess || isPaypalSuccess) {
       setPaymentStatus("success");
@@ -24,25 +34,62 @@ import queryString from "query-string";
       setPaymentStatus("fail");
       setMessage("❌ Thanh toán thất bại hoặc bị huỷ.");
     }
-  }, [location.search]);
+  }, [location.search, parsed]);
+
+  const handleView = async () => {
+    if (!masterOrderId) {
+      navigate("/user/myaccount/orders");
+      return;
+    }
+
+    const accessToken = localStorage.getItem("accessToken");
+    setLoading(true);
+
+    try {
+      const response = await axios.get("http://localhost:8086/api/orders/getOrderByIdUser", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const listOrders = response.data;
+      const foundOrder = listOrders.find(
+        (order) => order.masterOrderId === masterOrderId
+      );
+
+      if (foundOrder) {
+        localStorage.removeItem("pendingOrderId");
+        navigate("/user/myaccount/ordersdetails", { state: { order: foundOrder } });
+      } else {
+        alert("❌ Không tìm thấy đơn hàng.");
+        navigate("/user/myaccount/orders");
+      }
+    } catch (error) {
+      console.error("❌ Lỗi khi lấy danh sách đơn hàng:", error.response?.data || error.message);
+      navigate("/user/myaccount/orders");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="container py-5 text-center">
       <h2 className={paymentStatus === "success" ? "text-success" : "text-danger"}>
         {message}
       </h2>
-      {orderId ? (
-        <button className="btn btn-primary mt-3" onClick={() => navigate(`/user/myaccount/orders/${orderId}`)}>
-          Xem chi tiết đơn hàng
-        </button>
-      ) : (
-        <button className="btn btn-secondary mt-3" onClick={() => navigate("/user/myaccount/orders")}>
-          Quay lại xem danh sách đơn hàng
-        </button>
-      )}
+      <button
+        className={`btn mt-3 ${masterOrderId ? "btn-primary" : "btn-secondary"}`}
+        onClick={handleView}
+        disabled={loading}
+      >
+        {loading
+          ? "Đang tải..."
+          : masterOrderId
+          ? "Xem chi tiết đơn hàng"
+          : "Quay lại xem danh sách đơn hàng"}
+      </button>
     </div>
   );
 };
-
 
 export default PaymentReturn;

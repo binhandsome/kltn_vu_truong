@@ -1,5 +1,5 @@
 // src/pages/common/HomePage.js
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Helmet } from 'react-helmet'; 
 import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
@@ -20,11 +20,7 @@ function Checkout() {
   const [showModal, setShowModal] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [country, setCountry] = useState('');
-  const [district, setDistrict] = useState('');
   const [ward, setWard] = useState('');
-  const [address, setAddress] = useState('');
   const [street, setStreet] = useState('');
   const [optionalStreet, setOptionalStreet] = useState('');
   const [phone, setPhone] = useState('');
@@ -42,11 +38,28 @@ function Checkout() {
   const [editColor, setEditColor] = useState('');
   const [editQuantity, setEditQuantity] = useState(1);
   const [availableStock, setAvailableStock] = useState(null);
-  const [prevQuantity, setPrevQuantity] = useState(1);
   const [stockStatus, setStockStatus] = useState('in_stock');
   const [shopSubtotals, setShopSubtotals] = useState([]);
   const [selectedDiscounts, setSelectedDiscounts] = useState({});
   const [totalPages, setTotalPages] = useState([]);
+  const [isEditAddressMode, setIsEditAddressMode] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  // ref giữ giá trị pending để áp dụng sau khi districts/wards load xong
+  const pendingDistrictRef = useRef('');
+  const pendingWardRef = useRef('');
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState('success');
+  const showToastMessage = (msg, type = 'success') => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setToastType(type);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 1000);
+  };
+  
 
 const formatDateTime = (dateTimeString) => {
   if (!dateTimeString) return "N/A";
@@ -387,7 +400,8 @@ const groupedByShop = listCartById?.items?.reduce((acc, item) => {
       }
   
       const response = await axios.post(endpoint, payload);
-      const { message, paymentUrl, orderId } = response.data;
+      const { message, paymentUrl, masterOrderId } = response.data;
+      const effectiveId = masterOrderId;
   
       if ((selectBank === "BANK" || selectBank === "PAYPAL") && paymentUrl) {
         window.location.href = paymentUrl;
@@ -404,7 +418,10 @@ const groupedByShop = listCartById?.items?.reduce((acc, item) => {
   
       await getCartProductById();
       setListCartById({ items: [], totalPrice: 0 });      
-      navigate(`/user/shoppages/paymentReturn?success=true&orderId=${orderId}`);
+      if (effectiveId) {
+        localStorage.setItem("pendingOrderId", effectiveId);
+      }
+      navigate(`/user/shoppages/paymentReturn?success=true&masterOrderId=${effectiveId}`);
     } catch (error) {
       console.error("❌ Lỗi khi đặt hàng:", error);
       alert(error.response?.data?.error || error.message);
@@ -471,7 +488,7 @@ const handleShippingChange = (e) => {
     setTotalPrice(basePrice + parseFloat(method.cost));
   }
 };
-const [provinces, setProvinces] = useState([]);
+  const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
@@ -553,6 +570,23 @@ useEffect(() => {
 
   fetchProvinces();
 }, []);
+const openAddAddressModal = () => {
+  setFirstName('');
+  setLastName('');
+  setPhone('');
+  setEmail('');
+  setSelectedProvince('');
+  setSelectedDistrict('');
+  setDistricts([]);
+  setWard('');
+  setWards([]);
+  setStreet('');
+  setOptionalStreet('');
+  setSelectOption('');
+  setIsEditMode(false); // ❗️Quan trọng
+  setEditingAddressId(null);
+  setShowModal(true);
+};
 const sendInfoAddress = async () => {
   try {
     const accessToken = localStorage.getItem("accessToken");
@@ -594,6 +628,185 @@ const sendInfoAddress = async () => {
     alert("Không thể thêm địa chỉ");
   }
 };
+const sendEditAddress = async () => {
+  if (!isEditMode || !editingAddressId) return;
+
+  const confirmed = window.confirm("Bạn có chắc muốn sửa địa chỉ này?");
+  if (!confirmed) return;
+
+  // Kiểm tra dữ liệu đầu vào
+  if (!firstName.trim() || !lastName.trim()) {
+    showToastMessage("Vui lòng nhập họ và tên", "error");
+    return;
+  }
+  if (!phone.trim()) {
+    showToastMessage("Vui lòng nhập số điện thoại", "error");
+    return;
+  }
+  if (!email.trim()) {
+    showToastMessage("Vui lòng nhập email", "error");
+    return;
+  }
+  if (!selectedProvince || !selectedDistrict || !ward) {
+    showToastMessage("Vui lòng chọn đầy đủ tỉnh, huyện, xã", "error");
+    return;
+  }
+  if (!street.trim()) {
+    showToastMessage("Vui lòng nhập địa chỉ cụ thể", "error");
+    return;
+  }
+
+  try {
+    const accessToken = localStorage.getItem("accessToken") || '';
+
+    const payload = {
+      id: editingAddressId,
+      recipientName: `${firstName.trim()} ${lastName.trim()}`,
+      recipientPhone: phone.trim(),
+      recipientEmail: email.trim(),
+      addressDetails: `${selectedProvince}, ${selectedDistrict}, ${ward}`,
+      deliveryAddress: optionalStreet?.trim()
+        ? `${street.trim()} / ${optionalStreet.trim()}`
+        : street.trim(),
+      isPrimaryAddress: selectOption === 1,
+    };
+
+    const config = accessToken
+      ? { headers: { Authorization: `Bearer ${accessToken}` } }
+      : {};
+
+    await axios.put("http://localhost:8081/api/user/updateAddress", payload, config);
+
+    showToastMessage("Sửa địa chỉ thành công!", "success");
+
+    // Reset và refetch
+    setShowModal(false);
+    setIsEditMode(false);
+    setEditingAddressId(null);
+    await getAddressWithUser();
+  } catch (err) {
+    console.error("Lỗi khi sửa địa chỉ:", err);
+    const msg =
+      err?.response?.data?.message || err?.message || "Lỗi không xác định";
+    showToastMessage(`Không thể sửa địa chỉ: ${msg}`, "error");
+  }
+};
+
+const openEditAddressModal = (address) => {
+  if (!address) return;
+
+  console.log("=== Đang mở modal sửa địa chỉ ===");
+  console.log("Raw address:", address);
+  
+
+  // 1. Tách họ tên
+  const fullName = address.recipientName || '';
+  const [first, ...rest] = fullName.trim().split(' ');
+  setFirstName(first || '');
+  setLastName(rest.join(' ') || '');
+
+  // 2. Gán SĐT & email
+  setPhone(address.recipientPhone || '');
+  setEmail(address.recipientEmail || '');
+
+  // 3. Tách tỉnh/huyện/xã và bỏ prefix
+  const removePrefix = (str) =>
+    str.replace(/^Tỉnh\s+|^Thành phố\s+|^Huyện\s+|^Quận\s+|^Thị xã\s+|^Xã\s+|^Phường\s+|^Thị trấn\s+/i, '').trim();
+
+  const addressDetailsRaw = address.addressDetails || '';
+  const rawParts = addressDetailsRaw.split(',').map((p) => p.trim());
+
+  const provinceParsed = rawParts[0] ? removePrefix(rawParts[0]) : '';
+  const districtParsed = rawParts[1] ? removePrefix(rawParts[1]) : '';
+  const wardParsed = rawParts[2] ? removePrefix(rawParts[2]) : '';
+
+  console.log("=> Parsed Address Details:", {
+    raw: addressDetailsRaw,
+    provinceParsed,
+    districtParsed,
+    wardParsed,
+  });
+
+  // ✅ Tìm tỉnh, lưu district/ward pending
+  const matchedProvince = provinces.find(
+    (p) => removePrefix(p.name).toLowerCase() === provinceParsed.toLowerCase()
+  );
+
+  if (matchedProvince) {
+    setSelectedProvince(matchedProvince.name);
+    pendingDistrictRef.current = districtParsed;
+    pendingWardRef.current = wardParsed;
+  } else {
+    setSelectedProvince('');
+    pendingDistrictRef.current = '';
+    pendingWardRef.current = '';
+  }
+
+  // 4. Delivery address
+  const cleanedAddress = address.deliveryAddress || '';
+  const parts = cleanedAddress
+    .split(' / ')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  setStreet(parts[0] || '');
+  setOptionalStreet(parts.slice(1).join(' / ') || '');
+
+  // 5. Khác
+  setSelectOption(address.isPrimaryAddress ? 1 : 0);
+  setIsEditMode(true);
+  setEditingAddressId(address.addressId);
+  setShowModal(true);
+};
+const removePrefix = (str) =>
+  str.replace(/^Tỉnh\s+|^Thành phố\s+|^Huyện\s+|^Quận\s+|^Thị xã\s+|^Xã\s+|^Phường\s+|^Thị trấn\s+/i, '').trim();
+
+// Khi chọn tỉnh => load huyện
+useEffect(() => {
+  if (selectedProvince) {
+    const found = provinces.find((p) => p.name === selectedProvince);
+    setDistricts(found?.districts || []);
+    setSelectedDistrict('');
+    setWards([]);
+  }
+}, [selectedProvince, provinces]);
+
+// Khi load xong districts, nếu đang edit thì apply pendingDistrict
+useEffect(() => {
+  if (isEditMode && districts.length > 0 && pendingDistrictRef.current) {
+    const target = pendingDistrictRef.current;
+    const found = districts.find(
+      (d) => removePrefix(d.name).toLowerCase() === removePrefix(target).toLowerCase()
+    );
+    if (found) {
+      setSelectedDistrict(found.name);
+      pendingDistrictRef.current = '';
+    }
+  }
+}, [districts, isEditMode]);
+
+// Khi chọn huyện => load xã
+useEffect(() => {
+  if (selectedDistrict) {
+    const found = districts.find((d) => d.name === selectedDistrict);
+    setWards(found?.wards || []);
+  }
+}, [selectedDistrict, districts]);
+
+// Khi load xong wards, nếu đang edit thì apply pendingWard
+useEffect(() => {
+  if (isEditMode && wards.length > 0 && pendingWardRef.current) {
+    const target = pendingWardRef.current;
+    const found = wards.find(
+      (w) => removePrefix(w.name).toLowerCase() === removePrefix(target).toLowerCase()
+    );
+    if (found) {
+      setWard(found.name);
+      pendingWardRef.current = '';
+    }
+  }
+}, [wards, isEditMode]);
+
 const getAddressWithUser = async () => {
   const token = localStorage.getItem("accessToken");
   try {
@@ -985,10 +1198,22 @@ useEffect(() => {
           </div>
 
           <div className="account-address-bottom">
-            <a href="#" className="d-block me-3">
-              <i className="fa-solid fa-pen me-2" />
-              Sửa
-            </a>
+          <a
+  href="#"
+  className="d-block me-3"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm("Bạn có chắc muốn sửa địa chỉ này?")) {
+      openEditAddressModal(address);
+    } else {
+      showToastMessage("Đã hủy sửa địa chỉ", "info");
+    }
+  }}
+>
+  <i className="fa-solid fa-pen me-2" />
+  Sửa
+</a>
             <button
               className="d-block me-3 btn btn-link p-0"
               onClick={(e) => {
@@ -1030,10 +1255,22 @@ useEffect(() => {
           </div>
 
           <div className="account-address-bottom">
-            <a href="#" className="d-block me-3">
-              <i className="fa-solid fa-pen me-2" />
-              Sửa
-            </a>
+          <a
+  href="#"
+  className="d-block me-3"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm("Bạn có chắc muốn sửa địa chỉ này?")) {
+      openEditAddressModal(address);
+    } else {
+      showToastMessage("Đã hủy sửa địa chỉ", "info");
+    }
+  }}
+>
+  <i className="fa-solid fa-pen me-2" />
+  Sửa
+</a>
             <button
               className="d-block me-3 btn btn-link p-0"
               onClick={(e) => {
@@ -1068,7 +1305,7 @@ useEffect(() => {
                 Thêm địa chỉ mới
                   {/* Add New Address */}
                 </h4>
-                <button className="btn btn-primary px-5"         onClick={() => setShowModal(true)}
+                <button className="btn btn-primary px-5" onClick={openAddAddressModal}
 >Thêm</button>
               </div>
             </div></>
@@ -1092,7 +1329,7 @@ useEffect(() => {
                 <label className="label-title">Tỉnh/ Thành Phố *</label>
                 <select className="default-select form-select w-100" value={selectedProvince || ""} onChange={(e) => setSelectedProvince(e.target.value)}>
 
-                  <option selected="" value="">Lựa chọn</option>
+                <option value="">Lựa chọn</option>
                   {provinces.map((province) => (
                   <option key={province.code} value={province.name}>{province.name}</option>
                   ))}
@@ -1211,7 +1448,7 @@ useEffect(() => {
 <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Thêm địa chỉ</h5>
+              <h5 className="modal-title">{isEditMode ? "Sửa địa chỉ" : "Thêm địa chỉ"}</h5>
                 <button
                   type="button"
                   className="close"
@@ -1238,45 +1475,60 @@ useEffect(() => {
           <div className="col-md-12">
               <div className="m-b25">
                 <label className="label-title">Tỉnh/ Thành Phố</label>
-                <select className="default-select form-select w-100" value={selectedProvince || ""} onChange={(e)  => {
-                 setSelectedProvince(e.target.value);               
-                }}>
-                  <option selected="" value="">Lựa chọn</option>
-                  {provinces.map((province) => (
-                  <option key={province.code} value={province.name}>{province.name}</option>
-                  ))}  
-                </select>
+                <select
+  className="default-select form-select w-100"
+  value={selectedProvince || ""}
+  onChange={(e) => setSelectedProvince(e.target.value)}
+>
+  <option value="">Lựa chọn</option>
+  {provinces.map((province) => (
+    <option key={province.code} value={province.name}>
+      {province.name}
+    </option>
+  ))}
+</select>
+
               </div>
             </div>
             {districts.length > 0 && (
   <div className="col-md-12">
-              <div className="m-b25">
-                <label className="label-title">Huyện/ Quận *</label>
-                <select className="default-select form-select w-100" value={selectedDistrict || ""} onChange={(e) => setSelectedDistrict(e.target.value)}> 
-                  <option selected="">Lựa chọn</option>
-                  {districts.map((district) => (
-                  <option key={district.code} value={district.name}>{district.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            )}  
-                {wards.length > 0 && (
-    <div className="col-md-12">
-              <div className="m-b25">
-                <label className="label-title">Xã/ Phường *</label>
-                <select className="default-select form-select w-100" value={ward} onChange={(e) => {
-setWard(e.target.value);
-console.log(ward)}
-                } >
-                  <option selected="">Lựa chọn</option>
-                  {wards.map((ward) => (
-                  <option key={ward.code} value={ward.name}> {ward.name}</option>
-                  ))}     
-                </select>
-              </div>
-            </div>
-            )} 
+    <div className="m-b25">
+      <label className="label-title">Huyện/ Quận *</label>
+      <select
+        className="default-select form-select w-100"
+        value={selectedDistrict || ""}
+        onChange={(e) => setSelectedDistrict(e.target.value)}
+      >
+        <option value="">Lựa chọn</option>
+        {districts.map((district) => (
+          <option key={district.code} value={district.name}>
+            {district.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+)}
+{wards.length > 0 && (
+  <div className="col-md-12">
+    <div className="m-b25">
+      <label className="label-title">Xã/ Phường *</label>
+      <select
+        className="default-select form-select w-100"
+        value={ward || ""}
+        onChange={(e) => setWard(e.target.value)}
+      >
+        <option value="">Lựa chọn</option>
+        {wards.map((ward) => (
+          <option key={ward.code} value={ward.name}>
+            {ward.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+)}
+
                    <div className="col-md-12">
               <div className="form-group m-b25">
                 <label className="label-title">Địa chỉ cụ thể *</label>
@@ -1313,7 +1565,8 @@ console.log(ward)}
             <div className="col-md-12">
               <div className="m-b25">
                 <label className="label-title">Thiết lập địa chỉ *</label>
-                <select className=" form-select w-100" value={selectOption} onChange={(e) => setSelectOption(e.target.value)}  
+                <select className=" form-select w-100" value={selectOption} onChange={(e) => setSelectOption(Number(e.target.value))}
+ 
                 >
                   <option> Lựa chọn </option>
                   <option value={1}> Mặc Định </option>
@@ -1330,9 +1583,19 @@ console.log(ward)}
                 >
                   Close
                 </button>
-                <button type="button" className="btn btn-primary" onClick={sendInfoAddress}>
-                  Lưu thay đổi
-                </button>
+                <button
+  type="button"
+  className="btn btn-primary"
+  onClick={() => {
+    if (isEditMode) {
+      sendEditAddress(editingAddressId);
+    } else {
+      sendInfoAddress();
+    }
+  }}
+>
+  {isEditMode ? "Lưu thay đổi" : "Thêm địa chỉ"}
+</button>
               </div>
             </div>
           </div>
@@ -1812,6 +2075,25 @@ trải nghiệm của bạn trên toàn bộ trang web này và cho các mục �
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
         <QuickViewModal />
+        {showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor:
+      toastType === 'success' ? '#4CAF50' : // Xanh
+      toastType === 'error' ? '#f44336' : // Đỏ
+      '#2196F3', // Xanh dương cho info
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    transition: 'opacity 0.5s ease-in-out'
+  }}>
+    {toastMessage}
+  </div>
+)}
       </div>
     </>
   );

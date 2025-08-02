@@ -8,6 +8,7 @@ import { Button, Modal, Box, Typography } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
+
 function Orders() {
 	const [hasBgClass, setHasBgClass] = useState(true);
 	const [orders, setOrders] = useState([]);
@@ -34,6 +35,14 @@ function Orders() {
 	const [selectedOrder, setSelectedOrder] = useState(null); // Lưu order được chọn
 	const [recipientName, setRecipientName] = useState('');
 	const [id, setId] = useState();
+	const [toastMessage, setToastMessage] = useState('');
+const [showToast, setShowToast] = useState(false);
+
+const showToastNow = (msg) => {
+  setToastMessage(msg);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 1500); // tự ẩn sau 1.5s
+};
 	const style = {
 		position: 'absolute',
 		top: '50%',
@@ -180,7 +189,7 @@ const updateAddress = async (orderId) => {
       payload, // ✅ Body JSON
       {
         params: {
-          orderId: orderId, // ✅ Chỉ param đơn giản
+			id: orderId, // ✅ Chỉ param đơn giản
           method: 'updateaddress',
         },
         headers: {
@@ -189,7 +198,8 @@ const updateAddress = async (orderId) => {
         },
       }
     );
-    console.log("✅ Cập nhật địa chỉ thành công:", response.data);
+    showToastNow("✅ Đã cập nhật địa chỉ thành công");
+    setOpen(false);
   } catch (error) {
     console.error("❌ Lỗi khi cập nhật địa chỉ:", error.response?.data || error.message);
   }
@@ -395,7 +405,7 @@ const updateAddress = async (orderId) => {
 										</div>
 
 									</div>
-<a
+									<a
   onClick={() => {
     const isEditable = selectedOrder?.listOfOrders?.every(
       (o) => o.status === "pending" || o.status === "packed"
@@ -404,19 +414,34 @@ const updateAddress = async (orderId) => {
       alert("❌ Chỉ được đổi địa chỉ khi tất cả đơn trong shop đều đang Pending hoặc Packed!");
       return;
     }
-    updateAddress(selectedOrder?.masterOrderId); // gọi API sửa địa chỉ
+
+    // ✅ Xác nhận trước khi sửa
+    const confirmEdit = window.confirm("Bạn có chắc muốn sửa địa chỉ không?");
+    if (!confirmEdit) return;
+
+    // ✅ Gọi hàm cập nhật và hiển thị toast
+    updateAddress(selectedOrder?.masterOrderId)
+      .then(() => {
+        setToastMessage("✅ Đã cập nhật địa chỉ thành công");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+        handleClose(); // đóng modal nếu cần
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi khi cập nhật địa chỉ:", err);
+        setToastMessage("❌ Cập nhật địa chỉ thất bại");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      });
   }}
   className={`btn btn-secondary me-xl-3 me-2 m-b15 btnhover20 ${
     selectedOrder?.listOfOrders?.every((o) => o.status === "pending" || o.status === "packed") 
       ? "" 
-      : "disabled" // disable nếu không đủ điều kiện
+      : "disabled"
   }`}
 >
   Sửa Địa Chỉ
 </a>
-
-
-
 								</Typography>
 
 							</Box>
@@ -601,6 +626,22 @@ const updateAddress = async (orderId) => {
 
 				<ScrollTopButton />
 				<QuickViewModal />
+				{showToast && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 9999,
+          padding: '12px 20px',
+          backgroundColor: '#28a745',
+          color: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+          transition: 'opacity 0.5s ease-in-out'
+        }}>
+          {toastMessage}
+        </div>
+      )}
 			</div>
 		</>
 	);

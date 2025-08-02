@@ -432,18 +432,32 @@ const handleInputChangeSearch = (e) => {
   useEffect(() => {
     if (!selectedProduct) return;
   
-    // Nếu chưa chọn cả size hoặc color → hiển thị tồn kho tổng từ bảng product
-    if (!selectedSize || !selectedColor) {
+    // Xác định xem sản phẩm có yêu cầu chọn size/color hay không
+    const requiresSize = selectedProduct.sizes?.length > 0; // Giả sử selectedProduct.sizes là mảng
+    const requiresColor = selectedProduct.colors?.length > 0; // Giả sử selectedProduct.colors là mảng
+  
+    // Kiểm tra xem đã chọn đầy đủ chưa
+    const isFullySelected = (!requiresSize || selectedSize) && (!requiresColor || selectedColor);
+  
+    if (!isFullySelected) {
+      // Chưa chọn đầy đủ → hiển thị tồn kho tổng từ bảng product
       setAvailableStock(selectedProduct.stockQuantity || 0);
       return;
     }
   
-    // Nếu đã chọn đầy đủ → gọi API để lấy tồn kho variant
+    // Đã chọn đầy đủ → gọi API để lấy tồn kho variant
     const fetchAvailableStock = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}&sizeId=${selectedSize.sizeId}&colorId=${selectedColor.colorId}`
-        );
+        // Xây dựng URL động dựa trên những gì đã chọn
+        let url = `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}`;
+        if (selectedSize) {
+          url += `&sizeId=${selectedSize.sizeId}`;
+        }
+        if (selectedColor) {
+          url += `&colorId=${selectedColor.colorId}`;
+        }
+  
+        const res = await fetch(url);
   
         if (!res.ok) throw new Error("Failed to fetch variant stock");
   
