@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.dtos.ColorDTO;
+import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.ProductResponse;
 import com.kltnbe.productservice.entities.*;
@@ -569,5 +570,44 @@ validateShopOwnership(product.getStoreId(), authId);
 
         return dto;
     }
+    @Override
+    public Long getTotalProductCount() {
+        return productRepository.count();
+    }
+
+    @Override
+    public List<ProductStatsDTO> getProductCountByStatus() {
+        List<Object[]> rawResult = productRepository.countProductsByProductStatus();
+        return rawResult.stream()
+                .map(obj -> new ProductStatsDTO(String.valueOf(obj[0]), (Long) obj[1]))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProductStatsDTO> getProductCountByType() {
+        List<Object[]> rawResult = productRepository.countProductsByProductType();
+        return rawResult.stream()
+                .map(obj -> new ProductStatsDTO(String.valueOf(obj[0]), (Long) obj[1]))
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<ProductStatsDTO> getProductCountByStore() {
+        List<Object[]> rawResult = productRepository.countProductsByStoreId();
+        return rawResult.stream()
+                .map(obj -> new ProductStatsDTO("Store ID " + obj[0], (Long) obj[1]))
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<ProductStatsDTO> getProductCountByCreatedMonth() {
+        List<Object[]> rawResult = productRepository.countProductsByCreatedMonth();
+        return rawResult.stream()
+                .map(obj -> {
+                    int monthNumber = ((Number) obj[0]).intValue();
+                    String monthLabel = "Tháng " + monthNumber;
+                    return new ProductStatsDTO(monthLabel, (Long) obj[1]);
+                })
+                .collect(Collectors.toList());
+    }
+
 
 }

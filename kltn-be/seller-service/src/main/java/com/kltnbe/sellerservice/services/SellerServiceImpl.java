@@ -801,6 +801,14 @@ public class SellerServiceImpl implements SellerService {
 
         return productServiceProxy.replyToReview(reviewId, reviewReq, authId); // ✅ truyền authId
     }
+    @Override
+    public ReviewResponse deleteReview(Long reviewId, Long authId) {
+        return productServiceProxy.deleteReview(reviewId, authId);
+    }
+    @Override
+    public ReviewResponse updateReplyToReview(Long reviewId, SellerReplyRequest request, Long sellerId) {
+        return productServiceProxy.updateSellerReply(reviewId, request, sellerId);
+    }
 
 }
 

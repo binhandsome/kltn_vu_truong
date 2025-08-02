@@ -8,7 +8,10 @@ const ProductReviewManagement = () => {
     const [reviews, setReviews] = useState([]);
     const [replyTexts, setReplyTexts] = useState({});
     const [loading, setLoading] = useState(false);
+    const [editingReplyId, setEditingReplyId] = useState(null);
+const [editReplyText, setEditReplyText] = useState("");
     const token = localStorage.getItem("accessToken");
+
   
     const fetchReviews = async () => {
       if (!asin) return;
@@ -71,6 +74,43 @@ const ProductReviewManagement = () => {
       alert("Không thể phản hồi. Kiểm tra quyền hoặc thử lại.");
     }
   };
+  const handleUpdateReply = async (reviewId) => {
+    if (!editReplyText.trim()) return alert("Nội dung không được để trống.");
+  
+    try {
+      await axios.put(
+        `http://localhost:8089/api/seller/reviews/${reviewId}/reply`,
+        {
+          productAsin: asin,
+          comment: editReplyText,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setEditingReplyId(null);
+      await fetchReviews();
+    } catch (err) {
+      console.error("Lỗi khi cập nhật phản hồi:", err);
+      alert("Không thể cập nhật phản hồi.");
+    }
+  };
+  
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xoá bình luận này?")) return;
+  
+    try {
+      await axios.delete(`http://localhost:8089/api/seller/reviews/${reviewId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      await fetchReviews();
+    } catch (err) {
+      console.error("Lỗi khi xoá bình luận:", err);
+      alert("Không thể xoá bình luận. Vui lòng thử lại.");
+    }
+  };
 
   return (
     <div className="main-content">
@@ -119,19 +159,28 @@ const ProductReviewManagement = () => {
                       }}
                     />
                     <div style={{ flex: 1 }}>
-                      <div className="d-flex justify-content-between">
-                        <div>
-                          <strong>{parent.username}</strong>{" "}
-                          <span className="text-warning">
-                            {Array.from({ length: parent.rating || 0 }, (_, i) => (
-                              <i key={i} className="fas fa-star"></i>
-                            ))}
-                          </span>
-                        </div>
-                        <div className="text-muted">
-                          {new Date(parent.createdAt).toLocaleString("vi-VN")}
-                        </div>
-                      </div>
+                    <div className="d-flex justify-content-between">
+  <div>
+    <strong>{parent.username}</strong>{" "}
+    <span className="text-warning">
+      {Array.from({ length: parent.rating || 0 }, (_, i) => (
+        <i key={i} className="fas fa-star"></i>
+      ))}
+    </span>
+  </div>
+  <div className="d-flex align-items-center gap-2">
+    <span className="text-muted">
+      {new Date(parent.createdAt).toLocaleString("vi-VN")}
+    </span>
+    <button
+      className="btn btn-sm btn-outline-danger"
+      onClick={() => handleDeleteReview(parent.reviewId)}
+    >
+      <i className="fas fa-trash"></i> Xoá
+    </button>
+  </div>
+</div>
+
                       <p className="mt-2">{parent.comment}</p>
 
                       {/* Seller reply if exists */}
@@ -165,9 +214,43 @@ const ProductReviewManagement = () => {
                                   Cửa hàng
                                 </span>
                               </div>
-                              <p className="mb-0">
-                                {parent.sellerReply.comment}
-                              </p>
+                              {editingReplyId === parent.sellerReply.reviewId ? (
+  <div>
+    <textarea
+      className="form-control mb-2"
+      rows={2}
+      value={editReplyText}
+      onChange={(e) => setEditReplyText(e.target.value)}
+    />
+    <div className="d-flex gap-2">
+      <button
+        className="btn btn-sm btn-success"
+        onClick={() => handleUpdateReply(parent.sellerReply.reviewId)}
+      >
+        💾 Lưu
+      </button>
+      <button
+        className="btn btn-sm btn-secondary"
+        onClick={() => setEditingReplyId(null)}
+      >
+        ✖ Huỷ
+      </button>
+    </div>
+  </div>
+) : (
+  <>
+    <p className="mb-1">{parent.sellerReply.comment}</p>
+    <button
+      className="btn btn-sm btn-light border"
+      onClick={() => {
+        setEditingReplyId(parent.sellerReply.reviewId);
+        setEditReplyText(parent.sellerReply.comment);
+      }}
+    >
+      ✏️ Sửa phản hồi
+    </button>
+  </>
+)}
                             </div>
                           </div>
                         </div>
