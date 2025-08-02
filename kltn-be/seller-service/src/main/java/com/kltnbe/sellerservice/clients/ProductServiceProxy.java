@@ -6,6 +6,7 @@ import com.kltnbe.sellerservice.dtos.ProductSizeDTO;
 import com.kltnbe.sellerservice.dtos.ProductVariantDTO;
 import com.kltnbe.sellerservice.dtos.SizeRequest;
 import com.kltnbe.sellerservice.dtos.req.ReviewRequest;
+import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -97,5 +98,14 @@ public interface ProductServiceProxy {
 
     @PostMapping("/api/reviews/{reviewId}/reply")
     ReviewResponse replyToReview(@PathVariable Long reviewId, @RequestBody ReviewRequest request, @RequestParam Long authId);
-
+    @DeleteMapping("/api/reviews/{reviewId}")
+    ReviewResponse deleteReview(
+            @PathVariable Long reviewId,
+            @RequestParam Long authId);
+    @PutMapping("/api/reviews/{replyId}/reply")
+    ReviewResponse updateSellerReply(
+            @PathVariable("replyId") Long replyId,
+            @RequestBody SellerReplyRequest request,
+            @RequestParam("authId") Long authId  // ✅ để bên product-service lấy sellerId từ param
+    );
 }

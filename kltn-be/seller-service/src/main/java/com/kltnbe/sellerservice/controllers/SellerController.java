@@ -3,6 +3,7 @@ package com.kltnbe.sellerservice.controllers;
 import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
 import com.kltnbe.sellerservice.dtos.*;
+import com.kltnbe.sellerservice.dtos.req.ReviewRequest;
 import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
 import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
@@ -361,6 +362,25 @@ public class SellerController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long authId = userDetails.getAuthId();
         ReviewResponse response = sellerService.replyToReview(reviewId, body, authId);
+        return ResponseEntity.ok(response);
+    }
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity<ReviewResponse> deleteReview(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long authId = userDetails.getAuthId();
+        ReviewResponse response = sellerService.deleteReview(reviewId, authId);
+        return ResponseEntity.ok(response);
+    }
+    @PutMapping("/reviews/{reviewId}/reply")
+    public ResponseEntity<ReviewResponse> updateReply(
+            @PathVariable Long reviewId,
+            @RequestBody SellerReplyRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long sellerId = userDetails.getAuthId();
+        ReviewResponse response = sellerService.updateReplyToReview(reviewId, request, sellerId);
         return ResponseEntity.ok(response);
     }
 

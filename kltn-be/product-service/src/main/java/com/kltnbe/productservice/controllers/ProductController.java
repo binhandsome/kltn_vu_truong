@@ -4,6 +4,7 @@ package com.kltnbe.productservice.controllers;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.clients.UploadServiceProxy;
 import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
+import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.CategoryResponse;
 import com.kltnbe.productservice.dtos.res.CategoryWithImage;
@@ -396,5 +397,28 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductById(idProduct));
     }
 
+    @GetMapping("/stats/total")
+    public ResponseEntity<Long> getTotalProductCount() {
+        return ResponseEntity.ok(productService.getTotalProductCount());
+    }
+
+    @GetMapping("/stats/by-status")
+    public ResponseEntity<List<ProductStatsDTO>> getCountByStatus() {
+        return ResponseEntity.ok(productService.getProductCountByStatus());
+    }
+
+    @GetMapping("/stats/by-type")
+    public ResponseEntity<List<ProductStatsDTO>> getCountByType() {
+        return ResponseEntity.ok(productService.getProductCountByType());
+    }
+    @GetMapping("/stats/by-store")
+    public List<ProductStatsDTO> getProductCountByStore() {
+        return productService.getProductCountByStore();
+    }
+
+    @GetMapping("/stats/by-created-month")
+    public List<ProductStatsDTO> getProductCountByCreatedMonth() {
+        return productService.getProductCountByCreatedMonth();
+    }
 
 }

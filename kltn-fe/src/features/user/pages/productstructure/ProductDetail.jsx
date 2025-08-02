@@ -24,6 +24,10 @@ function ProductDetail() {
 	const [selectedColor, setSelectedColor] = useState(null);
 	const [toastMessage, setToastMessage] = useState('');
 	const [showToast, setShowToast] = useState(false);
+	const [editingReviewId, setEditingReviewId] = useState(null);
+	const [editText, setEditText] = useState("");
+	const [token, setToken] = useState('');
+	const [editRating, setEditRating] = useState(0);
 	const originalPrice = products.productPrice || 0;
 	const discount = products.percentDiscount || 0;
 	const discountedPrice = originalPrice - (originalPrice * discount / 100);
@@ -60,30 +64,31 @@ function ProductDetail() {
 
 	// ✅ Gọi /me để lấy đúng userId và lưu localStorage (nếu cần)
 	useEffect(() => {
-		const token = localStorage.getItem('accessToken');
-		if (!token) return;
-
+		const accessToken = localStorage.getItem('accessToken');
+		if (!accessToken) return;
+	
+		setToken(accessToken); // ✅ Gán vào state
+	
 		axios.get('http://localhost:8081/api/auth/me', {
-			headers: { Authorization: `Bearer ${token}` }
+			headers: { Authorization: `Bearer ${accessToken}` }
 		})
-			.then(res => {
-				const data = res.data;
-				const userData = {
-					userId: data.userId || data.id,  // fallback nếu field khác
-					username: data.username,
-					avatar: data.profilePicture || ''
-				};
-				setUser(userData);
-
-				// Optional: lưu lại nếu cần dùng chỗ khác
-				localStorage.setItem('userId', userData.userId);
-				localStorage.setItem('username', userData.username);
-				localStorage.setItem('avatar', userData.avatar);
-			})
-			.catch(err => {
-				console.error("Không lấy được user từ /me:", err);
-				setUser(null);
-			});
+		.then(res => {
+			const data = res.data;
+			const userData = {
+				userId: data.userId || data.id,
+				username: data.username,
+				avatar: data.profilePicture || ''
+			};
+			setUser(userData);
+	
+			localStorage.setItem('userId', userData.userId);
+			localStorage.setItem('username', userData.username);
+			localStorage.setItem('avatar', userData.avatar);
+		})
+		.catch(err => {
+			console.error("Không lấy được user từ /me:", err);
+			setUser(null);
+		});
 	}, []);
 
 	const fetchReviews = async () => {
@@ -289,6 +294,67 @@ function ProductDetail() {
 			console.error("Lỗi khi gửi phản hồi:", err);
 		}
 	};
+	const handleDeleteReview = async (reviewId) => {
+		if (!window.confirm("Bạn chắc chắn muốn xoá bình luận này?")) return;
+	
+		if (!user?.userId || !token) {
+			alert("Vui lòng đăng nhập để xoá bình luận.");
+			return;
+		}
+	
+		try {
+			await axios.delete(`http://localhost:8083/api/reviews/${reviewId}/user`, {
+				params: { authId: user.userId },
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			setReviews((prev) =>
+				prev.filter((r) => r.reviewId !== reviewId && r.parentId !== reviewId)
+			);
+		} catch (err) {
+			console.error("Lỗi khi xoá bình luận:", err);
+			alert("Không thể xoá bình luận.");
+		}
+	};
+	const handleUpdateReview = async (reviewId) => {
+		if (!editText.trim()) {
+			alert("Nội dung không được để trống.");
+			return;
+		}
+	
+		if (!user?.userId || !token) {
+			alert("Vui lòng đăng nhập để cập nhật bình luận.");
+			return;
+		}
+	
+		try {
+			await axios.put(
+				`http://localhost:8083/api/reviews/${reviewId}`,
+				{
+					comment: editText,
+					rating: editRating || 1, // đảm bảo gửi số hợp lệ từ 1-5
+					productAsin: asin,
+					userId: user.userId, // ✅ Cần thiết cho backend xác thực
+				},
+				{
+					params: { authId: user.userId },
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
+	
+			setReviews((prev) =>
+				prev.map((r) =>
+					r.reviewId === reviewId
+						? { ...r, comment: editText, rating: editRating }
+						: r
+				)
+			);
+			setEditingReviewId(null);
+		} catch (err) {
+			console.error("Lỗi khi cập nhật bình luận:", err);
+			alert("Không thể cập nhật. Kiểm tra quyền hoặc thử lại.");
+		}
+	};
+	
 
 	// ✅ Parse colorAsin
 	const colorAsinArray = useMemo(() => {
@@ -351,8 +417,6 @@ function ProductDetail() {
 		const wow = new WOW.WOW();
 		wow.init();
 	}, []);
-
-
 
 	return (
 		<>
@@ -814,90 +878,148 @@ function ProductDetail() {
       <h4 className="comments-title mb-2">
         Bình luận ({reviews.filter((r) => !r.parentId).length})
       </h4>
-      <p className="dz-title-text">
+      <p className="text-muted mb-4">
         Chia sẻ cảm nhận thực tế của người dùng về sản phẩm.
       </p>
+
       <div id="comment">
-        <ol className="comment-list">
+        <ol className="comment-list list-unstyled">
           {reviews.filter((r) => !r.parentId).length === 0 && (
             <div className="text-muted mb-3">
               Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!
             </div>
           )}
-          {reviews
-            .filter((review) => !review.parentId)
-            .map((parent) => (
-              <li className="comment depth-1" key={parent.reviewId}>
-                <div className="comment-body">
-                  <div className="comment-author vcard">
-                    <img
-                      src={parent.avatar || "/assets/user/images/default-avatar.png"}
-                      alt="/"
-                      className="avatar"
-                    />
-                    <cite className="fn">{parent.username}</cite>
+
+          {reviews.filter((r) => !r.parentId).map((parent) => (
+            <li className="comment mb-4 border-bottom pb-3" key={parent.reviewId}>
+              <div className="d-flex align-items-start">
+                <img
+                  src={parent.avatar || "/assets/user/images/default-avatar.png"}
+                  alt="avatar"
+                  className="rounded-circle me-3"
+                  style={{ width: "45px", height: "45px", objectFit: "cover" }}
+                />
+                <div className="flex-grow-1">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <strong>{parent.username}</strong>
+                    <small className="text-muted">
+                      🕒 {new Date(parent.createdAt).toLocaleString("vi-VN")}
+                    </small>
+                  </div>
+                  <div className="text-warning mb-1">
+                    {Array.from({ length: parent.rating || 0 }, (_, i) => (
+                      <i key={i} className="fas fa-star" />
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <p className="mb-1">{parent.comment}</p>
+                    {user?.userId === parent.userId && (
+                      <div className="d-flex gap-1 ms-2">
+                        <button
+                          className="btn btn-sm btn-light border"
+                          title="Chỉnh sửa"
+                          onClick={() => {
+							setEditingReviewId(parent.reviewId);
+							setEditText(parent.comment);
+							setEditRating(parent.rating);
+						  }}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="btn btn-sm btn-light border text-danger"
+                          title="Xoá"
+                          onClick={() => handleDeleteReview(parent.reviewId)}
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="comment-content dz-page-text">
-                    <div className="text-warning mt-1">
-                      {Array.from({ length: parent.rating || 0 }, (_, i) => (
-                        <i key={i} className="fas fa-star" />
-                      ))}
+                  {editingReviewId === parent.reviewId && (
+  <div className="mt-2">
+    <textarea
+      className="form-control mb-2"
+      value={editText}
+      onChange={(e) => setEditText(e.target.value)}
+      rows={2}
+    />
+    
+    {/* ⭐ THÊM VÀO: sửa rating */}
+    <div className="d-flex align-items-center gap-2 mb-2">
+      <span className="text-secondary">Đánh giá:</span>
+      <div className="d-flex gap-1">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <i
+            key={value}
+            className={`fas fa-star ${editRating >= value ? 'text-warning' : 'text-muted'}`}
+            onClick={() => setEditRating(value)}
+            style={{ cursor: 'pointer' }}
+          />
+        ))}
+      </div>
+    </div>
+
+    <div className="d-flex gap-2">
+      <button
+        className="btn btn-sm btn-primary"
+        onClick={() => handleUpdateReview(parent.reviewId)}
+      >
+        💾 Lưu
+      </button>
+      <button
+        className="btn btn-sm btn-secondary"
+        onClick={() => setEditingReviewId(null)}
+      >
+        ✖ Hủy
+      </button>
+    </div>
+  </div>
+)}
+
+                </div>
+              </div>
+
+              {/* Seller reply nếu có */}
+              {parent.sellerReply && (
+                <div className="ms-5 mt-3">
+                  <div className="d-flex align-items-start">
+                    <img
+                      src={parent.sellerReply.avatar || "/assets/user/images/default-avatar.png"}
+                      alt="/"
+                      className="rounded-circle me-3"
+                      style={{ width: "35px", height: "35px", objectFit: "cover" }}
+                    />
+                    <div>
+                      <span className="badge bg-secondary mb-1">Cửa hàng</span>
+                      <div className="small text-muted">Phản hồi chính thức:</div>
+                      <p className="mb-0">{parent.sellerReply.comment}</p>
                     </div>
-                    <p>{parent.comment}</p>
                   </div>
                 </div>
-
-                {/* Seller reply nếu có */}
-                {parent.sellerReply && (
-                  <ol className="children">
-                    <li className="comment depth-2 seller-reply" key={parent.sellerReply.reviewId}>
-                      <div className="comment-body">
-                        <div className="comment-author vcard">
-                          <img
-                            src={parent.sellerReply.avatar || "/assets/user/images/default-avatar.png"}
-                            alt="/"
-                            className="avatar"
-                          />
-                          <cite className="fn">
-                            <span className="badge bg-secondary ms-1">Cửa hàng</span>
-                          </cite>
-                        </div>
-                        <div className="comment-content dz-page-text">
-                          <div className="small text-muted">Phản hồi chính thức từ cửa hàng</div>
-                          <p>{parent.sellerReply.comment}</p>
-                        </div>
-                      </div>
-                    </li>
-                  </ol>
-                )}
-              </li>
-            ))}
+              )}
+            </li>
+          ))}
         </ol>
       </div>
 
-      {/* Form đánh giá của user */}
-      <div className="default-form comment-respond style-1" id="respond">
-        <h4 className="comment-reply-title mb-2" id="reply-title">
-          Đánh giá sản phẩm
-        </h4>
-        <p className="dz-title-text">
-          Chia sẻ trải nghiệm của bạn về sản phẩm.
-        </p>
+      {/* Form đánh giá */}
+      <div className="default-form comment-respond style-1 mt-4" id="respond">
+        <h4 className="comment-reply-title mb-2">Đánh giá sản phẩm</h4>
+        <p className="text-muted mb-3">Chia sẻ trải nghiệm của bạn về sản phẩm.</p>
 
-        <div className="comment-form-rating d-flex">
-          <label className="pull-left m-r10 m-b20 text-secondary">
-            Đánh giá của bạn
-          </label>
+        <div className="comment-form-rating d-flex align-items-center mb-3">
+          <label className="me-2 text-secondary mb-0">Đánh giá của bạn:</label>
           <div className="rating-widget">
             <div className="rating-stars">
-              <ul id="stars">
+              <ul id="stars" className="list-inline mb-0">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <li
                     key={value}
-                    className={`star ${rating >= value ? 'selected' : ''}`}
+                    className={`list-inline-item star ${rating >= value ? "selected" : ""}`}
                     onClick={() => setRating(value)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                   >
                     <i className="fas fa-star fa-fw"></i>
                   </li>
@@ -907,7 +1029,7 @@ function ProductDetail() {
           </div>
         </div>
 
-        <div className="clearfix">
+        <div>
           {user ? (
             <form
               onSubmit={(e) => {
@@ -917,24 +1039,18 @@ function ProductDetail() {
               className="comment-form"
               noValidate
             >
-              <p className="comment-form-author">
-                <input type="text" value={user.username} readOnly />
-              </p>
-              <p className="comment-form-comment">
-                <textarea
-                  className="form-control4"
-                  placeholder="Nhập đánh giá của bạn"
-                  value={newReview}
-                  onChange={(e) => setNewReview(e.target.value)}
-                  required
-                  rows="3"
-                ></textarea>
-              </p>
-              <p className="col-md-12 col-sm-12 col-xs-12 form-submit">
-                <button type="submit" className="submit btn btn-secondary btnhover3 filled">
-                  Gửi ngay
-                </button>
-              </p>
+              <input type="text" value={user.username} readOnly className="form-control mb-2" />
+              <textarea
+                className="form-control mb-2"
+                placeholder="Nhập đánh giá của bạn"
+                value={newReview}
+                onChange={(e) => setNewReview(e.target.value)}
+                required
+                rows="3"
+              />
+              <button type="submit" className="btn btn-secondary">
+                Gửi ngay
+              </button>
             </form>
           ) : (
             <p className="text-danger">
@@ -946,7 +1062,6 @@ function ProductDetail() {
     </div>
   </div>
 </div>
-
 								</div>
 							</div>
 						</div>

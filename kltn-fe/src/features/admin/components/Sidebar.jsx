@@ -72,7 +72,7 @@ const Sidebar = () => {
         </ul>
       </li>
       <li>
-        <a href="/admin/product/allProduct">
+        <a href="/admin/product/adminProductDashboard">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +91,7 @@ const Sidebar = () => {
             </svg>
           </span>
           {/* Products */}
-          <span className="menu-text">Quản lí sản phẩm</span>
+          <span className="menu-text">Thống kê sản phẩm</span>
         </a>
       </li>
       <li>
