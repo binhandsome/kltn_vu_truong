@@ -5,6 +5,7 @@ import com.kltnbe.security.utils.InternalApi;
 import com.kltnbe.sellerservice.dtos.*;
 import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
+import com.kltnbe.sellerservice.dtos.res.TitleAndImgSeller;
 import com.kltnbe.sellerservice.services.SellerService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,16 +43,18 @@ public class SellerController {
 
     @GetMapping("/userProfileResponse")
     public ResponseEntity<?> userProfileResponse(@RequestHeader("Authorization") String authHeader,
-             @AuthenticationPrincipal CustomUserDetails userDetails) {
+                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
         String accessToken = authHeader.startsWith("Bearer ")
                 ? authHeader.substring(7)
                 : authHeader;
         return sellerService.getInfoUser(accessToken);
     }
+
     @GetMapping("/product-by-asin/{asin}")
-    public ResponseEntity<?> findProductByAsin(@PathVariable String asin,  @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<?> findProductByAsin(@PathVariable String asin, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return sellerService.findProductByAsin(asin, userDetails.getAuthId());
     }
+
     @PostMapping("/create-shop")
     public ResponseEntity<ShopResponseDTO> createShop(@ModelAttribute ShopRequestDTO shopRequestDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
         ShopResponseDTO shop = sellerService.createShop(userDetails.getAuthId(), shopRequestDTO);
@@ -99,34 +102,41 @@ public class SellerController {
         sellerService.deleteShop(userDetails.getAuthId());
         return ResponseEntity.noContent().build();
     }
+
     @PostMapping("/create-shop-edit")
     public ResponseEntity<ShopResponseDTO> createShopEdit(@ModelAttribute ShopRequestDTO shopRequestDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
         ShopResponseDTO shop = sellerService.addShopEdit(shopRequestDTO, userDetails.getAuthId());
         return ResponseEntity.ok(shop);
     }
+
     @PutMapping("/update-discount-shop")
     public ResponseEntity<?> updateShopDiscount(@ModelAttribute ShopDiscountRequestDTO shopDiscountRequestDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return sellerService.updateDiscountShop(shopDiscountRequestDTO, userDetails.getAuthId());
     }
+
     @DeleteMapping("/delete-discount-shop")
     public ResponseEntity<?> deleteShopDiscount(@RequestParam Long shopDiscountId, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return sellerService.deleteDiscountShop(userDetails.getAuthId(),  shopDiscountId);
+        return sellerService.deleteDiscountShop(userDetails.getAuthId(), shopDiscountId);
     }
+
     @InternalApi
     @GetMapping("/internal/get_id_shop_by_accessToken")
     public ResponseEntity<Long> getIdShopByAccessToken(@RequestParam Long authId) {
         return ResponseEntity.ok(sellerService.getIdShopByAuthId(authId));
     }
+
     @PostMapping("/add-product")
     public ResponseEntity<?> createProduct(@RequestBody ProductRequestDTO productRequestDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long authId = customUserDetails.getAuthId();
         return sellerService.createProduct(productRequestDTO, authId);
     }
+
     @InternalApi
     @GetMapping("/internal/get-by-product/{shopId}")
     public ResponseEntity<?> getAuthIdByStore(@PathVariable Long shopId) {
         return sellerService.authIdGetToProduct(shopId);
     }
+
     @PutMapping("/update-product")
     public ResponseEntity<?> updateProduct(
             @RequestBody ProductRequestDTO productRequestDTO,
@@ -156,10 +166,12 @@ public class SellerController {
         System.out.println(userDetails.getAuthId() + "user detail");
         return sellerService.deleteSize(sizeId, userDetails.getAuthId());
     }
+
     @GetMapping("/variant/{variantId}")
     public ProductVariantDTO getVariant(@PathVariable Long variantId) {
         return sellerService.getVariant(variantId);
     }
+
     @GetMapping("/products")
     public ResponseEntity<List<ProductResponseDTO>> getMyProducts(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -232,6 +244,7 @@ public class SellerController {
         Long authId = userDetails.getAuthId();
         return sellerService.sellVariant(variantId, quantity, authId);
     }
+
     @GetMapping("/products/{asin}/sizes")
     public ResponseEntity<List<ProductSizeDTO>> getSizes(@PathVariable String asin) {
         List<ProductSizeDTO> sizes = sellerService.getSizesByAsin(asin);
@@ -270,10 +283,12 @@ public class SellerController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return sellerService.deleteImage(imageId, userDetails.getAuthId());
     }
+
     @GetMapping("/getDashboard")
     public ResponseEntity<DashboardStatsResponse> getDashboard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page, @RequestParam int size) {
         return sellerService.getSellerDashboard(userDetails.getAuthId(), page, size);
     }
+
     @InternalApi
     @GetMapping("/internal/pending-shops")
     public ResponseEntity<List<ShopResponseDTO>> getAllPendingShops() {
@@ -342,5 +357,14 @@ public class SellerController {
         return ResponseEntity.ok(Map.of("message", "🚫 Đã gọi từ chối xác thực seller"));
     }
 
+    @InternalApi
+    @GetMapping("/internal/getThumbnailandTitle")
+    public ResponseEntity<TitleAndImgSeller> getTitleAndImgSeller(@RequestParam Long shopId) {
+        return  ResponseEntity.ok(sellerService.getTitleAndImgSeller(shopId));
+    }
+    @GetMapping("/getDiscountToUser")
+    public ResponseEntity<List<ResponseDiscountToUser>> getDiscountToUser(@RequestParam Long shopId) {
+        return ResponseEntity.ok(sellerService.getListDiscountToUser(shopId));
+    }
 
 }

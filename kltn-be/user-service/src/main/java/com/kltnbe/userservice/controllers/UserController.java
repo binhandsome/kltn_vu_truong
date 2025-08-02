@@ -2,6 +2,7 @@ package com.kltnbe.userservice.controllers;
 
 import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.AddressRequest;
+import com.kltnbe.userservice.dtos.req.DeliveryAddressDTO;
 import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
 import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
@@ -115,5 +116,13 @@ public class UserController {
     @GetMapping("/findByAddressIds")
     public ResponseEntity<List<AddressInfo>> findByAddressIds(@RequestParam List<Long> addressId) {
         return ResponseEntity.ok(userService.findByAddressIds(addressId));
+    }
+    @GetMapping("/findUserIdByAuthId")
+    public Long findUserIdByAuthId(@RequestParam Long authId) {
+            return userService.findUserIdByAuthId(authId);
+    }
+    @PutMapping("/updateAddress")
+    public ResponseEntity<String> updateAddress(@RequestBody DeliveryAddressDTO deliveryAddressDTO) {
+            return ResponseEntity.ok(userService.updateAddress(deliveryAddressDTO));
     }
 }

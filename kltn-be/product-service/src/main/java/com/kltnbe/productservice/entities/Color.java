@@ -10,7 +10,6 @@ import jakarta.persistence.Table;
 public class Color {
     @Id
     @Column(name = "color_id")
-
     private Long ColorId;
 
     @Column(name = "name_color")

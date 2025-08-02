@@ -3,6 +3,7 @@ package com.kltnbe.userservice.services;
 import com.kltnbe.security.utils.JwtUtil;
 import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.AddressRequest;
+import com.kltnbe.userservice.dtos.req.DeliveryAddressDTO;
 import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
 import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
@@ -48,6 +49,10 @@ public class UserServiceImpl implements UserService{
         Auth cachedUser = authRedisTemplate.opsForValue().get(cacheKey);
         Optional<User> getUser = userRepository.findById(cachedUser.getUser().getUserId());
         return getUser;
+    }
+
+    public AddressResponse saveAddress() {
+        return saveAddress(null);
     }
 
     @Override
@@ -388,6 +393,27 @@ public class UserServiceImpl implements UserService{
                 ))
                 .toList();
         return result;
+    }
+
+    @Override
+    public Long findUserIdByAuthId(Long authId) {
+        return userRepository.findByAuthAuthId(authId).get().getUserId();
+    }
+
+    @Override
+    public String updateAddress(DeliveryAddressDTO deliveryAddressDTO) {
+        Optional<Address> addressInfo = addressRepository.findById(deliveryAddressDTO.getId());
+        if (addressInfo.isPresent()) {
+            Address address = addressInfo.get();
+            address.setDeliveryAddress(deliveryAddressDTO.getDeliveryAddress());
+            address.setRecipientName(deliveryAddressDTO.getRecipientName());
+            address.setRecipientPhone(deliveryAddressDTO.getRecipientPhone());
+            address.setRecipientEmail(deliveryAddressDTO.getRecipientEmail());
+            address.setAddressDetails(deliveryAddressDTO.getAddressDetails());
+            addressRepository.save(address);
+            return "Update address successfully";
+        }
+        return "Update address failed";
     }
 
     @Override

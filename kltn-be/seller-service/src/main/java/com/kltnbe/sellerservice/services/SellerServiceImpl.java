@@ -10,12 +10,14 @@ import com.kltnbe.sellerservice.dtos.*;
 import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
+import com.kltnbe.sellerservice.dtos.res.TitleAndImgSeller;
 import com.kltnbe.sellerservice.entities.*;
 import com.kltnbe.sellerservice.repositories.*;
 
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,9 @@ public class SellerServiceImpl implements SellerService {
     private final UserUseDiscountRepository userUseDiscountRepository;
     private final ImageUploadService imageUploadService; // Bean mới
     private final ProductServiceProxy productFeignClient;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Autowired
     private final UploadServiceProxy uploadServiceProxy;
@@ -162,6 +167,7 @@ public class SellerServiceImpl implements SellerService {
     public ResponseEntity<?> verifyLoginSeller(RequestInfomation requestInfomation) {
         return userServiceProxy.verifyLoginSeller(requestInfomation);
     }
+
 
     @Override
     public ResponseEntity<?> getInfoUser(String accessToken) {
@@ -715,6 +721,21 @@ public class SellerServiceImpl implements SellerService {
     @Override
     public void rejectAuthentication(Long id) {
         // Placeholder logic — cần flag hoặc status xác thực
+    }
+
+    @Override
+    public TitleAndImgSeller getTitleAndImgSeller(Long shopId) {
+        return shopRepository.findById(shopId)
+                .map(shop -> new TitleAndImgSeller(shop.getNameShop(), shop.getThumbnailShop()))
+                .orElse(null); // Trả về null nếu không có shop
+    }
+
+    @Override
+    public List<ResponseDiscountToUser> getListDiscountToUser(Long shopId) {
+        return shopDiscountRepository.findByShopId(shopId)
+                .stream()
+                .map(d -> modelMapper.map(d, ResponseDiscountToUser.class))
+                .toList();
     }
 
     private ShopResponseDTO mapToDTO(Shop s) {

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class CartResponse {
-    private Long cartId;
+    private String cartId; // đổi từ Long sang String
     private Long userId;
     private List<CartItemDTO> items;
 

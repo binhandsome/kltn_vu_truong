@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.dtos.ColorDTO;
+import com.kltnbe.productservice.dtos.TitleAndImgSeller;
 import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.ProductResponse;
 import com.kltnbe.productservice.entities.*;
@@ -18,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,6 +124,8 @@ public class ProductServiceImpl implements ProductService {
                     .collect(Collectors.toList());
 
             String json = objectMapper.writeValueAsString(colorDTOs);
+            TitleAndImgSeller titleAndImgSeller = sellerServiceProxy.getTitleAndImgSeller(request.getShopId()).getBody();
+            String jsonTitleAndThumbnail = objectMapper.writeValueAsString(titleAndImgSeller);
 
             Product product = new Product();
             product.setAsin(asin);
@@ -136,6 +138,7 @@ public class ProductServiceImpl implements ProductService {
             product.setTags(request.getSelectedGender());
             product.setProductType(request.getSelectedType());
             product.setStoreId(request.getShopId());
+            product.setStoreThumTitle(jsonTitleAndThumbnail);
             productRepository.save(product);
 
             if (request.getCategoryList() != null && !request.getCategoryList().isEmpty()) {
@@ -477,6 +480,12 @@ validateShopOwnership(product.getStoreId(), authId);
         productRepository.save(product);
     }
 
+
+    @Override
+    public Optional<Long> getStoreIdByProductId(Long productId) {
+        return productRepository.findStoreIdByProductId(productId);
+    }
+
     @Override
     public List<Long> getProductIdsByStore(Long storeId) {
         return productRepository.findProductIdsByStoreId(storeId);
@@ -495,6 +504,7 @@ validateShopOwnership(product.getStoreId(), authId);
             Product product = productOpt.get();
             productResponse.setAsin(product.getAsin());
             productResponse.setNameProduct(product.getProductTitle());
+            productResponse.setThumbnail(product.getProductThumbnail());
             return productResponse;
         }
         return null;

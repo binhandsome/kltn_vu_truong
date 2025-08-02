@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 
     @Data
     public class CartItemDTO {
+        private Long productId;
+        private Long storeId;
         private Long cartItemId;
         private String productAsin;
         private Long variantId;

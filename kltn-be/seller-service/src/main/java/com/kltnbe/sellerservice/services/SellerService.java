@@ -4,6 +4,7 @@ import com.kltnbe.sellerservice.dtos.*;
 import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
+import com.kltnbe.sellerservice.dtos.res.TitleAndImgSeller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -61,4 +62,6 @@ public interface SellerService {
     List<AuthenticationDTO> getAllAuthentications();
     void approveAuthentication(Long id);
     void rejectAuthentication(Long id);
+    TitleAndImgSeller getTitleAndImgSeller(Long shopId);
+    List<ResponseDiscountToUser> getListDiscountToUser(Long shopId);
 }

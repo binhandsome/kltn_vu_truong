@@ -1,6 +1,6 @@
-package com.kltnbe.productservice.clients;
+package com.kltnbe.orderservice.helpers;
 
-import com.kltnbe.productservice.dtos.TitleAndImgSeller;
+import com.kltnbe.orderservice.dtos.TitleAndImgSeller;
 import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -15,5 +15,5 @@ public interface SellerServiceProxy {
     @GetMapping("/api/seller/internal/get-by-product/{shopId}")
     ResponseEntity<?> getAuthIdByStore(@PathVariable Long shopId);
     @GetMapping("/api/seller/internal/getThumbnailandTitle")
-    ResponseEntity<TitleAndImgSeller> getTitleAndImgSeller(@RequestParam Long shopId);
+    public ResponseEntity<TitleAndImgSeller> getTitleAndImgSeller(@RequestParam Long shopId);
 }
