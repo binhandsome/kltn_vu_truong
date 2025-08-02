@@ -23,11 +23,12 @@ public class UserDTO {
     public UserDTO() {
     }
 
-    public UserDTO(Long userId, String email, String username, String profilePicture) {
-        this.profilePicture = profilePicture;
-        this.email = email;
+    public UserDTO(Long userId, String username,String email, String profilePicture) {
         this.userId = userId;
         this.username = username;
+        this.email = email;
+        this.profilePicture = profilePicture;
+
     }
 
     public UserDTO(Date dateOfBirth, String email, String firstName, String gender, Boolean isActive, Boolean isBanned, String lastName, String phoneNumber, String profilePicture, String userAddress, Long userId, String username) {

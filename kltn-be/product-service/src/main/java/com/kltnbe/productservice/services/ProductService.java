@@ -1,6 +1,7 @@
 // Service: ProductService.java
 package com.kltnbe.productservice.services;
 
+import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductRequestDTO;
 import com.kltnbe.productservice.dtos.req.SizeRequest;
@@ -48,5 +49,11 @@ public interface ProductService {
     List<ProductResponse> getProductsByStoreId(Long storeId, Long authId);
     void updateStatus(Long productId, String status, Long authId);
     Optional<Long> getStoreIdByProductId(Long productId);
+    List<ProductStatsDTO> getProductCountByStatus();
+    List<ProductStatsDTO> getProductCountByType();
+    Long getTotalProductCount();
+    List<ProductStatsDTO> getProductCountByStore();
 
+    // Thống kê số lượng sản phẩm theo tháng tạo
+    List<ProductStatsDTO> getProductCountByCreatedMonth();
 }

@@ -51,6 +51,8 @@ import ActionProduct from '../pages/product/ActionProduct'
 import InventoryProduct from '../pages/inventory/InventoryProduct';
 import ProductVariantPage from '../pages/inventory/ProductVariantPage';
 import AddProductVariant from '../pages/inventory/AddProductVariant';
+import SellerCommentsDashboard from '../pages/review/SellerCommentsDashboard';
+import ProductReviewManagement from '../pages/review/ProductReviewManagement';
 const SellerRoutes = () => {
   return (
     <Routes>
@@ -105,6 +107,8 @@ const SellerRoutes = () => {
         <Route path="shop/createShop" element={<CreateShop />} />
         <Route path="product/AddProduct" element={<AddProduct />} />
         <Route path="/product/ActionProduct/:asin" element={<ActionProduct />} />
+        <Route path="comments" element={<SellerCommentsDashboard />} />
+        <Route path="comments/product/:asin" element={<ProductReviewManagement/>} />
 
       </Route>
     </Routes>

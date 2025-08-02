@@ -1,4 +1,4 @@
-package com.kltnbe.productservice.dtos.res;
+package com.kltnbe.sellerservice.dtos.res;
 
 import lombok.Data;
 

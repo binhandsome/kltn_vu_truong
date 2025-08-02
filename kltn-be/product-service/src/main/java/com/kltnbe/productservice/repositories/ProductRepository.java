@@ -1,5 +1,6 @@
 package com.kltnbe.productservice.repositories;
 
+import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.entities.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,5 +51,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<String> findProductNameById(@Param("productId") Long productId);
     @Query("SELECT p.storeId FROM Product p WHERE p.productId = :productId")
     Optional<Long> findStoreIdByProductId(@Param("productId") Long productId);
+    Optional<Product> findByAsin(String asin);
+    @Query("SELECT COUNT(p) FROM Product p")
+    Long countAllProducts();
+    @Query("SELECT COALESCE(p.productStatus, 'Other'), COUNT(p) FROM Product p GROUP BY COALESCE(p.productStatus, 'Other')")
+    List<Object[]> countProductsByProductStatus();
+    // Thống kê sản phẩm theo cửa hàng (store)
+    @Query("SELECT p.storeId, COUNT(p) FROM Product p WHERE p.storeId IS NOT NULL GROUP BY p.storeId")
+    List<Object[]> countProductsByStoreId();
 
+
+    // Thống kê sản phẩm theo tháng tạo
+    @Query("SELECT FUNCTION('MONTH', p.createdAt), COUNT(p) FROM Product p GROUP BY FUNCTION('MONTH', p.createdAt)")
+    List<Object[]> countProductsByCreatedMonth();
 }
