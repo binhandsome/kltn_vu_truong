@@ -12,6 +12,7 @@ import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import com.kltnbe.sellerservice.services.SellerService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -289,8 +290,8 @@ public class SellerController {
     }
 
     @GetMapping("/getDashboard")
-    public ResponseEntity<DashboardStatsResponse> getDashboard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page, @RequestParam int size) {
-        return sellerService.getSellerDashboard(userDetails.getAuthId(), page, size);
+    public ResponseEntity<DashboardStatsResponse> getDashboard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page, @RequestParam int size,@DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,@DateTimeFormat(pattern = "yyyy-MM-dd") String endDate, @RequestParam(required = false) List<String> status) {
+        return sellerService.getSellerDashboard(userDetails.getAuthId(), page, size, startDate, endDate, status );
     }
 
     @InternalApi
@@ -405,6 +406,14 @@ public class SellerController {
         Long sellerId = userDetails.getAuthId();
         ReviewResponse response = sellerService.updateReplyToReview(reviewId, request, sellerId);
         return ResponseEntity.ok(response);
+    }
+    @GetMapping("/getRevenueByStore")
+    public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByStore(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return sellerService.getRevenueByStore(userDetails.getAuthId());
+    }
+    @PutMapping("/updateMethodOrderBySeller")
+    public ResponseEntity<String> updateMethodOrderBySeller(@RequestParam Long orderId, @AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String method, @RequestParam(required = false) String status) {
+        return sellerService.updateMethodOrder(orderId, userDetails.getAuthId(), method, status);
     }
 
 }

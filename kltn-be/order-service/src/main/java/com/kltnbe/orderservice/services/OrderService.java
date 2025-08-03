@@ -10,10 +10,13 @@ import com.kltnbe.orderservice.dtos.res.OrderResponse;
 import com.kltnbe.orderservice.entities.MasterOrder;
 import com.kltnbe.orderservice.entities.Order;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +30,11 @@ String cancelOrder(Long masterOrderId, Long authId);
     String updateAddress(Long orderId, Long authId, DeliveryAddressDTO deliveryAddressDTO);
 //    ResponseEntity<?> requestReturn(Long orderId, String reason, String accessToken);
 //    List<SalesStatsDTO> getSalesStatsByToken(String token, String type);
-//    DashboardStatsResponse getSellerDashboard(Long storeId, int page, int size);
-//    List<MonthlyRevenueDTO> getRevenueByStore(Long storeId);
-////    String updateStatusOrderBySeller(Long orderId, String status);
+DashboardStatsResponse getSellerDashboard(Long storeId, int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses);
+    List<MonthlyRevenueDTO> getRevenueByStore(Long storeId);
+    BigDecimal calculateRevenueByDateRangeAndStatuses(Long storeId, Timestamp startDate, Timestamp endDate, List<String> statuses);
+    Page<Order> findOrdersByDateRangeAndStatuses(Long storeId, Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable);
+    String updateStatusBySeller(Long orderId, Long shopId, String status);
+    String cancelBySeller(Long orderId, Long shopId);
+    ////    String updateStatusOrderBySeller(Long orderId, String status);
 }
