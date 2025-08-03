@@ -48,4 +48,6 @@ public interface SellerServiceClient {
     // ✅ 9. Từ chối xác thực
     @PutMapping("/api/seller/internal/reject-authentication/{id}")
     ResponseEntity<Map<String, String>> rejectAuthentication(@PathVariable("id") Long id);
+    @GetMapping("/api/seller/internal/get-url-cccd")
+    ResponseEntity<List<String>> getUrlCcd(@RequestParam Long shopId);
 }

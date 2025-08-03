@@ -6,6 +6,7 @@ import com.kltnbe.adminservice.dtos.AuthenticationDTO;
 import com.kltnbe.adminservice.dtos.req.ShopEditRequestDTO;
 import com.kltnbe.adminservice.dtos.res.ShopResponseDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -60,4 +61,11 @@ public class AdminSellerServiceImpl implements AdminSellerService {
     public void rejectAuthentication(Long id) {
         sellerServiceClient.rejectAuthentication(id);
     }
+
+    @Override
+    public ResponseEntity<List<String>> getUrlCcd(Long shopId) {
+        return sellerServiceClient.getUrlCcd(shopId);
+    }
+
+
 }

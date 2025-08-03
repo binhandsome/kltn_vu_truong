@@ -238,10 +238,16 @@ public class ProductController {
             return ResponseEntity.ok(productService.createProduct(productRequestDTO, authId));
         }
     @InternalApi
-
     @GetMapping("/internal/productByAsin/{asin}")
     public ResponseEntity<?> findProductByAsin(@PathVariable String asin,@RequestParam Long  authId) {
         return productService.getProductDetail(asin, authId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    @InternalApi
+    @GetMapping("/internal/productByAsinAdmin/{asin}")
+    public ResponseEntity<?> findProductByAsinAdmin(@PathVariable String asin) {
+        return productService.getProductDetailAdmin(asin)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -349,6 +355,11 @@ public class ProductController {
     @PutMapping("/internal/deleteProduct/{asin}")
     public ResponseEntity<?> deleteProduct(@PathVariable String asin,@RequestParam Long authId) {
         return productService.deleteProductByAsin(asin, authId);
+    }
+    @InternalApi
+    @PutMapping("/internal/deleteProductAdmin/{asin}")
+    public ResponseEntity<?> deleteProductAdmin(@PathVariable String asin) {
+        return productService.deleteProductByAsinAdmin(asin);
     }
     @GetMapping("/by-seller/{storeId}")
     public ResponseEntity<List<ProductResponse>> getProductsBySeller(

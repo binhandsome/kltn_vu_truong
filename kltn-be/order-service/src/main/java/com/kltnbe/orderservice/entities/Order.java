@@ -26,6 +26,7 @@ public class Order {
     @JoinColumn(name = "master_order_id", nullable = false)
     private MasterOrder masterOrder;
     @Column(name = "subtotal", nullable = false, precision = 10, scale = 2)
+
     private BigDecimal subtotal;
 
     @Column(name = "discounted_subtotal", nullable = false, precision = 10, scale = 2)

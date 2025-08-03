@@ -33,6 +33,8 @@ public interface ProductService {
     List<Color> findColorByStatus(Integer status);
     ResponseEntity<?> createProduct(ProductRequestDTO productRequestDTO, Long authId);
     Optional<ProductResponse> getProductDetail(String asin, Long authId);
+    Optional<ProductResponse> getProductDetailAdmin(String asin);
+
     ResponseEntity<?> addSize(SizeRequest request, Long authId);
     void deleteSize(Long sizeId, Long authId);
     void saveImageForColor(String asin, Long colorId, MultipartFile file, Long authId);
@@ -53,7 +55,7 @@ public interface ProductService {
     List<ProductStatsDTO> getProductCountByType();
     Long getTotalProductCount();
     List<ProductStatsDTO> getProductCountByStore();
-
+    ResponseEntity<?> deleteProductByAsinAdmin(String asin);
     // Thống kê số lượng sản phẩm theo tháng tạo
     List<ProductStatsDTO> getProductCountByCreatedMonth();
 }

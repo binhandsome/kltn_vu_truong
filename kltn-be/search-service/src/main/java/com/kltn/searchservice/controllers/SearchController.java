@@ -119,5 +119,24 @@ public class SearchController {
                 keyword, minPrice, maxPrice, tags, shopId, status,selectedDiscounts, pageable);
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/searchAdvanceAdmin")
+    public ResponseEntity<Page<ProductDocument>> searchAdvanced(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) List<String> tags,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam Long storeId,
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) List<Double> selectedDiscounts,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+//        Long authId = userDetails.getAuthId();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductDocument> result = searchService.searchAdvancedSeller(
+                keyword, minPrice, maxPrice, tags, storeId, status,selectedDiscounts, pageable);
+        return ResponseEntity.ok(result);
+    }
 
 }

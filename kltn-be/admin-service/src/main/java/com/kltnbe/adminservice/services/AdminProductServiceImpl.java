@@ -3,6 +3,7 @@ package com.kltnbe.adminservice.services;
 import com.kltnbe.adminservice.clients.ProductServiceClient;
 import com.kltnbe.adminservice.dtos.ProductStatsDTO;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,5 +35,10 @@ public class AdminProductServiceImpl implements AdminProductService {
     @Override
     public List<ProductStatsDTO> getProductCountByCreatedMonth() {
         return productServiceClient.getCountByCreatedMonth();
+    }
+
+    @Override
+    public ResponseEntity<?> findProductByAsinAdmin(String asin) {
+        return productServiceClient.findProductByAsinAdmin(asin);
     }
 }

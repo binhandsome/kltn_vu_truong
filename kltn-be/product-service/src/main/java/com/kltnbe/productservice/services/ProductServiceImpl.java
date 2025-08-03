@@ -305,6 +305,90 @@ validateShopOwnership(product.getStoreId(), authId);
 
         return Optional.of(response);
     }
+    @Override
+    public Optional<ProductResponse> getProductDetailAdmin(String asin) {
+        Optional<Product> productByAsin = productRepository.findProductByAsin(asin);
+
+        if (productByAsin.isEmpty()) {
+            throw new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + asin);
+        }
+
+
+        Product product = productByAsin.get();
+        ProductResponse response = new ProductResponse();
+        response.setProductId(product.getProductId());
+        response.setAsin(product.getAsin());
+        response.setNameProduct(product.getProductTitle());
+        response.setNameBrand(product.getBrandName());
+        response.setPrice(product.getProductPrice().doubleValue());
+        response.setProductStatus(product.getProductStatus().name());
+        response.setSelectedType(product.getProductType());
+        response.setSelectedGender(product.getTags());
+        response.setDiscountPercent(product.getPercentDiscount().intValue());
+        response.setThumbnail(product.getProductThumbnail());
+        System.out.println("colorAsin JSON: " + product.getColorAsin());
+        response.setSelectedCategory(product.getSalesRank());
+
+        // Parse selected colors from JSON
+        try {
+            List<ColorDTO> selectedColors = objectMapper.readValue(
+                    product.getColorAsin(), new TypeReference<List<ColorDTO>>() {
+                    }
+            );
+            response.setSelectedColors(selectedColors);
+        } catch (Exception e) {
+            response.setSelectedColors(Collections.emptyList());
+        }
+
+        Optional<Category> category = categoryRepository.findByProduct(product);
+        if (category.isPresent()) {
+            try {
+                List<List<String>> categoryList = objectMapper.readValue(
+                        category.get().getCategories(), new TypeReference<List<List<String>>>() {
+                        }
+                );
+                response.setCategoryList(categoryList);
+                response.setDescription(category.get().getDescription());
+
+
+            } catch (Exception e) {
+                response.setCategoryList(Collections.emptyList());
+            }
+        }
+
+        List<ProductSize> sizes = productSizeRepository.findAllByProduct(product);
+        response.setSize(sizes);
+
+        List<ProductImage> images = productImageRepository.findByProduct(product);
+
+        Map<Long, List<ImageInfoDTO>> colorIdToImages = new HashMap<>();
+
+        for (ProductImage img : images) {
+            ImageInfoDTO imageInfo = new ImageInfoDTO();
+            imageInfo.setImageUrl(img.getImageData());
+            imageInfo.setIsMainImage(img.getIsMainImage());
+            imageInfo.setImage_id(img.getImageId());
+
+            colorIdToImages
+                    .computeIfAbsent(img.getColorId(), k -> new ArrayList<>())
+                    .add(imageInfo);
+        }
+
+// Chuyển thành danh sách ImageDTO
+        List<ImageDTO> imageDTOs = colorIdToImages.entrySet().stream()
+                .map(entry -> {
+                    ImageDTO dto = new ImageDTO();
+                    dto.setIdColor(entry.getKey());
+                    dto.setListImageByColor(entry.getValue());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        response.setListColorAndThumbnail(imageDTOs);
+
+
+        return Optional.of(response);
+    }
 
     @Override
     public ResponseEntity<?> addSize(SizeRequest request, Long authId) {
@@ -430,6 +514,24 @@ validateShopOwnership(product.getStoreId(), authId);
 
         return ResponseEntity.ok(Map.of("message", "✅ Đã xoá sản phẩm (mềm) thành công."));
     }
+
+    @Transactional
+    @Override
+    public ResponseEntity<?> deleteProductByAsinAdmin(String asin) {
+        Product product = productRepository.findProductByAsin(asin)
+                .orElseThrow(() -> new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + asin));
+
+
+        product.setProductStatus(ProductStatus.deleted);
+        product.setUpdatedAt(LocalDateTime.now());
+        productRepository.save(product); // 🔥 Save + flush
+        log.info("🔎 DB Check: {}", productRepository.findProductByAsin(asin).get().getProductStatus());
+
+        log.info("🔄 Product {} status updated to {}", asin, product.getProductStatus());
+
+        return ResponseEntity.ok(Map.of("message", "✅ Đã xoá sản phẩm (mềm) thành công."));
+    }
+
 
     @Override
     public List<ProductResponse> getProductsByStoreId(Long storeId) {

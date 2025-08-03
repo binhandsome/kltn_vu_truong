@@ -24,6 +24,8 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,10 +39,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -57,7 +56,7 @@ public class SellerServiceImpl implements SellerService {
     private final UploadServiceProxy uploadImages;
     private final ShopRepository shopRepository;
     private final ShopDiscountRepository shopDiscountRepository;
-    private final UserUseDiscountRepository userUseDiscountRepository;
+//    private final UserUseDiscountRepository userUseDiscountRepository;
     private final ImageUploadService imageUploadService; // Bean mới
     private final ProductServiceProxy productFeignClient;
 
@@ -260,38 +259,38 @@ public class SellerServiceImpl implements SellerService {
         return response;
     }
 
-    @Override
-    public UseDiscountResponseDTO useDiscount(Long authId, UseDiscountRequestDTO useDiscountRequestDTO) {
-        // Lấy authId từ accessToken
-        if (authId == null) {
-            throw new IllegalArgumentException("Invalid access token");
-        }
-        ShopDiscount discount = shopDiscountRepository.findById(useDiscountRequestDTO.getDiscountShopId())
-                .orElseThrow(() -> new IllegalArgumentException("Discount not found"));
-        if (userUseDiscountRepository.existsByUserIdAndDiscountShopId(authId, useDiscountRequestDTO.getDiscountShopId())) {
-            throw new IllegalStateException("User has already used this discount");
-        }
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(discount.getDayStart()) || now.isAfter(discount.getDayEnd())) {
-            throw new IllegalStateException("Discount is not valid at this time");
-        }
-
-        // Ghi nhận sử dụng mã giảm giá
-        UserUseDiscount userUseDiscount = new UserUseDiscount();
-        userUseDiscount.setUserId(authId);
-        userUseDiscount.setDiscountShopId(useDiscountRequestDTO.getDiscountShopId());
-        userUseDiscount.setCreateAt(LocalDateTime.now());
-
-        UserUseDiscount savedUseDiscount = userUseDiscountRepository.save(userUseDiscount);
-
-        // Ánh xạ sang UseDiscountResponseDTO
-        UseDiscountResponseDTO response = new UseDiscountResponseDTO();
-        response.setUseDiscountId(savedUseDiscount.getUseDiscountId());
-        response.setUserId(savedUseDiscount.getUserId());
-        response.setDiscountShopId(savedUseDiscount.getDiscountShopId());
-        response.setCreateAt(savedUseDiscount.getCreateAt());
-        return response;
-    }
+//    @Override
+//    public UseDiscountResponseDTO useDiscount(Long authId, UseDiscountRequestDTO useDiscountRequestDTO) {
+//        // Lấy authId từ accessToken
+//        if (authId == null) {
+//            throw new IllegalArgumentException("Invalid access token");
+//        }
+//        ShopDiscount discount = shopDiscountRepository.findById(useDiscountRequestDTO.getDiscountShopId())
+//                .orElseThrow(() -> new IllegalArgumentException("Discount not found"));
+//        if (userUseDiscountRepository.existsByUserIdAndDiscountShopId(authId, useDiscountRequestDTO.getDiscountShopId())) {
+//            throw new IllegalStateException("User has already used this discount");
+//        }
+//        LocalDateTime now = LocalDateTime.now();
+//        if (now.isBefore(discount.getDayStart()) || now.isAfter(discount.getDayEnd())) {
+//            throw new IllegalStateException("Discount is not valid at this time");
+//        }
+//
+//        // Ghi nhận sử dụng mã giảm giá
+//        UserUseDiscount userUseDiscount = new UserUseDiscount();
+//        userUseDiscount.setUserId(authId);
+//        userUseDiscount.setDiscountShopId(useDiscountRequestDTO.getDiscountShopId());
+//        userUseDiscount.setCreateAt(LocalDateTime.now());
+//
+//        UserUseDiscount savedUseDiscount = userUseDiscountRepository.save(userUseDiscount);
+//
+//        // Ánh xạ sang UseDiscountResponseDTO
+//        UseDiscountResponseDTO response = new UseDiscountResponseDTO();
+//        response.setUseDiscountId(savedUseDiscount.getUseDiscountId());
+//        response.setUserId(savedUseDiscount.getUserId());
+//        response.setDiscountShopId(savedUseDiscount.getDiscountShopId());
+//        response.setCreateAt(savedUseDiscount.getCreateAt());
+//        return response;
+//    }
     @Override
     public ShopStatusResponseDTO hasShop(Long authId) {
         if (authId == null) {
@@ -665,11 +664,13 @@ public class SellerServiceImpl implements SellerService {
         return ResponseEntity.ok(response);
     }
 
-    @Override
     public List<ShopResponseDTO> getAllPendingShops() {
-        return shopRepository.findByShopStatus(Shop.ShopStatus.pending)
-                .stream().map(this::mapToDTO).collect(Collectors.toList());
+        return shopRepository.findAll() // Trả về List<Shop>
+                .stream()
+                .map(this::mapToDTOShop)
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public void approveShop(Long shopId) {
@@ -763,7 +764,49 @@ public class SellerServiceImpl implements SellerService {
         dto.setUpdatedAt(s.getUpdatedAt());
         return dto;
     }
+    private ShopResponseDTO mapToDTOShop(Shop shop) {
+        ShopResponseDTO dto = new ShopResponseDTO();
+        dto.setShopId(shop.getShopId());
+        dto.setAuthId(shop.getAuthId());
+        dto.setNameShop(shop.getNameShop());
+        dto.setThumbnailShop(shop.getThumbnailShop());
+        dto.setShopAddress(shop.getShopAddress());
+        dto.setShopPhone(shop.getShopPhone());
+        dto.setShopEmail(shop.getShopEmail());
+        dto.setShopStatus(shop.getShopStatus().name());
+        dto.setAvaluate(shop.getEvaluateShop());
+        dto.setFollowers(shop.getFollowersShop());
+        dto.setCreatedAt(shop.getCreatedAt());
+        dto.setUpdatedAt(shop.getUpdatedAt());
 
+
+        // Fetch StoreAuthentic data
+        Optional<StoreAuthentic> storeAuthentic = storeAuthenticRepository.findByAuthId(shop.getAuthId());
+        if (storeAuthentic.isPresent()) {
+            dto.setAddressHouse(storeAuthentic.get().getAddressHouse());
+            dto.setAddressDelivery(storeAuthentic.get().getAddressDelivery());
+            dto.setFrontCccdUrl(storeAuthentic.get().getFrontCccdUrl());
+            dto.setBackCccdUrl(storeAuthentic.get().getBackCccdUrl());
+            dto.setRealFaceImageUrl(storeAuthentic.get().getRealFaceImageUrl());
+        }
+
+        // Fetch ShopDiscount data
+        List<ShopDiscount> discounts = shopDiscountRepository.findByShopId(shop.getShopId());
+        List<ShopResponseDTO.ShopDiscountDTO> discountDTOs = discounts.stream().map(discount -> {
+            ShopResponseDTO.ShopDiscountDTO discountDTO = new ShopResponseDTO.ShopDiscountDTO();
+            discountDTO.setDiscountShopId(discount.getDiscountShopId());
+            discountDTO.setNameDiscount(discount.getNameDiscount());
+            discountDTO.setMinPrice(discount.getMinPrice());
+            discountDTO.setPercentValue(discount.getPercentValue());
+            discountDTO.setDayStart(discount.getDayStart());
+            discountDTO.setDayEnd(discount.getDayEnd());
+            discountDTO.setStatus(discount.getStatus());
+            return discountDTO;
+        }).collect(Collectors.toList());
+        dto.setDiscounts(discountDTOs);
+
+        return dto;
+    }
     private ShopEditRequestDTO mapEditToDTO(ShopEdit e) {
         ShopEditRequestDTO dto = new ShopEditRequestDTO();
         dto.setShopEditId(e.getShopEditId());
@@ -835,7 +878,8 @@ public class SellerServiceImpl implements SellerService {
 
     @Override
     public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByStore(Long authId) {
-        return orderServiceProxy.getRevenueByStore(authId);
+        Optional<Shop> shop = shopRepository.findByAuthId(authId);
+        return orderServiceProxy.getRevenueByStore(shop.get().getShopId());
     }
 
     @Override
@@ -843,6 +887,18 @@ public class SellerServiceImpl implements SellerService {
         Optional<Shop> shop = shopRepository.findByAuthId(authId);
         return orderServiceProxy.updateMethodOrderBySeller(orderId, shop.get().getShopId(), method, status);
     }
+
+    @Override
+    public ResponseEntity<List<String>> showViewCccdShop(Long shopId) {
+        Optional<Shop> shop = shopRepository.findById(shopId);
+        Optional<StoreAuthentic> storeAuthentic = storeAuthenticRepository.findByAuthId(shop.get().getAuthId());
+        List<String> list = new ArrayList<>();
+        list.add(storeAuthentic.get().getFrontCccdUrl());
+        list.add(storeAuthentic.get().getBackCccdUrl());
+        list.add(storeAuthentic.get().getRealFaceImageUrl());
+        return uploadServiceProxy.getSignedLinks(list);
+    }
+
 
 }
 

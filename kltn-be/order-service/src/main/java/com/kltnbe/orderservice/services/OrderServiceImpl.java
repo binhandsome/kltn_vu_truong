@@ -29,9 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -677,16 +675,7 @@ public String cancelOrder(Long masterOrderId, Long authId) {
                 .topProducts(topProducts)
                 .build();
     }
-    public List<MonthlyRevenueDTO> getRevenueByStore(Long storeId) {
-        List<Long> productIds = productServiceProxy.getProductIdsByStore(storeId).getBody();
-        if (productIds == null || productIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<Object[]> results = orderRepository.getRevenueByCurrentYearAndProducts(storeId);
-        return results.stream()
-                .map(r -> new MonthlyRevenueDTO((Integer) r[0], (BigDecimal) r[1]))
-                .toList();
-    }
+
 
     @Override
     public BigDecimal calculateRevenueByDateRangeAndStatuses(Long storeId, Timestamp startDate, Timestamp endDate, List<String> statuses) {
@@ -697,7 +686,186 @@ public String cancelOrder(Long masterOrderId, Long authId) {
     public Page<Order> findOrdersByDateRangeAndStatuses(Long storeId, Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable) {
         return orderRepository.findOrdersByDateRangeAndStatuses(storeId, startDate, endDate, statuses, pageable);
     }
+    @Override
+    public DashboardStatsResponse getAdminDashboard(int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses) {
+        // Nếu startDate hoặc endDate là null, đặt mặc định là tất cả dữ liệu (từ 1970-01-01 đến hiện tại)
+        Timestamp defaultStart = startDate != null ? startDate : new Timestamp(0); // 1970-01-01 00:00:00
+        Timestamp defaultEnd = endDate != null ? endDate : new Timestamp(System.currentTimeMillis()); // Hiện tại
 
+        // Tính toán các mốc thời gian động
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate currentDate = now.toLocalDate();
+
+        Timestamp startOfDay = Timestamp.valueOf(currentDate.atStartOfDay());
+        Timestamp endOfDay = Timestamp.valueOf(currentDate.atTime(LocalTime.MAX));
+
+        Timestamp startOfMonth = Timestamp.valueOf(currentDate.withDayOfMonth(1).atStartOfDay());
+        Timestamp endOfMonth = Timestamp.valueOf(currentDate.withDayOfMonth(currentDate.lengthOfMonth()).atTime(LocalTime.MAX));
+
+        // 1️⃣ Lấy MasterOrders có phân trang theo khoảng thời gian và statuses
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<MasterOrder> pagedMasterOrders = masterOrderRepository.findMasterOrdersByDateRangeAndStatuses(defaultStart, defaultEnd, statuses, pageable);
+        List<MasterOrder> masterOrders = pagedMasterOrders.getContent();
+
+        if (masterOrders.isEmpty()) {
+            return DashboardStatsResponse.builder()
+                    .ordersToday(0L)
+                    .ordersThisMonth(0L)
+                    .totalRevenue(BigDecimal.ZERO)
+                    .thisMonthRevenue(BigDecimal.ZERO)
+                    .recentOrders(Collections.emptyList())
+                    .totalPages(0)
+                    .topProducts(Collections.emptyList())
+                    .revenueByYear(Collections.emptyList())
+                    .build();
+        }
+
+        // Thu thập tất cả các Order từ các MasterOrder
+        List<Order> orders = masterOrders.stream()
+                .flatMap(mo -> mo.getOrders().stream())
+                .collect(Collectors.toList());
+
+        if (orders.isEmpty()) {
+            return DashboardStatsResponse.builder()
+                    .ordersToday(masterOrderRepository.getTodayOrders(startOfDay, endOfDay))
+                    .ordersThisMonth(masterOrderRepository.getThisMonthOrders(startOfMonth, endOfMonth))
+                    .totalRevenue(BigDecimal.ZERO)
+                    .thisMonthRevenue(masterOrderRepository.getThisMonthRevenue(startOfMonth, endOfMonth))
+                    .recentOrders(Collections.emptyList())
+                    .totalPages(pagedMasterOrders.getTotalPages())
+                    .topProducts(Collections.emptyList())
+                    .revenueByYear(Collections.emptyList())
+                    .build();
+        }
+
+        // 3️⃣ Lấy orderIds để phục vụ truy vấn liên quan
+        List<Long> orderIds = orders.stream().map(Order::getOrderId).collect(Collectors.toList());
+
+        // Lấy orderItems để tính itemCount và hỗ trợ
+        List<OrderItem> orderItems = orderItemRepository.findByOrderOrderIdIn(orderIds);
+
+        // Nhóm orderItems theo orderId để sử dụng sau
+        Map<Long, List<OrderItem>> itemsByOrder = orderItems.stream()
+                .collect(Collectors.groupingBy(oi -> oi.getOrder().getOrderId()));
+
+        // Lấy DeliveryInfo cho từng đơn
+        List<DeliveryInfo> deliveryInfos = deliveryInfoRepository.findByOrderIdIn(orderIds);
+        Map<Long, DeliveryInfo> deliveryMap = deliveryInfos.stream()
+                .collect(Collectors.toMap(DeliveryInfo::getOrderId, d -> d));
+
+        // 4️⃣ Build recentOrders
+        List<OrderSummary> recentOrders = orders.stream()
+                .map(order -> {
+                    DeliveryInfo delivery = deliveryMap.get(order.getOrderId());
+                    Long addressId = (delivery != null) ? delivery.getAddressId() : order.getMasterOrder().getAddressId();
+                    AddressInfo addr = Optional.ofNullable(userServiceProxy.findByAddressId(addressId).getBody()).orElse(null);
+                    PaymentInfo paymentInfo = null;
+                    try {
+                        paymentInfo = Optional.ofNullable(paymentServiceProxy.findByOrderId(order.getOrderId()).getBody()).orElse(null);
+                    } catch (Exception e) {
+                        System.out.println("FeignException: " + e.getMessage());
+                    }
+                    ShippingMethod shippingMethod = (delivery != null) ? delivery.getShippingMethod() : null;
+
+                    List<OrderItem> orderItemsAndProduct = itemsByOrder.getOrDefault(order.getOrderId(), Collections.emptyList());
+                    List<OrderItemSummary> itemSummaries = orderItemsAndProduct.stream()
+                            .map(oi -> {
+                                ProductResponse product = productServiceProxy.getProductById(oi.getProductId()).getBody();
+                                return OrderItemSummary.builder()
+                                        .asin(product.getAsin())
+                                        .titleProduct(product != null ? product.getNameProduct() : "Unknown Product")
+                                        .quantity(oi.getQuantity())
+                                        .unitPrice(oi.getUnitPrice())
+                                        .color(oi.getColor())
+                                        .size(oi.getSize())
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
+                    return OrderSummary.builder()
+                            .orderId(order.getOrderId())
+                            .status(order.getStatus())
+                            .totalPrice(order.getDiscountedSubtotal())
+                            .createdAt(order.getCreatedAt())
+                            .itemCount(orderItemsAndProduct.size())
+                            .recipientName(addr != null ? addr.getRecipientName() : null)
+                            .recipientPhone(addr != null ? addr.getRecipientPhone() : null)
+                            .recipientEmail(addr != null ? addr.getRecipientEmail() : null)
+                            .deliveryAddress(addr != null ? addr.getDeliveryAddress() : null)
+                            .addressDetails(addr != null ? addr.getAddressDetails() : null)
+                            .deliveryStatus(delivery != null ? delivery.getDeliveryStatus() : null)
+                            .trackingNumber(delivery != null ? delivery.getTrackingNumber() : null)
+                            .shippingFee(delivery != null ? delivery.getShippingFee() : null)
+                            .estimatedDeliveryDate(delivery != null ? delivery.getEstimatedDeliveryDate() : null)
+                            .shippingMethodName(shippingMethod != null ? shippingMethod.getMethodName() : null)
+                            .shippingDescription(shippingMethod != null ? shippingMethod.getDescription() : null)
+                            .shippingEstimatedDays(shippingMethod != null ? shippingMethod.getEstimatedDays() : null)
+                            .paymentMethod(paymentInfo != null ? paymentInfo.getPaymentMethod() : null)
+                            .statusPayment(paymentInfo != null ? paymentInfo.getPaymentStatus() : null)
+                            .items(itemSummaries)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // 5️⃣ Build topProducts sử dụng query mới để lấy top 5 từ toàn bộ range, không chỉ page hiện tại
+        Pageable topPageable = PageRequest.of(0, 5);
+        List<Object[]> topData = orderItemRepository.getTopProductsBySales(defaultStart, defaultEnd, statuses, topPageable);
+        List<ProductSummary> topProducts = topData.stream()
+                .map(obj -> {
+                    Long productId = (Long) obj[0];
+                    Long soldQuantity = (Long) obj[1];
+                    String productName = String.valueOf(productServiceProxy.findProductNameById(productId).getBody());
+                    return ProductSummary.builder()
+                            .productId(productId)
+                            .productName(productName)
+                            .soldQuantity(soldQuantity)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // 6️⃣ Lấy thống kê (totalRevenue) theo khoảng thời gian và statuses
+        BigDecimal totalRevenue = masterOrderRepository.calculateRevenueByDateRangeAndStatuses(defaultStart, defaultEnd, statuses);
+
+        // 7️⃣ Lấy doanh thu theo tháng trong năm hiện tại
+        List<Object[]> revenueData = masterOrderRepository.getRevenueByCurrentYear();
+        List<DashboardStatsResponse.MonthlyRevenue> revenueByYear = revenueData.stream()
+                .map(obj -> DashboardStatsResponse.MonthlyRevenue.builder()
+                        .month((Integer) obj[0])
+                        .revenue((BigDecimal) obj[1])
+                        .build())
+                .collect(Collectors.toList());
+
+        // 8️⃣ Trả về DashboardStatsResponse
+        return DashboardStatsResponse.builder()
+                .ordersToday(masterOrderRepository.getTodayOrders(startOfDay, endOfDay))
+                .ordersThisMonth(masterOrderRepository.getThisMonthOrders(startOfMonth, endOfMonth))
+                .totalRevenue(totalRevenue)
+                .thisMonthRevenue(masterOrderRepository.getThisMonthRevenue(startOfMonth, endOfMonth))
+                .recentOrders(recentOrders)
+                .totalPages(pagedMasterOrders.getTotalPages())
+                .topProducts(topProducts)
+                .revenueByYear(revenueByYear)
+                .build();
+    }
+
+    @Override
+    public BigDecimal calculateRevenueByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses) {
+        return masterOrderRepository.calculateRevenueByDateRangeAndStatuses(startDate, endDate, statuses);
+    }
+
+    @Override
+    public Page<MasterOrder> findMasterOrdersByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable) {
+        return masterOrderRepository.findMasterOrdersByDateRangeAndStatuses(startDate, endDate, statuses, pageable);
+    }
+    public List<MonthlyRevenueDTO> getRevenueByStore(Long storeId) {
+        List<Long> productIds = productServiceProxy.getProductIdsByStore(storeId).getBody();
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Object[]> results = orderRepository.getRevenueByCurrentYearAndProducts(storeId);
+        return results.stream()
+                .map(r -> new MonthlyRevenueDTO((Integer) r[0], (BigDecimal) r[1]))
+                .toList();
+    }
     @Override
     @Transactional
     public String updateStatusBySeller(Long orderId, Long shopId, String status) {
@@ -724,6 +892,85 @@ public String cancelOrder(Long masterOrderId, Long authId) {
         order.get().setStatus(OrderStatus.cancelledSeller.name());
         orderRepository.save(order.get());
         return "Hủy đơn hàng thành công";
+    }
+    public Map<String, Object> getWeeklyMetrics() {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")); // Múi giờ +07
+        LocalDateTime startOfWeek = now.with(LocalTime.MIN).with(DayOfWeek.MONDAY);
+        LocalDateTime endOfWeek = now.with(LocalTime.MAX).with(DayOfWeek.SUNDAY);
+        Timestamp start = Timestamp.valueOf(startOfWeek);
+        Timestamp end = Timestamp.valueOf(endOfWeek);
+
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("totalSales", masterOrderRepository.getWeeklyTotalSales(start, end));
+        metrics.put("totalCustomers", masterOrderRepository.getWeeklyTotalCustomers(start, end));
+        metrics.put("totalIncome", masterOrderRepository.getWeeklyTotalIncome(start, end));
+        return metrics;
+    }
+
+    public Map<String, Object> getMonthlyMetrics() {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        LocalDateTime startOfMonth = now.with(LocalTime.MIN).withDayOfMonth(1);
+        LocalDateTime endOfMonth = now.with(LocalTime.MAX).withDayOfMonth(now.getMonth().length(now.toLocalDate().isLeapYear()));
+        Timestamp start = Timestamp.valueOf(startOfMonth);
+        Timestamp end = Timestamp.valueOf(endOfMonth);
+
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("totalSales", masterOrderRepository.getMonthlyTotalSales(start, end));
+        metrics.put("totalCustomers", masterOrderRepository.getMonthlyTotalCustomers(start, end));
+        metrics.put("totalIncome", masterOrderRepository.getMonthlyTotalIncome(start, end));
+        return metrics;
+    }
+
+    public Map<String, Object> getYearlyMetrics() {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        LocalDateTime startOfYear = now.with(LocalTime.MIN).withDayOfYear(1);
+        LocalDateTime endOfYear = now.with(LocalTime.MAX).withDayOfYear(now.toLocalDate().isLeapYear() ? 366 : 365);
+        Timestamp start = Timestamp.valueOf(startOfYear);
+        Timestamp end = Timestamp.valueOf(endOfYear);
+
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("totalSales", masterOrderRepository.getYearlyTotalSales(start, end));
+        metrics.put("totalCustomers", masterOrderRepository.getYearlyTotalCustomers(start, end));
+        metrics.put("totalIncome", masterOrderRepository.getYearlyTotalIncome(start, end));
+        return metrics;
+    }
+    public Long getTodayOrders() {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        LocalDateTime startOfDay = now.with(LocalTime.MIN);
+        LocalDateTime endOfDay = now.with(LocalTime.MAX);
+        Timestamp start = Timestamp.valueOf(startOfDay);
+        Timestamp end = Timestamp.valueOf(endOfDay);
+        return masterOrderRepository.getTodayOrders(start, end);
+    }
+
+    public Long getThisMonthOrders() {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).with(LocalTime.MIN);
+        LocalDateTime endOfMonth = now.withDayOfMonth(now.getMonth().length(now.toLocalDate().isLeapYear())).with(LocalTime.MAX);
+        Timestamp start = Timestamp.valueOf(startOfMonth);
+        Timestamp end = Timestamp.valueOf(endOfMonth);
+        return masterOrderRepository.getThisMonthOrders(start, end);
+    }
+
+    public BigDecimal getThisMonthRevenue() {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).with(LocalTime.MIN);
+        LocalDateTime endOfMonth = now.withDayOfMonth(now.getMonth().length(now.toLocalDate().isLeapYear())).with(LocalTime.MAX);
+        Timestamp start = Timestamp.valueOf(startOfMonth);
+        Timestamp end = Timestamp.valueOf(endOfMonth);
+        return masterOrderRepository.getThisMonthRevenue(start, end);
+    }
+
+    public BigDecimal getTotalRevenue() {
+        return masterOrderRepository.getTotalRevenue();
+    }
+
+    @Override
+    public List<MonthlyRevenueDTO> getRevenueByStore() {
+        List<Object[]> results = masterOrderRepository.getRevenueByCurrentYear();
+        return results.stream()
+                .map(r -> new MonthlyRevenueDTO((Integer) r[0], (BigDecimal) r[1]))
+                .toList();
     }
 
     private boolean isSameAddress(DeliveryAddressDTO oldAddr, DeliveryAddressDTO newAddr) {
