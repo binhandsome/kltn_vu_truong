@@ -38,4 +38,12 @@ public class AdminProductController {
     public List<ProductStatsDTO> getProductByCreatedMonth() {
         return adminProductService.getProductCountByCreatedMonth();
     }
+    @GetMapping("/productByAsinAdmin/{asin}")
+    public ResponseEntity<?> findProductByAsinAdmin(@PathVariable String asin) {
+        return adminProductService.findProductByAsinAdmin(asin);
+    }
+    @PutMapping("/deleteProductAdmin/{asin}")
+    ResponseEntity<?> deleteProductAdmin(@PathVariable String asin) {
+        return adminProductService.findProductByAsinAdmin(asin);
+    }
 }

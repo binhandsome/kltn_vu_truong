@@ -119,11 +119,65 @@ public class OrderController {
         DashboardStatsResponse response = orderService.getSellerDashboard(storeId, page, size, start, end, status);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/dashboardAdmin")
+    public ResponseEntity<DashboardStatsResponse> getDashboardAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String endDate,
+            @RequestParam(required = false) List<String> status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Timestamp start = startDate != null ? Timestamp.valueOf(LocalDateTime.parse(startDate + "T00:00:00")) : null;
+        Timestamp end = endDate != null ? Timestamp.valueOf(LocalDateTime.parse(endDate + "T23:59:59")) : null;
+
+        System.out.println("Fetching dashboard for " + start + ", end=" + end + ", statuses=" + status);
+        DashboardStatsResponse response = orderService.getAdminDashboard( page, size, start, end, status);
+        return ResponseEntity.ok(response);
+    }
         @GetMapping("/getRevenueByStore")
         public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByStore(@RequestParam Long storeId) {
             List<MonthlyRevenueDTO> revenue = orderService.getRevenueByStore(storeId);
             return ResponseEntity.ok(revenue);
         }
+
+    @GetMapping("/getRevenueByAdmin")
+    public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByAdmin() {
+        List<MonthlyRevenueDTO> revenue = orderService.getRevenueByStore();
+        return ResponseEntity.ok(revenue);
+    }
+    @GetMapping("/weekly")
+    public Map<String, Object> getWeeklyMetrics() {
+        return orderService.getWeeklyMetrics();
+    }
+
+    @GetMapping("/monthly")
+    public Map<String, Object> getMonthlyMetrics() {
+        return orderService.getMonthlyMetrics();
+    }
+
+    @GetMapping("/yearly")
+    public Map<String, Object> getYearlyMetrics() {
+        return orderService.getYearlyMetrics();
+    }
+    @GetMapping("/today-orders")
+    public Long getTodayOrders() {
+        return orderService.getTodayOrders();
+    }
+
+    @GetMapping("/this-month-orders")
+    public Long getThisMonthOrders() {
+        return orderService.getThisMonthOrders();
+    }
+
+    @GetMapping("/this-month-revenue")
+    public BigDecimal getThisMonthRevenue() {
+        return orderService.getThisMonthRevenue();
+    }
+
+    @GetMapping("/total-revenue")
+    public BigDecimal getTotalRevenue() {
+        return orderService.getTotalRevenue();
+    }
 //    @GetMapping("/revenue")
 //    public ResponseEntity<Map<String, BigDecimal>> getRevenue(
 //            @RequestParam Long storeId,

@@ -8,6 +8,7 @@ import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import com.kltnbe.sellerservice.dtos.res.TitleAndImgSeller;
 import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,7 @@ public interface SellerService {
     ResponseEntity<?> getInfoUser(String accessToken);
     ShopResponseDTO createShop(Long authId, ShopRequestDTO shopRequestDTO);
     ShopDiscountResponseDTO createShopDiscount(Long authId, ShopDiscountRequestDTO discountRequestDTO);
-    UseDiscountResponseDTO useDiscount(Long authId, UseDiscountRequestDTO useDiscountRequestDTO);
+//    UseDiscountResponseDTO useDiscount(Long authId, UseDiscountRequestDTO useDiscountRequestDTO);
     ShopStatusResponseDTO hasShop(Long authId);
     ShopResponseDTO getShopInfo(Long authId);
     List<ShopDiscountResponseDTO> getShopDiscounts(Long authId);
@@ -82,4 +83,7 @@ public interface SellerService {
          Long authId,
          String method,
          String status);
+    ResponseEntity<List<String>> showViewCccdShop(Long shopId);
+
+
 }

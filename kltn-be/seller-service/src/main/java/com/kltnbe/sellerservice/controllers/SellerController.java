@@ -12,6 +12,8 @@ import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import com.kltnbe.sellerservice.services.SellerService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -72,11 +74,11 @@ public class SellerController {
         return ResponseEntity.ok(discount);
     }
 
-    @PostMapping("/use-discount")
-    public ResponseEntity<UseDiscountResponseDTO> useDiscount(@RequestBody UseDiscountRequestDTO useDiscountRequestDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        UseDiscountResponseDTO userUseDiscount = sellerService.useDiscount(userDetails.getAuthId(), useDiscountRequestDTO);
-        return ResponseEntity.ok(userUseDiscount);
-    }
+//    @PostMapping("/use-discount")
+//    public ResponseEntity<UseDiscountResponseDTO> useDiscount(@RequestBody UseDiscountRequestDTO useDiscountRequestDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
+//        UseDiscountResponseDTO userUseDiscount = sellerService.useDiscount(userDetails.getAuthId(), useDiscountRequestDTO);
+//        return ResponseEntity.ok(userUseDiscount);
+//    }
 
     @GetMapping("/has-shop")
     public ResponseEntity<ShopStatusResponseDTO> hasShop(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -414,6 +416,11 @@ public class SellerController {
     @PutMapping("/updateMethodOrderBySeller")
     public ResponseEntity<String> updateMethodOrderBySeller(@RequestParam Long orderId, @AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String method, @RequestParam(required = false) String status) {
         return sellerService.updateMethodOrder(orderId, userDetails.getAuthId(), method, status);
+    }
+    @InternalApi
+    @GetMapping("/internal/get-url-cccd")
+    public ResponseEntity<List<String>> getUrlCcd(@RequestParam Long shopId) {
+        return sellerService.showViewCccdShop(shopId);
     }
 
 }

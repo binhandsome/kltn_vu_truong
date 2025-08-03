@@ -19,4 +19,6 @@ public interface AdminSellerService {
     List<AuthenticationDTO> getAllAuthentications();
     void approveAuthentication(Long id);
     void rejectAuthentication(Long id);
+    ResponseEntity<List<String>> getUrlCcd(Long shopId);
+
 }

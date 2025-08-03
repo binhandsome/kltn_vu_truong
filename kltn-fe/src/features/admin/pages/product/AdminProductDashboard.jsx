@@ -4,6 +4,7 @@ import {
   PieChart, Pie, Cell, Tooltip as PieTooltip,
   BarChart, Bar, XAxis, YAxis, Tooltip as BarTooltip, ResponsiveContainer
 } from 'recharts';
+import { Link } from 'react-router-dom';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a020f0', '#e6194B'];
 
@@ -119,7 +120,12 @@ const AdminProductDashboard = () => {
         <tbody>
           {data.map((item, idx) => (
             <tr key={idx}>
-              <td style={tdStyle}>{item.key}</td>
+              <td style={tdStyle}><Link
+    to={`/admin/product/allproduct?storeId=${item.key.match(/\d+/)?.[0]}`}
+    className="text-primary"
+  >
+    {item.key}
+  </Link></td>
               <td style={tdStyle}>{item.count}</td>
               <td style={tdStyle}>{getPercentage(item.count)}</td>
             </tr>

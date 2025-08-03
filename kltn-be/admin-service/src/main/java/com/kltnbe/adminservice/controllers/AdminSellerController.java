@@ -4,8 +4,10 @@ import com.kltnbe.adminservice.dtos.AuthenticationDTO;
 import com.kltnbe.adminservice.dtos.req.ShopEditRequestDTO;
 import com.kltnbe.adminservice.dtos.res.ShopResponseDTO;
 import com.kltnbe.adminservice.services.AdminSellerService;
+import com.kltnbe.security.utils.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -67,4 +69,12 @@ public class AdminSellerController {
         adminSellerService.rejectAuthentication(id);
         return ResponseEntity.ok("🚫 Đã từ chối xác thực seller");
     }
+    @GetMapping("/log-view-cccd")
+    public ResponseEntity<List<String>> logView(@RequestParam Long shopId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return adminSellerService.getUrlCcd(shopId);
+     }
+
 }

@@ -48,6 +48,7 @@ import Chart from '../pages/chart/Chart';
 import ChangePassword from '../pages/authentication/ChangePassword';
 import SellerDashboard from '../pages/adminDashboard/SellerDashboard';
 import AdminProductDashboard from '../pages/product/AdminProductDashboard';
+import ActionProduct from '../pages/product/ActionProduct';
 
 const AdminRoutes = () => {
   return (
@@ -66,9 +67,9 @@ const AdminRoutes = () => {
         <Route path="calendar/calendar" element={<Calendar />} />
         <Route path="customer/customer" element={<Customer />} />
         <Route path="documentation/documentation" element={<Documentation />} />
-        <Route path="email/chat" element={<Chat/>} />
+        <Route path="email/chat" element={<Chat />} />
         <Route path="email/inbox" element={<Inbox />} />
-        <Route path="fontawasome/fontAwasome" element={<FontAwesome/>} />
+        <Route path="fontawasome/fontAwasome" element={<FontAwesome />} />
         <Route path="form/basicForm" element={<BasicForm />} />
         <Route path="form/tags" element={<Tags />} />
         <Route path="general/cards" element={<Cards />} />
@@ -77,29 +78,31 @@ const AdminRoutes = () => {
         <Route path="general/error404" element={<Error404 />} />
         <Route path="general/faq" element={<Faq />} />
         <Route path="general/productSingle" element={<ProductSingle />} />
-        <Route path="general/starter" element={<Starter/>} />
+        <Route path="general/starter" element={<Starter />} />
         <Route path="general/wishlist" element={<WishList />} />
-        <Route path="invoice/invoice" element={<Invoice/>} />
+        <Route path="invoice/invoice" element={<Invoice />} />
         <Route path="map/googleMap" element={<GoogleMap />} />
         <Route path="map/vectorMap" element={<VectorMap />} />
-        <Route path="order/order" element={<Order/>} />
+        <Route path="order/order" element={<Order />} />
         <Route path="product/allProduct" element={<AllProduct />} />
         <Route path="support/support" element={<Support />} />
         <Route path="table/advanceTable" element={<AdvanceTable />} />
         <Route path="table/basicTable" element={<BasicTable />} />
         <Route path="table/dataTable" element={<DataTable />} />
-        <Route path="uikit/accordation" element={<Accordation/>} />
+        <Route path="uikit/accordation" element={<Accordation />} />
         <Route path="uikit/alert" element={<Alert />} />
-        <Route path="uikit/carousal" element={<Carousal/>} />
-        <Route path="uikit/counter" element={<Counter/>} />
+        <Route path="uikit/carousal" element={<Carousal />} />
+        <Route path="uikit/counter" element={<Counter />} />
         <Route path="uikit/editor" element={<Editor />} />
-        <Route path="uikit/modal" element={<Modal/>} />
-        <Route path="uikit/pagination" element={<Pagination/>} />
+        <Route path="uikit/modal" element={<Modal />} />
+        <Route path="uikit/pagination" element={<Pagination />} />
         <Route path="uikit/progressBars" element={<ProgressBars />} />
-        <Route path="uikit/tabs" element={<Tabs/>} />
-        <Route path="uikit/typography" element={<Typography/>} />
-        <Route path="chart/chart" element={<Chart/>} />
+        <Route path="uikit/tabs" element={<Tabs />} />
+        <Route path="uikit/typography" element={<Typography />} />
+        <Route path="chart/chart" element={<Chart />} />
         <Route path="product/adminProductDashboard" element={<AdminProductDashboard />} />
+        <Route path="/product/ActionProduct/:asin" element={<ActionProduct />} />
+
       </Route>
     </Routes>
   );

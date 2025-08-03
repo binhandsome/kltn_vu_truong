@@ -1,5 +1,6 @@
 package com.kltnbe.adminservice.services;
 
+import com.kltnbe.adminservice.clients.SellerServiceClient;
 import com.kltnbe.adminservice.clients.UserServiceClient;
 import com.kltnbe.adminservice.dtos.UserDTO;
 import com.kltnbe.adminservice.dtos.req.RegisterRequest;
@@ -16,9 +17,11 @@ import java.util.Map;
 public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserServiceClient userClient;
+    private final SellerServiceClient sellerServiceClient;
 
-    public AdminUserServiceImpl(UserServiceClient userClient) {
+    public AdminUserServiceImpl(UserServiceClient userClient, SellerServiceClient sellerServiceClient) {
         this.userClient = userClient;
+        this.sellerServiceClient = sellerServiceClient;
     }
 
     @Override
@@ -79,4 +82,6 @@ public class AdminUserServiceImpl implements AdminUserService {
     public String upgradeToSeller(Long userId) {
         return userClient.upgradeToSeller(userId);
     }
+
+
 }

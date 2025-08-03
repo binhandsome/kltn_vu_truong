@@ -1,5 +1,6 @@
 package com.kltn.upload_service.controllers;
 
+import com.cloudinary.Cloudinary;
 import com.kltn.upload_service.helps.ByteArrayMultipartFile;
 import com.kltn.upload_service.services.UploadService;
 import com.kltnbe.security.utils.InternalApi;
@@ -20,6 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UploadController {
     private final UploadService service;
+    private final Cloudinary cloudinary;
 
     @PostMapping("/uploadListImage")
     public ResponseEntity<List<String>> uploadImages(
@@ -103,4 +105,23 @@ public class UploadController {
             return ResponseEntity.status(500).body("Lỗi khi tạo signed URL: " + e.getMessage());
         }
     }
+    @GetMapping("/files/links")
+    public ResponseEntity<List<String>> getImageLinks(@RequestParam List<String> publicIds) {
+        List<String> urls = publicIds.stream()
+                .map(publicId -> "https://res.cloudinary.com/dj3tvavmp/image/upload/" + publicId)
+                .toList();
+        return ResponseEntity.ok(urls);
+    }
+    @PostMapping("/signed-links")
+    public ResponseEntity<List<String>> getSignedLinks(@RequestBody List<String> publicIds) {
+        List<String> signedUrls = publicIds.stream().map(publicId -> {
+            // Tạo signed URL cho từng ảnh authenticated
+            return cloudinary.url()
+                    .signed(true) // yêu cầu ký URL
+                    .generate(publicId);
+        }).toList();
+
+        return ResponseEntity.ok(signedUrls);
+    }
+
 }

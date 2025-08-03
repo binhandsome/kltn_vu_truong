@@ -1,4 +1,103 @@
-const AdminDashboard = () => (
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const API_BASE_URL = 'http://localhost:8091/api/admin/orders';
+function AdminDashboard()  {
+  const [weeklyData, setWeeklyData] = useState({ totalSales: 0, totalCustomers: 0, totalIncome: 0 });
+  const [monthlyData, setMonthlyData] = useState({ totalSales: 0, totalCustomers: 0, totalIncome: 0 });
+  const [yearlyData, setYearlyData] = useState({ totalSales: 0, totalCustomers: 0, totalIncome: 0 });
+  // State để theo dõi loading
+  const [isLoading, setIsLoading] = useState(true);
+  // State để theo dõi tab hiện tại
+  const [activeTab, setActiveTab] = useState('weekly');
+const [todayOrders, setTodayOrders] = useState(0);
+  const [thisMonthOrders, setThisMonthOrders] = useState(0);
+  const [thisMonthRevenue, setThisMonthRevenue] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  
+  // Hàm fetch data từ API
+  const fetchData = async (period) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/${period}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi fetch dữ liệu ${period}:`, error);
+      return { totalSales: 0, totalCustomers: 0, totalIncome: 0 };
+    }
+  };
+
+  // Load data khi component mount
+  useEffect(() => {
+    const loadAllData = async () => {
+      setIsLoading(true);
+      const weekly = await fetchData('weekly');
+      setWeeklyData(weekly);
+      const monthly = await fetchData('monthly');
+      setMonthlyData(monthly);
+      const yearly = await fetchData('yearly');
+      setYearlyData(yearly);
+      setIsLoading(false);
+    };
+    loadAllData();
+  }, []);
+
+  // Lắng nghe sự kiện thay đổi tab (sử dụng Bootstrap events)
+  useEffect(() => {
+    const tabs = document.querySelectorAll('.nav-link');
+    const handleTabChange = (e) => {
+      const tabId = e.target.getAttribute('aria-controls');
+      if (tabId === 'tab1') setActiveTab('weekly');
+      else if (tabId === 'tab2') setActiveTab('monthly');
+      else if (tabId === 'tab3') setActiveTab('yearly');
+    };
+
+    tabs.forEach(tab => {
+      tab.addEventListener('shown.bs.tab', handleTabChange);
+    });
+
+    // Cleanup để tránh memory leak
+    return () => {
+      tabs.forEach(tab => {
+        tab.removeEventListener('shown.bs.tab', handleTabChange);
+      });
+    };
+  }, []);
+
+  // Hàm để lấy phần trăm tăng trưởng (giả định từ backend hoặc tính toán)
+  const getGrowthPercentage = (key, period) => {
+    // Nếu backend trả về growth, lấy từ data
+    // Ví dụ: weeklyData.salesGrowth
+    // Hiện tại dùng giá trị tĩnh như mã gốc
+    if (key === 'totalIncome') return '+25%';
+    return '+15%';
+  };
+  const fetchDataAll = async (endpoint) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/${endpoint}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi fetch dữ liệu từ ${endpoint}:`, error);
+      return 0;
+    }
+  };
+
+  // Load data khi component mount
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      const today = await fetchDataAll('today-orders');
+      setTodayOrders(today);
+      const monthOrders = await fetchDataAll('this-month-orders');
+      setThisMonthOrders(monthOrders);
+      const monthRevenue = await fetchDataAll('this-month-revenue');
+      setThisMonthRevenue(monthRevenue);
+      const total = await fetchDataAll('total-revenue');
+      setTotalRevenue(total);
+      setIsLoading(false);
+    };
+    loadData();
+  }, []);
+return (
 <>
   <div className="page-wrapper">
     <div className="main-content">
@@ -129,11 +228,10 @@ const AdminDashboard = () => (
                   </g>
                 </svg>
               </div>
-              <div className="icon-info-text">
-                {/* Happy Customers */}
-                <h5 className="ad-title">Chúc mừng khách hàng</h5>
-                <h4 className="ad-card-title">66k</h4>
-              </div>
+            <div className="icon-info-text">
+                  <h5 className="ad-title">Đơn Hàng Hôm Nay</h5>
+                  <h4 className="ad-card-title">{todayOrders}</h4> {/* Thêm 'k' nếu cần */}
+                </div>
             </div>
           </div>
         </div>
@@ -148,11 +246,10 @@ const AdminDashboard = () => (
                   </g>
                 </svg>
               </div>
-              <div className="icon-info-text">
-                {/* Daily Orders */}
-                <h5 className="ad-title">Đơn hàng hàng ngày</h5>
-                <h4 className="ad-card-title">15k</h4>
-              </div>
+            <div className="icon-info-text">
+                  <h5 className="ad-title">Đơn Hàng Tháng Này</h5>
+                  <h4 className="ad-card-title">{thisMonthOrders}</h4>
+                </div>
             </div>
           </div>
         </div>
@@ -173,11 +270,10 @@ const AdminDashboard = () => (
                   </g>
                 </svg>
               </div>
-              <div className="icon-info-text">
-                {/* Total Sales */}
-                <h5 className="ad-title">Tổng doanh thu</h5>
-                <h4 className="ad-card-title">420k</h4>
-              </div>
+            <div className="icon-info-text">
+                  <h5 className="ad-title">Doanh Thu Tháng Này</h5>
+                  <h4 className="ad-card-title">{thisMonthRevenue}$</h4>
+                </div>
             </div>
           </div>
         </div>
@@ -202,351 +298,192 @@ const AdminDashboard = () => (
                   </g>
                 </svg>
               </div>
-              <div className="icon-info-text">
-                {/* Total Revenue */}
-                <h5 className="ad-title">Tổng lợi nhuận</h5>
-                <h4 className="ad-card-title">10k</h4>
-              </div>
+           <div className="icon-info-text">
+                  <h5 className="ad-title">Tổng Doanh Thu</h5>
+                  <h4 className="ad-card-title">{totalRevenue}$</h4>
+                </div>
             </div>
           </div>
         </div>
       </div>
       {/* Revanue Status Start */}
       <div className="row">
-        <div className="col-xl-12 col-lg-12 col-md-12">
-          <div className="card chart-card">
-            <div className="card-header">
-              <h4 className="has-btn">
-                {/* Total Revanue */}
-                Tổng lợi nhuận{" "}
-                <span>
-                  <button
-                    type="button"
-                    className="btn btn-primary squer-btn sm-btn"
-                  >
-                    Tải xuống
-                  </button>
-                </span>
-              </h4>
-            </div>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-xl-8 col-lg-12 col-md-12">
-                  <div className="chart-holder">
-                    <div id="chartD" />
-                  </div>
+      <div className="col-xl-12 col-lg-12 col-md-12">
+        <div className="card chart-card">
+          <div className="card-header">
+            <h4 className="has-btn">
+              Tổng lợi nhuận{" "}
+              <span>
+                <button type="button" className="btn btn-primary squer-btn sm-btn">
+                  Tải xuống
+                </button>
+              </span>
+            </h4>
+          </div>
+          <div className="card-body">
+            <div className="row">
+              <div className="col-xl-8 col-lg-12 col-md-12">
+                <div className="chart-holder">
+                  <div id="chartD" />
+                  {/* TODO: Tích hợp Chart.js ở đây để vẽ biểu đồ dựa trên currentData */}
                 </div>
-                <div className="col-xl-4 col-lg-12 col-md-12">
-                  <div className="revenue-wrapper">
-                    <ul
-                      className="nav nav-pills mb-3"
-                      id="pills-tab"
-                      role="tablist"
-                    >
-                      <li className="nav-item">
-                        <a
-                          className="nav-link active"
-                          id="tab1-tab"
-                          data-bs-toggle="pill"
-                          href="index.html#tab1"
-                          role="tab"
-                          aria-controls="tab1"
-                          aria-selected="true"
-                        >
-                          {/* Weekly */}
-                          Hàng tuần
-                        </a>
-                      </li>
-                      <li className="nav-item">
-                        <a
-                          className="nav-link"
-                          id="tab2-tab"
-                          data-bs-toggle="pill"
-                          href="index.html#tab2"
-                          role="tab"
-                          aria-controls="tab2"
-                          aria-selected="false"
-                        >
-                          {/* Monthly */}
-                          Hàng tháng
-                        </a>
-                      </li>
-                      <li className="nav-item">
-                        <a
-                          className="nav-link"
-                          id="tab3-tab"
-                          data-bs-toggle="pill"
-                          href="index.html#tab3"
-                          role="tab"
-                          aria-controls="tab3"
-                          aria-selected="false"
-                        >
-                          {/* Yearly */}
-                          Hàng năm
-                        </a>
-                      </li>
-                    </ul>
-                    <div className="tab-content" id="pills-tabContent">
-                      <div
-                        className="tab-pane fade show active"
-                        id="tab1"
-                        role="tabpanel"
-                        aria-labelledby="tab1-tab"
+              </div>
+              <div className="col-xl-4 col-lg-12 col-md-12">
+                <div className="revenue-wrapper">
+                  <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <li className="nav-item">
+                      <a
+                        className="nav-link active"
+                        id="tab1-tab"
+                        data-bs-toggle="pill"
+                        href="#tab1"
+                        role="tab"
+                        aria-controls="tab1"
+                        aria-selected="true"
                       >
-                        <div className="revenue-info-wrap">
-                          <table>
-                            <tbody>
-                              <tr>
-                                <td>
-                                  <i className="far fa-chart-bar mr-2 icon-only" />
-                                  {/*  Total Sales */}
-                                  Tổng doanh thu
-                                </td>
-                                <td>
-                                  5995
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-user-friends mr-2 icon-only" />
-                                  {/* Total Customers */}
-                                  Tổng số khách hàng
-                                </td>
-                                <td>
-                                  5894
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  {/*  Total Income */}
-                                  Tổng thu nhập
-                                </td>
-                                <td>
-                                  4453
-                                  <sup className="medium ml-2 txt-green">
-                                    +25%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-signal mr-2 icon-only" />
-                                  {/* Total Expense */}
-                                  Tổng chi phí
-                                </td>
-                                <td>
-                                  7454
-                                  <sup className="medium ml-2 txt-red">+2%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-heart mr-2 icon-only" />
-                                  {/* Total Likes */}
-                                  Tổng số lượt thích
-                                </td>
-                                <td>
-                                  14454
-                                  <sup className="medium ml-2 txt-red">+5%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-frown-open mr-2 icon-only" />
-                                  {/* Tax Paid */}
-                                  Thuế đã nộp
-                                </td>
-                                <td>
-                                  786
-                                  <sup className="medium ml-2 txt-green">
-                                    +5%
-                                  </sup>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                        Hàng tuần
+                      </a>
+                    </li>
+                    <li className="nav-item">
+                      <a
+                        className="nav-link"
+                        id="tab2-tab"
+                        data-bs-toggle="pill"
+                        href="#tab2"
+                        role="tab"
+                        aria-controls="tab2"
+                        aria-selected="false"
+                      >
+                        Hàng tháng
+                      </a>
+                    </li>
+                    <li className="nav-item">
+                      <a
+                        className="nav-link"
+                        id="tab3-tab"
+                        data-bs-toggle="pill"
+                        href="#tab3"
+                        role="tab"
+                        aria-controls="tab3"
+                        aria-selected="false"
+                      >
+                        Hàng năm
+                      </a>
+                    </li>
+                  </ul>
+                  <div className="tab-content" id="pills-tabContent">
+                    <div className="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                      <div className="revenue-info-wrap">
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <i className="far fa-chart-bar mr-2 icon-only" />
+                                Tổng doanh thu
+                              </td>
+                              <td>
+                                {weeklyData.totalSales}
+                                <sup className="medium ml-2 txt-green">+15%</sup>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <i className="fas fa-user-friends mr-2 icon-only" />
+                                Tổng số khách hàng
+                              </td>
+                              <td>
+                                {weeklyData.totalCustomers}
+                                <sup className="medium ml-2 txt-green">+15%</sup>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <i className="fas fa-hand-holding-usd mr-2 icon-only" />
+                                Tổng lợi nhuận
+                              </td>
+                              <td>
+                                {weeklyData.totalIncome}
+                                <sup className="medium ml-2 txt-green">+25%</sup>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
-                      <div
-                        className="tab-pane fade"
-                        id="tab2"
-                        role="tabpanel"
-                        aria-labelledby="tab2-tab"
-                      >
-                        <div className="revenue-info-wrap">
-                          <table>
-                            <tbody>
-                              <tr>
-                                <td>
-                                  <i className="far fa-chart-bar mr-2 icon-only" />
-                                  {/*  Total Sales */}
-                                  Tổng doanh thu
-                                </td>
-                                <td>
-                                  5995
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-user-friends mr-2 icon-only" />
-                                  {/* Total Customers */}
-                                  Tổng số khách hàng
-                                </td>
-                                <td>
-                                  5894
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  {/*  Total Income */}
-                                  Tổng thu nhập
-                                </td>
-                                <td>
-                                  4453
-                                  <sup className="medium ml-2 txt-green">
-                                    +25%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-signal mr-2 icon-only" />
-                                  {/* Total Expense */}
-                                  Tổng chi phí
-                                </td>
-                                <td>
-                                  7454
-                                  <sup className="medium ml-2 txt-red">+2%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-heart mr-2 icon-only" />
-                                  {/* Total Likes */}
-                                  Tổng số lượt thích
-                                </td>
-                                <td>
-                                  14454
-                                  <sup className="medium ml-2 txt-red">+5%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-frown-open mr-2 icon-only" />
-                                  {/* Tax Paid */}
-                                  Thuế đã nộp
-                                </td>
-                                <td>
-                                  786
-                                  <sup className="medium ml-2 txt-green">
-                                    +5%
-                                  </sup>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                    </div>
+                    <div className="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+                      <div className="revenue-info-wrap">
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <i className="far fa-chart-bar mr-2 icon-only" />
+                                Tổng doanh thu
+                              </td>
+                              <td>
+                                {monthlyData.totalSales}
+                                <sup className="medium ml-2 txt-green">+15%</sup>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <i className="fas fa-user-friends mr-2 icon-only" />
+                                Tổng số khách hàng
+                              </td>
+                              <td>
+                                {monthlyData.totalCustomers}
+                                <sup className="medium ml-2 txt-green">+15%</sup>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <i className="fas fa-hand-holding-usd mr-2 icon-only" />
+                                Tổng lợi nhuận
+                              </td>
+                              <td>
+                                {monthlyData.totalIncome}
+                                <sup className="medium ml-2 txt-green">+25%</sup>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
-                      <div
-                        className="tab-pane fade"
-                        id="tab3"
-                        role="tabpanel"
-                        aria-labelledby="tab3-tab"
-                      >
-                        <div className="revenue-info-wrap">
-                          <table>
-                            <tbody>
-                              <tr>
-                                <td>
-                                  <i className="far fa-chart-bar mr-2 icon-only" />
-                                  {/*  Total Sales */}
-                                  Tổng doanh thu
-                                </td>
-                                <td>
-                                  5995
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-user-friends mr-2 icon-only" />
-                                  {/* Total Customers */}
-                                  Tổng số khách hàng
-                                </td>
-                                <td>
-                                  5894
-                                  <sup className="medium ml-2 txt-green">
-                                    +15%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-hand-holding-usd mr-2 icon-only" />
-                                  {/*  Total Income */}
-                                  Tổng thu nhập
-                                </td>
-                                <td>
-                                  4453
-                                  <sup className="medium ml-2 txt-green">
-                                    +25%
-                                  </sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="fas fa-signal mr-2 icon-only" />
-                                  {/* Total Expense */}
-                                  Tổng chi phí
-                                </td>
-                                <td>
-                                  7454
-                                  <sup className="medium ml-2 txt-red">+2%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-heart mr-2 icon-only" />
-                                  {/* Total Likes */}
-                                  Tổng số lượt thích
-                                </td>
-                                <td>
-                                  14454
-                                  <sup className="medium ml-2 txt-red">+5%</sup>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <i className="far fa-frown-open mr-2 icon-only" />
-                                  {/* Tax Paid */}
-                                  Thuế đã nộp
-                                </td>
-                                <td>
-                                  786
-                                  <sup className="medium ml-2 txt-green">
-                                    +5%
-                                  </sup>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                    </div>
+                    <div className="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
+                      <div className="revenue-info-wrap">
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <i className="far fa-chart-bar mr-2 icon-only" />
+                                Tổng doanh thu
+                              </td>
+                              <td>
+                                {yearlyData.totalSales}
+                                <sup className="medium ml-2 txt-green">+15%</sup>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <i className="fas fa-user-friends mr-2 icon-only" />
+                                Tổng số khách hàng
+                              </td>
+                              <td>
+                                {yearlyData.totalCustomers}
+                                <sup className="medium ml-2 txt-green">+15%</sup>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <i className="fas fa-hand-holding-usd mr-2 icon-only" />
+                                Tổng lợi nhuận
+                              </td>
+                              <td>
+                                {yearlyData.totalIncome}
+                                <sup className="medium ml-2 txt-green">+25%</sup>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
@@ -556,6 +493,7 @@ const AdminDashboard = () => (
           </div>
         </div>
       </div>
+    </div>
       {/* Products Orders Start */}
       <div className="row">
         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
@@ -1287,4 +1225,7 @@ const AdminDashboard = () => (
 
   );
   
+}
+
+
   export default AdminDashboard;
