@@ -333,13 +333,15 @@ const getCartProduct = async () => {
     
         for (const item of listCart.items) {
           if (!selectedItemsCart.includes(item.asin)) continue;
-    
-          const sizeId = item.sizes?.find(s => s.sizeName === item.size)?.sizeId;
-          const colorId = JSON.parse(item.colorAsin || '[]')?.find(c => c.name_color === item.nameColor)?.color_id;
+        
+          const sizeId = item.hasSize ? item.sizes?.find(s => s.sizeName === item.size)?.sizeId : null;
+          const colorId = item.hasColor ? JSON.parse(item.colorAsin || '[]')?.find(c => c.name_color === item.nameColor)?.color_id : null;
           const quantity = quantityMap[item.productId] ?? item.quantity ?? 1;
-    
-          if (!sizeId || !colorId || !item.productId) continue;
-    
+        
+          if (!item.productId) continue;
+          if (item.hasSize && !sizeId) continue;
+          if (item.hasColor && !colorId) continue;
+        
           const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, {
             params: {
               productId: item.productId,
@@ -347,14 +349,13 @@ const getCartProduct = async () => {
               colorId
             }
           });
-    
+        
           const stock = res.data;
-    
+        
           if (quantity > stock) {
-            // ✅ Cập nhật lại giỏ hàng với số lượng mới
             const token = localStorage.getItem("accessToken") || '';
             const cartId = localStorage.getItem("cartId") || '';
-    
+        
             await axios.put("http://localhost:8084/api/cart/updateItem", {
               token,
               cartId,
@@ -364,13 +365,12 @@ const getCartProduct = async () => {
               size: item.size,
               nameColor: item.nameColor
             });
-    
+        
             setQuantityMap(prev => ({ ...prev, [item.productId]: stock }));
             showToastMessage(`⚠️ "${item.productTitle}" chỉ còn ${stock} sản phẩm. Đã tự điều chỉnh.`);
             anyAdjusted = true;
           }
-        }
-    
+        }            
         if (anyAdjusted) {
           await getCartProduct();
           return; // ✅ Sau khi điều chỉnh thì không cho đi tiếp, người dùng cần xem lại

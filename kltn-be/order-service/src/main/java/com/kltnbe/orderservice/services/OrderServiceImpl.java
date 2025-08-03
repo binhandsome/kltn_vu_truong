@@ -483,29 +483,60 @@ public class OrderServiceImpl implements OrderService {
         }).toList();
     }
 
-    @Override
-    @Transactional
-    public String cancelOrder(Long orderId, Long authId) {
-        Long userId = userServiceProxy.findUserIdByAuthId(authId);
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
-        MasterOrder masterOrder = masterOrderRepository.findById(order.getMasterOrder().getMasterOrderId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy MasterOrder"));
-        if (!masterOrder.getUserId().equals(userId)) {
-            return "Bạn không có quyền cancel";
-        }
-        DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(order.getOrderId());
-        if (deliveryInfo == null) {
-            throw new RuntimeException("Không tìm thấy thông tin giao hàng cho đơn hàng");
-        }
-        // Cập nhật trạng thái
-        deliveryInfo.setDeliveryStatus(DeliveryStatus.failed);
-        order.setStatus(OrderStatus.cancelled.name());
-        // Lưu lại
-        deliveryInfoRepository.save(deliveryInfo);
-        orderRepository.save(order);
-        return "Bạn đã cancel thành công đơn hàng";
+//    @Override
+//    @Transactional
+//    public String cancelOrder(Long orderId, Long authId) {
+//        Long userId = userServiceProxy.findUserIdByAuthId(authId);
+//        Order order = orderRepository.findById(orderId)
+//                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+//        MasterOrder masterOrder = masterOrderRepository.findById(order.getMasterOrder().getMasterOrderId())
+//                .orElseThrow(() -> new RuntimeException("Không tìm thấy MasterOrder"));
+//        if (!masterOrder.getUserId().equals(userId)) {
+//            return "Bạn không có quyền cancel";
+//        }
+//        DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(order.getOrderId());
+//        if (deliveryInfo == null) {
+//            throw new RuntimeException("Không tìm thấy thông tin giao hàng cho đơn hàng");
+//        }
+//        // Cập nhật trạng thái
+//        deliveryInfo.setDeliveryStatus(DeliveryStatus.failed);
+//        order.setStatus(OrderStatus.cancelled.name());
+//        // Lưu lại
+//        deliveryInfoRepository.save(deliveryInfo);
+//        orderRepository.save(order);
+//        return "Bạn đã cancel thành công đơn hàng";
+//    }
+@Override
+@Transactional
+public String cancelOrder(Long masterOrderId, Long authId) {
+    Long userId = userServiceProxy.findUserIdByAuthId(authId);
+
+    MasterOrder masterOrder = masterOrderRepository.findById(masterOrderId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy MasterOrder"));
+
+    if (!masterOrder.getUserId().equals(userId)) {
+        return "Bạn không có quyền cancel";
     }
+
+    List<Order> orders = masterOrder.getOrders();
+
+    for (Order order : orders) {
+        // ❌ Không set order.setStatus("cancelled") nữa vì DB không cho phép
+
+        DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(order.getOrderId());
+        if (deliveryInfo != null) {
+            deliveryInfo.setDeliveryStatus(DeliveryStatus.failed);  // failed hợp lệ trong DeliveryInfo
+            deliveryInfoRepository.save(deliveryInfo);
+        }
+    }
+
+    // ✅ Set trạng thái master_order là cancelled
+    masterOrder.setStatus("cancelled");
+    masterOrderRepository.save(masterOrder);
+
+    return "Bạn đã hủy thành công đơn hàng";
+}
+
 
     @Override
     @Transactional

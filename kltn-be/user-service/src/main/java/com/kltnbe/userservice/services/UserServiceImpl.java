@@ -118,10 +118,10 @@ public class UserServiceImpl implements UserService{
                 .map(address -> new AddressInfo(
                         address.getAddressId(),
                         address.getRecipientName(),
+                        address.getRecipientPhone(),     
                         address.getRecipientEmail(),
-                        address.getRecipientPhone(),
-                        address.getAddressDetails(),
                         address.getDeliveryAddress(),
+                        address.getAddressDetails(),
                         address.getIsPrimaryAddress()
                 ))
                 .collect(Collectors.toList());
@@ -250,10 +250,10 @@ public class UserServiceImpl implements UserService{
         return new AddressInfo(
                 address.getAddressId(),
                 address.getRecipientName(),
-                address.getRecipientEmail(),
                 address.getRecipientPhone(),
-                address.getAddressDetails(),
+                address.getRecipientEmail(),
                 address.getDeliveryAddress(),
+                address.getAddressDetails(),
                 address.getIsPrimaryAddress()
         );
     }

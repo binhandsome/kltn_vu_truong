@@ -35,6 +35,15 @@ function OrdersDetails() {
 	const [email, setEmail] = useState('');
 	const location = useLocation();
 	const [saveAddress, setSaveAddress] = useState('');
+	const [toastMessage, setToastMessage] = useState('');
+const [showToast, setShowToast] = useState(false);
+const showToastMessage = (msg) => {
+  setToastMessage(msg);
+  setShowToast(true);
+  setTimeout(() => {
+    setShowToast(false);
+  }, 1500);
+};
 		const [selectedOrder, setSelectedOrder] = useState(null); // Lưu order được chọn
 		const [recipientName, setRecipientName] = useState('');
 		const [id, setId] = useState();
@@ -77,31 +86,38 @@ function OrdersDetails() {
 				return "";
 		}
 	};
-const cancelButton = async (orderId) => {
-  const accessToken = localStorage.getItem('accessToken');
-  try {
-    const response = await axios.put(
-      "http://localhost:8086/api/orders/updateMethodOrder",
-      {}, // body JSON rỗng thay vì null
-      {
-        params: {
-          orderId: orderId,
-          method: 'cancel',
-        },
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json", // ✅ ép kiểu JSON
-        },
-      }
-    );
-
-    console.log('✅ Thành công rồi bạn ơi:', response.data);
-	      navigate("/user/myaccount/orders");
-
-  } catch (error) {
-    console.error('❌ Lỗi:', error.response?.data || error.message);
-  }
-};
+	const cancelButton = async (masterOrderId) => {
+		const confirmCancel = window.confirm("Bạn có chắc muốn hủy đơn hàng này?");
+		if (!confirmCancel) return;
+	  
+		const accessToken = localStorage.getItem('accessToken');
+	  
+		try {
+		  const response = await axios.put(
+			"http://localhost:8086/api/orders/updateMethodOrder",
+			{}, // body rỗng
+			{
+			  params: {
+				id: masterOrderId, // 🔄 Đổi thành "id" cho đúng với BE
+				method: 'cancel',
+			  },
+			  headers: {
+				Authorization: `Bearer ${accessToken}`,
+				"Content-Type": "application/json",
+			  },
+			}
+		  );
+	  
+		  showToastMessage("✅ Đã hủy đơn hàng thành công!");
+	  
+		  setTimeout(() => {
+			navigate("/user/myaccount/orders");
+		  }, 1000);
+		} catch (error) {
+		  showToastMessage("❌ Hủy đơn hàng thất bại!");
+		  console.error('Lỗi:', error.response?.data || error.message);
+		}
+	  };	  
 const updateAddress = async (orderId) => {
 	  console.log("🛠 orderId:", orderId); // Debug
 
@@ -517,7 +533,21 @@ const updateAddress = async (orderId) => {
 											<div className="content-btn m-b15">
 												{/* <a  className="btn btn-secondary me-xl-3 me-2 m-b15 btnhover20" onClick={() => handleOpen(order)}>Sửa Địa Chỉ</a> */}
 												{/* <a href="product-default.html" className="btn btn-outline-secondary m-b15 me-xl-3 me-2 btnhover20">Trả Đơn Hàng</a> */}
-												<a onClick={() => cancelButton(orderStore.orderId)} className="btn btn-outline-danger m-b15 btnhover20">Hủy Đơn</a>
+												{orderStore.status === "failed" ? (
+  <a 
+    href="/shop" 
+    className="btn btn-secondary m-b15 btnhover20"
+  >
+    Đặt Lại
+  </a>
+) : (
+  <a 
+    onClick={() => cancelButton(orderStore.orderId)} 
+    className="btn btn-outline-danger m-b15 btnhover20"
+  >
+    Hủy Đơn
+  </a>
+)}
 											</div>
 											<div className="clearfix">
 												<div className="dz-tabs style-3">
@@ -660,6 +690,23 @@ const updateAddress = async (orderId) => {
 				{/* Footer (đã được xử lý trong App.js) */}
 				<ScrollTopButton />
 				<QuickViewModal />
+				{showToast && (
+  <div style={{
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: 9999,
+    padding: '12px 20px',
+    backgroundColor: '#28a745',
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    transition: 'opacity 0.5s ease-in-out'
+  }}>
+    {toastMessage}
+  </div>
+)}
+
 			</div>
 		</>
 	);

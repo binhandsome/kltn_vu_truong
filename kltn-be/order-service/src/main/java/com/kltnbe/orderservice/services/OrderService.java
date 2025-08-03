@@ -25,7 +25,8 @@ public interface OrderService {
     ResponseEntity<?> saveOrder(OrderRequest orderRequest);
     ResponseEntity<?> placeGuestOrder(OrderRequest orderRequest);
     List<OrderResponse> findOrderByUserHeader(Long authId);
-    String cancelOrder(Long orderId, Long authId);
+//    String cancelOrder(Long orderId, Long authId);
+String cancelOrder(Long masterOrderId, Long authId);
     String updateAddress(Long orderId, Long authId, DeliveryAddressDTO deliveryAddressDTO);
 //    ResponseEntity<?> requestReturn(Long orderId, String reason, String accessToken);
 //    List<SalesStatsDTO> getSalesStatsByToken(String token, String type);
