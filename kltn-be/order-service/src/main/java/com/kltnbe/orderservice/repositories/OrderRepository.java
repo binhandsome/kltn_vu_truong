@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,28 +30,53 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 //            "WHERE status = 'completed' AND user_id = :userId " +
 //            "GROUP BY label ORDER BY MIN(created_at)", nativeQuery = true)
 //    List<Object[]> getSalesStatsNative(@Param("pattern") String pattern, @Param("userId") Long userId);
-//    // Đếm đơn hôm nay (tất cả trạng thái)
-//    @Query("SELECT COUNT(o) FROM Order o WHERE o.orderId IN :orderIds AND DATE(o.createdAt) = CURRENT_DATE")
-//    long countOrdersToday(@Param("orderIds") List<Long> orderIds);
-//
-//    // Đếm đơn trong tháng (tất cả trạng thái)
-//    @Query("SELECT COUNT(o) FROM Order o WHERE o.orderId IN :orderIds AND MONTH(o.createdAt) = MONTH(CURRENT_DATE) AND YEAR(o.createdAt) = YEAR(CURRENT_DATE)")
-//    long countOrdersThisMonth(@Param("orderIds") List<Long> orderIds);
-//
-//    @Query("SELECT SUM(o.totalPrice) FROM Order o WHERE o.orderId IN :orderIds AND o.status = 'completed'")
-//    BigDecimal calculateTotalRevenue(@Param("orderIds") List<Long> orderIds);
-//
-//    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderItems oi WHERE oi.productId IN :productIds")
-//    Page<Order> findOrdersByProductIds(@Param("productIds") List<Long> productIds, Pageable pageable);
-//
-//    @Query("SELECT MONTH(o.createdAt) AS month, SUM(o.totalPrice) AS revenue " +
-//            "FROM Order o " +
-//            "JOIN OrderItem oi ON o.orderId = oi.order.orderId " +
-//            "WHERE YEAR(o.createdAt) = YEAR(CURRENT_DATE) " +
-//            "AND oi.productId IN :productIds " +
-//            "AND o.status = 'completed' " +
-//            "GROUP BY MONTH(o.createdAt) " +
-//            "ORDER BY MONTH(o.createdAt)")
-//    List<Object[]> getRevenueByCurrentYearAndProducts(@Param("productIds") List<Long> productIds);
+    // Đếm đơn hôm nay (tất cả trạng thái)
+// Đếm đơn hôm nay (tất cả trạng thái) cho một shop cụ thể
+@Query("SELECT COUNT(o) FROM Order o WHERE o.storeId = :storeId AND DATE(o.createdAt) = CURRENT_DATE")
+long countOrdersToday(@Param("storeId") Long storeId);
+
+    // Đếm đơn trong tháng (tất cả trạng thái) cho một shop cụ thể
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.storeId = :storeId AND MONTH(o.createdAt) = MONTH(CURRENT_DATE) AND YEAR(o.createdAt) = YEAR(CURRENT_DATE)")
+    long countOrdersThisMonth(@Param("storeId") Long storeId);
+
+    // Tính tổng doanh thu (dựa trên discountedSubtotal) cho đơn hoàn thành của shop
+    @Query("SELECT SUM(o.discountedSubtotal) FROM Order o WHERE o.storeId = :storeId AND o.status = 'completed'")
+    BigDecimal calculateTotalRevenue(@Param("storeId") Long storeId);
+
+    // Tìm đơn hàng theo danh sách productId cho shop cụ thể
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderItems oi WHERE o.storeId = :storeId AND oi.productId IN :productIds")
+    Page<Order> findOrdersByProductIds(@Param("storeId") Long storeId, @Param("productIds") List<Long> productIds, Pageable pageable);
+    @Query("SELECT MONTH(o.createdAt) AS month, COALESCE(SUM(o.discountedSubtotal), 0) AS revenue " +
+            "FROM Order o " +
+            "WHERE o.storeId = :storeId " +
+            "AND YEAR(o.createdAt) = YEAR(CURRENT_DATE) " +
+            "AND o.status = 'completed' " +
+            "GROUP BY MONTH(o.createdAt) " +
+            "ORDER BY MONTH(o.createdAt)")
+    List<Object[]> getRevenueByCurrentYearAndProducts(@Param("storeId") Long storeId);
+    // Tính tổng doanh thu theo khoảng thời gian cho shop
+    @Query("SELECT COALESCE(SUM(o.discountedSubtotal), 0) FROM Order o " +
+            "WHERE o.storeId = :storeId " +
+            "AND o.createdAt BETWEEN :startDate AND :endDate " +
+            "AND (:statuses IS NULL OR o.status IN :statuses)")
+    BigDecimal calculateRevenueByDateRangeAndStatuses(
+            @Param("storeId") Long storeId,
+            @Param("startDate") Timestamp startDate,
+            @Param("endDate") Timestamp endDate,
+            @Param("statuses") List<String> statuses);
+
+    // Lấy danh sách Order theo khoảng thời gian và danh sách status cho shop
+    @Query("SELECT o FROM Order o " +
+            "WHERE o.storeId = :storeId " +
+            "AND o.createdAt BETWEEN :startDate AND :endDate " +
+            "AND (:statuses IS NULL OR o.status IN :statuses) " +
+            "ORDER BY o.createdAt DESC")
+    Page<Order> findOrdersByDateRangeAndStatuses(
+            @Param("storeId") Long storeId,
+            @Param("startDate") Timestamp startDate,
+            @Param("endDate") Timestamp endDate,
+            @Param("statuses") List<String> statuses,
+            Pageable pageable);
+
 
 }

@@ -27,24 +27,33 @@ async function renderRevenueChart(chartType, elementId) {
     let months = monthNames;
 
     try {
-        const response = await fetch('http://localhost:8086/api/orders/getRevenueByStore?storeId=20');
-        const apiData = await response.json();
+    const accessToken = localStorage.getItem('accessToken'); // Lấy token từ localStorage
 
-        // Initialize revenueData with zeros for all 12 months
-        revenueData = new Array(12).fill(0);
+    const response = await fetch('http://localhost:8089/api/seller/getRevenueByStore', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`, // Gửi token qua header
+        },
+    });
 
-        // Map API data to the corresponding months
-        apiData.forEach(item => {
-            const monthIndex = item.month - 1; // API months are 1-based, arrays are 0-based
-            if (monthIndex >= 0 && monthIndex < 12) {
-                revenueData[monthIndex] = item.revenue;
-            }
-        });
-    } catch (error) {
-        console.error('Error fetching revenue data:', error);
-        // Fallback to empty data if API fails
-        revenueData = new Array(12).fill(0);
-    }
+    const apiData = await response.json();
+
+    // Initialize revenueData with zeros for all 12 months
+    revenueData = new Array(12).fill(0);
+
+    // Map API data to the corresponding months
+    apiData.forEach(item => {
+        const monthIndex = item.month - 1; // API months are 1-based, arrays are 0-based
+        if (monthIndex >= 0 && monthIndex < 12) {
+            revenueData[monthIndex] = item.revenue;
+        }
+    });
+} catch (error) {
+    console.error('Error fetching revenue data:', error);
+    // Fallback to empty data if API fails
+    revenueData = new Array(12).fill(0);
+}
 
     // Modern and cohesive color palette
     const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];

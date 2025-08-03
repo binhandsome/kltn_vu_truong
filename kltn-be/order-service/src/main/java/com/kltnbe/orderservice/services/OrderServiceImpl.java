@@ -14,17 +14,24 @@ import com.kltnbe.orderservice.repositories.*;
 //import com.kltnbe.orderservice.repositories.OrderRepository;
 
 
+import feign.FeignException;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -527,7 +534,166 @@ public class OrderServiceImpl implements OrderService {
         userServiceProxy.updateAddress(deliveryAddressDTO);
         return "Cập nhật địa chỉ thành công";
     }
+    @Override
+    public DashboardStatsResponse getSellerDashboard(Long storeId, int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses) {
+        // Nếu startDate hoặc endDate là null, đặt mặc định là tất cả dữ liệu (từ 1970-01-01 đến hiện tại)
+        Timestamp defaultStart = startDate != null ? startDate : new Timestamp(0); // 1970-01-01 00:00:00
+        Timestamp defaultEnd = endDate != null ? endDate : new Timestamp(System.currentTimeMillis()); // Hiện tại
 
+        // 1️⃣ Lấy Orders có phân trang theo khoảng thời gian và statuses
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Order> pagedOrders = findOrdersByDateRangeAndStatuses(storeId, defaultStart, defaultEnd, statuses, pageable);
+        List<Order> orders = pagedOrders.getContent();
+
+        if (orders.isEmpty()) {
+            return DashboardStatsResponse.builder()
+                    .ordersToday(0L)
+                    .ordersThisMonth(0L)
+                    .totalRevenue(BigDecimal.ZERO)
+                    .recentOrders(Collections.emptyList())
+                    .topProducts(Collections.emptyList())
+                    .build();
+        }
+
+        // 3️⃣ Lấy orderIds để phục vụ truy vấn liên quan
+        List<Long> orderIds = orders.stream().map(Order::getOrderId).toList();
+
+        // Lấy orderItems để tính itemCount và topProducts
+        List<OrderItem> orderItems = orderItemRepository.findByOrderOrderIdIn(storeId, orderIds);
+
+        // Lấy DeliveryInfo cho từng đơn
+        List<DeliveryInfo> deliveryInfos = deliveryInfoRepository.findByOrderIdIn(storeId, orderIds);
+        Map<Long, DeliveryInfo> deliveryMap = deliveryInfos.stream()
+                .collect(Collectors.toMap(DeliveryInfo::getOrderId, d -> d));
+
+        // 4️⃣ Build recentOrders
+        List<OrderSummary> recentOrders = orders.stream()
+                .map(order -> {
+                    DeliveryInfo delivery = deliveryMap.get(order.getOrderId());
+                    Long addressId = (delivery != null) ? delivery.getAddressId() : order.getMasterOrder().getAddressId();
+                    AddressInfo addr = Optional.ofNullable(userServiceProxy.findByAddressId(addressId).getBody()).orElse(null);
+                    PaymentInfo paymentInfo = null;
+                    try {
+                        paymentInfo = Optional.ofNullable(paymentServiceProxy.findByOrderId(order.getOrderId()).getBody()).orElse(null);
+                    } catch (Exception e) {
+                        System.out.println("FeignException: " + e.getMessage());
+                    }
+                    ShippingMethod shippingMethod = (delivery != null) ? delivery.getShippingMethod() : null;
+
+                    List<OrderItem> orderItemsAndProduct = orderItemRepository.findByOrderOrderIdIn(storeId, Collections.singletonList(order.getOrderId()));
+                    List<OrderItemSummary> itemSummaries = orderItemsAndProduct.stream()
+                            .map(oi -> {
+                                ProductResponse product = productServiceProxy.getProductById(oi.getProductId()).getBody();
+                                return OrderItemSummary.builder()
+                                        .asin(product.getAsin())
+                                        .titleProduct(product != null ? product.getNameProduct() : "Unknown Product")
+                                        .quantity(oi.getQuantity())
+                                        .unitPrice(oi.getUnitPrice())
+                                        .color(oi.getColor())
+                                        .size(oi.getSize())
+                                        .build();
+                            })
+                            .toList();
+                    return OrderSummary.builder()
+                            .orderId(order.getOrderId())
+                            .status(order.getStatus())
+                            .totalPrice(order.getDiscountedSubtotal())
+                            .createdAt(order.getCreatedAt())
+                            .itemCount((int) orderItems.stream().filter(oi -> oi.getOrder().getOrderId().equals(order.getOrderId())).count())
+                            .recipientName(addr != null ? addr.getRecipientName() : null)
+                            .recipientPhone(addr != null ? addr.getRecipientPhone() : null)
+                            .recipientEmail(addr != null ? addr.getRecipientEmail() : null)
+                            .deliveryAddress(addr != null ? addr.getDeliveryAddress() : null)
+                            .addressDetails(addr != null ? addr.getAddressDetails() : null)
+                            .deliveryStatus(delivery != null ? delivery.getDeliveryStatus() : null)
+                            .trackingNumber(delivery != null ? delivery.getTrackingNumber() : null)
+                            .shippingFee(delivery != null ? delivery.getShippingFee() : null)
+                            .estimatedDeliveryDate(delivery != null ? delivery.getEstimatedDeliveryDate() : null)
+                            .shippingMethodName(shippingMethod != null ? shippingMethod.getMethodName() : null)
+                            .shippingDescription(shippingMethod != null ? shippingMethod.getDescription() : null)
+                            .shippingEstimatedDays(shippingMethod != null ? shippingMethod.getEstimatedDays() : null)
+                            .paymentMethod(paymentInfo != null ? paymentInfo.getPaymentMethod() : null)
+                            .statusPayment(paymentInfo != null ? paymentInfo.getPaymentStatus() : null)
+                            .items(itemSummaries)
+                            .build();
+                })
+                .toList();
+
+        // 5️⃣ Build topProducts từ orderItems
+        Map<Long, Long> productSales = orderItems.stream()
+                .collect(Collectors.groupingBy(OrderItem::getProductId, Collectors.summingLong(OrderItem::getQuantity)));
+
+        List<ProductSummary> topProducts = productSales.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .limit(5)
+                .map(entry -> ProductSummary.builder()
+                        .productId(entry.getKey())
+                        .productName(String.valueOf(productServiceProxy.findProductNameById(entry.getKey()).getBody()))
+                        .soldQuantity(entry.getValue())
+                        .build())
+                .toList();
+
+        // 6️⃣ Lấy thống kê (totalRevenue) theo khoảng thời gian và statuses
+        BigDecimal totalRevenue = calculateRevenueByDateRangeAndStatuses(storeId, defaultStart, defaultEnd, statuses);
+
+        // 7️⃣ Trả về DashboardStatsResponse
+        return DashboardStatsResponse.builder()
+                .ordersToday(0L)
+                .ordersThisMonth(0L)
+                .totalRevenue(totalRevenue)
+                .recentOrders(recentOrders)
+                .totalPages(pagedOrders.getTotalPages())
+                .topProducts(topProducts)
+                .build();
+    }
+    public List<MonthlyRevenueDTO> getRevenueByStore(Long storeId) {
+        List<Long> productIds = productServiceProxy.getProductIdsByStore(storeId).getBody();
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Object[]> results = orderRepository.getRevenueByCurrentYearAndProducts(storeId);
+        return results.stream()
+                .map(r -> new MonthlyRevenueDTO((Integer) r[0], (BigDecimal) r[1]))
+                .toList();
+    }
+
+    @Override
+    public BigDecimal calculateRevenueByDateRangeAndStatuses(Long storeId, Timestamp startDate, Timestamp endDate, List<String> statuses) {
+        return orderRepository.calculateRevenueByDateRangeAndStatuses(storeId, startDate, endDate, statuses);
+    }
+
+    @Override
+    public Page<Order> findOrdersByDateRangeAndStatuses(Long storeId, Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable) {
+        return orderRepository.findOrdersByDateRangeAndStatuses(storeId, startDate, endDate, statuses, pageable);
+    }
+
+    @Override
+    @Transactional
+    public String updateStatusBySeller(Long orderId, Long shopId, String status) {
+        Optional<Order> order = orderRepository.findById(orderId);
+        if (!order.get().getStoreId().equals(shopId)) {
+            return "Bạn không có quyền để update";
+        }
+        if (status.equalsIgnoreCase("packed")) {
+            order.get().setStatus(OrderStatus.processing.name());
+        }else{
+            order.get().setStatus(status);
+
+        }
+        orderRepository.save(order.get());
+        return "Update status thành công rồi";
+    }
+
+    @Override
+    public String cancelBySeller(Long orderId, Long shopId) {
+        Optional<Order> order = orderRepository.findById(orderId);
+        if (!order.get().getStoreId().equals(shopId)) {
+            return "Bạn không có quyền để update";
+        }
+        order.get().setStatus(OrderStatus.cancelledSeller.name());
+        orderRepository.save(order.get());
+        return "Hủy đơn hàng thành công";
+    }
 
     private boolean isSameAddress(DeliveryAddressDTO oldAddr, DeliveryAddressDTO newAddr) {
         return Objects.equals(oldAddr.getRecipientName(), newAddr.getRecipientName())
@@ -773,157 +939,7 @@ public class OrderServiceImpl implements OrderService {
 //                .toList();
 //    }
 //
-//    @Override
-//    public DashboardStatsResponse getSellerDashboard(Long storeId, int page, int size) {
-//        // 1️⃣ Lấy danh sách productId thuộc store từ product-service
-//        List<Long> productIds = productServiceProxy.getProductIdsByStore(storeId).getBody();
-//        if (productIds == null || productIds.isEmpty()) {
-//            return DashboardStatsResponse.builder()
-//                    .ordersToday(0L)
-//                    .ordersThisMonth(0L)
-//                    .totalRevenue(BigDecimal.ZERO)
-//                    .recentOrders(Collections.emptyList())
-//                    .topProducts(Collections.emptyList())
-//                    .build();
-//        }
-//
-//        // 2️⃣ Lấy Orders có phân trang
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-//        Page<Order> pagedOrders = orderRepository.findOrdersByProductIds(productIds, pageable);
-//        List<Order> orders = pagedOrders.getContent();
-//
-//        if (orders.isEmpty()) {
-//            return DashboardStatsResponse.builder()
-//                    .ordersToday(0L)
-//                    .ordersThisMonth(0L)
-//                    .totalRevenue(BigDecimal.ZERO)
-//                    .recentOrders(Collections.emptyList())
-//                    .topProducts(Collections.emptyList())
-//                    .build();
-//        }
-//
-//        // 3️⃣ Lấy orderIds để phục vụ truy vấn liên quan
-//        List<Long> orderIds = orders.stream().map(Order::getOrderId).toList();
-//
-//        // Lấy orderItems để tính itemCount và topProducts
-//        List<OrderItem> orderItems = orderItemRepository.findByOrderOrderIdIn(orderIds);
-//
-//        // Lấy DeliveryInfo cho từng đơn
-//        List<DeliveryInfo> deliveryInfos = deliveryInfoRepository.findByOrderIdIn(orderIds);
-//        Map<Long, DeliveryInfo> deliveryMap = deliveryInfos.stream()
-//                .collect(Collectors.toMap(DeliveryInfo::getOrderId, d -> d));
-//
-//        // 4️⃣ Build recentOrders (mỗi order lấy Address, DeliveryInfo và ShippingMethod)
-//        List<OrderSummary> recentOrders = orders.stream()
-//                .map(order -> {
-//                    // Lấy địa chỉ từ user-service
-//                    AddressInfo addr = Optional.ofNullable(
-//                            userServiceProxy.findByAddressId(order.getAddressId()).getBody()
-//                    ).orElse(null);
-//                    // ✅ Xử lý gọi payment-service an toàn
-//                    PaymentInfo paymentInfo = null;
-//                    try {
-//                        paymentInfo = Optional.ofNullable(
-//                                paymentServiceProxy.findByOrderId(order.getOrderId()).getBody()
-//                        ).orElse(null);
-//                    } catch (FeignException e) {
-//                        System.out.println(e.status());
-//                    }
-//                    // Lấy thông tin giao hàng và shipping method
-//                    DeliveryInfo delivery = deliveryMap.get(order.getOrderId());
-//                    ShippingMethod shippingMethod = (delivery != null) ? delivery.getShippingMethod() : null;
-//
-//                    // 4️⃣ Lấy danh sách OrderItem từ DB
-//                    List<OrderItem> orderItemsAndProduct = orderItemRepository.findByOrderOrderIdIn(Collections.singletonList(order.getOrderId()));
-//                    List<OrderItemSummary> itemSummaries = orderItemsAndProduct.stream()
-//                            .map(oi -> {
-//                                // Call product-service để lấy thông tin sản phẩm theo ASIN
-//                                ProductResponse product = productServiceProxy.getProductById(oi.getProductId()).getBody();
-//
-//                                return OrderItemSummary.builder()
-//                                        .asin(product.getAsin())
-//                                        .titleProduct(product != null ? product.getNameProduct() : "Unknown Product")
-//                                        .quantity(oi.getQuantity())
-//                                        .unitPrice(oi.getUnitPrice())
-//                                        .color(oi.getColor())
-//                                        .size(oi.getSize())
-//                                        .build();
-//                            })
-//                            .toList();
-//                    return OrderSummary.builder()
-//                            .orderId(order.getOrderId())
-//                            .status(order.getStatus())
-//                            .totalPrice(order.getTotalPrice())
-//                            .createdAt(order.getCreatedAt())
-//                            .itemCount((int) orderItems.stream()
-//                                    .filter(oi -> oi.getOrder().getOrderId().equals(order.getOrderId()))
-//                                    .count())
-//                            // Thông tin địa chỉ
-//                            .recipientName(addr != null ? addr.getRecipientName() : null)
-//                            .recipientPhone(addr != null ? addr.getRecipientPhone() : null)
-//                            .recipientEmail(addr != null ? addr.getRecipientEmail() : null)
-//                            .deliveryAddress(addr != null ? addr.getDeliveryAddress() : null)
-//                            .addressDetails(addr != null ? addr.getAddressDetails() : null)
-//                            // Thông tin giao hàng
-//                            .deliveryStatus(delivery != null ? delivery.getDeliveryStatus() : null)
-//                            .trackingNumber(delivery != null ? delivery.getTrackingNumber() : null)
-//                            .shippingFee(delivery != null ? delivery.getShippingFee() : null)
-//                            .estimatedDeliveryDate(delivery != null ? delivery.getEstimatedDeliveryDate() : null)
-//                            // Thông tin shipping method
-//                            .shippingMethodName(shippingMethod != null ? shippingMethod.getMethodName() : null)
-//                            .shippingDescription(shippingMethod != null ? shippingMethod.getDescription() : null)
-//                            .shippingEstimatedDays(shippingMethod != null ? shippingMethod.getEstimatedDays() : null)
-//                            .paymentMethod(paymentInfo != null ? paymentInfo.getPaymentMethod() : null)
-//                            .statusPayment(paymentInfo != null ? paymentInfo.getPaymentStatus() : null)
-//                            .items(itemSummaries) // 🔥 Gán danh sách sản phẩm
-//
-//                            .build();
-//                })
-//                .toList();
-//
-//        // 5️⃣ Build topProducts từ orderItems
-//        Map<Long, Long> productSales = orderItems.stream()
-//                .collect(Collectors.groupingBy(OrderItem::getProductId, Collectors.summingLong(OrderItem::getQuantity)));
-//
-//        List<ProductSummary> topProducts = productSales.entrySet().stream()
-//                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
-//                .limit(5)
-//                .map(entry -> ProductSummary.builder()
-//                        .productId(entry.getKey())
-//                        .productName(String.valueOf(productServiceProxy.findProductNameById(entry.getKey()).getBody()))
-//                        .soldQuantity(entry.getValue())
-//                        .build())
-//                .toList();
-//
-//        // 6️⃣ Lấy thống kê (ordersToday, ordersThisMonth, totalRevenue) từ tất cả orderIds của shop
-//        List<Long> allOrderIds = orderItemRepository.findOrderIdsByProductIds(productIds);
-//        long ordersToday = orderRepository.countOrdersToday(allOrderIds);
-//        long ordersThisMonth = orderRepository.countOrdersThisMonth(allOrderIds);
-//        BigDecimal totalRevenue = Optional.ofNullable(orderRepository.calculateTotalRevenue(allOrderIds))
-//                .orElse(BigDecimal.ZERO);
-//
-//        // 7️⃣ Trả về DashboardStatsResponse
-//        return DashboardStatsResponse.builder()
-//                .ordersToday(ordersToday)
-//                .ordersThisMonth(ordersThisMonth)
-//                .totalRevenue(totalRevenue)
-//                .recentOrders(recentOrders)
-//                .totalPages(pagedOrders.getTotalPages()) // 🔥 Thêm totalPages
-//                .topProducts(topProducts)
-//                .build();
-//    }
-//
-//    @Override
-//    public List<MonthlyRevenueDTO> getRevenueByStore(Long storeId) {
-//        List<Long> productIds = productServiceProxy.getProductIdsByStore(storeId).getBody();
-//        if (productIds == null || productIds.isEmpty()) {
-//            return Collections.emptyList();
-//        }
-//        List<Object[]> results = orderRepository.getRevenueByCurrentYearAndProducts(productIds);
-//        return results.stream()
-//                .map(r -> new MonthlyRevenueDTO((Integer) r[0], (BigDecimal) r[1]))
-//                .toList();
-//    }
+
 //
 ////    @Override
 ////    public String updateStatusOrderBySeller(Long orderId, String status) {

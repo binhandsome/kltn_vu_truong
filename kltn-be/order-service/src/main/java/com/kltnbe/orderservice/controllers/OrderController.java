@@ -16,11 +16,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -69,6 +80,78 @@ public class OrderController {
         }
         return ResponseEntity.ok(result);
     }
+    @PutMapping("/updateMethodOrderBySeller")
+    public ResponseEntity<String> updateMethodOrderBySeller(
+            @RequestParam Long orderId,
+            @RequestParam Long shopId,
+            @RequestParam String method,
+            @RequestParam(required = false) String status) {
+        String result;
+        switch (method.toLowerCase()) {
+            case "cancelbyseller":
+                result = orderService.cancelBySeller(orderId, shopId);
+                break;
+            case "updatestatusbyseller":
+                result = orderService.updateStatusBySeller(orderId,shopId, status);
+                break;
+            default:
+                return ResponseEntity.badRequest().body("Phương thức cập nhật không hợp lệ: " + method);
+        }
+        return ResponseEntity.ok(result);
+    }
+    @GetMapping("/dashboardSeller")
+    public ResponseEntity<DashboardStatsResponse> getSellerDashboard(
+            @RequestParam Long storeId,
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String endDate,
+            @RequestParam(required = false) List<String> status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Timestamp start = startDate != null ? Timestamp.valueOf(LocalDateTime.parse(startDate + "T00:00:00")) : null;
+        Timestamp end = endDate != null ? Timestamp.valueOf(LocalDateTime.parse(endDate + "T23:59:59")) : null;
+
+        System.out.println("Fetching dashboard for storeId=" + storeId + ", start=" + start + ", end=" + end + ", statuses=" + status);
+        DashboardStatsResponse response = orderService.getSellerDashboard(storeId, page, size, start, end, status);
+        return ResponseEntity.ok(response);
+    }
+        @GetMapping("/getRevenueByStore")
+        public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByStore(@RequestParam Long storeId) {
+            List<MonthlyRevenueDTO> revenue = orderService.getRevenueByStore(storeId);
+            return ResponseEntity.ok(revenue);
+        }
+//    @GetMapping("/revenue")
+//    public ResponseEntity<Map<String, BigDecimal>> getRevenue(
+//            @RequestParam Long storeId,
+//            @RequestParam  LocalDate startDate,
+//            @RequestParam  LocalDate endDate) {
+//
+//        // Validate: endDate không được null hoặc trước startDate
+//        if (endDate == null || endDate.isBefore(startDate)) {
+//            throw new IllegalArgumentException("endDate không được null hoặc trước startDate");
+//        }
+//
+//        // ✅ Cộng thêm 1 ngày vào endDate
+//        LocalDate endDateExclusive = endDate.plusDays(1);
+//
+//        // Convert sang Timestamp
+//        Timestamp start = Timestamp.valueOf(startDate.atStartOfDay());
+//        Timestamp end = Timestamp.valueOf(endDateExclusive.atStartOfDay()); // Lấy đến đầu ngày kế tiếp
+//
+//        System.out.printf("Fetching revenue for storeId=%d, start=%s, end=%s%n",
+//                storeId, start, end);
+//
+//        BigDecimal revenue = orderService.getRevenueByDateRange(storeId, start, end);
+//
+//        Map<String, BigDecimal> response = new HashMap<>();
+//        response.put("revenue", revenue != null ? revenue : BigDecimal.ZERO);
+//
+//        return ResponseEntity.ok(response);
+//    }
+
+
+
+
 ////    @GetMapping("/user")
 ////    public Page<OrderResponse> getOrdersByAccessToken(
 ////            @RequestHeader("Authorization") String token,

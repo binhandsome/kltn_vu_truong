@@ -24,6 +24,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -656,9 +657,10 @@ public class SellerServiceImpl implements SellerService {
     public List<ProductSizeDTO> getSizesByAsin(String asin) {
         return productFeignClient.getSizesByAsin(asin);
     }
-    public ResponseEntity<DashboardStatsResponse> getSellerDashboard(Long authId, int page, int size) {
+    public ResponseEntity<DashboardStatsResponse> getSellerDashboard(Long authId, int page, int size, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,
+                                                                     @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String endDate,@RequestParam(required = false) List<String> status) {
         Optional<Shop> shop = shopRepository.findByAuthId(authId);
-        DashboardStatsResponse response = orderServiceProxy.getSellerDashboard(shop.get().getShopId(),page, size).getBody();
+        DashboardStatsResponse response = orderServiceProxy.getSellerDashboard(shop.get().getShopId(),page, size,startDate,endDate, status).getBody();
         response.setFollowers(shop.get().getFollowersShop());
         return ResponseEntity.ok(response);
     }
@@ -829,6 +831,17 @@ public class SellerServiceImpl implements SellerService {
     @Override
     public ReviewResponse updateReplyToReview(Long reviewId, SellerReplyRequest request, Long sellerId) {
         return productServiceProxy.updateSellerReply(reviewId, request, sellerId);
+    }
+
+    @Override
+    public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByStore(Long authId) {
+        return orderServiceProxy.getRevenueByStore(authId);
+    }
+
+    @Override
+    public ResponseEntity<String> updateMethodOrder(Long orderId, Long authId, String method, String status) {
+        Optional<Shop> shop = shopRepository.findByAuthId(authId);
+        return orderServiceProxy.updateMethodOrderBySeller(orderId, shop.get().getShopId(), method, status);
     }
 
 }

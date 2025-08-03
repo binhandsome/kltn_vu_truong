@@ -8,6 +8,7 @@ import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
 import com.kltnbe.sellerservice.dtos.res.TitleAndImgSeller;
 import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,7 +52,7 @@ public interface SellerService {
     List<ProductVariantDTO> getVariantsByProduct(Long productId, Long authId);
     ProductVariantDTO getVariant(Long variantId);
 
-    ResponseEntity<DashboardStatsResponse> getSellerDashboard(Long authId, int page, int size);
+    ResponseEntity<DashboardStatsResponse> getSellerDashboard(Long authId, int page, int size,@DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,@DateTimeFormat(pattern = "yyyy-MM-dd") String endDate,List<String> status);
     void updateProductStatus(Long productId, String status, Long authId);
     void deleteVariant(Long variantId, Long authId);
     void addProduct(ProductRequestDTO product, Long authId);
@@ -75,4 +76,10 @@ public interface SellerService {
     ReviewResponse replyToReview(Long reviewId, SellerReplyRequest body, Long authId);
     ReviewResponse deleteReview(Long reviewId, Long authId);
     ReviewResponse updateReplyToReview(Long reviewId, SellerReplyRequest request, Long sellerId);
+    ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByStore(Long authId);
+    public ResponseEntity<String> updateMethodOrder(
+         Long orderId,
+         Long authId,
+         String method,
+         String status);
 }
