@@ -1,12 +1,10 @@
 package com.kltnbe.userservice.services;
 
 import com.kltnbe.userservice.dtos.UserDTO;
-import com.kltnbe.userservice.dtos.req.AddressRequest;
-import com.kltnbe.userservice.dtos.req.DeliveryAddressDTO;
-import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
-import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
+import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
+import com.kltnbe.userservice.dtos.res.SystemFeedbackResponseDTO;
 import com.kltnbe.userservice.entities.Address;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
@@ -41,4 +39,8 @@ public interface UserService {
     List<AddressInfo> findByAddressIds(List<Long> addressId);
     Long findUserIdByAuthId(Long authId);
     String updateAddress(DeliveryAddressDTO deliveryAddressDTO);
+    Long createAddressForOrder(DeliveryAddressDTO dto, String accessToken);
+    String submitFeedback(SystemFeedbackRequestDTO dto, Long userId);
+    List<SystemFeedbackResponseDTO> getMyFeedbacks(Long userId);
+
 }

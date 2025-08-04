@@ -29,4 +29,9 @@ public interface UserServiceProxy {
     Long findUserIdByAuthId(@RequestParam Long authId);
     @PutMapping("/api/user/updateAddress")
     ResponseEntity<String> updateAddress(@RequestBody DeliveryAddressDTO deliveryAddressDTO);
+    @PostMapping("/api/user/create-address-for-order")
+    Long createAddressForOrder(
+            @RequestBody DeliveryAddressDTO dto,
+            @RequestHeader("Authorization") String accessToken
+    );
 }

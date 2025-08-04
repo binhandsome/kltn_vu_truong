@@ -14,6 +14,7 @@ import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.repositories.*;
 import com.kltnbe.productservice.services.AsyncUploadService;
 import com.kltnbe.productservice.services.ProductService;
+import com.kltnbe.productservice.services.ProductVariantService;
 import com.kltnbe.security.utils.InternalApi;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class ProductController {
     private ProductRepository productRepository;
     @Autowired
     private ColorRepository colorRepository;
+    @Autowired
+    private ProductVariantService productVariantService;
     @Autowired
     private ProductSizeRepository productSizeRepository;
     @Autowired
@@ -222,6 +225,16 @@ public class ProductController {
 
         return ResponseEntity.ok("Đã trừ tồn kho");
     }
+    @PostMapping("/restore-inventory")
+    public ResponseEntity<?> restoreInventory(@RequestBody List<InventoryRestoreRequest> requests) {
+        try {
+            productVariantService.restoreInventoryFromNames(requests);
+            return ResponseEntity.ok("✅ Đã hoàn tồn kho thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("❌ Lỗi khi hoàn tồn kho: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/findMoreProductInfoById")
     public ResponseEntity<MoreProductInfo> findMoreProductInfoById() {
         MoreProductInfo moreProductInfo = productService.findMoreProductInfoById(1L);

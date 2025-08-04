@@ -34,6 +34,9 @@ public interface OrderService {
     String updateAddress(Long orderId, Long authId, DeliveryAddressDTO deliveryAddressDTO);
 
     //    ResponseEntity<?> requestReturn(Long orderId, String reason, String accessToken);
+//    String cancelOrder(Long orderId, Long authId);
+//    String updateAddress(Long orderId, Long authId, DeliveryAddressDTO deliveryAddressDTO);
+//    ResponseEntity<?> requestReturn(Long orderId, String reason, String accessToken);
 //    List<SalesStatsDTO> getSalesStatsByToken(String token, String type);
     DashboardStatsResponse getSellerDashboard(Long storeId, int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses);
 
@@ -46,6 +49,8 @@ public interface OrderService {
     String updateStatusBySeller(Long orderId, Long shopId, String status);
 
     String cancelBySeller(Long orderId, Long shopId);
+    String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO dto, String accessToken);
+    ////    String updateStatusOrderBySeller(Long orderId, String status);
 
     Map<String, Object> getWeeklyMetrics();
 

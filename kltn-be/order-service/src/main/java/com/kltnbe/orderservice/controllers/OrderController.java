@@ -57,25 +57,26 @@ public class OrderController {
     }
     @PutMapping("/updateMethodOrder")
     public ResponseEntity<String> updateMethodOrder(
-            @RequestParam("id") Long id,  // 👈 đổi thành "id" trung lập
+            @RequestParam("orderId") Long orderId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam String method,
-            @RequestBody(required = false) DeliveryAddressDTO deliveryAddressDTO) {
-
+            @RequestBody(required = false) DeliveryAddressDTO deliveryAddressDTO,
+            @RequestHeader(value = "Authorization", required = false) String accessToken // ✅ cần để tạo địa chỉ nếu cần
+    ) {
         String result;
 
         switch (method.toLowerCase()) {
             case "cancel":
-                // id ở đây là masterOrderId
-                result = orderService.cancelOrder(id, userDetails.getAuthId());
+                result = orderService.cancelOrder(orderId, userDetails.getAuthId());
                 break;
 
             case "updateaddress":
-                // id ở đây là orderId
-                if (deliveryAddressDTO == null) {
-                    return ResponseEntity.badRequest().body("Thiếu thông tin địa chỉ để cập nhật");
+                if (deliveryAddressDTO == null || accessToken == null) {
+                    return ResponseEntity.badRequest().body("Thiếu thông tin địa chỉ hoặc accessToken");
                 }
-                result = orderService.updateAddress(id, userDetails.getAuthId(), deliveryAddressDTO);
+
+                // ✅ gọi logic mới thông minh
+                result = orderService.updateOrderAddress(orderId, userDetails.getAuthId(), deliveryAddressDTO, accessToken);
                 break;
 
             default:
@@ -84,6 +85,35 @@ public class OrderController {
 
         return ResponseEntity.ok(result);
     }
+
+//    @PutMapping("/updateMethodOrder")
+//    public ResponseEntity<String> updateMethodOrder(
+//            @RequestParam("orderId") Long orderId,  // ✅ Rõ ràng: là orderId
+//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @RequestParam String method,
+//            @RequestBody(required = false) DeliveryAddressDTO deliveryAddressDTO) {
+//
+//        String result;
+//
+//        switch (method.toLowerCase()) {
+//            case "cancel":
+//                result = orderService.cancelOrder(orderId, userDetails.getAuthId());
+//                break;
+//
+//            case "updateaddress":
+//                if (deliveryAddressDTO == null) {
+//                    return ResponseEntity.badRequest().body("Thiếu thông tin địa chỉ để cập nhật");
+//                }
+//                result = orderService.updateAddress(orderId, userDetails.getAuthId(), deliveryAddressDTO);
+//                break;
+//
+//            default:
+//                return ResponseEntity.badRequest().body("Phương thức cập nhật không hợp lệ: " + method);
+//        }
+//
+//        return ResponseEntity.ok(result);
+//    }
+
     @PutMapping("/updateMethodOrderBySeller")
     public ResponseEntity<String> updateMethodOrderBySeller(
             @RequestParam Long orderId,

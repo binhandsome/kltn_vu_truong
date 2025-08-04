@@ -3,6 +3,7 @@ package com.kltnbe.orderservice.helpers;
 import com.kltnbe.orderservice.dtos.ProductSimpleDTO;
 import com.kltnbe.orderservice.dtos.ProductVariantDTO;
 import com.kltnbe.orderservice.dtos.req.InventoryReduceRequest;
+import com.kltnbe.orderservice.dtos.req.InventoryRestoreRequest;
 import com.kltnbe.orderservice.dtos.res.ProductResponse;
 import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -40,4 +41,6 @@ public interface ProductServiceProxy {
 
     @GetMapping("/api/products/getStoreIdByProductId")
     public ResponseEntity<Long> getStoreIdByProductId(@RequestParam Long productId);
+    @PostMapping("/api/products/restore-inventory")
+    void restoreInventory(@RequestBody List<InventoryRestoreRequest> requests);
 }
