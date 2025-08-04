@@ -1,6 +1,7 @@
 package com.kltnbe.productservice.services;
 
 import com.kltnbe.productservice.dtos.ProductVariantDTO;
+import com.kltnbe.productservice.dtos.req.InventoryRestoreRequest;
 import com.kltnbe.productservice.entities.Color;
 import com.kltnbe.productservice.entities.Product;
 import com.kltnbe.productservice.entities.ProductSize;
@@ -152,4 +153,32 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         dto.setAsin(v.getProduct().getAsin());
         return dto;
     }
+    @Override
+    public void restoreInventoryFromNames(List<InventoryRestoreRequest> requests) {
+        for (InventoryRestoreRequest req : requests) {
+            String colorName = req.getColor();
+            String sizeName = req.getSize();
+
+            Optional<ProductVariant> variantOpt = variantRepository.findVariant(
+                    req.getProductId(), colorName, sizeName
+            );
+
+            if (variantOpt.isPresent()) {
+                ProductVariant variant = variantOpt.get();
+
+                variant.setQuantityInStock(variant.getQuantityInStock() + req.getQuantity());
+                variant.setQuantitySold(Math.max(variant.getQuantitySold() - req.getQuantity(), 0));
+
+                if (variant.getQuantityInStock() > 0) {
+                    variant.setStatus(ProductVariant.VariantStatus.IN_STOCK);
+                }
+
+                variantRepository.save(variant);
+            } else {
+                System.err.println("❌ Không tìm thấy biến thể: productId = " + req.getProductId() +
+                        ", color = " + colorName + ", size = " + sizeName);
+            }
+        }
+    }
+
 }

@@ -59,6 +59,8 @@ public interface MasterOrderRepository extends JpaRepository<MasterOrder, Long> 
     // Tổng số khách hàng hàng năm
     @Query("SELECT COUNT(DISTINCT mo.userId) FROM MasterOrder mo WHERE mo.status = 'completed' AND mo.createdAt >= :startOfYear AND mo.createdAt < :endOfYear")
     Long getYearlyTotalCustomers(Timestamp startOfYear, Timestamp endOfYear);
+    @Query("SELECT COUNT(o) FROM MasterOrder o WHERE o.addressId = :addressId")
+    long countOrdersByAddressId(@Param("addressId") Long addressId);
 
     // Tổng lợi nhuận hàng năm (15% của tổng doanh thu hàng năm)
     @Query("SELECT COALESCE(SUM(mo.totalPrice) * 0.15, 0) FROM MasterOrder mo WHERE mo.status = 'completed' AND mo.createdAt >= :startOfYear AND mo.createdAt < :endOfYear")

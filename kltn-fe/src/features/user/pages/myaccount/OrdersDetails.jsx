@@ -73,7 +73,7 @@ const showToastMessage = (msg) => {
 	const getBadgeClass = (status) => {
 		switch (status) {
 			case "delivered":
-				return "success";     // xanh lá
+				return "success";     // xanh lá=
 			case "shipped":
 				return "primary";     // xanh dương
 			case "packed":
@@ -86,7 +86,7 @@ const showToastMessage = (msg) => {
 				return "";
 		}
 	};
-	const cancelButton = async (masterOrderId) => {
+	const cancelButton = async (orderId) => {
 		const confirmCancel = window.confirm("Bạn có chắc muốn hủy đơn hàng này?");
 		if (!confirmCancel) return;
 	  
@@ -98,7 +98,7 @@ const showToastMessage = (msg) => {
 			{}, // body rỗng
 			{
 			  params: {
-				id: masterOrderId, // 🔄 Đổi thành "id" cho đúng với BE
+				orderId: orderId, // ✅ Đổi từ "id" thành "orderId"
 				method: 'cancel',
 			  },
 			  headers: {
@@ -117,7 +117,7 @@ const showToastMessage = (msg) => {
 		  showToastMessage("❌ Hủy đơn hàng thất bại!");
 		  console.error('Lỗi:', error.response?.data || error.message);
 		}
-	  };	  
+	  };
 const updateAddress = async (orderId) => {
 	  console.log("🛠 orderId:", orderId); // Debug
 
@@ -184,9 +184,6 @@ const updateAddress = async (orderId) => {
 		setId(order?.masterOrderId)
 		setOpen(true);
 	};
-
-
-
 	useEffect(() => {
 		console.log("📌 selectedOrder:", selectedOrder);
 		console.log("📌 Province:", selectedProvince);
@@ -263,6 +260,18 @@ const updateAddress = async (orderId) => {
 			alert(err?.response?.data?.error || "Không thể gửi yêu cầu trả hàng!");
 		}
 	};
+	// Dat lai
+	const handleReorder = async (orderItems) => {
+		const cartItems = orderItems.map(item => ({
+		  productId: item.productId,
+		  colorName: item.color,
+		  sizeName: item.size,
+		  quantity: item.quantity,
+		}));
+	  
+		localStorage.setItem("reorderItems", JSON.stringify(cartItems));
+		navigate("/user/shoppages/cart?fromReorder=true");
+	  };
 
 
 	const formatDate = (timestamp) => {
@@ -534,12 +543,12 @@ const updateAddress = async (orderId) => {
 												{/* <a  className="btn btn-secondary me-xl-3 me-2 m-b15 btnhover20" onClick={() => handleOpen(order)}>Sửa Địa Chỉ</a> */}
 												{/* <a href="product-default.html" className="btn btn-outline-secondary m-b15 me-xl-3 me-2 btnhover20">Trả Đơn Hàng</a> */}
 												{orderStore.status === "failed" ? (
-  <a 
-    href="/shop" 
+  <button 
+    onClick={() => handleReorder(orderStore.orderItemResponses)}
     className="btn btn-secondary m-b15 btnhover20"
   >
     Đặt Lại
-  </a>
+  </button>
 ) : (
   <a 
     onClick={() => cancelButton(orderStore.orderId)} 
@@ -548,6 +557,7 @@ const updateAddress = async (orderId) => {
     Hủy Đơn
   </a>
 )}
+
 											</div>
 											<div className="clearfix">
 												<div className="dz-tabs style-3">

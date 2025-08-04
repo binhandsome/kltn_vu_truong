@@ -1,18 +1,18 @@
 package com.kltnbe.userservice.services;
 
 import com.kltnbe.security.utils.JwtUtil;
+import com.kltnbe.userservice.dtos.AdminFeedbackDTO;
 import com.kltnbe.userservice.dtos.UserDTO;
-import com.kltnbe.userservice.dtos.req.AddressRequest;
-import com.kltnbe.userservice.dtos.req.DeliveryAddressDTO;
-import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
-import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
+import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
+import com.kltnbe.userservice.dtos.res.SystemFeedbackResponseDTO;
 import com.kltnbe.userservice.dtos.res.UserProfileResponse;
 import com.kltnbe.userservice.entities.Address;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
 import com.kltnbe.userservice.enums.UserRole;
+import com.kltnbe.userservice.helpers.AdminServiceProxy;
 import com.kltnbe.userservice.repositories.AddressRepository;
 import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
@@ -42,6 +42,7 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final AuthRepository authRepository;
+    private final AdminServiceProxy adminServiceProxy;
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
     @Override
     public Optional<User> findUserById(String username) {
@@ -401,6 +402,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional
     public String updateAddress(DeliveryAddressDTO deliveryAddressDTO) {
         Optional<Address> addressInfo = addressRepository.findById(deliveryAddressDTO.getId());
         if (addressInfo.isPresent()) {
@@ -509,7 +511,47 @@ public class UserServiceImpl implements UserService{
             return info;
         }).toList();
     }
-//fix search
+    @Override
+    @Transactional
+    public Long createAddressForOrder(DeliveryAddressDTO dto, String accessToken) {
+        Long userId = getIdUserByAccessToken(accessToken.replace("Bearer ", ""));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+
+        Address address = Address.builder()
+                .user(user)
+                .recipientName(dto.getRecipientName())
+                .recipientPhone(dto.getRecipientPhone())
+                .recipientEmail(dto.getRecipientEmail())
+                .deliveryAddress(dto.getDeliveryAddress())
+                .addressDetails(dto.getAddressDetails())
+                .isPrimaryAddress(0)
+                .build();
+
+        Address saved = addressRepository.save(address);
+        return saved.getAddressId();
+    }
+    @Override
+    public String submitFeedback(SystemFeedbackRequestDTO dto, Long userId) {
+        // Không cần tìm lại từ authId nữa vì đã là userId
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("❌ Không tìm thấy user với ID: " + userId));
+
+        AdminFeedbackDTO forwardDto = new AdminFeedbackDTO();
+        forwardDto.setType(dto.getType());
+        forwardDto.setMessage(dto.getMessage());
+        forwardDto.setUserId(user.getUserId());
+
+        return adminServiceProxy.sendFeedbackToAdmin(forwardDto).getBody();
+    }
+
+    @Override
+    public List<SystemFeedbackResponseDTO> getMyFeedbacks(Long userId) {
+        return adminServiceProxy.getFeedbackByUser(userId);
+    }
+
+    //fix search
 private String escapeLikeKeyword(String keyword) {
     return keyword
             .replace("\\", "\\\\")

@@ -480,61 +480,70 @@ public class OrderServiceImpl implements OrderService {
             return orderResponse;
         }).toList();
     }
+    @Override
+    @Transactional
+    public String cancelOrder(Long orderId, Long authId) {
+        Long userId = userServiceProxy.findUserIdByAuthId(authId);
 
-//    @Override
-//    @Transactional
-//    public String cancelOrder(Long orderId, Long authId) {
-//        Long userId = userServiceProxy.findUserIdByAuthId(authId);
-//        Order order = orderRepository.findById(orderId)
-//                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
-//        MasterOrder masterOrder = masterOrderRepository.findById(order.getMasterOrder().getMasterOrderId())
-//                .orElseThrow(() -> new RuntimeException("Không tìm thấy MasterOrder"));
-//        if (!masterOrder.getUserId().equals(userId)) {
-//            return "Bạn không có quyền cancel";
-//        }
-//        DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(order.getOrderId());
-//        if (deliveryInfo == null) {
-//            throw new RuntimeException("Không tìm thấy thông tin giao hàng cho đơn hàng");
-//        }
-//        // Cập nhật trạng thái
-//        deliveryInfo.setDeliveryStatus(DeliveryStatus.failed);
-//        order.setStatus(OrderStatus.cancelled.name());
-//        // Lưu lại
-//        deliveryInfoRepository.save(deliveryInfo);
-//        orderRepository.save(order);
-//        return "Bạn đã cancel thành công đơn hàng";
-//    }
-@Override
-@Transactional
-public String cancelOrder(Long masterOrderId, Long authId) {
-    Long userId = userServiceProxy.findUserIdByAuthId(authId);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Order"));
 
-    MasterOrder masterOrder = masterOrderRepository.findById(masterOrderId)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy MasterOrder"));
+        MasterOrder masterOrder = order.getMasterOrder();
 
-    if (!masterOrder.getUserId().equals(userId)) {
-        return "Bạn không có quyền cancel";
-    }
+        // 🔒 Kiểm tra quyền sở hữu
+        if (!masterOrder.getUserId().equals(userId)) {
+            return "Bạn không có quyền hủy đơn này";
+        }
 
-    List<Order> orders = masterOrder.getOrders();
+        // ✅ Tránh huỷ lại đơn đã huỷ
+        if (order.getStatus().equals(OrderStatus.cancelled.name())) {
+            return "Đơn hàng này đã được huỷ trước đó.";
+        }
 
-    for (Order order : orders) {
-        // ❌ Không set order.setStatus("cancelled") nữa vì DB không cho phép
+        // ✅ Cập nhật trạng thái đơn hàng
+        order.setStatus(OrderStatus.cancelled.name());
+        orderRepository.save(order);
 
-        DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(order.getOrderId());
+        // ✅ Cập nhật trạng thái giao hàng nếu có
+        DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(orderId);
         if (deliveryInfo != null) {
-            deliveryInfo.setDeliveryStatus(DeliveryStatus.failed);  // failed hợp lệ trong DeliveryInfo
+            deliveryInfo.setDeliveryStatus(DeliveryStatus.failed);
+            deliveryInfo.setUpdatedAt(LocalDateTime.now());
             deliveryInfoRepository.save(deliveryInfo);
         }
+
+        // ✅ Hoàn tồn kho
+        List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
+
+        List<InventoryRestoreRequest> restoreRequests = orderItems.stream().map(item -> {
+            InventoryRestoreRequest req = new InventoryRestoreRequest();
+            req.setProductId(item.getProductId());
+            req.setColor(item.getColor()); // truyền tên màu
+            req.setSize(item.getSize());   // truyền tên size (hoặc ID nếu bạn map lại)
+            req.setQuantity(item.getQuantity());
+            return req;
+        }).toList();
+
+        try {
+            productServiceProxy.restoreInventory(restoreRequests);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi hoàn tồn kho: " + e.getMessage());
+        }
+
+        // ✅ Nếu tất cả order trong MasterOrder đều bị huỷ -> huỷ luôn MasterOrder
+        boolean allCancelled = masterOrder.getOrders().stream()
+                .allMatch(o ->
+                        o.getStatus().equals(OrderStatus.cancelled.name()) ||
+                                o.getStatus().equals(OrderStatus.cancelledSeller.name())
+                );
+
+        if (allCancelled) {
+            masterOrder.setStatus("cancelled");
+            masterOrderRepository.save(masterOrder);
+        }
+
+        return "Đơn hàng đã được huỷ thành công và hoàn tồn kho.";
     }
-
-    // ✅ Set trạng thái master_order là cancelled
-    masterOrder.setStatus("cancelled");
-    masterOrderRepository.save(masterOrder);
-
-    return "Bạn đã hủy thành công đơn hàng";
-}
-
 
     @Override
     @Transactional
@@ -563,6 +572,75 @@ public String cancelOrder(Long masterOrderId, Long authId) {
         userServiceProxy.updateAddress(deliveryAddressDTO);
         return "Cập nhật địa chỉ thành công";
     }
+
+//    @Override
+//    @Transactional
+//    public String updateAddress(Long orderId, Long authId, DeliveryAddressDTO deliveryAddressDTO) {
+//        Long userId = userServiceProxy.findUserIdByAuthId(authId);
+//        Optional<MasterOrder> masterOrder = masterOrderRepository.findById(orderId);
+//
+//        System.out.println("authId: " + authId);
+//        System.out.println("userId từ token: " + userId);
+//        System.out.println("UserId của masterOrder: " + masterOrder.get().getUserId());
+//
+//        // Kiểm tra quyền sở hữu
+//        if (!masterOrder.get().getUserId().equals(userId)) {
+//            return "Bạn không có quyền cập nhật địa chỉ cho đơn hàng này";
+//        }
+//
+//        DeliveryAddressDTO currentAddress = userServiceProxy.getAddressById(masterOrder.get().getAddressId());
+//        if (currentAddress == null) {
+//            return "Không có địa chỉ hợp lệ cho đơn hàng này";
+//        }
+//        if (isSameAddress(currentAddress, deliveryAddressDTO)) {
+//            return "Địa chỉ không có gì thay đổi";
+//        }
+//        deliveryAddressDTO.setId(masterOrder.get().getAddressId());
+//        System.out.println(deliveryAddressDTO.getId() + "id cua bo may la ");
+//        userServiceProxy.updateAddress(deliveryAddressDTO);
+//        return "Cập nhật địa chỉ thành công";
+//    }
+@Transactional
+public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO dto, String accessToken) {
+    Long userId = userServiceProxy.findUserIdByAuthId(authId);
+
+    MasterOrder order = masterOrderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+    if (!order.getUserId().equals(userId)) {
+        return "Bạn không có quyền sửa đơn hàng này";
+    }
+    if (!order.getUserId().equals(userId)) {
+        return "Bạn không có quyền sửa đơn hàng này";
+    }
+    MasterOrderStatus statusEnum;
+    try {
+        statusEnum = MasterOrderStatus.valueOf(order.getStatus());
+    } catch (IllegalArgumentException e) {
+        return "Trạng thái đơn hàng không hợp lệ.";
+    }
+
+    if (!(statusEnum == MasterOrderStatus.pending || statusEnum == MasterOrderStatus.processing)) {
+        return "Không thể sửa địa chỉ vì đơn hàng đã chuyển sang trạng thái xử lý hoặc giao.";
+    }
+
+    Long currentAddressId = order.getAddressId();
+    long countOrders = masterOrderRepository.countOrdersByAddressId(currentAddressId);
+
+    if (countOrders > 1) {
+        // ✅ Địa chỉ đang được dùng nhiều → tạo địa chỉ mới
+        Long newAddressId = userServiceProxy.createAddressForOrder(dto, accessToken);
+        order.setAddressId(newAddressId);
+    } else {
+        // ✅ Địa chỉ chỉ dùng ở đơn này → cập nhật trực tiếp
+        dto.setId(currentAddressId);
+        userServiceProxy.updateAddress(dto); // API này cập nhật địa chỉ
+    }
+
+    masterOrderRepository.save(order);
+    return "Đã cập nhật địa chỉ mới cho đơn hàng";
+}
+
     @Override
     public DashboardStatsResponse getSellerDashboard(Long storeId, int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses) {
         // Nếu startDate hoặc endDate là null, đặt mặc định là tất cả dữ liệu (từ 1970-01-01 đến hiện tại)
