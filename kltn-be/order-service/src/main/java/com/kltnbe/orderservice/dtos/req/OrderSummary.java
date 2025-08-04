@@ -22,7 +22,9 @@ public class OrderSummary {
     private BigDecimal totalPrice;
     private Timestamp createdAt;
     private int itemCount; // số lượng sản phẩm trong đơn
-
+    private String nameShop;
+    private String thumbnailShop;
+    private Long idShop;
     private List<OrderItemSummary> items;  // Danh sách sản phẩm trong order
 
     // 🏠 Thông tin địa chỉ người nhận

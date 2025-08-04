@@ -2,12 +2,12 @@ package com.kltnbe.adminservice.controllers;
 
 import com.kltnbe.adminservice.dtos.MonthlyRevenueDTO;
 import com.kltnbe.adminservice.services.AdminOrderService;
+import com.kltnbe.security.utils.CustomUserDetails;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -50,5 +50,9 @@ public class AdminOrderController {
     @GetMapping("/getRevenueByAdmin")
     public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByAdmin() {
         return orderService.getRevenueByAdmin();
+    }
+    @PutMapping("/updateMethodOrderByAdmin")
+    public ResponseEntity<String> updateMethodOrderByAdmin(@RequestParam Long orderId, @AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String method, @RequestParam(required = false) String status) {
+        return orderService.updateMethodOrderByAdmin(orderId, method, status);
     }
 }
