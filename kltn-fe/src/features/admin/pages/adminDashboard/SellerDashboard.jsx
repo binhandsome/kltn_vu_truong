@@ -67,47 +67,102 @@ const handleViewCccd = async (shopId) => {
 };
 
   const fetchPendingShops = async () => {
-    const res = await axios.get('http://localhost:8091/api/admin/sellers/pending-shops');
+    const accessToken = localStorage.getItem("accessToken");
+    const res = await axios.get('http://localhost:8091/api/admin/sellers/pending-shops', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
     setPendingShops(res.data);
   };
 
   const fetchShopEdits = async () => {
-    const res = await axios.get('http://localhost:8091/api/admin/sellers/pending-edits');
+        const accessToken = localStorage.getItem("accessToken");
+    const res = await axios.get('http://localhost:8091/api/admin/sellers/pending-edits', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     setShopEdits(res.data);
   };
 
   const fetchAuthRequests = async () => {
-    const res = await axios.get('http://localhost:8091/api/admin/sellers/authentications');
+        const accessToken = localStorage.getItem("accessToken", {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+
+    const res = await axios.get('http://localhost:8091/api/admin/sellers/authentications', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     setAuthRequests(res.data);
   };
 
   const approveShop = async (id) => {
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-shop/${id}`);
+        const accessToken = localStorage.getItem("accessToken");
+
+    await axios.put(`http://localhost:8091/api/admin/sellers/approve-shop/${id}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     fetchPendingShops();
   };
 
   const banShop = async (id) => {
-    await axios.put(`http://localhost:8091/api/admin/sellers/ban-shop/${id}`);
+        const accessToken = localStorage.getItem("accessToken");
+    await axios.put(`http://localhost:8091/api/admin/sellers/ban-shop/${id}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     fetchPendingShops();
   };
 
   const approveEdit = async (id) => {
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-edit/${id}`);
+        const accessToken = localStorage.getItem("accessToken");
+
+    await axios.put(`http://localhost:8091/api/admin/sellers/approve-edit/${id}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     fetchShopEdits();
   };
 
   const rejectEdit = async (id) => {
-    await axios.put(`http://localhost:8091/api/admin/sellers/reject-edit/${id}`);
+        const accessToken = localStorage.getItem("accessToken");
+
+    await axios.put(`http://localhost:8091/api/admin/sellers/reject-edit/${id}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     fetchShopEdits();
   };
 
   const approveAuth = async (id) => {
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-authentication/${id}`);
+        const accessToken = localStorage.getItem("accessToken");
+
+    await axios.put(`http://localhost:8091/api/admin/sellers/approve-authentication/${id}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     fetchAuthRequests();
   };
 
   const rejectAuth = async (id) => {
-    await axios.put(`http://localhost:8091/api/admin/sellers/reject-authentication/${id}`);
+        const accessToken = localStorage.getItem("accessToken");
+
+    await axios.put(`http://localhost:8091/api/admin/sellers/reject-authentication/${id}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     fetchAuthRequests();
   };
 

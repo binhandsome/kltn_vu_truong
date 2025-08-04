@@ -95,6 +95,8 @@ function Order() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [skipEffect, setSkipEffect] = useState(false);
+    const navigate = useNavigate();
+  
   const API_URL = 'http://localhost:8089/api/seller';
   // ✅ Đặt mapping deliveryOptions TRƯỚC
   const deliveryOptions = {
@@ -173,6 +175,10 @@ function Order() {
     } catch (error) {
       console.error('Error fetching dashboard:', error.response ? error.response.data : error.message);
       setMessage('❌ Lỗi khi tải thông tin dashboard: ' + (error.response?.data || error.message));
+          if (error.response?.status === 401 || error.response?.status === 403) {
+        alert("Bạn không có quyền. Đăng nhập lại.");
+        navigate("/seller/authentication/login");
+      }
       setRevenue(0);
       setDashboardSeller(null);
       setIsDataFetched(true);

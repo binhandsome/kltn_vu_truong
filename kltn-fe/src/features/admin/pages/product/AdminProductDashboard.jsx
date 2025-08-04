@@ -24,27 +24,57 @@ const AdminProductDashboard = () => {
   }, []);
 
   const fetchTotalProducts = async () => {
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/total');
+                const accessToken = localStorage.getItem("accessToken");
+
+    const res = await axios.get('http://localhost:8091/api/admin/products/stats/total', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     setTotal(res.data);
   };
 
   const fetchProductByStatus = async () => {
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-status');
+                    const accessToken = localStorage.getItem("accessToken");
+
+    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-status', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     setStatusStats(res.data);
   };
 
   const fetchProductByType = async () => {
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-type');
+                    const accessToken = localStorage.getItem("accessToken");
+
+    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-type', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     setTypeStats(res.data);
   };
 
   const fetchProductByStore = async () => {
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-store');
+                    const accessToken = localStorage.getItem("accessToken");
+
+    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-store', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     setStoreStats(res.data);
   };
 
   const fetchProductByCreatedMonth = async () => {
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-created-month');
+                    const accessToken = localStorage.getItem("accessToken");
+
+    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-created-month', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     setCreatedStats(res.data);
   };
 

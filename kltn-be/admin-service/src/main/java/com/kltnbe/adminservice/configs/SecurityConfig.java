@@ -28,9 +28,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/api/auth/checkUsernameExists").hasRole("USER") // Sửa cú pháp, thêm /
-                                .requestMatchers("/api/admin/sellers/**", "/api/admin/products/**", "/api/admin/users/**", "/api/admin/orders/**").permitAll()
-                        // Endpoint công khai.anyRequest().authenticated()
+                        .anyRequest().hasRole("ADMIN") // Tất cả endpoint yêu cầu vai trò ADMIN
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

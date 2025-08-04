@@ -428,6 +428,10 @@ const getPageRange = () => {
       } catch (error) {
         console.error('Error fetching shop info:', error);
         setMessage(error.response?.data || '❌ Lỗi khi tải thông tin shop.');
+            if (error.response?.status === 401 || error.response?.status === 403) {
+        alert("Bạn không có quyền. Đăng nhập lại.");
+        navigate("/seller/authentication/login");
+      }
       } finally {
         setIsLoading(false);
       }

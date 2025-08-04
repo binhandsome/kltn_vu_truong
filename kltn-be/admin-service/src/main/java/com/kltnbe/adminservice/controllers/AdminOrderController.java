@@ -1,10 +1,12 @@
 package com.kltnbe.adminservice.controllers;
 
 import com.kltnbe.adminservice.dtos.MonthlyRevenueDTO;
+import com.kltnbe.adminservice.dtos.res.ResponseDashboardAdmin;
 import com.kltnbe.adminservice.services.AdminOrderService;
 import com.kltnbe.security.utils.CustomUserDetails;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -54,5 +56,14 @@ public class AdminOrderController {
     @PutMapping("/updateMethodOrderByAdmin")
     public ResponseEntity<String> updateMethodOrderByAdmin(@RequestParam Long orderId, @AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String method, @RequestParam(required = false) String status) {
         return orderService.updateMethodOrderByAdmin(orderId, method, status);
+    }
+    @GetMapping("/dashboardAdmin")
+    public ResponseEntity<ResponseDashboardAdmin> getDashboardAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String endDate,
+            @RequestParam(required = false) List<String> status) {
+        return orderService.getDashboardAdmin(page, size, startDate, endDate, status);
     }
 }

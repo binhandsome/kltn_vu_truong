@@ -22,7 +22,13 @@ const UserDashboard = () => {
     else if (!emailRegex.test(form.email)) newErrors.email = 'Email không đúng định dạng';
     else {
       try {
-        const res = await axios.get(`http://localhost:8091/api/admin/users/check-email?email=${form.email}`);
+                const accessToken = localStorage.getItem("accessToken");
+
+        const res = await axios.get(`http://localhost:8091/api/admin/users/check-email?email=${form.email}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
         if (res.data.exists) newErrors.email = 'Email đã tồn tại';
       } catch {
         newErrors.email = 'Không thể kiểm tra email';
@@ -33,7 +39,13 @@ const UserDashboard = () => {
     else if (form.username.length < 4) newErrors.username = 'Username phải có ít nhất 4 ký tự';
     else {
       try {
-        const res = await axios.get(`http://localhost:8091/api/admin/users/check-username?username=${form.username}`);
+                const accessToken = localStorage.getItem("accessToken");
+
+        const res = await axios.get(`http://localhost:8091/api/admin/users/check-username?username=${form.username}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
         if (res.data.exists) newErrors.username = 'Username đã tồn tại';
       } catch {
         newErrors.username = 'Không thể kiểm tra username';
@@ -49,7 +61,13 @@ const UserDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:8091/api/admin/users');
+              const accessToken = localStorage.getItem("accessToken");
+
+      const res = await axios.get('http://localhost:8091/api/admin/users', {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
       setUsers(res.data);
     } catch (err) {
       console.error('Lỗi khi tải danh sách người dùng:', err);
@@ -60,7 +78,13 @@ const UserDashboard = () => {
   
     if (!keyword.trim()) return fetchUsers();
     try {
-      const res = await axios.get(`http://localhost:8091/api/admin/users/search?keyword=${keyword}`);
+              const accessToken = localStorage.getItem("accessToken");
+
+      const res = await axios.get(`http://localhost:8091/api/admin/users/search?keyword=${keyword}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
       setUsers(res.data);
     } catch (err) {
       console.error('Lỗi khi tìm kiếm:', err);
@@ -68,18 +92,36 @@ const UserDashboard = () => {
   };
 
   const toggleBan = async (id) => {
-    await axios.put(`http://localhost:8091/api/admin/users/${id}/toggle-ban`);
+            const accessToken = localStorage.getItem("accessToken");
+
+    await axios.put(`http://localhost:8091/api/admin/users/${id}/toggle-ban`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     fetchUsers();
   };
 
   const resetPassword = async (id) => {
-    await axios.post(`http://localhost:8091/api/admin/users/${id}/reset-password`);
+            const accessToken = localStorage.getItem("accessToken");
+
+    await axios.post(`http://localhost:8091/api/admin/users/${id}/reset-password`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     alert('Đã reset mật khẩu người dùng');
   };
 
   const upgradeToSeller = async (userId) => {
+            const accessToken = localStorage.getItem("accessToken");
+
     try {
-      const res = await axios.put(`http://localhost:8091/api/admin/users/upgradeToSeller/${userId}`);
+      const res = await axios.put(`http://localhost:8091/api/admin/users/upgradeToSeller/${userId}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
       alert(res.data);
       fetchUsers();
     } catch (err) {
@@ -93,7 +135,13 @@ const UserDashboard = () => {
     if (!isValid) return;
 
     try {
-      await axios.post('http://localhost:8091/api/admin/users/create', form);
+              const accessToken = localStorage.getItem("accessToken");
+
+      await axios.post('http://localhost:8091/api/admin/users/create', form, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
       setShowModal(false);
       setForm({ email: '', username: '', password: '', firstName: '', lastName: '' });
       setErrors({});

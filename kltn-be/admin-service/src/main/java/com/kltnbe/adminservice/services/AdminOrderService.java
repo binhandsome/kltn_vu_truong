@@ -1,6 +1,8 @@
 package com.kltnbe.adminservice.services;
 
 import com.kltnbe.adminservice.dtos.MonthlyRevenueDTO;
+import com.kltnbe.adminservice.dtos.res.ResponseDashboardAdmin;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,4 +27,10 @@ public interface AdminOrderService {
            Long orderId,
             String method,
           String status);
+    ResponseEntity<ResponseDashboardAdmin> getDashboardAdmin(
+            int page,
+            int size,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") String endDate,
+            List<String> status);
 }

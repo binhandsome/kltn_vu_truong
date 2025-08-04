@@ -152,7 +152,7 @@ const deliveryOptions = {
         ...(startDate && endDate ? { startDate, endDate } : {}),
         ...(selectedStatuses.length > 0 ? { status: selectedStatuses } : {}),
       };
-      const response = await axios.get("http://localhost:8086/api/orders/dashboardAdmin", {
+      const response = await axios.get("http://localhost:8091/api/admin/orders/dashboardAdmin", {
         params,
         paramsSerializer: (params) =>
           new URLSearchParams(

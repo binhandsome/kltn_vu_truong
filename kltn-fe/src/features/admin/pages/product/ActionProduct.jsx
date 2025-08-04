@@ -395,7 +395,7 @@ const getProductByAsin = async () => {
     }
 
     const response = await axios.get(`${API_URL_ADMIN_PRODUCT}/productByAsinAdmin/${asin}`, {  // ✅ Gọi API từ seller-service
-      
+    
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

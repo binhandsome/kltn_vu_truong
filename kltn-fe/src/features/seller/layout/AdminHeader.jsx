@@ -131,18 +131,8 @@ return (
                                     <p>{username}</p>
                                 </div>
                                 <ul>
-                                    <li>
-                                        <a href="/seller/authentication/myProfile">
-                                        {/* Edit Profile */}
-                                            <i className="far fa-edit"></i>Chỉnh sửa hồ sơ
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="/seller/authentication/setting">
-                                        {/* Settings */}
-                                            <i className="fas fa-cog"></i>Cài đặt
-                                        </a>
-                                    </li>
+                               
+                               
                                     <li>
                                         <button  onClick={() => {
                                                   logout();
@@ -210,27 +200,16 @@ return (
                             </a>
                             <div className="user-info-box">
                                 <div className="drop-down-header">
-                                    <h4>John Brown</h4>
-                                    <p>UI | UX Designer</p>
+                                    <h4>Chưa Đăng Nhập</h4>
                                 </div>
                                 <ul>
-                                    <li>
-                                        <a href="/seller/authentication/myProfile">
-                                        {/* Edit Profile */}
-                                            <i className="far fa-edit"></i>Chỉnh sửa hồ sơ
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="/seller/authentication/setting">
-                                        {/* Settings */}
-                                            <i className="fas fa-cog"></i>Cài đặt
-                                        </a>
-                                    </li>
+                                   
+                                  
                                     <li>
                                         <a href="/seller/authentication/login">
                                         {/* Logout */}
                                             <i className="fas fa-sign-out-alt"></i> 
-                                            Đăng xuất
+                                           Đăng Nhập
                                         </a>
                                     </li>
                                 </ul>

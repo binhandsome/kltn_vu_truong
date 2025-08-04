@@ -17,8 +17,13 @@ const [todayOrders, setTodayOrders] = useState(0);
   
   // Hàm fetch data từ API
   const fetchData = async (period) => {
+    const accessToken = localStorage.getItem("accessToken");
     try {
-      const response = await axios.get(`${API_BASE_URL}/${period}`);
+     const response = await axios.get(`${API_BASE_URL}/${period}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
       return response.data;
     } catch (error) {
       console.error(`Lỗi khi fetch dữ liệu ${period}:`, error);
@@ -72,8 +77,13 @@ const [todayOrders, setTodayOrders] = useState(0);
     return '+15%';
   };
   const fetchDataAll = async (endpoint) => {
+    const accessToken = localStorage.getItem("accessToken");
     try {
-      const response = await axios.get(`${API_BASE_URL}/${endpoint}`);
+      const response = await axios.get(`${API_BASE_URL}/${endpoint}`, {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      });
       return response.data;
     } catch (error) {
       console.error(`Lỗi khi fetch dữ liệu từ ${endpoint}:`, error);

@@ -6,9 +6,8 @@ import { useParams } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 
 
-
 const AllProduct = () => {
-		 const [searchParams] = useSearchParams();
+	const [searchParams] = useSearchParams();
 
 	const [products, setProducts] = useState([]);
 	const [totalPages, setTotalPages] = useState(0);
@@ -16,7 +15,7 @@ const AllProduct = () => {
 	const [selectedStatuses, setSelectedStatuses] = useState([]); // MULTI STATUS
 	const [searchTerm, setSearchTerm] = useState('');
 	const [selectedTags, setSelectedTags] = useState([]);
-  const storeId = searchParams.get("storeId"); // ✅ Lấy giá trị storeId từ URL
+	const storeId = searchParams.get("storeId"); // ✅ Lấy giá trị storeId từ URL
 	const [pageSize, setPageSize] = useState(20);
 	const [currentPage, setCurrentPage] = useState(0);
 	const [salesRankCount, setSalesRankCount] = useState([]);
@@ -186,7 +185,7 @@ const AllProduct = () => {
 					},
 				});
 
-				console.log('🔍 Input:', { searchTerm, minPrice, maxPrice, tags,storeId, selectedDiscounts });
+				console.log('🔍 Input:', { searchTerm, minPrice, maxPrice, tags, storeId, selectedDiscounts });
 				setProducts(response.data.content);
 				setTotalPages(response.data.totalPages);
 			} catch (error) {
@@ -202,8 +201,8 @@ const AllProduct = () => {
 
 
 	useEffect(() => {
-		fetchProductsData(currentPage, pageSize, keyword, minPrice, maxPrice, selectedTags,storeId, selectedDiscounts, selectedStatuses);
-	}, [currentPage, pageSize, keyword, minPrice, maxPrice, selectedTags,storeId, selectedDiscounts, selectedStatuses]);
+		fetchProductsData(currentPage, pageSize, keyword, minPrice, maxPrice, selectedTags, storeId, selectedDiscounts, selectedStatuses);
+	}, [currentPage, pageSize, keyword, minPrice, maxPrice, selectedTags, storeId, selectedDiscounts, selectedStatuses]);
 
 	useEffect(() => {
 		console.log(products, 'product cua tao la');
@@ -213,9 +212,9 @@ const AllProduct = () => {
 		<>
 			<div className="main-content">
 				<div className="row">
-    <div>
-      <h1>Store ID: {storeId}</h1>
-    </div>
+					<div>
+						<h1>Store ID: {storeId}</h1>
+					</div>
 					<div className="colxl-12 col-lg-12 col-md-12 col-sm-12 col-12">
 
 						<div className="page-title-wrapper">

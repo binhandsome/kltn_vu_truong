@@ -50,6 +50,7 @@ public class JwtUtil {
     // Lấy username từ token
     public String getUsernameFromToken(String token) {
         try {
+            Jwts.parser().setSigningKey(secret).setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS).parseClaimsJws(token);
             return Jwts.parser()
                     .setSigningKey(secret)
                     .setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS)
@@ -57,13 +58,15 @@ public class JwtUtil {
                     .getBody()
                     .getSubject();
         } catch (ExpiredJwtException e) {
-            return e.getClaims().getSubject(); // Vẫn lấy username khi token hết hạn
+            throw new SecurityException("Token has expired", e); // Ném ngoại lệ thay vì trả về username
+        } catch (Exception e) {
+            throw new SecurityException("Invalid token", e);
         }
     }
 
-    // Lấy role từ token
     public String getRoleFromToken(String token) {
         try {
+            Jwts.parser().setSigningKey(secret).setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS).parseClaimsJws(token);
             return Jwts.parser()
                     .setSigningKey(secret)
                     .setAllowedClockSkewSeconds(CLOCK_SKEW_SECONDS)
@@ -71,10 +74,11 @@ public class JwtUtil {
                     .getBody()
                     .get("role", String.class);
         } catch (ExpiredJwtException e) {
-            return e.getClaims().get("role", String.class);
+            throw new SecurityException("Token has expired", e);
+        } catch (Exception e) {
+            throw new SecurityException("Invalid token", e);
         }
     }
-
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
