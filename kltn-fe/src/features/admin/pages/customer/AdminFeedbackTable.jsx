@@ -14,8 +14,14 @@ const AdminFeedbackTable = () => {
   }, []);
 
   const fetchFeedbacks = async () => {
+            const accessToken = localStorage.getItem("accessToken");
+
     try {
-      const res = await axios.get("http://localhost:8091/api/admin/feedback/all");
+      const res = await axios.get("http://localhost:8091/api/admin/feedback/all", {
+         headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
       setFeedbacks(res.data);
     } catch (err) {
       console.error("❌ Lỗi khi lấy phản hồi", err);
@@ -24,12 +30,17 @@ const AdminFeedbackTable = () => {
 
   const handleReplySubmit = async () => {
     if (!reply.trim()) return alert("Vui lòng nhập nội dung phản hồi");
+                const accessToken = localStorage.getItem("accessToken");
+
     try {
       await axios.put(
         `http://localhost:8091/api/admin/feedback/reply/${selectedFeedback.id}`,
         reply,
         {
-          headers: { "Content-Type": "text/plain" }
+          headers: { "Content-Type": "text/plain" ,        Authorization: `Bearer ${accessToken}`,
+
+
+          }
         }
       );
       alert("✅ Gửi phản hồi thành công!");

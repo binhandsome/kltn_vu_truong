@@ -290,4 +290,5 @@ public class AuthController {
         boolean exists = authRepository.existsByUsername(username);
         return ResponseEntity.ok(Map.of("exists", exists));
     }
+
 }

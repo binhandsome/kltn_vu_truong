@@ -77,4 +77,5 @@ public class AdminSellerController {
         return adminSellerService.getUrlCcd(shopId);
      }
 
+
 }

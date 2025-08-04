@@ -28,6 +28,7 @@ public interface AuthService {
     String changeUserRole(Long userId, String role);
     String resetPasswordByAdmin(Long userId);
     void createUserWithoutOtp(RegisterRequest request);
+
 //    String verifyOtp(String username, String inputOtp);
 //    String registerSeller(RegisterRequest registerRequest);
 //

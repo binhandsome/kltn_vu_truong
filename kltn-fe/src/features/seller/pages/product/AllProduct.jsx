@@ -116,6 +116,7 @@ const AllProduct = () => {
 			setTags(response.data.tags);
 		} catch (error) {
 			console.error('Không lấy được danh mục:', error);
+			
 		}
 	};
 
@@ -185,8 +186,13 @@ const AllProduct = () => {
 				console.log('🔍 Input:', { searchTerm, minPrice, maxPrice, tags, selectedDiscounts });
 				setProducts(response.data.content);
 				setTotalPages(response.data.totalPages);
+
 			} catch (error) {
 				console.error('❌ Lỗi khi gọi API:', error);
+				    if (error.response?.status === 401 || error.response?.status === 403) {
+        alert("Bạn không có quyền. Đăng nhập lại.");
+        navigate("/seller/authentication/login");
+      }
 				setProducts([]);
 				setTotalPages(0);
 			} finally {

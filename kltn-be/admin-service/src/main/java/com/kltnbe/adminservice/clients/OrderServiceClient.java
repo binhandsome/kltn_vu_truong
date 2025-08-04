@@ -1,8 +1,10 @@
 package com.kltnbe.adminservice.clients;
 
 import com.kltnbe.adminservice.dtos.MonthlyRevenueDTO;
+import com.kltnbe.adminservice.dtos.res.ResponseDashboardAdmin;
 import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -39,4 +41,11 @@ public interface OrderServiceClient {
             @RequestParam Long orderId,
             @RequestParam String method,
             @RequestParam(required = false) String status);
+    @GetMapping("/api/orders/dashboardAdmin")
+    ResponseEntity<ResponseDashboardAdmin> getDashboardAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String endDate,
+            @RequestParam(required = false) List<String> status);
 }
