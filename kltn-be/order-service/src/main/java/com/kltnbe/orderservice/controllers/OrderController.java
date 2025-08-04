@@ -6,6 +6,7 @@ import com.kltnbe.orderservice.dtos.req.DashboardStatsResponse;
 import com.kltnbe.orderservice.dtos.req.OrderRequest;
 import com.kltnbe.orderservice.dtos.res.MonthlyRevenueDTO;
 import com.kltnbe.orderservice.dtos.res.OrderResponse;
+import com.kltnbe.orderservice.dtos.res.ResponseDashboardAdmin;
 import com.kltnbe.orderservice.entities.MasterOrder;
 import com.kltnbe.orderservice.services.OrderService;
 import com.kltnbe.security.utils.CustomUserDetails;
@@ -133,6 +134,21 @@ public class OrderController {
         }
         return ResponseEntity.ok(result);
     }
+    @PutMapping("/updateMethodOrderByAdmin")
+    public ResponseEntity<String> updateMethodOrderByAdmin(
+            @RequestParam Long orderId,
+            @RequestParam String method,
+            @RequestParam(required = false) String status) {
+        String result;
+        switch (method.toLowerCase()) {
+            case "updatestatusbyadmin":
+                result = orderService.updateStatusByAdmin(orderId, status);
+                break;
+            default:
+                return ResponseEntity.badRequest().body("Phương thức cập nhật không hợp lệ: " + method);
+        }
+        return ResponseEntity.ok(result);
+    }
     @GetMapping("/dashboardSeller")
     public ResponseEntity<DashboardStatsResponse> getSellerDashboard(
             @RequestParam Long storeId,
@@ -150,7 +166,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
     @GetMapping("/dashboardAdmin")
-    public ResponseEntity<DashboardStatsResponse> getDashboardAdmin(
+    public ResponseEntity<ResponseDashboardAdmin> getDashboardAdmin(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String startDate,
@@ -161,7 +177,7 @@ public class OrderController {
         Timestamp end = endDate != null ? Timestamp.valueOf(LocalDateTime.parse(endDate + "T23:59:59")) : null;
 
         System.out.println("Fetching dashboard for " + start + ", end=" + end + ", statuses=" + status);
-        DashboardStatsResponse response = orderService.getAdminDashboard( page, size, start, end, status);
+        ResponseDashboardAdmin response = orderService.getAdminDashboard( page, size, start, end, status);
         return ResponseEntity.ok(response);
     }
         @GetMapping("/getRevenueByStore")

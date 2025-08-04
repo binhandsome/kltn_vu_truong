@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -55,4 +56,16 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     public ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByAdmin() {
         return orderServiceClient.getRevenueByAdmin();
     }
+
+    @Override
+    public ResponseEntity<String> updateMethodOrderByAdmin(Long orderId, String method, String status) {
+
+        return orderServiceClient.updateMethodOrderByAdmin(orderId, method, status);
+    }
+//    @Override
+//    public ResponseEntity<String> updateMethodOrder(Long orderId, Long authId, String method, String status) {
+//        Optional<Shop> shop = shopRepository.findByAuthId(authId);
+//        return orderServiceProxy.updateMethodOrderBySeller(orderId, shop.get().getShopId(), method, status);
+//    }
+
 }

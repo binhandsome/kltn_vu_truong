@@ -765,7 +765,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         return orderRepository.findOrdersByDateRangeAndStatuses(storeId, startDate, endDate, statuses, pageable);
     }
     @Override
-    public DashboardStatsResponse getAdminDashboard(int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses) {
+    public ResponseDashboardAdmin getAdminDashboard(int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses) {
         // Nếu startDate hoặc endDate là null, đặt mặc định là tất cả dữ liệu (từ 1970-01-01 đến hiện tại)
         Timestamp defaultStart = startDate != null ? startDate : new Timestamp(0); // 1970-01-01 00:00:00
         Timestamp defaultEnd = endDate != null ? endDate : new Timestamp(System.currentTimeMillis()); // Hiện tại
@@ -786,7 +786,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         List<MasterOrder> masterOrders = pagedMasterOrders.getContent();
 
         if (masterOrders.isEmpty()) {
-            return DashboardStatsResponse.builder()
+            return ResponseDashboardAdmin.builder()
                     .ordersToday(0L)
                     .ordersThisMonth(0L)
                     .totalRevenue(BigDecimal.ZERO)
@@ -799,12 +799,12 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         }
 
         // Thu thập tất cả các Order từ các MasterOrder
-        List<Order> orders = masterOrders.stream()
+        List<Order> allOrders = masterOrders.stream()
                 .flatMap(mo -> mo.getOrders().stream())
                 .collect(Collectors.toList());
 
-        if (orders.isEmpty()) {
-            return DashboardStatsResponse.builder()
+        if (allOrders.isEmpty()) {
+            return ResponseDashboardAdmin.builder()
                     .ordersToday(masterOrderRepository.getTodayOrders(startOfDay, endOfDay))
                     .ordersThisMonth(masterOrderRepository.getThisMonthOrders(startOfMonth, endOfMonth))
                     .totalRevenue(BigDecimal.ZERO)
@@ -817,7 +817,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         }
 
         // 3️⃣ Lấy orderIds để phục vụ truy vấn liên quan
-        List<Long> orderIds = orders.stream().map(Order::getOrderId).collect(Collectors.toList());
+        List<Long> orderIds = allOrders.stream().map(Order::getOrderId).collect(Collectors.toList());
 
         // Lấy orderItems để tính itemCount và hỗ trợ
         List<OrderItem> orderItems = orderItemRepository.findByOrderOrderIdIn(orderIds);
@@ -831,55 +831,103 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         Map<Long, DeliveryInfo> deliveryMap = deliveryInfos.stream()
                 .collect(Collectors.toMap(DeliveryInfo::getOrderId, d -> d));
 
-        // 4️⃣ Build recentOrders
-        List<OrderSummary> recentOrders = orders.stream()
-                .map(order -> {
-                    DeliveryInfo delivery = deliveryMap.get(order.getOrderId());
-                    Long addressId = (delivery != null) ? delivery.getAddressId() : order.getMasterOrder().getAddressId();
-                    AddressInfo addr = Optional.ofNullable(userServiceProxy.findByAddressId(addressId).getBody()).orElse(null);
-                    PaymentInfo paymentInfo = null;
-                    try {
-                        paymentInfo = Optional.ofNullable(paymentServiceProxy.findByOrderId(order.getOrderId()).getBody()).orElse(null);
-                    } catch (Exception e) {
-                        System.out.println("FeignException: " + e.getMessage());
-                    }
-                    ShippingMethod shippingMethod = (delivery != null) ? delivery.getShippingMethod() : null;
+        // 4️⃣ Build recentOrders with hierarchy
+        List<MasterOrderSummary> recentMasterOrders = masterOrders.stream()
+                .map(masterOrder -> {
+                    // Tính tổng totalPrice cho MasterOrder (sum discountedSubtotal của các Order con)
+                    BigDecimal masterTotalPrice = masterOrder.getOrders().stream()
+                            .map(Order::getDiscountedSubtotal)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                    List<OrderItem> orderItemsAndProduct = itemsByOrder.getOrDefault(order.getOrderId(), Collections.emptyList());
-                    List<OrderItemSummary> itemSummaries = orderItemsAndProduct.stream()
-                            .map(oi -> {
-                                ProductResponse product = productServiceProxy.getProductById(oi.getProductId()).getBody();
-                                return OrderItemSummary.builder()
-                                        .asin(product.getAsin())
-                                        .titleProduct(product != null ? product.getNameProduct() : "Unknown Product")
-                                        .quantity(oi.getQuantity())
-                                        .unitPrice(oi.getUnitPrice())
-                                        .color(oi.getColor())
-                                        .size(oi.getSize())
+                    // Tính tổng itemCount cho MasterOrder (sum size của orderItems mỗi Order con)
+                    int masterItemCount = masterOrder.getOrders().stream()
+                            .mapToInt(o -> itemsByOrder.getOrDefault(o.getOrderId(), Collections.emptyList()).size())
+                            .sum();
+
+                    // Lấy AddressInfo từ addressId của MasterOrder (shared cho toàn bộ master order)
+                    AddressInfo addr = Optional.ofNullable(userServiceProxy.findByAddressId(masterOrder.getAddressId()).getBody()).orElse(null);
+
+                    // Build các OrderSummary cho từng Order con
+                    List<OrderSummary> orderSummaries = masterOrder.getOrders().stream()
+                            .map(order -> {
+                                DeliveryInfo delivery = deliveryMap.get(order.getOrderId());
+                                // Lấy PaymentInfo
+                                PaymentInfo paymentInfo = null;
+                                try {
+                                    paymentInfo = Optional.ofNullable(paymentServiceProxy.findByOrderId(order.getOrderId()).getBody()).orElse(null);
+                                } catch (Exception e) {
+                                    System.out.println("FeignException: " + e.getMessage());
+                                }
+                                ShippingMethod shippingMethod = (delivery != null) ? delivery.getShippingMethod() : null;
+
+                                TitleAndImgSeller titleAndImgSeller = sellerServiceProxy.getTitleAndImgSeller(order.getStoreId()).getBody();
+
+                                if (titleAndImgSeller == null) {
+                                    titleAndImgSeller = new TitleAndImgSeller();
+                                    titleAndImgSeller.setTitle("khong co ten shop");
+                                    titleAndImgSeller.setThumbnail("https://res.cloudinary.com/dj3tvavmp/image/upload/v1753792317/Thumbnail/i0zvxei5vii2wja91rrr.png");
+                                } else {
+                                    if (titleAndImgSeller.getTitle() == null) {
+                                        titleAndImgSeller.setTitle("khong co ten shop");
+                                    }
+                                    if (titleAndImgSeller.getThumbnail() == null) {
+                                        titleAndImgSeller.setThumbnail("https://res.cloudinary.com/dj3tvavmp/image/upload/v1753792317/Thumbnail/i0zvxei5vii2wja91rrr.png");
+                                    }
+                                }
+                                List<com.kltnbe.orderservice.dtos.res.OrderItemSummary> itemSummaries = itemsByOrder.getOrDefault(order.getOrderId(), Collections.emptyList()).stream()
+                                        .map(oi -> {
+                                            ProductResponse product = productServiceProxy.getProductById(oi.getProductId()).getBody();
+                                            return com.kltnbe.orderservice.dtos.res.OrderItemSummary.builder()
+                                                    .asin(product != null ? product.getAsin() : null)
+                                                    .titleProduct(product != null ? product.getNameProduct() : "Unknown Product")
+                                                    .quantity(oi.getQuantity())
+                                                    .unitPrice(oi.getUnitPrice())
+                                                    .color(oi.getColor())
+                                                    .size(oi.getSize())
+                                                    .build();
+                                        })
+                                        .collect(Collectors.toList());
+
+                                return OrderSummary.builder()
+                                        .orderId(order.getOrderId())
+                                        .status(order.getStatus())
+                                        .nameShop(titleAndImgSeller.getTitle() != null ?  titleAndImgSeller.getTitle() : "shop Chua dat ten")
+                                        .thumbnailShop(titleAndImgSeller.getThumbnail() != null ?  titleAndImgSeller.getThumbnail() : "https://res.cloudinary.com/dj3tvavmp/image/upload/v1753792317/Thumbnail/i0zvxei5vii2wja91rrr.png")
+                                        .idShop(order.getStoreId())
+                                        .totalPrice(order.getDiscountedSubtotal())
+                                        .createdAt(order.getCreatedAt())
+                                        .itemCount(itemSummaries.size())
+                                        .items(itemSummaries)
+                                        .recipientName(addr != null ? addr.getRecipientName() : null)
+                                        .recipientPhone(addr != null ? addr.getRecipientPhone() : null)
+                                        .recipientEmail(addr != null ? addr.getRecipientEmail() : null)
+                                        .deliveryAddress(addr != null ? addr.getDeliveryAddress() : null)
+                                        .addressDetails(addr != null ? addr.getAddressDetails() : null)
+                                        .deliveryStatus(delivery != null ? delivery.getDeliveryStatus() : null)
+                                        .trackingNumber(delivery != null ? delivery.getTrackingNumber() : null)
+                                        .shippingFee(delivery != null ? delivery.getShippingFee() : null)
+                                        .estimatedDeliveryDate(delivery != null ? delivery.getEstimatedDeliveryDate() : null)
+                                        .shippingMethodName(shippingMethod != null ? shippingMethod.getMethodName() : null)
+                                        .shippingDescription(shippingMethod != null ? shippingMethod.getDescription() : null)
+                                        .shippingEstimatedDays(shippingMethod != null ? shippingMethod.getEstimatedDays() : null)
+                                        .paymentMethod(paymentInfo != null ? paymentInfo.getPaymentMethod() : null)
+                                        .statusPayment(paymentInfo != null ? paymentInfo.getPaymentStatus() : null)
                                         .build();
                             })
                             .collect(Collectors.toList());
-                    return OrderSummary.builder()
-                            .orderId(order.getOrderId())
-                            .status(order.getStatus())
-                            .totalPrice(order.getDiscountedSubtotal())
-                            .createdAt(order.getCreatedAt())
-                            .itemCount(orderItemsAndProduct.size())
+
+                    return MasterOrderSummary.builder()
+                            .masterOrderId(masterOrder.getMasterOrderId())
+                            .status(masterOrder.getStatus())
+                            .totalPrice(masterTotalPrice)
+                            .createdAt(masterOrder.getCreatedAt())
+                            .itemCount(masterItemCount)
                             .recipientName(addr != null ? addr.getRecipientName() : null)
                             .recipientPhone(addr != null ? addr.getRecipientPhone() : null)
                             .recipientEmail(addr != null ? addr.getRecipientEmail() : null)
                             .deliveryAddress(addr != null ? addr.getDeliveryAddress() : null)
                             .addressDetails(addr != null ? addr.getAddressDetails() : null)
-                            .deliveryStatus(delivery != null ? delivery.getDeliveryStatus() : null)
-                            .trackingNumber(delivery != null ? delivery.getTrackingNumber() : null)
-                            .shippingFee(delivery != null ? delivery.getShippingFee() : null)
-                            .estimatedDeliveryDate(delivery != null ? delivery.getEstimatedDeliveryDate() : null)
-                            .shippingMethodName(shippingMethod != null ? shippingMethod.getMethodName() : null)
-                            .shippingDescription(shippingMethod != null ? shippingMethod.getDescription() : null)
-                            .shippingEstimatedDays(shippingMethod != null ? shippingMethod.getEstimatedDays() : null)
-                            .paymentMethod(paymentInfo != null ? paymentInfo.getPaymentMethod() : null)
-                            .statusPayment(paymentInfo != null ? paymentInfo.getPaymentStatus() : null)
-                            .items(itemSummaries)
+                            .orders(orderSummaries)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -905,26 +953,25 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
 
         // 7️⃣ Lấy doanh thu theo tháng trong năm hiện tại
         List<Object[]> revenueData = masterOrderRepository.getRevenueByCurrentYear();
-        List<DashboardStatsResponse.MonthlyRevenue> revenueByYear = revenueData.stream()
-                .map(obj -> DashboardStatsResponse.MonthlyRevenue.builder()
+        List<ResponseDashboardAdmin.MonthlyRevenue> revenueByYear = revenueData.stream()
+                .map(obj -> ResponseDashboardAdmin.MonthlyRevenue.builder()
                         .month((Integer) obj[0])
                         .revenue((BigDecimal) obj[1])
                         .build())
                 .collect(Collectors.toList());
 
-        // 8️⃣ Trả về DashboardStatsResponse
-        return DashboardStatsResponse.builder()
+        // 8️⃣ Trả về ResponseDashboardAdmin
+        return ResponseDashboardAdmin.builder()
                 .ordersToday(masterOrderRepository.getTodayOrders(startOfDay, endOfDay))
                 .ordersThisMonth(masterOrderRepository.getThisMonthOrders(startOfMonth, endOfMonth))
                 .totalRevenue(totalRevenue)
                 .thisMonthRevenue(masterOrderRepository.getThisMonthRevenue(startOfMonth, endOfMonth))
-                .recentOrders(recentOrders)
+                .recentOrders(recentMasterOrders)
                 .totalPages(pagedMasterOrders.getTotalPages())
                 .topProducts(topProducts)
                 .revenueByYear(revenueByYear)
                 .build();
     }
-
     @Override
     public BigDecimal calculateRevenueByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses) {
         return masterOrderRepository.calculateRevenueByDateRangeAndStatuses(startDate, endDate, statuses);
@@ -960,7 +1007,22 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         orderRepository.save(order.get());
         return "Update status thành công rồi";
     }
-
+    @Override
+    @Transactional
+    public String updateStatusByAdmin(Long orderId, String status) {
+        Optional<Order> order = orderRepository.findById(orderId);
+        if (status.equalsIgnoreCase("packed")) {
+            order.get().setStatus(OrderStatus.processing.name());
+        }else if (status.equalsIgnoreCase("shipped")) {
+            order.get().setStatus(OrderStatus.shipped.name());
+        } else if (status.equalsIgnoreCase("delivered")) {
+            order.get().setStatus(OrderStatus.completed.name());
+        }else {
+            order.get().setStatus(status);
+        }
+        orderRepository.save(order.get());
+        return "Update status thành công rồi";
+    }
     @Override
     public String cancelBySeller(Long orderId, Long shopId) {
         Optional<Order> order = orderRepository.findById(orderId);
@@ -971,6 +1033,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         orderRepository.save(order.get());
         return "Hủy đơn hàng thành công";
     }
+
     public Map<String, Object> getWeeklyMetrics() {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")); // Múi giờ +07
         LocalDateTime startOfWeek = now.with(LocalTime.MIN).with(DayOfWeek.MONDAY);

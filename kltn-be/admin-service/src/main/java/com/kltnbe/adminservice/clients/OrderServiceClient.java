@@ -5,6 +5,8 @@ import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,4 +34,9 @@ public interface OrderServiceClient {
      BigDecimal getTotalRevenue();
     @GetMapping("/api/orders/getRevenueByAdmin")
     ResponseEntity<List<MonthlyRevenueDTO>> getRevenueByAdmin();
+    @PutMapping("/api/orders/updateMethodOrderByAdmin")
+     ResponseEntity<String> updateMethodOrderByAdmin(
+            @RequestParam Long orderId,
+            @RequestParam String method,
+            @RequestParam(required = false) String status);
 }
