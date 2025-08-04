@@ -118,7 +118,7 @@ const Sidebar = () => {
         </a>
       </li>
       <li>
-        <a href="/admin/customer/customer">
+        <a href="/admin/customer/adminFeedbackTable">
           <span className="icon-menu feather-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -137,7 +137,7 @@ const Sidebar = () => {
             </svg>
           </span>
           {/* Customers */}
-          <span className="menu-text">Quản lí khách hàng</span>
+          <span className="menu-text">Quản lí Feedback</span>
         </a>
       </li>
    

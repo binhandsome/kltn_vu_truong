@@ -48,6 +48,7 @@ import Chart from '../pages/chart/Chart';
 import ChangePassword from '../pages/authentication/ChangePassword';
 import SellerDashboard from '../pages/adminDashboard/SellerDashboard';
 import AdminProductDashboard from '../pages/product/AdminProductDashboard';
+import AdminFeedbackTable from '../pages/customer/AdminFeedbackTable';
 import ActionProduct from '../pages/product/ActionProduct';
 
 const AdminRoutes = () => {
@@ -66,6 +67,7 @@ const AdminRoutes = () => {
         <Route path="buttons/buttons" element={<Buttons />} />
         <Route path="calendar/calendar" element={<Calendar />} />
         <Route path="customer/customer" element={<Customer />} />
+        <Route path="customer/adminFeedbackTable" element={<AdminFeedbackTable />} />
         <Route path="documentation/documentation" element={<Documentation />} />
         <Route path="email/chat" element={<Chat />} />
         <Route path="email/inbox" element={<Inbox />} />

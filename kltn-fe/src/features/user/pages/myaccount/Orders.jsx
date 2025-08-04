@@ -170,40 +170,45 @@ const showToastNow = (msg) => {
 			})
 			.catch(err => console.error("Fetch orders error:", err));
 	}, [currentPage]);
-const updateAddress = async (orderId) => {
-	  console.log("🛠 orderId:", orderId); // Debug
-
-  const accessToken = localStorage.getItem("accessToken");
-
-  const payload = {
-    recipientName,
-    recipientPhone: phone,
-    recipientEmail: email,
-    addressDetails: `${selectedProvince}, ${selectedDistrict}, ${ward}`,
-    deliveryAddress: `${street} / ${optionalStreet}`,
-  };
-
-  try {
-    const response = await axios.put(
-      "http://localhost:8086/api/orders/updateMethodOrder",
-      payload, // ✅ Body JSON
-      {
-        params: {
-			id: orderId, // ✅ Chỉ param đơn giản
-          method: 'updateaddress',
-        },
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    showToastNow("✅ Đã cập nhật địa chỉ thành công");
-    setOpen(false);
-  } catch (error) {
-    console.error("❌ Lỗi khi cập nhật địa chỉ:", error.response?.data || error.message);
-  }
-};
+	const updateAddress = async (orderId) => {
+		console.log("🛠 orderId:", orderId);
+	  
+		const accessToken = localStorage.getItem("accessToken");
+	  
+		const payload = {
+		  recipientName,
+		  recipientPhone: phone,
+		  recipientEmail: email,
+		  addressDetails: `${selectedProvince}, ${selectedDistrict}, ${ward}`,
+		  deliveryAddress: `${street} / ${optionalStreet}`,
+		};
+	  
+		try {
+		  const response = await axios.put(
+			"http://localhost:8086/api/orders/updateMethodOrder",
+			payload, // ✅ Body là DeliveryAddressDTO
+			{
+			  params: {
+				orderId: orderId,
+				method: 'updateaddress',
+			  },
+			  headers: {
+				Authorization: `Bearer ${accessToken}`, // ✅ để server xác định user & gọi user-service
+				"Content-Type": "application/json",
+			  },
+			}
+		  );
+	  
+		  console.log("✅ Server response:", response.data);
+		  showToastNow("✅ Đã cập nhật địa chỉ thành công");
+		  setOpen(false);
+		  await getMyOrder(); 
+		} catch (error) {
+		  console.error("❌ Lỗi khi cập nhật địa chỉ:", error.response?.data || error.message);
+		  showToastNow("❌ Cập nhật địa chỉ thất bại!");
+		}
+	  };
+	  
 
 	const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString();
 
@@ -541,83 +546,77 @@ const updateAddress = async (orderId) => {
 								</aside>
 
 								<div className="col-xl-9 account-wrapper">
-									<div className="account-card">
-										<div className="table-responsive">
-											{myOrders?.map((order, index) => (
-												<table className="table table-hover mb-4">
-													<thead>
-														<tr>
-															<th>STT</th>
-															<th>Ngày đặt hàng</th>
-															<th>Trạng thái đơn hàng</th>
-															<th>Tổng tiền</th>
-															<th>Địa chỉ đặt hàng</th>
-															<th>Hành động</th>
-														</tr>
-													</thead>
-													<tbody>
-
-														<tr key={index}>
-															<td><span className="fw-medium">#{order.masterOrderId}</span></td>
-															<td>{formatDate(order.createdAt)}</td>
-															<td>
-																<span className={`badge bg-${order.orderStatus === 'delivered' ? 'success' : order.orderStatus === 'cancelled' ? 'danger' : 'info'} m-0`}>
-																	{order.orderStatus}
-																</span>
-															</td>
-															<td>${order.totalAmount?.toFixed(2)}</td>
-															<td>
-																<button className="btn btn-sm btn-outline-success" onClick={() => handleOpen(order)}>Xem địa chỉ</button>
-
-															</td>
-
-															<td>
-																<div className="d-flex flex-column gap-1">
-																	<Link to="/user/myaccount/ordersdetails" state={{ order }} className="btn btn-sm btn-outline-primary">
-																		View
-																	</Link>
-																	{order.canCancel && (
-																		<button className="btn btn-sm btn-outline-danger" onClick={() => handleCancelOrder(order.orderId)}>
-																			Huỷ đơn
-																		</button>
-																	)}
-																	{order.canReturn && (
-																		<button className="btn btn-sm btn-outline-warning" onClick={() => handleReturnOrder(order.orderId)}>
-																			Trả hàng
-																		</button>
-																	)}
-																</div>
-															</td>
-														</tr>
-
-													</tbody>
-												</table>
-											))}
-
-										</div>
-
-										<div className="d-flex justify-content-center">
-											<nav aria-label="Orders Pagination">
-												<ul className="pagination style-1">
-													<li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
-														<a className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Prev</a>
-													</li>
-													{Array.from({ length: totalPages }, (_, i) => (
-														<li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
-															<a className="page-link" onClick={() => handlePageChange(i)}>{i + 1}</a>
-														</li>
-													))}
-													<li className={`page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`}>
-														<a className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Next</a>
-													</li>
-												</ul>
-											</nav>
-										</div>
-
-									</div>
+	<div className="account-card">
+		<div className="table-responsive">
+			<table className="table table-hover mb-4">
+				<thead>
+					<tr>
+						<th>STT</th>
+						<th>Ngày đặt hàng</th>
+						<th>Trạng thái đơn hàng</th>
+						<th>Tổng tiền</th>
+						<th>Địa chỉ đặt hàng</th>
+						<th>Hành động</th>
+					</tr>
+				</thead>
+				<tbody>
+					{myOrders?.map((order, index) => (
+						<tr key={order.masterOrderId}>
+							<td>{index + 1}</td> {/* ✅ STT đúng */}
+							<td>{formatDate(order.createdAt)}</td>
+							<td>
+								<span className={`badge bg-${order.orderStatus === 'delivered' ? 'success' : order.orderStatus === 'cancelled' ? 'danger' : 'info'} m-0`}>
+									{order.orderStatus}
+								</span>
+							</td>
+							<td>${order.totalAmount?.toFixed(2)}</td>
+							<td>
+								<button className="btn btn-sm btn-outline-success" onClick={() => handleOpen(order)}>
+									Xem địa chỉ
+								</button>
+							</td>
+							<td>
+								<div className="d-flex flex-column gap-1">
+									<Link to="/user/myaccount/ordersdetails" state={{ order }} className="btn btn-sm btn-outline-primary">
+										View
+									</Link>
+									{order.canCancel && (
+										<button className="btn btn-sm btn-outline-danger" onClick={() => handleCancelOrder(order.orderId)}>
+											Huỷ đơn
+										</button>
+									)}
+									{order.canReturn && (
+										<button className="btn btn-sm btn-outline-warning" onClick={() => handleReturnOrder(order.orderId)}>
+											Trả hàng
+										</button>
+									)}
 								</div>
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
 
-
+		<div className="d-flex justify-content-center">
+			<nav aria-label="Orders Pagination">
+				<ul className="pagination style-1">
+					<li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
+						<a className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Prev</a>
+					</li>
+					{Array.from({ length: totalPages }, (_, i) => (
+						<li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+							<a className="page-link" onClick={() => handlePageChange(i)}>{i + 1}</a>
+						</li>
+					))}
+					<li className={`page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`}>
+						<a className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Next</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
 
 							</div>
 						</div>

@@ -1,6 +1,7 @@
 package com.kltnbe.productservice.services;
 
 import com.kltnbe.productservice.dtos.ProductVariantDTO;
+import com.kltnbe.productservice.dtos.req.InventoryRestoreRequest;
 import com.kltnbe.productservice.entities.ProductVariant;
 
 import java.math.BigDecimal;
@@ -21,4 +22,5 @@ public interface ProductVariantService {
     Optional<ProductVariant> getVariantById(Long variantId);
 
     void deleteVariant(Long variantId, Long authId);
+    void restoreInventoryFromNames(List<InventoryRestoreRequest> requests);
 }

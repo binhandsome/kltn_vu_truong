@@ -1,10 +1,7 @@
 package com.kltnbe.userservice.controllers;
 
 import com.kltnbe.userservice.dtos.UserDTO;
-import com.kltnbe.userservice.dtos.req.AddressRequest;
-import com.kltnbe.userservice.dtos.req.DeliveryAddressDTO;
-import com.kltnbe.userservice.dtos.req.GuestAddressRequest;
-import com.kltnbe.userservice.dtos.req.UpdateProfileRequest;
+import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
 import com.kltnbe.userservice.dtos.res.AddressResponse;
 import com.kltnbe.userservice.entities.Address;
@@ -125,4 +122,26 @@ public class UserController {
     public ResponseEntity<String> updateAddress(@RequestBody DeliveryAddressDTO deliveryAddressDTO) {
             return ResponseEntity.ok(userService.updateAddress(deliveryAddressDTO));
     }
+    @PostMapping("/create-address-for-order")
+    public ResponseEntity<Long> createAddressForOrder(
+            @RequestBody DeliveryAddressDTO dto,
+            @RequestHeader("Authorization") String accessToken
+    ) {
+        try {
+            Long addressId = userService.createAddressForOrder(dto, accessToken);
+            return ResponseEntity.ok(addressId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    @PostMapping("/sendFeedback")
+    public ResponseEntity<String> sendFeedback(
+            @RequestBody SystemFeedbackRequestDTO dto,
+            @RequestHeader("Authorization") String token
+    ) {
+        String tokenValue = token.replace("Bearer ", "");
+        Long userId = userService.getIdUserByAccessToken(tokenValue);
+        return ResponseEntity.ok(userService.submitFeedback(dto, userId));
+    }
+
 }

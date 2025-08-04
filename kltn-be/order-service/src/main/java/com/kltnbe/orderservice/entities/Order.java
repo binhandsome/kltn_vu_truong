@@ -33,8 +33,9 @@ public class Order {
     private BigDecimal discountedSubtotal;
 
     @Column(name = "status", nullable = false)
-    @Comment("pending,packed,shipped,delivered,failed")
+    @Comment("pending,packed,shipped,delivered,failed,cancelled,cancelledSeller")
     private String status;
+
     @Column(name = "selected_discount_shop")
     private Long selectedDiscountShop;
     @Column(name = "created_at", updatable = false)

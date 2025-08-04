@@ -119,6 +119,35 @@ const triggerToast = (msg, type = "error") => {
     window.addEventListener("cartUpdated", handleCartUpdate);
     return () => window.removeEventListener("cartUpdated", handleCartUpdate);
   }, []);
+  // dat lai san pham
+  useEffect(() => {
+    const reorderData = JSON.parse(localStorage.getItem("reorderItems") || "[]");
+    if (reorderData.length > 0) {
+      const token = localStorage.getItem("accessToken") || '';
+      const cartId = localStorage.getItem("cartId") || '';
+  
+      const addReorderItem = async (item) => {
+        try {
+          await axios.post("http://localhost:8084/api/cart/add", {
+            token,
+            cartId,
+            asin: item.asin,
+            quantity: item.quantity,
+            price: 0,
+            size: item.size,
+            nameColor: item.nameColor
+          });
+        } catch (err) {
+          console.error("❌ Lỗi khi thêm sản phẩm reorder:", err);
+        }
+      };
+  
+      Promise.all(reorderData.map(addReorderItem)).then(() => {
+        localStorage.removeItem("reorderItems");
+        setTimeout(() => window.dispatchEvent(new Event("cartUpdated")), 500);
+      });
+    }
+  }, []);
 
   const updateQuantity = async (productId, newQuantity) => {
     const item = listCart.items.find(i => i.productId === productId);
