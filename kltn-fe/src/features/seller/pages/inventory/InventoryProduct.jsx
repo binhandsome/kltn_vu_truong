@@ -24,10 +24,7 @@ const InventoryProduct = () => {
       setProducts(res.data);
     } catch (error) {
       console.error("❌ Lỗi khi lấy danh sách sản phẩm:", error);
-      if (error.response?.status === 403 || error.response?.status === 401) {
-        alert("Bạn không có quyền truy cập. Vui lòng đăng nhập lại.");
-        navigate("/seller/authentication/login");
-      }
+    
     }
   };
 

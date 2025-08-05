@@ -189,10 +189,7 @@ const AllProduct = () => {
 
 			} catch (error) {
 				console.error('❌ Lỗi khi gọi API:', error);
-				    if (error.response?.status === 401 || error.response?.status === 403) {
-        alert("Bạn không có quyền. Đăng nhập lại.");
-        navigate("/seller/authentication/login");
-      }
+				  
 				setProducts([]);
 				setTotalPages(0);
 			} finally {
