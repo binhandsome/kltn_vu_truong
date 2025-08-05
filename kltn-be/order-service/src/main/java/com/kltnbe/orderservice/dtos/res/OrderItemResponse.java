@@ -21,6 +21,8 @@ public class OrderItemResponse {
     private String size;
     private Double percentDiscount;
     private String brandName;
+    private int isEvaluate;
+    private Long orderItemId;
 
     public OrderItemResponse(String asin, String brandName, String color, Double percentDiscount, BigDecimal productPrice, String productThumbnail, String productTitle, int quantity, String size, BigDecimal unitPrice) {
         this.asin = asin;

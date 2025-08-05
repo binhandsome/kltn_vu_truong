@@ -465,6 +465,8 @@ public class OrderServiceImpl implements OrderService {
                     orderItemResponse.setProductTitle(productResponse.getNameProduct());
                     orderItemResponse.setProductThumbnail(productResponse.getThumbnail());
                     orderItemResponse.setBrandName(productResponse.getNameBrand());
+                    orderItemResponse.setOrderItemId(orderItem.getOrderItemId());
+                    orderItemResponse.setIsEvaluate(orderItem.getIsEvaluate());
 //                    orderItemResponse.setProductPrice(BigDecimal.valueOf(productResponse.getPrice()));
                     orderItemResponse.setQuantity(orderItem.getQuantity());
                     orderItemResponse.setSize(orderItem.getSize());
@@ -745,8 +747,8 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
 
         // 7️⃣ Trả về DashboardStatsResponse
         return DashboardStatsResponse.builder()
-                .ordersToday(0L)
-                .ordersThisMonth(0L)
+                .ordersToday(orderRepository.countOrdersToday(storeId))
+                .ordersThisMonth(orderRepository.countOrdersThisMonth(storeId))
                 .totalRevenue(totalRevenue)
                 .recentOrders(recentOrders)
                 .totalPages(pagedOrders.getTotalPages())
