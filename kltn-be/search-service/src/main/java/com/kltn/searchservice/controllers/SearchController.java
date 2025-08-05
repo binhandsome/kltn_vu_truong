@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/search")
@@ -41,6 +42,20 @@ public class SearchController {
         searchService.indexProduct(productDto);
         return "index thanh cong";
     }
+    @PostMapping("update")
+    public String updateProduct(@RequestBody ProductDto productDto) throws IOException {
+        searchService.updateProduct(productDto);
+        return "update thanh cong";
+    }
+    @PostMapping("updateThumbnail")
+    public String updateProductThumbnail(@RequestBody Map<Long, String> requestBody) throws IOException {
+        Map.Entry<Long, String> entry = requestBody.entrySet().iterator().next();
+        Long productId = entry.getKey();
+        String productThumbnail = entry.getValue();
+        searchService.updateProductThumbnail(productId, productThumbnail);
+        return "update thumbnail thanh cong";
+    }
+
     @GetMapping("/by-id/{id}")
     public ResponseEntity<?> getProductById(@PathVariable("id") Long id) {
         try {

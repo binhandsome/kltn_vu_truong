@@ -34,10 +34,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -99,11 +96,103 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public void indexProduct(ProductDto productDto) throws IOException {
-        IndexRequest<ProductDto> request = IndexRequest.of(i -> i.index(INDEX_NAME)
-                .id(productDto.getProductId().toString()).document(productDto));
-        elasticsearchClient.index(request);
-    }
+        Logger logger = LoggerFactory.getLogger(this.getClass());
 
+        // Kiểm tra null
+        if (productDto == null || productDto.getProductId() == null || productDto.getAsin() == null) {
+            logger.error("ProductDto hoặc các trường bắt buộc null: {}", productDto);
+            throw new IllegalArgumentException("ProductDto, productId hoặc asin không được null");
+        }
+
+        // Log trước khi lập chỉ mục
+        logger.debug("ProductDto: {}", productDto);
+
+        // Tạo và gửi IndexRequest
+        IndexRequest<ProductDto> request = IndexRequest.of(i -> i
+                .index(INDEX_NAME)
+                .id(productDto.getProductId().toString())
+                .document(productDto));
+
+        try {
+            IndexResponse response = elasticsearchClient.index(request);
+            logger.info("Lập chỉ mục thành công - ID: {}, Result: {}, Index: {}",
+                    response.id(), response.result(), response.index());
+
+            // Làm mới chỉ mục
+            elasticsearchClient.indices().refresh(r -> r.index(INDEX_NAME));
+            logger.info("Đã làm mới chỉ mục: {}", INDEX_NAME);
+        } catch (IOException e) {
+            logger.error("Lỗi lập chỉ mục ProductDto ID: {}, lỗi: {}",
+                    productDto.getProductId(), e.getMessage());
+            throw e;
+        }
+    }
+    @Override
+    public void updateProduct(ProductDto productDto) throws IOException {
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+
+        // Kiểm tra null
+        if (productDto == null || productDto.getProductId() == null || productDto.getAsin() == null) {
+            logger.error("ProductDto hoặc các trường bắt buộc null: {}", productDto);
+            throw new IllegalArgumentException("ProductDto, productId hoặc asin không được null");
+        }
+
+        // Log trước khi cập nhật
+        logger.debug("Cập nhật ProductDto: {}", productDto);
+
+        // Tạo và gửi UpdateRequest
+        UpdateRequest<ProductDto, ProductDto> request = UpdateRequest.of(u -> u
+                .index(INDEX_NAME)
+                .id(productDto.getProductId().toString())
+                .doc(productDto)
+                .docAsUpsert(true)); // Tạo mới nếu không tồn tại
+
+        try {
+            UpdateResponse<ProductDto> response = elasticsearchClient.update(request, ProductDto.class);
+            logger.info("Cập nhật thành công - ID: {}, Result: {}, Index: {}",
+                    response.id(), response.result(), response.index());
+
+            // Làm mới chỉ mục
+            elasticsearchClient.indices().refresh(r -> r.index(INDEX_NAME));
+            logger.info("Đã làm mới chỉ mục: {}", INDEX_NAME);
+        } catch (IOException e) {
+            logger.error("Lỗi cập nhật ProductDto ID: {}, lỗi: {}",
+                    productDto.getProductId(), e.getMessage());
+            throw e;
+        }
+    }
+    @Override
+    public void updateProductThumbnail(Long productId, String productThumbnail) throws IOException {
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+
+        // Kiểm tra null
+        if (productId == null || productThumbnail == null) {
+            logger.error("productId hoặc productThumbnail null: id={}, thumbnail={}", productId, productThumbnail);
+            throw new IllegalArgumentException("productId hoặc productThumbnail không được null");
+        }
+
+        // Log trước khi cập nhật
+        logger.debug("Cập nhật productThumbnail cho ID: {}, thumbnail: {}", productId, productThumbnail);
+
+        // Tạo UpdateRequest với Map để chỉ cập nhật productThumbnail
+        UpdateRequest<Map<String, String>, Map<String, String>> request = UpdateRequest.of(u -> u
+                .index(INDEX_NAME)
+                .id(productId.toString())
+                .doc(Map.of("productThumbnail", productThumbnail))
+                .docAsUpsert(false)); // Không tạo mới nếu không tồn tại
+        try {
+            UpdateResponse<Map<String, String>> response = elasticsearchClient.update(request, Map.class);
+            logger.info("Cập nhật thành công - ID: {}, Result: {}, Index: {}",
+                    response.id(), response.result(), response.index());
+
+            // Làm mới chỉ mục
+            elasticsearchClient.indices().refresh(r -> r.index(INDEX_NAME));
+            logger.info("Đã làm mới chỉ mục: {}", INDEX_NAME);
+        } catch (IOException e) {
+            logger.error("Lỗi cập nhật productThumbnail ID: {}, lỗi: {}", productId, e.getMessage());
+            throw e;
+        }
+    }
     @Override
     public ProductDto getProductById(Long productId) {
         try {

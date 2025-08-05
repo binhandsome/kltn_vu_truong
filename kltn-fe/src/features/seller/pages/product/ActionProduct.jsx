@@ -484,7 +484,7 @@ const handleSubmitEditProduct = async (e) => {
       }
     );
 
-    setMessage(response.data.message || '✅ Cập nhật thành công');
+    setMessage('✅ Cập nhật thành công');
   } catch (err) {
     console.error('❌ Lỗi cập nhật:', err);
     setMessage(err.response?.data?.message || '❌ Lỗi khi cập nhật sản phẩm');

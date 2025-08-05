@@ -3,8 +3,10 @@ package com.kltnbe.productservice.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kltnbe.productservice.clients.SearchServiceProxy;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.dtos.ColorDTO;
+import com.kltnbe.productservice.dtos.ProductDto;
 import com.kltnbe.productservice.dtos.TitleAndImgSeller;
 import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.dtos.req.*;
@@ -51,6 +53,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductVariantRepository productVariantRepository;
     private final AsyncUploadService asyncUploadService;
+    @Autowired
+    private SearchServiceProxy searchServiceProxy;
+
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
         Pageable pageable = PageRequest.of(productFileterAll.getPage(), productFileterAll.getSize());
         return productRepository.findAll(pageable);
@@ -151,8 +156,23 @@ public class ProductServiceImpl implements ProductService {
                 category.setDescription(request.getDescription());
                 categoryRepository.save(category);
             }
+            Optional<Product> product1 = productRepository.findProductByAsin(product.getAsin());
+            ProductDto productDto = new ProductDto();
+            productDto.setProductId(product.getProductId());
+            productDto.setAsin(product.getAsin() != null ? product.getAsin() : "");
+            productDto.setProductTitle(product.getProductTitle() != null ? product.getProductTitle() : "");
+            productDto.setProductPrice(product.getProductPrice() != null ? product.getProductPrice() : BigDecimal.ZERO);
+            productDto.setProductThumbnail(product.getProductThumbnail() != null ? product.getProductThumbnail() : "");
+            productDto.setSalesRank(product.getSalesRank());
+            productDto.setProductType(product.getProductType() != null ? product.getProductType() : "");
+            productDto.setStoreId(product.getStoreId());
+            productDto.setPercentDiscount(product.getPercentDiscount() != null ? product.getPercentDiscount() : 0);
+            productDto.setStockQuantity(product.getStockQuantity() != null ? product.getStockQuantity() : 0);
+            productDto.setTags(product.getTags());
+            productDto.setProductStatus(product.getProductStatus() != null ? String.valueOf(product.getProductStatus()) : "UNKNOWN");
+            String message = searchServiceProxy.indexProduct(productDto);
 
-            return ResponseEntity.ok(Map.of("message", "✅ Thêm sản phẩm thành công. Mã ASIN: " + asin));
+            return ResponseEntity.ok(Map.of("message", "✅ Thêm sản phẩm thành công. Mã ASIN: " + asin + message));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of("message", "❌ Lỗi server: " + e.getMessage()));
@@ -211,9 +231,23 @@ validateShopOwnership(product.getStoreId(), authId);
                 category.setDescription(request.getDescription());
                 categoryRepository.save(category);
             }
+            Optional<Product> product1 = productRepository.findProductByAsin(product.getAsin());
+            ProductDto productDto = new ProductDto();
+            productDto.setProductId(product.getProductId());
+            productDto.setAsin(product.getAsin() != null ? product.getAsin() : "");
+            productDto.setProductTitle(product.getProductTitle() != null ? product.getProductTitle() : "");
+            productDto.setProductPrice(product.getProductPrice() != null ? product.getProductPrice() : BigDecimal.ZERO);
+            productDto.setProductThumbnail(product.getProductThumbnail() != null ? product.getProductThumbnail() : "");
+            productDto.setSalesRank(product.getSalesRank());
+            productDto.setProductType(product.getProductType() != null ? product.getProductType() : "");
+            productDto.setStoreId(product.getStoreId());
+            productDto.setPercentDiscount(product.getPercentDiscount() != null ? product.getPercentDiscount() : 0);
+            productDto.setStockQuantity(product.getStockQuantity() != null ? product.getStockQuantity() : 0);
+            productDto.setTags(product.getTags());
+            productDto.setProductStatus(product.getProductStatus() != null ? String.valueOf(product.getProductStatus()) : "UNKNOWN");
+            String message = searchServiceProxy.updateProduct(productDto);
 
-
-            return ResponseEntity.ok(Map.of("message", "✅ Cập nhật sản phẩm thành công"));
+            return ResponseEntity.ok(Map.of("message", "✅ Cập nhật sản phẩm thành công" + message) );
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of("message", "❌ Lỗi khi cập nhật sản phẩm: " + e.getMessage()));
@@ -471,9 +505,17 @@ validateShopOwnership(product.getStoreId(), authId);
         Product product = productRepository.findProductByAsin(asin)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ASIN: " + asin));
         validateShopOwnership(product.getStoreId(), authId);
-
         productImageRepository.resetMainImageByAsin(asin);
         productImageRepository.setMainImage(imageId);
+        Optional<ProductImage> productImage = productImageRepository.findById(imageId);
+        product.setProductThumbnail(productImage.get().getImageData());
+        productRepository.save(product);
+        Map<Long, String> thumbnailData = Map.of(product.getProductId(), productImage.get().getImageData());
+        try {
+            searchServiceProxy.updateProductThumbnail(thumbnailData);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     private String generateRandomAsin(int length) {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
