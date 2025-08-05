@@ -3,6 +3,7 @@ package com.kltnbe.adminservice.clients;
 import com.kltnbe.adminservice.dtos.AuthenticationDTO;
 import com.kltnbe.adminservice.dtos.req.ShopEditRequestDTO;
 import com.kltnbe.adminservice.dtos.res.ShopResponseDTO;
+import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "seller-service", url = "http://localhost:8089")
+@FeignClient(name = "seller-service", url = "http://localhost:8089", configuration = FeignInternalAuthConfig.class)
 public interface SellerServiceClient {
 
     // ✅ 1. Lấy danh sách shop đang chờ duyệt

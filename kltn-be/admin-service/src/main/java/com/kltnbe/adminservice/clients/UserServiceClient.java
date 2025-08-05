@@ -5,6 +5,7 @@ import com.kltnbe.adminservice.dtos.req.RegisterRequest;
 import com.kltnbe.adminservice.dtos.req.UpdateProfileRequest;
 import com.kltnbe.adminservice.dtos.UserDTO;
 import com.kltnbe.adminservice.dtos.res.AddressInfo;
+import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "user-service", url = "http://localhost:8081")
+@FeignClient(name = "user-service", url = "http://localhost:8081",  configuration = FeignInternalAuthConfig.class)
 public interface UserServiceClient {
 
     @GetMapping("/api/user/allUsers")
@@ -46,6 +47,7 @@ public interface UserServiceClient {
 
     @GetMapping("/api/auth/checkUsernameExists")
     Boolean checkUsernameExists(@RequestParam("username") String username);
-    @PutMapping("/api/user/upgradeToSeller/{userId}")
+
+    @PostMapping("/api/user/upgradeToSeller/{userId}")
     String upgradeToSeller(@PathVariable("userId") Long userId);
 }

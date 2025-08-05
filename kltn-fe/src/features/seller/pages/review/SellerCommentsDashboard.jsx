@@ -20,10 +20,7 @@ const SellerCommentsDashboard = () => {
       setProducts(res.data);
     } catch (err) {
       console.error("Lỗi khi lấy sản phẩm:", err);
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        alert("Bạn không có quyền. Đăng nhập lại.");
-        navigate("/seller/authentication/login");
-      }
+     
     }
   };
 

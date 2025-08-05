@@ -175,10 +175,7 @@ function Order() {
     } catch (error) {
       console.error('Error fetching dashboard:', error.response ? error.response.data : error.message);
       setMessage('❌ Lỗi khi tải thông tin dashboard: ' + (error.response?.data || error.message));
-          if (error.response?.status === 401 || error.response?.status === 403) {
-        alert("Bạn không có quyền. Đăng nhập lại.");
-        navigate("/seller/authentication/login");
-      }
+       
       setRevenue(0);
       setDashboardSeller(null);
       setIsDataFetched(true);

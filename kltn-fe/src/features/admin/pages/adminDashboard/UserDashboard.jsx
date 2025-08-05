@@ -93,8 +93,7 @@ const UserDashboard = () => {
 
   const toggleBan = async (id) => {
             const accessToken = localStorage.getItem("accessToken");
-
-    await axios.put(`http://localhost:8091/api/admin/users/${id}/toggle-ban`, {
+    await axios.put(`http://localhost:8091/api/admin/users/${id}/toggle-ban`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -105,7 +104,7 @@ const UserDashboard = () => {
   const resetPassword = async (id) => {
             const accessToken = localStorage.getItem("accessToken");
 
-    await axios.post(`http://localhost:8091/api/admin/users/${id}/reset-password`, {
+    await axios.post(`http://localhost:8091/api/admin/users/${id}/reset-password`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -114,10 +113,9 @@ const UserDashboard = () => {
   };
 
   const upgradeToSeller = async (userId) => {
-            const accessToken = localStorage.getItem("accessToken");
-
+      const accessToken = localStorage.getItem("accessToken");
     try {
-      const res = await axios.put(`http://localhost:8091/api/admin/users/upgradeToSeller/${userId}`, {
+      const res = await axios.put(`http://localhost:8091/api/admin/users/upgradeToSeller/${userId}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
