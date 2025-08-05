@@ -104,7 +104,7 @@ const handleViewCccd = async (shopId) => {
   const approveShop = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-shop/${id}`, {
+    await axios.put(`http://localhost:8091/api/admin/sellers/approve-shop/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -114,7 +114,7 @@ const handleViewCccd = async (shopId) => {
 
   const banShop = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
-    await axios.put(`http://localhost:8091/api/admin/sellers/ban-shop/${id}`, {
+    await axios.put(`http://localhost:8091/api/admin/sellers/ban-shop/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -125,7 +125,7 @@ const handleViewCccd = async (shopId) => {
   const approveEdit = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-edit/${id}`, {
+    await axios.put(`http://localhost:8091/api/admin/sellers/approve-edit/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -136,7 +136,7 @@ const handleViewCccd = async (shopId) => {
   const rejectEdit = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/reject-edit/${id}`, {
+    await axios.put(`http://localhost:8091/api/admin/sellers/reject-edit/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -147,7 +147,7 @@ const handleViewCccd = async (shopId) => {
   const approveAuth = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-authentication/${id}`, {
+    await axios.put(`http://localhost:8091/api/admin/sellers/approve-authentication/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -158,7 +158,7 @@ const handleViewCccd = async (shopId) => {
   const rejectAuth = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/reject-authentication/${id}`, {
+    await axios.put(`http://localhost:8091/api/admin/sellers/reject-authentication/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
