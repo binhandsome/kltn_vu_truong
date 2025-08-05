@@ -11,16 +11,14 @@ import com.paypal.base.rest.APIContext;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.kltnbe.paymentservice.utils.VNPayUtil.hmacSHA512;
@@ -41,6 +39,7 @@ public class PaymentController {
         return paymentService.saveTransaction(paymentRequest);
     }
     @GetMapping("/vnpay_return")
+    @Transactional
     public RedirectView vnpayReturn(@RequestParam Map<String, String> params) {
         String receivedHash = params.remove("vnp_SecureHash");
         params.remove("vnp_SecureHashType");
@@ -57,28 +56,32 @@ public class PaymentController {
         }
 
         String calculatedHash = hmacSHA512(vnpayConfig.getHashSecret(), hashData.toString());
-
-        String redirectUrl = "http://localhost:3000/user/myaccount/orders";
+        String redirectUrl = "http://localhost:3000/user/shoppages/paymentReturn";
 
         if (calculatedHash.equalsIgnoreCase(receivedHash)) {
             Long transactionId = Long.valueOf(params.get("vnp_TxnRef"));
-            Transaction transaction = transactionRepository.findById(transactionId).orElse(null);
-            if (transaction != null) {
+
+            Optional<Transaction> optionalTx = transactionRepository.findById(transactionId);
+            System.out.println("[VNPay] ✅ Callback received for transactionId=" + transactionId);
+
+            if (optionalTx.isPresent()) {
+                Transaction transaction = optionalTx.get();
                 transaction.setStatus("PAID");
                 transactionRepository.save(transaction);
+            } else {
+                System.err.println("Transaction not found with id: " + transactionId);
             }
 
-            // ✅ Redirect và gửi toast thành công
             RedirectView redirectView = new RedirectView(redirectUrl);
             redirectView.addStaticAttribute("success", "true");
             return redirectView;
         } else {
-            // ❌ Redirect và gửi thất bại
             RedirectView redirectView = new RedirectView(redirectUrl);
             redirectView.addStaticAttribute("error", "payment_invalid");
             return redirectView;
         }
     }
+
     @GetMapping("/paypal_return")
     public RedirectView paypalReturn(@RequestParam Map<String, String> params) {
         String status = params.get("paypalStatus");
