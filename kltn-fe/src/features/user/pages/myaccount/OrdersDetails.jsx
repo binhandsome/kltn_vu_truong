@@ -650,7 +650,9 @@ const updateAddress = async (orderId) => {
 													>
 														<h5>Chi Tiết Sản Phẩm</h5>
 														{orderStore?.orderItemResponses?.map((orderItem, itemIndex) => (
+															
 															<div className="tracking-item" key={`order-item-${index}-${itemIndex}`}>
+																
 																<div className="tracking-product">
 																	<img
 																		src={
@@ -670,7 +672,36 @@ const updateAddress = async (orderId) => {
 																	<small className="d-block"><strong>Color</strong> : {orderItem?.color}</small>
 																	<small className="d-block"><strong>Quantity</strong> : {orderItem?.quantity}</small>
 																</div>
+																	{orderStore.status === "delivered" && (
+  orderItem.isEvaluate === 0 ? (
+    <button  style={{
+    padding: '10px 24px',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    color: '#fff',
+    background: 'linear-gradient(to right, #ec4899, #ef4444, #facc15)',
+    border: 'none',
+    borderRadius: '9999px',
+    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  }}
+  onMouseOver={(e) => {
+    e.target.style.transform = 'scale(1.05)';
+    e.target.style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.3)';
+  }}
+  onMouseOut={(e) => {
+    e.target.style.transform = 'scale(1)';
+    e.target.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.2)';
+  }} >
+      Đánh giá
+    </button>
+  ) : orderItem.isEvaluate === 1 ? (
+    <span>Bạn đã đánh giá</span>
+  ) : null
+)}
 															</div>
+															
 														))}
 														<div className="tracking-item-content">
 															<span>Total Price</span>
@@ -684,6 +715,8 @@ const updateAddress = async (orderId) => {
 															<span>Order Total</span>
 															<h6>${orderStore.discountedSubtotal}</h6>
 														</div>
+													
+
 													</div>
 												</div>
 											</div>

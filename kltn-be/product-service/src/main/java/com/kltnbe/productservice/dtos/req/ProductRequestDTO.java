@@ -23,4 +23,5 @@ public class ProductRequestDTO {
     private String description;
     private String asin;
     private Long shopId;
+
 }

@@ -32,8 +32,6 @@ public class PaymentController {
     private final TransactionRepository transactionRepository;
     @Autowired
     private APIContext apiContext;
-
-
     @PostMapping("/savePayment")
     public ResponseEntity<?> savePayment(@RequestBody PaymentRequest paymentRequest) throws UnsupportedEncodingException {
         return paymentService.saveTransaction(paymentRequest);

@@ -115,6 +115,7 @@ public class ProductServiceImpl implements ProductService {
         if (request.getShopId() == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "❌ Thất bại: Chưa có shop"));
         }
+        System.out.println(request.toString() + "request cua toi la");
         validateShopOwnership(request.getShopId(), authId);
 
         String asin = generateRandomAsin(10);
@@ -143,6 +144,7 @@ public class ProductServiceImpl implements ProductService {
             product.setColorAsin(json);
             product.setTags(request.getSelectedGender());
             product.setProductType(request.getSelectedType());
+            product.setSalesRank(request.getSelectedCategory());
             product.setStoreId(request.getShopId());
             product.setStoreThumTitle(jsonTitleAndThumbnail);
             productRepository.save(product);
@@ -171,8 +173,8 @@ public class ProductServiceImpl implements ProductService {
             productDto.setTags(product.getTags());
             productDto.setProductStatus(product.getProductStatus() != null ? String.valueOf(product.getProductStatus()) : "UNKNOWN");
             String message = searchServiceProxy.indexProduct(productDto);
-
-            return ResponseEntity.ok(Map.of("message", "✅ Thêm sản phẩm thành công. Mã ASIN: " + asin + message));
+            return ResponseEntity.ok(Map.of("message", "✅ Thêm sản phẩm thành công. Mã ASIN: " + asin + message, "dataAsin", product1.get().getAsin()
+            ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of("message", "❌ Lỗi server: " + e.getMessage()));

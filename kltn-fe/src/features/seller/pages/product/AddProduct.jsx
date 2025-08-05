@@ -28,7 +28,11 @@ const AddProduct = () => {
   const searchParams = new URLSearchParams(location.search);
   const asin = searchParams.get('asin');
   const [productByAsin, setProductByAsin] = useState([]);
-  	
+
+  	const navigateChangeProduct = (dataAsin) => {
+		navigate(`/seller/product/ActionProduct/${dataAsin}`);
+	}
+
   const handleChange = (value, index) => {
     const updated = [...category];
     updated[index] = value;
@@ -114,6 +118,8 @@ const AddProduct = () => {
     });
       console.log('✅ Server phản hồi:', res.data.body.message);
       setMessage(res.data.body.message);
+      const dataAsin = (res.data.body.dataAsin);
+      navigateChangeProduct(dataAsin);
       setNameProduct('');
       setNameBrand('');
       setPrice('');

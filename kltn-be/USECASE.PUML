@@ -1,0 +1,67 @@
+@startuml
+!theme plain
+left to right direction
+
+title Sơ đồ Use Case: Hệ thống Sàn TMĐT Thời trang
+
+actor "Khách hàng" as Customer
+actor "Người bán" as Seller
+actor "Admin" as Admin
+
+rectangle "Hệ thống Sàn TMĐT Thời trang" {
+    usecase "Đăng nhập" as Login
+    usecase "Đăng ký" as Register
+    usecase "Tìm kiếm sản phẩm" as Search
+    usecase "Lọc sản phẩm" as Filter
+    usecase "Thêm vào giỏ hàng" as AddToCart
+    usecase "Đặt hàng" as PlaceOrder
+    usecase "Thanh toán" as Payment
+    usecase "Đánh giá sản phẩm" as Review
+    usecase "Theo dõi đơn hàng" as TrackOrder
+
+    usecase "Tạo cửa hàng" as CreateShop
+    usecase "Quản lý sản phẩm (CRUD)" as ManageProducts
+    usecase "Xem thống kê doanh thu" as ViewSellerStats
+    usecase "Phản hồi đánh giá" as RespondReview
+
+    usecase "Quản lý người dùng" as ManageUsers
+    usecase "Quản lý cửa hàng" as ManageShops
+    usecase "Xem thống kê hệ thống" as ViewAdminStats
+    usecase "Quản lý quyền" as ManagePermissions
+    usecase "Quản lý gợi ý sản phẩm" as ManageRecommendations
+}
+
+' Mối quan hệ kế thừa
+Seller --|> Customer
+
+' Kết nối của Khách hàng
+Customer -- Login
+Customer -- Register
+Customer -- Search
+Customer -- AddToCart
+Customer -- PlaceOrder
+Customer -- Review
+Customer -- TrackOrder
+
+' Kết nối của Người bán (chỉ các chức năng riêng)
+Seller -- CreateShop
+Seller -- ManageProducts
+Seller -- ViewSellerStats
+Seller -- RespondReview
+
+' Kết nối của Admin
+Admin -- Login
+Admin -- ManageUsers
+Admin -- ManageShops
+Admin -- ViewAdminStats
+Admin -- ManagePermissions
+Admin -- ManageRecommendations
+
+' Mối quan hệ giữa các Use Case
+PlaceOrder .> Payment : <<include>>
+Filter .> Search : <<extend>>
+
+note "Doanh thu, Đơn hàng, Sản phẩm" as AdminStatsNote
+ViewAdminStats .. AdminStatsNote
+
+@enduml

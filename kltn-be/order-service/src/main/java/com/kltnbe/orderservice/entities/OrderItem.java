@@ -37,4 +37,6 @@ public class OrderItem {
 
     @Column(length = 20)
     private String size;
+
+    private int isEvaluate = 0;
 }

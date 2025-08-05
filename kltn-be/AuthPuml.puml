@@ -1,101 +1,77 @@
 @startuml
 !theme plain
-title Sơ đồ chuỗi: Luồng đăng ký người dùng
+title Sơ đồ chuỗi: Luồng Lấy Lịch sử Đơn hàng của Người dùng
 
 actor "User" as Client
-participant "AuthController" as Controller
-participant "AuthServiceImpl" as Service
-participant "PasswordEncoder" as Encoder
-participant "AuthRepository" as AuthRepo
-participant "UserRepository" as UserRepo
-database "Database" as DB
-participant "EmailServiceProxy" as EmailProxy
-participant "EmailService" as EmailSvc
+participant "Controller" as Ctrl
+participant "OrderService" as OrderSvc
+participant "UserService" as UserSvc
+participant "SellerService" as SellerSvc
+participant "ProductService" as ProductSvc
+database "Order DB" as OrderDB
 
 skinparam ParticipantPadding 20
 skinparam BoxPadding 10
 
-Client -> Controller: POST /register (RegisterRequest)
-activate Controller
+Client -> Ctrl: GET /getOrderByIdUser (Header: Authorization)
+note right of Client: Spring Security xác thực token và cung cấp authId
+activate Ctrl
 
-Controller -> Service: register(request)
-activate Service
+Ctrl -> OrderSvc: findOrderByUserHeader(authId)
+activate OrderSvc
 
-alt #LightGreen Các bước xác thực ban đầu và luồng thành công
-    group "Các bước kiểm tra tuần tự"
-        alt thiếu thông tin bắt buộc
-            Service --> Controller: return "Vui lòng cung cấp đầy đủ thông tin"
-        else username đã tồn tại
-            Service -> AuthRepo: findByUsername(username)
-            activate AuthRepo
-            AuthRepo -> DB: SELECT * FROM auth WHERE username = ?
-            DB --> AuthRepo: User record
-            deactivate AuthRepo
-            Service --> Controller: return "Tên người dùng đã tồn tại"
-        else email đã được sử dụng
-            Service -> AuthRepo: findByEmail(email)
-            activate AuthRepo
-            AuthRepo -> DB: SELECT * FROM auth WHERE email = ?
-            DB --> AuthRepo: User record
-            deactivate AuthRepo
-            Service --> Controller: return "Email đã được sử dụng"
-        else mật khẩu không khớp hoặc không đủ mạnh
-            Service --> Controller: return "Mật khẩu không hợp lệ..."
-        end
-    end
+group "1. Lấy thông tin ban đầu"
+    OrderSvc -> UserSvc: findUserIdByAuthId(authId)
+    activate UserSvc
+    UserSvc --> OrderSvc: userId
+    deactivate UserSvc
 
-    group "Xác thực OTP (try...catch)"
-        Service -> EmailProxy: checkOTP(info)
-        activate EmailProxy
-        EmailProxy -> EmailSvc: Remote call: check OTP
-        activate EmailSvc
-        EmailSvc --> EmailProxy: OTP Status Response
-        deactivate EmailSvc
-        EmailProxy --> Service: "ResponseEntity<String>"
-        deactivate EmailProxy
-
-        alt OTP hợp lệ
-            note right of Service: OTP chính xác, tiến hành đăng ký
-
-            Service -> Encoder: encode(password)
-            activate Encoder
-            Encoder --> Service: hashedPassword
-            deactivate Encoder
-
-            Service -> AuthRepo: save(auth)
-            activate AuthRepo
-            AuthRepo -> DB: INSERT INTO auth (...)
-            deactivate AuthRepo
-
-            Service -> UserRepo: save(user)
-            activate UserRepo
-            UserRepo -> DB: INSERT INTO user (...)
-            deactivate UserRepo
-
-            Service -> EmailProxy: deleteByEmail(email)
-            activate EmailProxy
-            EmailProxy -> EmailSvc: Remote call: delete OTP
-            deactivate EmailProxy
-
-            Service --> Controller: return "Đăng ký tài khoản thành công"
-
-        else OTP không hợp lệ
-             Service --> Controller: return "Mã OTP không hợp lệ"
-        end
-    end
-else #LightCoral Lỗi dịch vụ (bắt bởi catch)
-    note right of Service
-        Xử lý các ngoại lệ (Exception)
-        - FeignException.ServiceUnavailable
-        - FeignException (khác)
-        - Lỗi hệ thống chung
-    end note
-    Service --> Controller: return "Lỗi dịch vụ/hệ thống..."
+    OrderSvc -> OrderDB: masterOrderRepository.findByUserId(userId)
+    activate OrderDB
+    OrderDB --> OrderSvc: List<MasterOrder>
+    deactivate OrderDB
 end
 
-Service --> Controller: message
-deactivate Service
-Controller -> Client: "ResponseEntity"
-deactivate Controller
+
+loop cho mỗi masterOrder trong List<MasterOrder>
+    group "2. Tổng hợp dữ liệu cho một MasterOrder"
+        OrderSvc -> UserSvc: findByAddressId(masterOrder.getAddressId())
+        activate UserSvc
+        UserSvc --> OrderSvc: AddressInfo
+        deactivate UserSvc
+
+        loop cho mỗi order (sub-order) trong masterOrder.getOrders()
+            group "2a. Tổng hợp dữ liệu cho một Sub-Order"
+                note right of OrderSvc
+                    - Lấy DeliveryInfo, ShippingMethod từ Order DB.
+                end note
+
+                OrderSvc -> SellerSvc: getTitleAndImgSeller(order.getStoreId())
+                activate SellerSvc
+                SellerSvc --> OrderSvc: TitleAndImgSeller DTO
+                deactivate SellerSvc
+
+                loop cho mỗi orderItem trong order.getOrderItems()
+                    group "2b. Lấy chi tiết sản phẩm"
+                        OrderSvc -> ProductSvc: getProductById(orderItem.getProductId())
+                        activate ProductSvc
+                        ProductSvc --> OrderSvc: ProductResponse DTO
+                        deactivate ProductSvc
+                        note right of OrderSvc: Ánh xạ dữ liệu vào OrderItemResponse
+                    end
+                end
+                 note right of OrderSvc: Tập hợp OrderItemResponses vào OrderWithShopResponse
+            end
+        end
+        note right of OrderSvc: Tập hợp OrderWithShopResponses vào OrderResponse
+    end
+end
+
+note right of OrderSvc: Hoàn tất danh sách List<OrderResponse>
+OrderSvc --> Ctrl: return List<OrderResponse>
+deactivate OrderSvc
+
+Ctrl -> Client: 200 OK (JSON Array of OrderResponse)
+deactivate Ctrl
 
 @enduml
