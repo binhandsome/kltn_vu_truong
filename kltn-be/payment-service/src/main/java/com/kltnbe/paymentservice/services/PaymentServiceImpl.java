@@ -134,7 +134,7 @@ public class PaymentServiceImpl implements PaymentService {
         String vnp_OrderInfo = "Thanh toan don hang: " + transaction.getOrderId();
         String vnp_OrderType = "other";
         String vnp_Locale = "vn";
-        String vnp_ReturnUrl = vnpayConfig.getReturnUrl();
+        String vnp_ReturnUrl = "http://localhost:8087/api/payment/vnpay_return";
         String vnp_IpAddr = ipAddr;
         String vnp_CreateDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String vnp_BankCode = "NCB";
