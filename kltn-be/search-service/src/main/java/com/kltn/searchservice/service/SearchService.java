@@ -14,7 +14,8 @@ public interface SearchService {
     void syncProducts() throws IOException;
 
     void indexProduct(ProductDto productDto) throws IOException;
-
+    void updateProduct(ProductDto productDto) throws IOException;
+    void updateProductThumbnail(Long productId, String productThumbnail) throws IOException;
     //    Page<ProductDocument> searchProductByTitle(String keyword, Pageable pageable) throws IOException;
 //    Page<ProductDocument> searchByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
 //    Page<ProductDocument> searchByKeywordAndPrice(
