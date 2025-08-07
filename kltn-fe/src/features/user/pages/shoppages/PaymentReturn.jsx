@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import queryString from "query-string";
 import axios from "axios";
+import { authFetch } from '../../apiService/authFetch';
 
 const PaymentReturn = () => {
   const location = useLocation();

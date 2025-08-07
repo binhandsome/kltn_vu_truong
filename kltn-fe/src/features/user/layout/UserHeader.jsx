@@ -7,6 +7,7 @@ import WOW from 'wowjs';
 import { authFetch } from '../apiService/authFetch';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { refreshToken, isAccessTokenExpired } from '../apiService/authService';
 
   function UserHeader() {
     const [user, setUser] = useState(null);
@@ -39,7 +40,22 @@ const showToastMessage = (msg) => {
       console.error("Không thể parse colorAsin:", e);
       colorAsinArray = [];
     }
-    
+ useEffect(() => {
+  const maybeRefresh = async () => {
+    if (isAccessTokenExpired()) {
+      try {
+        await refreshToken();
+        console.log('✅ Token được làm mới');
+      } catch (err) {
+        console.error('❌ Làm mới token thất bại:', err.message);
+      }
+    } else {
+      console.log('✅ Token vẫn còn hiệu lực, không cần làm mới');
+    }
+  };
+
+  maybeRefresh();
+}, []);
 
     const handleIncrement = (productId, quantity) => {
       const newQuantity = (quantity || 1) + 1;
@@ -433,31 +449,10 @@ const getCartProduct = async () => {
                 </span>
                 <i className="fas fa-chevron-down tabindex" />
               </a>
-              <div className="mega-menu ">
-                <ul className="demo-menu mb-0">
-                  <li>
-                    <a href="index.html">
-                      <img src="../../assets/user/images/demo/demo-1.png" alt="/" />
-                      <span className="menu-title">01 Home Page</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="index-2.html">
-                      <img src="../../assets/user/images/demo/demo-2.png" alt="/" />
-                      <span className="menu-title">02 Home Page</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="index-3.html">
-                      <img src="../../assets/user/images/demo/demo-3.png" alt="/" />
-                      <span className="menu-title">03 Home Page</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
+        
             </li>
             <li className="has-mega-menu sub-menu-down">
-              <a href="/user/shop/shopWithCategory">
+              <a href="/user/shop/shopStandard">
                 <span>
                 Cửa hàng
                   {/* Shop */}
@@ -498,22 +493,7 @@ const getCartProduct = async () => {
                                                               Mặc định
                                                               {/* Default */}
                                                               </a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
-                                                              Hình thu nhỏ
-                                                              {/* Thumbnail */}
-                                                              </a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
-                                                            Phương tiện lưới
-                                                              {/* Grid Media */}
-                                                              </a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
-                                                            Băng chuyền
-                                                              {/* Carousel */}
-                                                              </a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/productstructure/productDetail'}>
-                                                              Chiều rộng đầy đủ
-                                                              {/* Full Width */}
-                                                              </a></li>
+                                                       
                                                         </ul>
                                                     </li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/shoppages/wishList'} className="menu-title">
@@ -526,17 +506,14 @@ const getCartProduct = async () => {
                                                               {/* Wishlist */}
                                                               </a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shoppages/cart'}>
-                                                              Xe đẩy
+                                                              Giỏ Hàng
                                                               {/* Cart */}
                                                               </a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shoppages/checkout'}>
                                                             Thanh toán
                                                               {/* Checkout */}
                                                               </a></li>
-                                                            <li><a href="#" onClick={() => window.location.href = '/user/shoppages/compare'}>
-                                                            So sánh
-                                                              {/* Compare */}
-                                                              </a></li>
+                                                         
                                                             <li><a href="#" onClick={() => window.location.href = '/user/shoppages/orderTracking'}>
                                                             Theo dõi đơn hàng
                                                               {/* Order Tracking */}
@@ -546,7 +523,7 @@ const getCartProduct = async () => {
                                                               {/* Login */}
                                                               </a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/auth/registration'}>
-                                                            Sự đăng ký
+                                                            Đăng Ký
                                                               {/* Registration */}
                                                               </a></li>
                                                             <li><a href="#" onClick={() => window.location.href = '/user/auth/forgetPassword'}>
@@ -600,7 +577,7 @@ const getCartProduct = async () => {
                 </ul>
               </div>
             </li>
-            <li className="has-mega-menu sub-menu-down auto-width">
+            {/* <li className="has-mega-menu sub-menu-down auto-width">
               <a href="/user/blog/blogdetails/postStandard">
                 <span>Blog</span>
                 <i className="fas fa-chevron-down tabindex" />
@@ -700,220 +677,9 @@ const getCartProduct = async () => {
                                             </li>
                                         </ul>
               </div>
-            </li>
-            <li className="has-mega-menu sub-menu-down auto-width">
-              <a href="javascript:void(0);">
-                <span>
-                Bố cục bài viết
-                  {/* Post Layout */}
-                </span>
-                <i className="fas fa-chevron-down tabindex" />
-              </a>
-              <div className="mega-menu">
-                <ul>
-                  <li>
-                    <a href="javascript:void(0);" className="menu-title">
-                      Post Types
-                    </a>
-                    <ul>
-                      <li>
-                        <a href="post-text.html">
-                          Text Post{" "}
-                          <div className="badge badge-sm rounded badge-animated">
-                            New
-                          </div>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="post-image.html">
-                          Image Post{" "}
-                          <div className="badge badge-sm rounded badge-animated">
-                            New
-                          </div>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="post-video.html">Video Post</a>
-                      </li>
-                      <li>
-                        <a href="post-link.html">Link Post</a>
-                      </li>
-                      <li>
-                        <a href="post-audio.html">Audio Post</a>
-                      </li>
-                      <li>
-                        <a href="post-quote.html">Post Quote</a>
-                      </li>
-                      <li>
-                        <a href="post-tutorial.html">
-                          Tutorial Post{" "}
-                          <div className="badge badge-sm rounded badge-animated">
-                            New
-                          </div>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="post-cateloge.html">
-                          Cateloge Post{" "}
-                          <div className="badge badge-sm rounded badge-animated">
-                            New
-                          </div>
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" className="menu-title">
-                      Multiple Media
-                    </a>
-                    <ul>
-                      <li>
-                        <a href="post-banner.html">Banner</a>
-                      </li>
-                      <li>
-                        <a href="post-slide-show.html">Slider</a>
-                      </li>
-                      <li>
-                        <a href="post-gallery.html">Gallery</a>
-                      </li>
-                      <li>
-                        <a href="post-status.html">
-                          Status Slider{" "}
-                          <div className="badge badge-sm rounded badge-animated">
-                            New
-                          </div>
-                        </a>
-                      </li>
-                    </ul>
-                    <a href="javascript:void(0);" className="menu-title">
-                      Post Layout Type
-                    </a>
-                    <ul>
-                      <li>
-                        <a href="post-standard.html">Standard Post</a>
-                      </li>
-                      <li>
-                        <a href="post-corner.html">Corner Post</a>
-                      </li>
-                      <li>
-                        <a href="post-side.html">
-                          Side Post{" "}
-                          <div className="badge badge-sm rounded badge-animated">
-                            New
-                          </div>
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0);" className="menu-title">
-                      Side Bar
-                    </a>
-                    <ul>
-                      <li>
-                        <a href="post-left-sidebar.html">Left Sidebar</a>
-                      </li>
-                      <li>
-                        <a href="post-right-sidebar.html">Right Sidebar</a>
-                      </li>
-                      <li>
-                        <a href="post-both-sidebar.html">Both Sidebar</a>
-                      </li>
-                      <li>
-                        <a href="post-no-sidebar.html">No Sidebar</a>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li className="has-mega-menu sub-menu-down">
-              <a href="/user/portfolio/portfolioTiles">
-                <span>
-                Danh mục đầu tư
-                  {/* Portfolio */}
-                </span>
-                <i className="fas fa-chevron-down tabindex" />
-              </a>
-              <div className="mega-menu portfolio-menu">
-              <ul>
-                                            <li className="side-left">
-                                                <ul className="portfolio-nav-link">
-                                                    <li>
-                                                        <a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioTiles'}>
-                                                            <img src="/assets/user/images/portfolio/icons/portfolio-tiles.svg" alt="/" />
-                                                            <span>Portfolio Tiles</span>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/collage-style-1.svg" alt="/" />
-                                                            <span>Collage Style 1</span>
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/collage-style-2.svg" alt="/" />
-                                                            <span>Collage Style 2</span>
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/masonry-grid.svg" alt="/" />
-                                                            <span>Masonry Grid</span>
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/cobble-style-1.svg" alt="/" />
-                                                            <span>Cobble Style 1</span>
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/cobble-style-2.svg" alt="/" />
-                                                            <span>Cobble Style 2</span>
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/portfolio-thumbs-slider.svg" alt="/" />
-                                                            <span>Portfolio Thumbs Slider</span>
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/portfolio-film-strip.svg" alt="/" />
-                                                            <span>Portfolio Film Strip</span>
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/carousel-showcase.svg" alt="/" />
-                                                            <span>Carousel Showcase</span>
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link to="/">
-                                                            <img src="/assets/user/images/portfolio/icons/portfolio-split-slider.svg" alt="/" />
-                                                            <span>Portfolio Split Slider</span>
-                                                        </Link>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li className="side-right line-left">
-                                                <a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails1'} className="menu-title">Portfolio Details</a>
-                                                <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails1'}>Portfolio Details 1</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails2'}>Portfolio Details 2</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails3'}>Portfolio Details 3</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails4'}>Portfolio Details 4</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/portfolio/portfolioDetails/portfolioDetails5'}>Portfolio Details 5</a></li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-              </div>
-            </li>
+            </li> */}
+
+
             <li className="has-mega-menu sub-menu-down wide-width">
               <a href="/user/about/aboutUs">
                 <span>
@@ -928,67 +694,18 @@ const getCartProduct = async () => {
                                                 <a href="#" onClick={() => window.location.href = '/user/about/aboutUs'} className="menu-title">Pages</a>
                                                 <ul>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/about/aboutUs'}>About Us</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/aboutMe'}>About Me</a></li>
+                                                    {/* <li><a href="#" onClick={() => window.location.href = '/user/pages/aboutMe'}>About Me</a></li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/pricingTable'}>Pricing Table</a></li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/ourGiftVouchers'}>Our Gift Vouchers</a></li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/whatWeDo'}>What We Do</a></li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/faqs1'}>Faqs 1</a></li>
                                                     <li><a href="#" onClick={() => window.location.href = '/user/pages/faqs2'}>Faqs 2</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/ourTeam'}>Our Team</a></li>
+                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/ourTeam'}>Our Team</a></li> */}
                                                 </ul>
                                             </li>
-                                            <li>
-                                                <a href="#" onClick={() => window.location.href = '/user/pages/contactUs'} className="menu-title">Contact Us</a>
-                                                <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/contactUs1'}>Contact Us 1</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/contactUs2'}>Contact Us 2</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/contactUs3'}>Contact Us 3</a></li>
-                                                </ul>
-                                                <a href="#" onClick={() => window.location.href = '/user/pages/webPages'} className="menu-title">Web Pages</a>
-                                                <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/error4041'}>Error 404 1</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/error4042'}>Error 404 2</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/comingSoon'}>Coming Soon</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/underConstruction'}>Under Construction</a></li>
-                                                </ul>
-                                            </li>
-                                            <li>
-                                                <a href="#" onClick={() => window.location.href = '/user/pages/bannerStyle'} className="menu-title">Banner Style</a>
-                                                <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerWithBgColor'}>Banner with BG Color</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerWithImage'}>Banner with Image</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerWithVideo'}>Banner with Video</a></li>
-                                                    <li><Link to="/">Banner with Kanbern</Link></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerSmall'}>Banner Small</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerMedium'}>Banner Medium</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/bannerLarge'}>Banner Large</a></li>
-                                                </ul>
-                                            </li>
-                                            <li>
-                                                <a href="#" onClick={() => window.location.href = '/user/pages/headerStyle'} className="menu-title">Header Style</a>
-                                                <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle1'}>Header Style 1</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle2'}>Header Style 2</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle3'}>Header Style 3</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle4'}>Header Style 4</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle5'}>Header Style 5</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle6'}>Header Style 6</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/headerStyle7'}>Header Style 7</a></li>
-                                                    <li className="w3menulink"><a href="#" onClick={() => window.location.href = '/user/pages/menuStyles'}>Menu Styles</a></li>
-                                                </ul>
-                                            </li>
-                                            <li>
-                                                <a href="#" onClick={() => window.location.href = '/user/pages/footerStyle'} className="menu-title">Footer Style</a>
-                                                <ul>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle1'}>Footer Style 1</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle2'}>Footer Style 2</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle3'}>Footer Style 3</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle4'}>Footer Style 4</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle5'}>Footer Style 5</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle6'}>Footer Style 6</a></li>
-                                                    <li><a href="#" onClick={() => window.location.href = '/user/pages/footerStyle7'}>Footer Style 7</a></li>
-                                                </ul>
-                                            </li>
+                                    
+                                  
+                                         
                                         </ul>
               </div>
             </li>
@@ -1126,17 +843,7 @@ const getCartProduct = async () => {
     </a>
   </li>
 )}             
-              <li className="nav-item search-link">
-                <a
-                  className="nav-link"
-                  href="javascript:void(0);"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#offcanvasTop"
-                  aria-controls="offcanvasTop"
-                >
-                  <i className="iconly-Light-Search" />
-                </a>
-              </li>
+            
               <li className="nav-item wishlist-link">
                 <a
                   className="nav-link"
@@ -1161,26 +868,7 @@ const getCartProduct = async () => {
                   <span className="badge badge-circle">{listCart && listCart.items ? listCart.items.length : 0}</span>
                 </a>
               </li>
-              <li className="nav-item filte-link">
-                <a
-                  href="javascript:void(0);"
-                  className="nav-link filte-btn"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#offcanvasLeft"
-                  aria-controls="offcanvasLeft"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={30}
-                    height={30}
-                    viewBox="0 0 30 13"
-                    fill="none"
-                  >
-                    <rect y={11} width={30} height={2} fill="black" />
-                    <rect width={30} height={2} fill="black" />
-                  </svg>
-                </a>
-              </li>
+
             </ul>
           </div>
         </div>

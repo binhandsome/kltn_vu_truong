@@ -43,7 +43,6 @@ public class AdminUserServiceImpl implements AdminUserService {
     public ResponseEntity<String> updateUser(Long id, UpdateProfileRequest request) {
         return userClient.updateUser(id, request);
     }
-
     @Override
     public ResponseEntity<String> toggleUserBan(Long id) {
         return userClient.toggleUserBan(id);

@@ -38,7 +38,21 @@ async function renderRevenueChart(chartType, elementId) {
     });
 
     const apiData = await response.json();
-
+console.log('Dữ liệu API:', apiData); // Log để kiểm tra
+if (!Array.isArray(apiData)) {
+  console.error('Dữ liệu API không phải mảng:', apiData);
+  revenueData = new Array(12).fill(0);
+} else {
+  revenueData = new Array(12).fill(0);
+  apiData.forEach(item => {
+    const monthIndex = item.month - 1;
+    if (monthIndex >= 0 && monthIndex < 12 && typeof item.revenue === 'number') {
+      revenueData[monthIndex] = item.revenue;
+    } else {
+      console.warn('Dữ liệu không hợp lệ:', item);
+    }
+  });
+}
     // Initialize revenueData with zeros for all 12 months
     revenueData = new Array(12).fill(0);
 

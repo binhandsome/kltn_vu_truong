@@ -1,77 +1,12 @@
 @startuml
-!theme plain
-title Sơ đồ chuỗi: Luồng Lấy Lịch sử Đơn hàng của Người dùng
+left to right direction
+skinparam monochrome true
+actor "Sản phẩm\n(title, brand...)" as User
+rectangle "SentenceTransformer\n(all-MiniLM-L6-v2)" as Embed
+rectangle "Vector Embedding\n(dim=384)" as Vec
+database "FAISS Index\n(IndexFlatIP)" as Faiss
 
-actor "User" as Client
-participant "Controller" as Ctrl
-participant "OrderService" as OrderSvc
-participant "UserService" as UserSvc
-participant "SellerService" as SellerSvc
-participant "ProductService" as ProductSvc
-database "Order DB" as OrderDB
-
-skinparam ParticipantPadding 20
-skinparam BoxPadding 10
-
-Client -> Ctrl: GET /getOrderByIdUser (Header: Authorization)
-note right of Client: Spring Security xác thực token và cung cấp authId
-activate Ctrl
-
-Ctrl -> OrderSvc: findOrderByUserHeader(authId)
-activate OrderSvc
-
-group "1. Lấy thông tin ban đầu"
-    OrderSvc -> UserSvc: findUserIdByAuthId(authId)
-    activate UserSvc
-    UserSvc --> OrderSvc: userId
-    deactivate UserSvc
-
-    OrderSvc -> OrderDB: masterOrderRepository.findByUserId(userId)
-    activate OrderDB
-    OrderDB --> OrderSvc: List<MasterOrder>
-    deactivate OrderDB
-end
-
-
-loop cho mỗi masterOrder trong List<MasterOrder>
-    group "2. Tổng hợp dữ liệu cho một MasterOrder"
-        OrderSvc -> UserSvc: findByAddressId(masterOrder.getAddressId())
-        activate UserSvc
-        UserSvc --> OrderSvc: AddressInfo
-        deactivate UserSvc
-
-        loop cho mỗi order (sub-order) trong masterOrder.getOrders()
-            group "2a. Tổng hợp dữ liệu cho một Sub-Order"
-                note right of OrderSvc
-                    - Lấy DeliveryInfo, ShippingMethod từ Order DB.
-                end note
-
-                OrderSvc -> SellerSvc: getTitleAndImgSeller(order.getStoreId())
-                activate SellerSvc
-                SellerSvc --> OrderSvc: TitleAndImgSeller DTO
-                deactivate SellerSvc
-
-                loop cho mỗi orderItem trong order.getOrderItems()
-                    group "2b. Lấy chi tiết sản phẩm"
-                        OrderSvc -> ProductSvc: getProductById(orderItem.getProductId())
-                        activate ProductSvc
-                        ProductSvc --> OrderSvc: ProductResponse DTO
-                        deactivate ProductSvc
-                        note right of OrderSvc: Ánh xạ dữ liệu vào OrderItemResponse
-                    end
-                end
-                 note right of OrderSvc: Tập hợp OrderItemResponses vào OrderWithShopResponse
-            end
-        end
-        note right of OrderSvc: Tập hợp OrderWithShopResponses vào OrderResponse
-    end
-end
-
-note right of OrderSvc: Hoàn tất danh sách List<OrderResponse>
-OrderSvc --> Ctrl: return List<OrderResponse>
-deactivate OrderSvc
-
-Ctrl -> Client: 200 OK (JSON Array of OrderResponse)
-deactivate Ctrl
-
+User --> Embed : Encode
+Embed --> Vec : Vector hóa
+Vec --> Faiss : Build Index
 @enduml

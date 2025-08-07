@@ -5,10 +5,7 @@ import com.kltnbe.security.utils.InternalApi;
 import com.kltnbe.sellerservice.dtos.*;
 import com.kltnbe.sellerservice.dtos.req.ReviewRequest;
 import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
-import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
-import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
-import com.kltnbe.sellerservice.dtos.res.TitleAndImgSeller;
-import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
+import com.kltnbe.sellerservice.dtos.res.*;
 import com.kltnbe.sellerservice.services.SellerService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -422,5 +419,21 @@ public class SellerController {
     public ResponseEntity<List<String>> getUrlCcd(@RequestParam Long shopId) {
         return sellerService.showViewCccdShop(shopId);
     }
-
+    @GetMapping("/getAllOrderItem")
+    public ResponseEntity<List<OrderItemResponse>> getAllOrderItem(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long authId = userDetails.getAuthId();
+        return sellerService.getListOrderItemResponse(authId);
+    }
+    @GetMapping("/getAllEvaluateByOrderItem")
+    public ResponseEntity<EvaluateResponse> getAllEvaluateByOrderItem(@RequestParam Long orderItemId) {
+        return sellerService.getAllEvaluateByOrderItem(orderItemId);
+    }
+    @PutMapping("/updateCommentBySeller")
+    public ResponseEntity<?> updateCommentBySeller(@RequestParam Long evaluateId,@RequestParam String commentBySeller) {
+        return sellerService.updateCommentBySeller(evaluateId, commentBySeller);
+    }
+    @PutMapping("/updateStatusEvaluate")
+    public ResponseEntity<?> updateStatusEvaluate(@RequestParam Long evaluateId,@RequestParam int status) {
+        return sellerService.updateStatusEvaluate(evaluateId, status);
+    }
 }

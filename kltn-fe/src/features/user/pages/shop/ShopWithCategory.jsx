@@ -562,47 +562,11 @@ useEffect(() => {
             </a>
             <div className="shop-filter">
             <aside>
-  <div className="d-flex align-items-center justify-content-between m-b30">
-    <h6 className="title mb-0 fw-normal d-flex">
-      <i className="flaticon-filter me-3" />
-      Filter
-    </h6>
-  </div>
+  
 
-  {/* Search */}
-  <div className="widget widget_search">
-    <div className="form-group">
-      <div className="input-group">
-        <input
-          name="dzSearch"
-          value={inputValue}
-          onChange={handleInputChangeSearch}
-          required
-          type="search"
-          className="form-control"
-          placeholder="Search Product"
-        />
-        <div className="input-group-addon">
-          <button name="submit" type="submit" className="btn">
-            <i className="icon feather icon-search" />
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+ 
 
-  {/* Price */}
-  <div className="widget">
-    <h6 className="widget-title">Giá</h6>
-    <div className="price-slide range-slider">
-      <div className="range-slider style-1">
-        <div id="slider-tooltips2" className="mb-3" />
-        <span id="slider-margin-value-min2" />
-        <span id="slider-margin-value-max2" />
-      </div>
-    </div>
-  </div>
-
+ 
   {/* Sales Rank Category */}
   <div className="widget widget_categories">
     <h6 className="widget-title">Danh mục</h6>
@@ -627,60 +591,9 @@ useEffect(() => {
   </ul>
 </div>
 
-  {/* Tags */}
-  <div className="widget widget_tag_cloud">
-    <h6 className="widget-title">Tags</h6>
-    <div className="tagcloud">
-      {Object.entries(tags || {}).length > 0 ? (
-        Object.entries(tags).map(([type, count]) => (
-          <span
-            key={type}
-            onClick={() => handleTagToggle(type)}
-            onMouseEnter={(e) => {
-              if (!selectedTags.includes(type)) {
-                e.currentTarget.style.backgroundColor = '#000';
-                e.currentTarget.style.color = '#fff';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!selectedTags.includes(type)) {
-                e.currentTarget.style.backgroundColor = '#fff';
-                e.currentTarget.style.color = '#000';
-              }
-            }}
-            style={{
-              cursor: 'pointer',
-              padding: '5px 14px',
-              margin: '5px',
-              border: '1px solid #000',
-              borderRadius: '12px',
-              display: 'inline-block',
-              backgroundColor: selectedTags.includes(type) ? '#000' : '#fff',
-              color: selectedTags.includes(type) ? '#fff' : '#000',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {type}
-          </span>
-        ))
-      ) : (
-        <p>Đang tải tags...</p>
-      )}
-    </div>
-  </div>
 
-  {/* Reset */}
-  <a
-    href="#"
-    className="btn btn-sm font-14 btn-secondary btn-sharp"
-    onClick={(e) => {
-      e.preventDefault();
-      setSelectedTags([]);
-      setCurrentPage(0);
-    }}
-  >
-    Cài lại
-  </a>
+
+
 </aside>
 
             </div>
@@ -731,24 +644,7 @@ useEffect(() => {
           <div className="filter-wrapper border-top p-t20">
             <div className="filter-left-area">
               <ul className="filter-tag">
-                <li>
-                  <a href="javascript:void(0);" className="tag-btn">
-                    Dresses
-                    <i className="icon feather icon-x tag-close" />
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" className="tag-btn">
-                    Tops
-                    <i className="icon feather icon-x tag-close" />
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);" className="tag-btn">
-                    Outerwear
-                    <i className="icon feather icon-x tag-close" />
-                  </a>
-                </li>
+               
               </ul>
               <span>Showing 1–5 Of 50 Results</span>
             </div>

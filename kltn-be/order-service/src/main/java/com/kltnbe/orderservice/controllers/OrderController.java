@@ -5,6 +5,7 @@ import com.kltnbe.orderservice.dtos.SalesStatsDTO;
 import com.kltnbe.orderservice.dtos.req.DashboardStatsResponse;
 import com.kltnbe.orderservice.dtos.req.OrderRequest;
 import com.kltnbe.orderservice.dtos.res.MonthlyRevenueDTO;
+import com.kltnbe.orderservice.dtos.res.OrderItemResponse;
 import com.kltnbe.orderservice.dtos.res.OrderResponse;
 import com.kltnbe.orderservice.dtos.res.ResponseDashboardAdmin;
 import com.kltnbe.orderservice.entities.MasterOrder;
@@ -114,7 +115,14 @@ public class OrderController {
 //
 //        return ResponseEntity.ok(result);
 //    }
-
+    @PutMapping("/updateStatusEvaluate")
+    public ResponseEntity<String> updateStatusEvaluate(@RequestParam Long orderItemId) {
+        return ResponseEntity.ok(Map.of("message",orderService.updateIsEvaluate(orderItemId)).toString()) ;
+    }
+    @GetMapping("/getListOrderItemByStore")
+    public ResponseEntity<List<OrderItemResponse>> getListOrderItemByStore(@RequestParam Long storeId) {
+        return ResponseEntity.ok(orderService.getListOrderItemsByStoreId(storeId));
+    }
     @PutMapping("/updateMethodOrderBySeller")
     public ResponseEntity<String> updateMethodOrderBySeller(
             @RequestParam Long orderId,

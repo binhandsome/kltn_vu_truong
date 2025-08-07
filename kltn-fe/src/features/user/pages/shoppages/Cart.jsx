@@ -5,6 +5,7 @@ import QuickViewModal from '../../components/home/QuickViewModal';
 import WOW from 'wowjs';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authFetch } from '../../apiService/authFetch';
 
 function Cart() {
 	const [listCart, setListCart] = useState({ items: [], totalPrice: 0 });

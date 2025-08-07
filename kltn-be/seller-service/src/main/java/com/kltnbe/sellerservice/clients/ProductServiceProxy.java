@@ -1,10 +1,7 @@
 package com.kltnbe.sellerservice.clients;
 
 import com.kltnbe.security.utils.FeignInternalAuthConfig;
-import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
-import com.kltnbe.sellerservice.dtos.ProductSizeDTO;
-import com.kltnbe.sellerservice.dtos.ProductVariantDTO;
-import com.kltnbe.sellerservice.dtos.SizeRequest;
+import com.kltnbe.sellerservice.dtos.*;
 import com.kltnbe.sellerservice.dtos.req.ReviewRequest;
 import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
 import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
@@ -17,6 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+
 @FeignClient(name = "product-service", configuration = FeignInternalAuthConfig.class)
 public interface ProductServiceProxy {
     @PostMapping("/api/products/internal/addProduct")
@@ -108,4 +107,11 @@ public interface ProductServiceProxy {
             @RequestBody SellerReplyRequest request,
             @RequestParam("authId") Long authId  // ✅ để bên product-service lấy sellerId từ param
     );
+    @GetMapping("/api/products/getAllEvaluateByOrderItem")
+    public ResponseEntity<EvaluateResponse> getAllEvaluateByOrderItem(@RequestParam Long orderItemId);
+    @PutMapping("/api/products/updateCommentBySeller")
+    public ResponseEntity<?> updateCommentBySeller(@RequestParam Long evaluateId,@RequestParam String commentBySeller);
+    @PutMapping("/api/products/updateStatusEvaluate")
+    public ResponseEntity<?> updateStatusEvaluate(@RequestParam Long evaluateId,@RequestParam int status);
+
 }

@@ -6,10 +6,7 @@ import com.kltnbe.productservice.clients.UploadServiceProxy;
 import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
 import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.dtos.req.*;
-import com.kltnbe.productservice.dtos.res.CategoryResponse;
-import com.kltnbe.productservice.dtos.res.CategoryWithImage;
-import com.kltnbe.productservice.dtos.res.ProductFilterResponse;
-import com.kltnbe.productservice.dtos.res.ProductResponse;
+import com.kltnbe.productservice.dtos.res.*;
 import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.repositories.*;
 import com.kltnbe.productservice.services.AsyncUploadService;
@@ -53,6 +50,7 @@ public class ProductController {
     private final AsyncUploadService  asyncUploadService;
     private final UploadServiceProxy  uploadServiceProxy;
     private final SellerServiceProxy sellerServiceProxy;
+    private final EvaluateProductRepository evaluateProductRepository;
     @GetMapping("/getAllProduct")
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
 //        System.out.print(productService.getAllProducts(productFileterAll).get().findFirst().get().getImages().get(0).getProduct());
@@ -286,22 +284,18 @@ public class ProductController {
             @RequestParam("asin") String asin,
             @RequestParam("files") List<MultipartFile> files,
             @RequestParam("colorIds") List<Long> colorIds, @RequestParam Long authId) {
-
         if (files.size() != colorIds.size()) {
             return ResponseEntity.badRequest().body("❌ Số lượng ảnh và colorId không khớp!");
         }
-
         Optional<Product> productOpt = productRepository.findProductByAsin(asin);
         if (productOpt.isEmpty()) {
             return ResponseEntity.badRequest().body("❌ Không tìm thấy sản phẩm.");
         }
-
         Product product = productOpt.get();
         Object body = sellerServiceProxy.getAuthIdByStore(product.getStoreId()).getBody();
         Long storeOwnerAuth = (body instanceof Integer)
                 ? ((Integer) body).longValue()
                 : (Long) body;
-
         if (!authId.equals(storeOwnerAuth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("❌ Bạn không có quyền upload ảnh cho sản phẩm này");
@@ -326,6 +320,38 @@ public class ProductController {
 
         return ResponseEntity.ok(Map.of("message", "✅ Ảnh đang được xử lý và lưu nền."));
     }
+    @PostMapping(value = "/uploadImgToProductEvaluate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImgToProductEvaluate(
+            @RequestPart("data") EvalueUserWithItemOrder evalueUserWithItemOrder,
+            @RequestPart("files") List<MultipartFile> files) {
+
+        EvaluateProduct evaluateProduct = new EvaluateProduct();
+        evaluateProduct.setOrderItemId(evalueUserWithItemOrder.getOrderItemId());
+        evaluateProduct.setProductAsin(evalueUserWithItemOrder.getProductAsin());
+        evaluateProduct.setComment(evalueUserWithItemOrder.getComment());
+        evaluateProduct.setRating(evalueUserWithItemOrder.getRating());
+
+        // Optional: Lưu trước để có ID nếu cần
+        evaluateProduct = evaluateProductRepository.save(evaluateProduct);
+
+        // Đọc bytes và filenames NGAY ĐÂY, trước khi gọi async
+        List<byte[]> fileBytesList = new ArrayList<>();
+        List<String> filenames = new ArrayList<>();
+        for (MultipartFile file : files) {
+            try {
+                byte[] bytes = file.getBytes();  // Đọc sync, an toàn
+                fileBytesList.add(bytes);
+                filenames.add(file.getOriginalFilename());
+            } catch (IOException e) {
+                // Xử lý lỗi đọc ở đây, ví dụ: return error response nếu cần
+                System.err.println("❌ Lỗi đọc file trong controller: " + e.getMessage());
+                return ResponseEntity.badRequest().body(Map.of("error", "Lỗi đọc file: " + e.getMessage()));
+            }
+        }
+        asyncUploadService.uploadAndAppendImageUrls(evaluateProduct, fileBytesList, filenames);
+        return ResponseEntity.ok(Map.of("message", "Đánh giá đang được xử lý! Ảnh sẽ được upload trong background."));
+    }
+
 
     @InternalApi
     @PutMapping(value = "/internal/update-image/{imageId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -447,6 +473,22 @@ public class ProductController {
     @GetMapping("/stats/by-created-month")
     public List<ProductStatsDTO> getProductCountByCreatedMonth() {
         return productService.getProductCountByCreatedMonth();
+    }
+    @GetMapping("/getAllEvaluateByOrderItem")
+    public ResponseEntity<EvaluateResponse> getAllEvaluateByOrderItem(@RequestParam Long orderItemId) {
+        return ResponseEntity.ok(productService.getEvaluateResponseByOrderItemId(orderItemId));
+    }
+    @PutMapping("/updateCommentBySeller")
+    public ResponseEntity<?> updateCommentBySeller(@RequestParam Long evaluateId,@RequestParam String commentBySeller) {
+        return ResponseEntity.ok(Map.of("message", productService.updateCommentVyEvaluate(evaluateId, commentBySeller)));
+    }
+    @PutMapping("/updateStatusEvaluate")
+    public ResponseEntity<?> updateStatusEvaluate(@RequestParam Long evaluateId,@RequestParam int status) {
+        return ResponseEntity.ok(Map.of("message", productService.actionStatusEvaluate(evaluateId, status)));
+    }
+    @GetMapping("getEvaluateByAsinProduct")
+    public ResponseEntity<List<EvaluateResponse>> getEvaluateByAsinProduct(@RequestParam String asin) {
+        return ResponseEntity.ok(productService.getEvaluateByProductAsin(asin));
     }
 
 }

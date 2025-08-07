@@ -6,10 +6,12 @@ import com.kltnbe.orderservice.dtos.SalesStatsDTO;
 import com.kltnbe.orderservice.dtos.req.DashboardStatsResponse;
 import com.kltnbe.orderservice.dtos.req.OrderRequest;
 import com.kltnbe.orderservice.dtos.res.MonthlyRevenueDTO;
+import com.kltnbe.orderservice.dtos.res.OrderItemResponse;
 import com.kltnbe.orderservice.dtos.res.OrderResponse;
 import com.kltnbe.orderservice.dtos.res.ResponseDashboardAdmin;
 import com.kltnbe.orderservice.entities.MasterOrder;
 import com.kltnbe.orderservice.entities.Order;
+import com.kltnbe.orderservice.entities.OrderItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +55,7 @@ public interface OrderService {
     String cancelBySeller(Long orderId, Long shopId);
     String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO dto, String accessToken);
     ////    String updateStatusOrderBySeller(Long orderId, String status);
-
+    String updateIsEvaluate(Long orderItemId);
     Map<String, Object> getWeeklyMetrics();
 
     Map<String, Object> getMonthlyMetrics();
@@ -74,7 +76,7 @@ public interface OrderService {
     ResponseDashboardAdmin getAdminDashboard(int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses);
 
     BigDecimal calculateRevenueByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses);
-
+    List<OrderItemResponse> getListOrderItemsByStoreId(Long storeId);
     Page<MasterOrder> findMasterOrdersByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable);
 
 }

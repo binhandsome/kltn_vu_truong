@@ -1,4 +1,11 @@
-const AdminHeader = () => (
+
+import { authFetch } from "../../user/apiService/authFetch"
+function AdminHeader() {
+
+
+    return(
+    <>
+
     <header className="header-wrapper main-header">
             <div className="header-inner-wrapper">
                 <div className="header-right">
@@ -70,6 +77,11 @@ const AdminHeader = () => (
                 </div>
             </div>
         </header>
+            </>
+
   );
+}
+
+
   
   export default AdminHeader;
