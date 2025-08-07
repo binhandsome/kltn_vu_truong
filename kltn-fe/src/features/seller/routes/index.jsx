@@ -66,7 +66,7 @@ const SellerRoutes = () => {
         <Route path="authentication/recoverPassword" element={<RecoverPassword />} />
         <Route path="buttons/buttons" element={<Buttons />} />
         <Route path="calendar/calendar" element={<Calendar />} />
-        <Route path="customer/customer" element={<Customer />} />
+        <Route path="evaluate/evaluateSeller" element={<Customer />} />
         <Route path="documentation/documentation" element={<Documentation />} />
         <Route path="email/chat" element={<Chat />} />
         <Route path="email/inbox" element={<Inbox />} />

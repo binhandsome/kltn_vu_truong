@@ -4,6 +4,7 @@ import axios from 'axios';
 import WOW from 'wowjs';
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import QuickViewModal from '../../components/home/QuickViewModal';
+import { authFetch } from '../../apiService/authFetch';
 
 function WishList() {
   const [wishlist, setWishlist] = useState([]);

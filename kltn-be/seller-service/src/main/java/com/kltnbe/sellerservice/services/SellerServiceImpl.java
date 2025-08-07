@@ -9,11 +9,8 @@ import com.kltnbe.sellerservice.clients.UserServiceProxy;
 import com.kltnbe.sellerservice.dtos.*;
 import com.kltnbe.sellerservice.dtos.req.ReviewRequest;
 import com.kltnbe.sellerservice.dtos.req.SellerReplyRequest;
-import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
-import com.kltnbe.sellerservice.dtos.res.ProductResponseDTO;
+import com.kltnbe.sellerservice.dtos.res.*;
 import com.kltnbe.sellerservice.dtos.ProductRequestDTO;
-import com.kltnbe.sellerservice.dtos.res.TitleAndImgSeller;
-import com.kltnbe.sellerservice.dtos.res.ReviewResponse;
 import com.kltnbe.sellerservice.entities.*;
 import com.kltnbe.sellerservice.repositories.*;
 
@@ -897,6 +894,28 @@ public class SellerServiceImpl implements SellerService {
         list.add(storeAuthentic.get().getBackCccdUrl());
         list.add(storeAuthentic.get().getRealFaceImageUrl());
         return uploadServiceProxy.getSignedLinks(list);
+    }
+
+    @Override
+    public ResponseEntity<List<OrderItemResponse>> getListOrderItemResponse(Long authId) {
+        Optional<Shop> shop = shopRepository.findByAuthId(authId);
+        Long storeId = shop.get().getShopId();
+        return orderServiceProxy.getListOrderItemByStore(storeId);
+    }
+
+    @Override
+    public ResponseEntity<EvaluateResponse> getAllEvaluateByOrderItem(Long orderItemId) {
+        return productServiceProxy.getAllEvaluateByOrderItem(orderItemId);
+    }
+
+    @Override
+    public ResponseEntity<?> updateCommentBySeller(Long evaluateId, String commentBySeller) {
+        return productServiceProxy.updateCommentBySeller(evaluateId, commentBySeller);
+    }
+
+    @Override
+    public ResponseEntity<?> updateStatusEvaluate(Long evaluateId, int status) {
+        return productServiceProxy.updateStatusEvaluate(evaluateId, status);
     }
 
 

@@ -3,6 +3,7 @@ package com.kltnbe.sellerservice.clients;
 import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import com.kltnbe.sellerservice.dtos.MonthlyRevenueDTO;
 import com.kltnbe.sellerservice.dtos.res.DashboardStatsResponse;
+import com.kltnbe.sellerservice.dtos.res.OrderItemResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -26,4 +27,6 @@ public interface OrderServiceProxy {
             @RequestParam Long shopId,
             @RequestParam String method,
             @RequestParam(required = false) String status);
+    @GetMapping("/api/orders/getListOrderItemByStore")
+    public ResponseEntity<List<OrderItemResponse>> getListOrderItemByStore(@RequestParam Long storeId);
 }

@@ -644,6 +644,14 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
 }
 
     @Override
+    public String updateIsEvaluate(Long orderItemId) {
+        Optional<OrderItem> orderItem = orderItemRepository.findById(orderItemId);
+        orderItem.get().setIsEvaluate(1);
+        orderItemRepository.save(orderItem.get());
+        return "Thêm thành công đánh giá";
+    }
+
+    @Override
     public DashboardStatsResponse getSellerDashboard(Long storeId, int page, int size, Timestamp startDate, Timestamp endDate, List<String> statuses) {
         // Nếu startDate hoặc endDate là null, đặt mặc định là tất cả dữ liệu (từ 1970-01-01 đến hiện tại)
         Timestamp defaultStart = startDate != null ? startDate : new Timestamp(0); // 1970-01-01 00:00:00
@@ -978,6 +986,32 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
     public BigDecimal calculateRevenueByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses) {
         return masterOrderRepository.calculateRevenueByDateRangeAndStatuses(startDate, endDate, statuses);
     }
+
+    public List<OrderItemResponse> getListOrderItemsByStoreId(Long storeId) {
+        List<OrderItem> orderItems = orderItemRepository.findAllByStoreId(storeId);
+
+        return orderItems.stream().map(orderItem -> {
+            ProductResponse product = productServiceProxy
+                    .getProductById(orderItem.getProductId())
+                    .getBody();
+            if (product == null) {
+                throw new RuntimeException("Không tìm thấy sản phẩm với ID: " + orderItem.getProductId());
+            }
+            return OrderItemResponse.builder()
+                    .orderItemId(orderItem.getOrderItemId())
+                    .asin(product.getAsin())
+                    .productTitle(product.getNameProduct())
+                    .productThumbnail(product.getThumbnail())
+                    .brandName(product.getNameBrand())
+                    .quantity(orderItem.getQuantity())
+                    .size(orderItem.getSize())
+                    .color(orderItem.getColor())
+                    .unitPrice(orderItem.getUnitPrice())
+                    .isEvaluate(orderItem.getIsEvaluate())
+                    .build();
+        }).toList();
+    }
+
 
     @Override
     public Page<MasterOrder> findMasterOrdersByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable) {

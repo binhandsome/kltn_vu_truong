@@ -94,9 +94,9 @@ const Login = () => {
                       <span>Nhớ</span>
                     </label>
                   </div>
-                  <a className="forgot-pws-btn" href="/admin/forgot-password">
+                  {/* <a className="forgot-pws-btn" href="/admin/forgot-password">
                     Quên mật khẩu?
-                  </a>
+                  </a> */}
                 </div>
 
                 <div className="ad-auth-btn">
@@ -104,12 +104,11 @@ const Login = () => {
                     Đăng nhập
                   </button>
                 </div>
-
                 {message && <p style={{ color: 'red', marginTop: 10 }}>{message}</p>}
 
-                <p className="ad-register-text">
-                  Bạn chưa có tài khoản? <a href="/register">Bấm vào đây</a>
-                </p>
+                {/* <p className="ad-register-text">
+                  Bạn chưa có tài khoản? <a href="register">Bấm vào đây</a>
+                </p> */}
               </form>
             </div>
           </div>

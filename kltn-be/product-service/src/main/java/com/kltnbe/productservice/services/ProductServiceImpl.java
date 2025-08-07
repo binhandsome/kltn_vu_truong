@@ -10,12 +10,14 @@ import com.kltnbe.productservice.dtos.ProductDto;
 import com.kltnbe.productservice.dtos.TitleAndImgSeller;
 import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.dtos.req.*;
+import com.kltnbe.productservice.dtos.res.EvaluateResponse;
 import com.kltnbe.productservice.dtos.res.ProductResponse;
 import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.enums.ProductStatus;
 import com.kltnbe.productservice.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSizeRepository sizeRepository;
     private final ProductImageRepository productImageRepository;
     private final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
+    private final ModelMapper modelMapper;
     @Autowired
     private ObjectMapper objectMapper; // từ Jackson
     @Autowired
@@ -55,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
     private final AsyncUploadService asyncUploadService;
     @Autowired
     private SearchServiceProxy searchServiceProxy;
+    private EvaluateProductRepository evaluateProductRepository;
 
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
         Pageable pageable = PageRequest.of(productFileterAll.getPage(), productFileterAll.getSize());
@@ -541,14 +545,13 @@ validateShopOwnership(product.getStoreId(), authId);
 
         productImageRepository.deleteById(imageId);
     }
+
     @Transactional
     @Override
     public ResponseEntity<?> deleteProductByAsin(String asin, Long authId) {
         Product product = productRepository.findProductByAsin(asin)
                 .orElseThrow(() -> new RuntimeException("❌ Không tìm thấy sản phẩm với ASIN: " + asin));
-
         validateShopOwnership(product.getStoreId(), authId);
-
         product.setProductStatus(ProductStatus.deleted);
         product.setUpdatedAt(LocalDateTime.now());
         productRepository.save(product); // 🔥 Save + flush
@@ -765,5 +768,52 @@ validateShopOwnership(product.getStoreId(), authId);
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public String evaluateByUserWithItemOrder(String comment, Long orderItemId, List<MultipartFile> files, String productAsin, int rating) {
 
+        return "";
+    }
+
+    @Override
+    public EvaluateResponse getEvaluateResponseByOrderItemId(Long orderItemId) {
+        Optional<EvaluateProduct> evaluateProduct = evaluateProductRepository.findByOrderItemId(orderItemId);
+        if (evaluateProduct.isPresent()) {
+            EvaluateResponse evaluateResponse = new EvaluateResponse();
+            evaluateResponse.setEvaluteId(evaluateProduct.get().getEvaluteId());
+            evaluateResponse.setCommentByEvaluate(evaluateProduct.get().getCommentByEvaluate());
+            evaluateResponse.setComment(evaluateProduct.get().getComment());
+            evaluateResponse.setCreatedAt(evaluateProduct.get().getCreatedAt());
+            evaluateResponse.setImgEvaluate(evaluateProduct.get().getImgEvaluate());
+            evaluateResponse.setProductAsin(evaluateProduct.get().getProductAsin());
+            evaluateResponse.setRating(evaluateProduct.get().getRating());
+            evaluateResponse.setOrder_item_id(evaluateProduct.get().getOrderItemId());
+            evaluateResponse.setStatus(evaluateProduct.get().getStatus());
+            return evaluateResponse;
+        }
+        return null;
+    }
+
+    @Override
+    public String updateCommentVyEvaluate(Long idEvaluate, String commentBySeller) {
+        EvaluateProduct evaluateProduct = evaluateProductRepository.findById(idEvaluate).get();
+        evaluateProduct.setCommentByEvaluate(commentBySeller);
+        evaluateProduct.setStatus(1);
+        evaluateProductRepository.save(evaluateProduct);
+        return "Phản hồi đánh giá thành công";
+    }
+
+    @Override
+    public String actionStatusEvaluate(Long idEvaluate, int status) {
+        EvaluateProduct evaluateProduct = evaluateProductRepository.findById(idEvaluate).get();
+        evaluateProduct.setStatus(status);
+        evaluateProductRepository.save(evaluateProduct);
+        return "Đã chỉnh sửa trạng thái thành công ";
+    }
+
+    @Override
+    public List<EvaluateResponse> getEvaluateByProductAsin(String asin) {
+        List<EvaluateProduct> evaluateProduct = evaluateProductRepository.findByProductAsin(asin);
+        return evaluateProduct.stream().map(e -> modelMapper.map(e, EvaluateResponse.class))
+                .collect(Collectors.toList());
+    }
 }

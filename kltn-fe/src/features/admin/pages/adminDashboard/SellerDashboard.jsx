@@ -368,9 +368,7 @@ const handleViewCccd = async (shopId) => {
         <li className="nav-item">
           <button className={`nav-link ${activeTab === 'edits' ? 'active' : ''}`} onClick={() => setActiveTab('edits')}>Yêu cầu chỉnh sửa</button>
         </li>
-        <li className="nav-item">
-          <button className={`nav-link ${activeTab === 'auth' ? 'active' : ''}`} onClick={() => setActiveTab('auth')}>Xác thực CCCD</button>
-        </li>
+     
       </ul>
       {activeTab === 'shops' ? (
         <table className="table table-bordered">

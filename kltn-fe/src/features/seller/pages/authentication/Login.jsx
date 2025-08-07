@@ -82,6 +82,7 @@ const verifyLoginSeller = async () => {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("username", username);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
     window.location.href = "/seller";
   } catch (error) {
@@ -191,7 +192,7 @@ return (
                   <span>Nhớ</span>
                 </label>
               </div>
-              <a className="forgot-pws-btn" href="forgot-pws.html">
+              <a className="forgot-pws-btn" href="forgot-pws">
                 {/* Forgot Password? */}
                 Quên mật khẩu?
               </a>
@@ -205,7 +206,7 @@ return (
             {message}
             <p className="ad-register-text">
               {/* Don't have an account?  */} 
-              Bạn chưa có tài khoản? <a href="register.html">Bấm vào đây</a>
+              Bạn chưa có tài khoản? <a href="register">Bấm vào đây</a>
               {/* Click Here */}
             </p>
 

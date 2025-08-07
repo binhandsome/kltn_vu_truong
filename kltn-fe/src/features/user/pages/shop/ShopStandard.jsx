@@ -161,7 +161,7 @@ const handleInputChangeSearch = (e) => {
   const handleSearchAsin = async (asin) => {
     const accessToken = localStorage.getItem("accessToken");
     try {
-      const response = await axios.post('http://localhost:8088/api/recommend/saveRecommendHistory', {
+      const response = await axios.post('http://localhost:8091/api/admin/recommend/saveRecommendHistory', {
            accessToken: accessToken,
           asin: asin,
       });

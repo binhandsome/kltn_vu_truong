@@ -5,6 +5,7 @@ import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductRequestDTO;
 import com.kltnbe.productservice.dtos.req.SizeRequest;
+import com.kltnbe.productservice.dtos.res.EvaluateResponse;
 import com.kltnbe.productservice.dtos.res.ProductResponse;
 import com.kltnbe.productservice.entities.Color;
 import com.kltnbe.productservice.entities.MoreProductInfo;
@@ -58,4 +59,9 @@ public interface ProductService {
     ResponseEntity<?> deleteProductByAsinAdmin(String asin);
     // Thống kê số lượng sản phẩm theo tháng tạo
     List<ProductStatsDTO> getProductCountByCreatedMonth();
+    String evaluateByUserWithItemOrder(String comment, Long orderItemId,List<MultipartFile> files,String productAsin, int rating);
+    EvaluateResponse getEvaluateResponseByOrderItemId(Long orderItemId);
+    String updateCommentVyEvaluate(Long idEvaluate,String commentBySeller);
+    String actionStatusEvaluate(Long idEvaluate, int status);
+    List<EvaluateResponse> getEvaluateByProductAsin(String asin);
 }

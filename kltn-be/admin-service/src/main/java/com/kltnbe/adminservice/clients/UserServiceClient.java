@@ -42,6 +42,7 @@ public interface UserServiceClient {
 
     @GetMapping("/api/user/search")
     List<UserDTO> searchUsers(@RequestParam String keyword);
+
     @PostMapping("/api/auth/checkEmailExists")
     Map<String, Boolean> checkEmailExists(@RequestBody Map<String, String> request);
 

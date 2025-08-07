@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { authFetch } from "../../user/apiService/authFetch"
+
 import axios from 'axios';
 import { data } from 'jquery';
 function AdminHeader() {
@@ -7,9 +9,7 @@ function AdminHeader() {
     const [firstName, setFirstName] = useState();
     const [lastName, setLastName] = useState();
      const logout = () => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('username');
+  localStorage.clear();
   window.dispatchEvent(new Event('loggedOut'));
 };
    const getInfoSeller = async () => {

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,19 +50,26 @@ public class UploadController {
                     .body(Collections.singletonList("Upload thất bại: " + e.getMessage()));
         }
     }
-    @PostMapping("/uploadSingleImageBytes")
-    public ResponseEntity<String> uploadSingleImageBytes(
-            @RequestPart("file") byte[] fileBytes,
-            @RequestPart("filename") String filename,
-            @RequestPart("folderName") String folderName
+    @PostMapping("/uploadListImageProductEvaluate")
+    public ResponseEntity<List<String>> uploadImagesProductEvaluate(
+            @RequestPart("files") List<MultipartFile> files,
+            @RequestParam("fileNames") List<String> fileNames,
+            @RequestParam(defaultValue = "EvaluateProduct") String folderName
     ) {
         try {
-            MultipartFile file = new ByteArrayMultipartFile(fileBytes, filename, "image/jpeg");
-            String url = service.uploadSingleImage(file, folderName);
-            return ResponseEntity.ok(url);
-        } catch (Exception e) {
+            List<MultipartFile> fileList = new ArrayList<>();
+            for (int i = 0; i < files.size(); i++) {
+                MultipartFile original = files.get(i);
+                String filename = fileNames.get(i);
+                MultipartFile renamed = new ByteArrayMultipartFile(original.getBytes(), filename, original.getContentType());
+                fileList.add(renamed);
+            }
+            List<String> urls = service.uploadImagesProducts(fileList, folderName);
+            return ResponseEntity.ok(urls);
+
+        } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("❌ Upload lỗi: " + e.getMessage());
+                    .body(Collections.singletonList("Upload thất bại: " + e.getMessage()));
         }
     }
 

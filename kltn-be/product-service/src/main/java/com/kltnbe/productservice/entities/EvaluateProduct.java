@@ -12,14 +12,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EvaluateProduct {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long evaluteId;
 
     private String productAsin;
 
-    private Long order_item_id;
+    private Long orderItemId;
 
     private Integer rating;
 
@@ -31,6 +30,9 @@ public class EvaluateProduct {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    @Column(name = "parent_id")
-    private Long parentId;
+    @Column(columnDefinition = "json")
+    private String commentByEvaluate;
+
+    private int status = 0;
+
 }

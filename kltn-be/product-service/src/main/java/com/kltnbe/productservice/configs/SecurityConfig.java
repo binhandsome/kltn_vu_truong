@@ -1,6 +1,7 @@
 package com.kltnbe.productservice.configs;
 
 import com.kltnbe.security.utils.JwtAuthenticationFilter;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,6 +56,10 @@ public class SecurityConfig {
                         .allowCredentials(true);
             }
         };
+    }
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
     }
     @Bean
     public RestTemplate restTemplate() {

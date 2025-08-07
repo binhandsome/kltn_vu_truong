@@ -10,6 +10,8 @@ import axios from 'axios';
 import qs from 'qs';
 import { data, get } from 'jquery';
 import { deleteAddress } from '../../apiService/userService';
+import { authFetch } from '../../apiService/authFetch';
+
 function Checkout() {
 	const [hasBgClass, setHasBgClass] = useState(true); 
   const location = useLocation();
