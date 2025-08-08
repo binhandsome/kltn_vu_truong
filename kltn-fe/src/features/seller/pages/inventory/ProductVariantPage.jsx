@@ -27,10 +27,7 @@ const ProductVariantPage = () => {
       setVariants(sorted);
     } catch (err) {
       console.error("❌ Lỗi khi lấy biến thể:", err);
-      alert("Không thể lấy dữ liệu biến thể. Vui lòng đăng nhập lại.");
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        navigate("/seller/authentication/login"); // hoặc route tới trang seller login
-      }
+  
     }
   };
 

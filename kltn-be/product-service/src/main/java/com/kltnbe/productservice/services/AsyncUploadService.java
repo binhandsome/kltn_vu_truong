@@ -51,7 +51,7 @@ public class AsyncUploadService {
             ProductImageRepository repo
     ) {
         try {
-            ResponseEntity<String> response = uploadServiceProxy.uploadSingleImageBytes(fileBytes, filename, "imgProduct/IMG");
+            ResponseEntity<String> response = uploadServiceProxy.uploadSingleImage(fileBytes, filename, "imgProduct/IMG");
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 String url = response.getBody();
                 ProductImage image = new ProductImage();

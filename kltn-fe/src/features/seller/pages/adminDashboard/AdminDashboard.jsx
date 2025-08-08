@@ -2234,7 +2234,7 @@ useEffect(() => {
                                 {/* Total */}
                                 <th>Tổng cộng</th>
                                 {/* Payment Status */}
-                                <th>Trạng thái thanh toán</th>
+                                <th>Trạng Thái Giao Hàng</th>
                                 {/* Payment Method */}
                                 <th>Phương thức thanh toán</th>
                                 {/* View Details */}

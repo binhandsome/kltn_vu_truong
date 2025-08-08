@@ -690,8 +690,10 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
                     Long addressId = (delivery != null) ? delivery.getAddressId() : order.getMasterOrder().getAddressId();
                     AddressInfo addr = Optional.ofNullable(userServiceProxy.findByAddressId(addressId).getBody()).orElse(null);
                     PaymentInfo paymentInfo = null;
+
                     try {
-                        paymentInfo = Optional.ofNullable(paymentServiceProxy.findByOrderId(order.getOrderId()).getBody()).orElse(null);
+                        paymentInfo = Optional.ofNullable(paymentServiceProxy.findByOrderId(order.getMasterOrder().getMasterOrderId()).getBody()).orElse(null);
+                        System.out.println(order.getMasterOrder().getMasterOrderId() + "order cua tao la");
                     } catch (Exception e) {
                         System.out.println("FeignException: " + e.getMessage());
                     }
@@ -864,7 +866,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
                                 // Lấy PaymentInfo
                                 PaymentInfo paymentInfo = null;
                                 try {
-                                    paymentInfo = Optional.ofNullable(paymentServiceProxy.findByOrderId(order.getOrderId()).getBody()).orElse(null);
+                                    paymentInfo = Optional.ofNullable(paymentServiceProxy.findByOrderId(order.getMasterOrder().getMasterOrderId()).getBody()).orElse(null);
                                 } catch (Exception e) {
                                     System.out.println("FeignException: " + e.getMessage());
                                 }
