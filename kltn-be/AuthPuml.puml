@@ -1,12 +1,46 @@
 @startuml
-left to right direction
-skinparam monochrome true
-actor "Sản phẩm\n(title, brand...)" as User
-rectangle "SentenceTransformer\n(all-MiniLM-L6-v2)" as Embed
-rectangle "Vector Embedding\n(dim=384)" as Vec
-database "FAISS Index\n(IndexFlatIP)" as Faiss
 
-User --> Embed : Encode
-Embed --> Vec : Vector hóa
-Vec --> Faiss : Build Index
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam ArrowColor black
+skinparam defaultTextAlignment center
+skinparam linetype ortho
+skinparam monochrome true
+
+
+start
+
+:Đọc file JSONL\n(dữ liệu sản phẩm Amazon);
+
+:Tiền xử lý dữ liệu:\n- fillna\n- xử lý category, salesRank\n- tạo 'combined';
+
+:SentenceTransformer\n→ encode embedding;
+
+if (GPU có sẵn?) then (Có)
+  :DEVICE = cuda;
+else (Không)
+  :DEVICE = cpu;
+endif
+
+:Giới hạn danh mục\n(balance_data);
+
+:Build FAISS index;
+
+repeat
+  split
+    :Chọn 50K sample ngẫu nhiên;
+  split again
+    :Tìm top-K sản phẩm tương tự\ntrên FAISS;
+  split again
+    :Đánh giá:\nPrecision@K, MRR, NDCG;
+  split again
+    :Vẽ biểu đồ từng run;
+  end split
+repeat while (Run tiếp theo?) is (Có)
+
+:Trung bình kết quả các run;
+:Vẽ biểu đồ trung bình;
+
+stop
+
 @enduml
