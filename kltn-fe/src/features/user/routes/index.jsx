@@ -41,6 +41,7 @@ import ShopStyle2 from '../pages/shop/ShopStyle2';
 import ShopStandard from '../pages/shop/ShopStandard';
 import ChangePassword from '../pages/auth/ChangePassword';
 import PaymentReturn from '../pages/shoppages/PaymentReturn';
+import ShopStore from '../pages/shop/ShopStore';
 const UserRoutes = () => {
   return (
     <Routes>
@@ -84,6 +85,7 @@ const UserRoutes = () => {
         <Route path="shop/shopStyle1" element={<ShopStyle1/>} />
         <Route path="shop/shopStyle2" element={<ShopStyle2 />} />
         <Route path="shop/shopStandard" element={<ShopStandard />} />
+        <Route path="shop/store" element={<ShopStore/>} />
       </Route>
     </Routes>
   );

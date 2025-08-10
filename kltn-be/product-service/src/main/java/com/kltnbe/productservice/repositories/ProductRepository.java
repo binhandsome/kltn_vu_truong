@@ -1,7 +1,9 @@
 package com.kltnbe.productservice.repositories;
 
+import com.kltnbe.productservice.dtos.CategoryCountDTO;
 import com.kltnbe.productservice.dtos.ProductStatsDTO;
 import com.kltnbe.productservice.entities.Product;
+import com.kltnbe.productservice.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -11,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>,JpaSpecificationExecutor<Product> {
 
 //    @Query("SELECT p FROM Product p WHERE LOWER(p.productTitle) LIKE LOWER(CONCAT('%', :keyword, '%'))")
 //    Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
@@ -64,4 +66,41 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Thống kê sản phẩm theo tháng tạo
     @Query("SELECT FUNCTION('MONTH', p.createdAt), COUNT(p) FROM Product p GROUP BY FUNCTION('MONTH', p.createdAt)")
     List<Object[]> countProductsByCreatedMonth();
+    @Query("""
+   SELECT p FROM Product p
+   WHERE (:status IS NULL OR p.productStatus = :status)
+     AND p.percentDiscount IS NOT NULL
+   ORDER BY p.percentDiscount DESC, p.updatedAt DESC
+""")
+    Page<Product> findTopDiscounted(@Param("status") ProductStatus status, Pageable pageable);
+//    Xu li lien quan den store
+@Query("""
+        select new com.kltnbe.productservice.dtos.CategoryCountDTO(p.productType, count(p))
+        from Product p
+        where p.storeId = :storeId and p.productType is not null
+        group by p.productType
+    """)
+List<CategoryCountDTO> countProductTypeByStore(@Param("storeId") Long storeId);
+
+    @Query("""
+        select new com.kltnbe.productservice.dtos.CategoryCountDTO(p.salesRank, count(p))
+        from Product p
+        where p.storeId = :storeId and p.salesRank is not null
+        group by p.salesRank
+    """)
+    List<CategoryCountDTO> countSalesRankByStore(@Param("storeId") Long storeId);
+
+    @Query("""
+        select new com.kltnbe.productservice.dtos.CategoryCountDTO(p.tags, count(p))
+        from Product p
+        where p.storeId = :storeId and p.tags is not null
+        group by p.tags
+    """)
+    List<CategoryCountDTO> countTagsByStore(@Param("storeId") Long storeId);
+
+    @Query("""
+        select count(p) from Product p
+        where p.storeId = :storeId and p.percentDiscount is not null and p.percentDiscount > 0
+    """)
+    long countDiscountingByStore(@Param("storeId") Long storeId);
 }

@@ -1,7 +1,9 @@
 // Service: ProductService.java
 package com.kltnbe.productservice.services;
 
+import com.kltnbe.productservice.dtos.CategoryCountDTO;
 import com.kltnbe.productservice.dtos.ProductStatsDTO;
+import com.kltnbe.productservice.dtos.StoreProductFilter;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductRequestDTO;
 import com.kltnbe.productservice.dtos.req.SizeRequest;
@@ -11,6 +13,7 @@ import com.kltnbe.productservice.entities.Color;
 import com.kltnbe.productservice.entities.MoreProductInfo;
 import com.kltnbe.productservice.entities.Product;
 import com.kltnbe.productservice.entities.ProductSize;
+import com.kltnbe.productservice.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
@@ -64,4 +67,12 @@ public interface ProductService {
     String updateCommentVyEvaluate(Long idEvaluate,String commentBySeller);
     String actionStatusEvaluate(Long idEvaluate, int status);
     List<EvaluateResponse> getEvaluateByProductAsin(String asin);
+    List<ProductResponse> getTopDiscounted(int size, ProductStatus status);
+//    Store
+Page<ProductResponse> searchProductsByStore(Long storeId, StoreProductFilter filter, Pageable pageable);
+
+    List<CategoryCountDTO> getProductTypeCountByStore(Long storeId);
+    List<CategoryCountDTO> getSalesRankCountByStore(Long storeId);
+    List<CategoryCountDTO> getTagCountByStore(Long storeId);
+    long countDiscountingProductsByStore(Long storeId);
 }

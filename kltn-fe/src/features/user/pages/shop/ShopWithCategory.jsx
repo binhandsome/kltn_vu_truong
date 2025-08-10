@@ -46,6 +46,34 @@ const [selectedSizeId, setSelectedSizeId] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success'); // hoặc "error"
   const [availableStock, setAvailableStock] = useState(null);
+const API_SELLER = process.env.REACT_APP_API_SELLER || "http://localhost:8089";
+// thêm state
+const [shopHeader, setShopHeader] = useState(null);
+const [shopLoadingShop, setShopLoadingShop] = useState(false);
+
+// lấy header shop khi đổi sản phẩm trong QuickView
+useEffect(() => {
+  const id = selectedProduct?.storeId ?? selectedProduct?.shopId;
+  if (!id) {
+    setShopHeader(null);
+    return;
+  }
+  let cancelled = false;
+  (async () => {
+    try {
+      setShopLoadingShop(true);
+      const { data } = await axios.get(`${API_SELLER}/api/seller/public/${id}`);
+      if (!cancelled) setShopHeader(data || null);
+    } catch {
+      if (!cancelled) setShopHeader(null);
+    } finally {
+      if (!cancelled) setShopLoadingShop(false);
+    }
+  })();
+  return () => { cancelled = true; };
+}, [selectedProduct?.storeId, selectedProduct?.shopId]);
+
+
   
   // ✅ Đổi tên hàm showToast → triggerToast
   const triggerToast = (msg, type = "success") => {
@@ -1386,6 +1414,50 @@ useEffect(() => {
                 <p className="para-text">
                   {selectedProduct !== null && selectedProduct.productTitle}
                 </p>
+                {/* ===== SHOP INFO (link qua trang ShopStore) ===== */}
+{(() => {
+  const id = selectedProduct?.storeId ?? selectedProduct?.shopId;
+  if (!id) return null;
+
+  return (
+    <div className="d-flex align-items-center justify-content-between p-2 mb-2 rounded-3"
+         style={{ background:"#fafafa", border:"1px solid #eee" }}>
+      <div className="d-flex align-items-center gap-2">
+        <div style={{
+          width: 36, height: 36, borderRadius: "50%", overflow: "hidden",
+          background: "#fff", border:"1px solid #eee"
+        }}>
+          <img
+            src={shopHeader?.avatar || "/assets/images/placeholder.png"}
+            alt="shop avatar"
+            style={{ width:"100%", height:"100%", objectFit:"cover" }}
+            onError={(e)=>{ e.currentTarget.src="/assets/images/placeholder.png"; }}
+          />
+        </div>
+        <div className="d-flex flex-column">
+          <strong className="small mb-0">
+            {shopLoadingShop ? "Đang tải shop…" : (shopHeader?.name || "Shop")}
+          </strong>
+          <span className="text-secondary small">
+            {shopHeader?.verified ? "Đã xác minh • " : ""}
+            {typeof shopHeader?.followers === "number"
+              ? `${shopHeader.followers.toLocaleString()} theo dõi`
+              : ""}
+          </span>
+        </div>
+      </div>
+
+      <a
+        className="btn btn-sm btn-outline-dark"
+        href={`/user/shop/store?shopId=${id}`}
+        style={{ whiteSpace:"nowrap" }}
+      >
+        Xem Shop {shopHeader?.name ? shopHeader.name.split(" ")[0] : ""}
+      </a>
+    </div>
+  );
+})()}
+
                 <div className="meta-content m-b20 d-flex align-items-end">
                   <div className="me-3">
                     <span className="form-label">Price</span>

@@ -118,4 +118,5 @@ public class ProductDto {
     public void setStock_quantity(Integer stockQuantity) {
         this.stockQuantity = stockQuantity;
     }
+
 }

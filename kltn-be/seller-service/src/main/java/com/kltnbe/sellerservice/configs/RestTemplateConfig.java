@@ -32,19 +32,21 @@ public class RestTemplateConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Một số endpoint POST công khai (ví dụ đăng ký seller)
                         .requestMatchers(HttpMethod.POST,
                                 "/api/seller/registerSeller",
                                 "/api/seller/verifyLoginSeller",
                                 "/api/seller/checkLoginSeller"
-
                         ).permitAll()
-                                .requestMatchers(HttpMethod.GET,"api/seller/getDiscountToUser").permitAll()
-                                .requestMatchers("/api/seller/internal/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET,"/api/seller/getDiscountToUser").permitAll()
+                        // header shop public
+                        .requestMatchers(HttpMethod.GET, "/api/seller/public/**").permitAll()
+                        // follow endpoints — cho phép bất kỳ user đăng nhập
+                        .requestMatchers(HttpMethod.POST, "/api/seller/public/*/follow").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/seller/public/*/follow").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/seller/public/*/follow-status").authenticated()
+                        .requestMatchers("/api/seller/internal/**").permitAll()
+                        // còn lại mới yêu cầu SELLER
                         .requestMatchers("/api/seller/**").hasRole("SELLER")
-//                        .anyRequest().denyAll()
-
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

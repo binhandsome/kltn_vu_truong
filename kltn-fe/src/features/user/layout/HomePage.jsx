@@ -1,27 +1,321 @@
 // src/pages/common/HomePage.js
 import React, { useEffect, useState } from 'react';
-import QuickViewModal from '../components/home/QuickViewModal'; 
+import QuickViewModal from '../components/home/QuickViewModal';
 import ScrollTopButton from '../layout/ScrollTopButton';
-import { Link } from 'react-router-dom'; 
-import WOW from 'wowjs'; // Import WOW.js
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import WOW from 'wowjs';
 import 'mutation-observer';
+
 function HomePage() {
+  // ====== TOAST ======
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
-	useEffect(() => {
-		const wow = new WOW.WOW();
-		wow.init();
-	}, []);
-const showToastMessage = (msg) => {
-  setToastMessage(msg);
-  setShowToast(true);
-  setTimeout(() => setShowToast(false), 2500);
-};
+  const [toastType, setToastType] = useState('success'); // "success" | "error"
+  const triggerToast = (msg, type = 'success') => {
+    setToastMessage(msg);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 1500);
+  };
+  const showToastMessage = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2500);
+  };
   useEffect(() => {
     const successMsg = localStorage.getItem('loginSuccess');
     if (successMsg) {
       showToastMessage(successMsg);
       localStorage.removeItem('loginSuccess');
+    }
+  }, []);
+
+  // ====== TOP 5 DEALS (đầu trang) ======
+  const [top5Products, setTop5Products] = useState([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axios.get('http://localhost:8083/api/products/top-discounted', {
+          params: { size: 5, status: 'active' },
+        });
+        setTop5Products(Array.isArray(res.data) ? res.data : (res.data?.content ?? []));
+      } catch (e) {
+        console.error('Top5 error:', e);
+        setTop5Products([]);
+      }
+    })();
+  }, []);
+
+  // ====== CATEGORIES (đếm salesRank/productType) ======
+  const [salesRankCount, setSalesRankCount] = useState([]);
+  const [productTypeCount, setProductTypeCount] = useState([]);
+const getAllCategories = async () => {
+  try {
+    const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
+    setSalesRankCount(response.data?.salesRankCount || {});
+    setProductTypeCount(response.data?.productTypeCount || {});
+    setTags(response.data?.tags || {}); // ✅ thêm dòng này
+  } catch (error) {
+    console.error('Không lấy được danh mục:', error);
+  }
+};
+
+  useEffect(() => {
+    getAllCategories();
+  }, []);
+  // Feature Categories
+
+  // ====== HOME FEED (nguồn riêng cho homepage) ======
+  const [homeAllProducts, setHomeAllProducts] = useState([]); // nguồn để lọc
+  useEffect(() => {
+    (async () => {
+      try {
+        // lấy 1 mẻ lớn, đủ để client lọc 8 sản phẩm/mục
+        const res = await axios.get('http://localhost:8085/api/search/searchAdvance', {
+          params: { page: 0, size: 120 },
+        });
+        const list = res?.data?.content ?? [];
+        setHomeAllProducts(list);
+      } catch (err) {
+        console.error('❌ Home fetch products failed:', err);
+        setHomeAllProducts([]);
+      }
+    })();
+  }, []);
+
+  // ====== FILTER 8 SẢN PHẨM THEO productType ======
+  const [selectedType, setSelectedType] = useState('ALL'); // giữ "Tất cả"
+  const [grid8, setGrid8] = useState([]);
+  useEffect(() => {
+    const src =
+      selectedType === 'ALL'
+        ? homeAllProducts
+        : homeAllProducts.filter((p) => (p.productType || 'Other') === selectedType);
+    setGrid8(src.slice(0, 8));
+  }, [selectedType, homeAllProducts]);
+  const handlePickType = (type) => (e) => {
+    e.preventDefault();
+    setSelectedType(type);
+  };
+
+  // ====== HELPERS ======
+  const imgUrl = (file) =>
+    file?.startsWith('http')
+      ? file
+      : file
+      ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_625,h_550/imgProduct/IMG/${file}`
+      : '/assets/images/placeholder.png';
+
+  const img300 = (file) =>
+    `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${file}`;
+
+  const priceAfterDiscount = (price, percent) =>
+    Math.max(0, Number(price || 0) * (1 - Number(percent || 0) / 100));
+
+  const money = (n) => Number(n || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+  const priceAfter = (price, percent) => {
+    const p = Number(price || 0);
+    const d = Number(percent || 0);
+    return (p - (p * d) / 100).toFixed(2);
+  };
+
+  const slug = (s) =>
+    s?.toString()
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9\-]/g, '');
+
+  // ====== CART/WISHLIST (kế thừa logic bạn đã có) ======
+  const addCartWithQuantity = async (quantity, product) => {
+    const cartId = localStorage.getItem('cartId') || '';
+    const token = localStorage.getItem('accessToken') || '';
+    try {
+      const payload = {
+        token,
+        asin: product.asin,
+        quantity,
+        price: parseFloat(product.productPrice),
+        cartId,
+      };
+      const response = await axios.post('http://localhost:8084/api/cart/addCart', payload);
+      if (response.data.cartId) {
+        localStorage.setItem('cartId', response.data.cartId);
+      }
+      window.dispatchEvent(new Event('cartUpdated'));
+      triggerToast('✅ Thêm vào giỏ hàng thành công!');
+    } catch (error) {
+      console.error('❌ Không thể thêm giỏ hàng (from outside):', error.response?.data || error.message);
+      triggerToast('❌ Thêm giỏ hàng thất bại!', 'error');
+    }
+  };
+  // Xem nhanh chi tiet san pham
+  const [selectedProduct, setSelectedProduct] = useState(null);
+const [quantity, setQuantity] = useState(1);
+const [selectedColor, setSelectedColor] = useState(null);
+const [selectedSize, setSelectedSize]   = useState(null);
+const [availableStock, setAvailableStock] = useState(null);
+const [priceDiscount, setPriceDiscount] = useState(0);
+
+// (tuỳ chọn) tags để hiển thị trong modal, không ảnh hưởng nơi khác
+const [tags, setTags] = useState({});
+
+const fetchProductDetail = async (asin) => {
+  try {
+    const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+    const prod = res.data;
+    setSelectedProduct(prod);
+    setSelectedColor(null);
+    setSelectedSize(null);
+    setQuantity(1);
+    setAvailableStock(prod?.stockQuantity ?? null);
+
+    const d = Number(prod.percentDiscount || 0);
+    const p = Number(prod.productPrice || 0);
+    setPriceDiscount((p - (p * d / 100)).toFixed(2));
+
+    // mở modal (giữ nguyên cách cũ)
+    const modal = new window.bootstrap.Modal(document.getElementById('exampleModal'));
+    modal.show();
+  } catch (err) {
+    console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);
+  }
+};
+
+// ====== QUICK VIEW: tính tồn kho theo biến thể ======
+useEffect(() => {
+  if (!selectedProduct) return;
+
+  const requiresSize  = Array.isArray(selectedProduct?.sizes) && selectedProduct.sizes.length > 0;
+  const hasColorJson  = !!selectedProduct?.colorAsin;
+  let colors = [];
+  if (hasColorJson) {
+    try { colors = JSON.parse(selectedProduct.colorAsin) || []; } catch {}
+  }
+  const requiresColor = colors.length > 0;
+
+  const isFullySelected = (!requiresSize || selectedSize) && (!requiresColor || selectedColor);
+
+  if (!isFullySelected) {
+    setAvailableStock(selectedProduct?.stockQuantity ?? 0);
+    return;
+  }
+
+  (async () => {
+    try {
+      let url = `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}`;
+      if (selectedSize)  url += `&sizeId=${selectedSize.sizeId ?? selectedSize.size_id ?? selectedSize.id}`;
+      if (selectedColor) url += `&colorId=${selectedColor.colorId ?? selectedColor.color_id ?? selectedColor.id}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch variant stock");
+      const qty = await res.json();
+      setAvailableStock(qty);
+      setQuantity(q => Math.min(q, qty));
+    } catch (e) {
+      console.error("❌ Error fetching variant stock:", e);
+      setAvailableStock(null);
+    }
+  })();
+}, [selectedProduct, selectedSize, selectedColor]);
+
+// ====== QUICK VIEW: handler số lượng (đặt tên riêng) ======
+const handleModalQtyChange = (e) => {
+  let value = parseInt(e.target.value);
+  if (isNaN(value) || value < 1) value = 1;
+  if (availableStock !== null && value > availableStock) value = availableStock;
+  setQuantity(value);
+};
+// ====== QUICK VIEW: add cart có size/color ======
+const addCartFromModal = async (qty, { size, color }) => {
+  if (!selectedProduct) return;
+  const cartId = localStorage.getItem("cartId") || "";
+  const token  = localStorage.getItem("accessToken") || "";
+
+  // bắt buộc chọn nếu có biến thể
+  const needSize  = Array.isArray(selectedProduct?.sizes) && selectedProduct.sizes.length > 0;
+  const needColor = !!selectedProduct?.colorAsin && JSON.parse(selectedProduct.colorAsin || "[]").length > 0;
+
+  if (needSize && !size)  return triggerToast("⚠️ Vui lòng chọn size.", "error");
+  if (needColor && !color) return triggerToast("⚠️ Vui lòng chọn màu.", "error");
+  if (availableStock === 0) return triggerToast("❌ Sản phẩm này đã hết hàng.", "error");
+  if (qty > (availableStock ?? Infinity)) return triggerToast(`⚠️ Chỉ còn ${availableStock} sản phẩm có sẵn.`, "error");
+
+  try {
+    const payload = {
+      token,
+      asin: selectedProduct.asin,
+      quantity: qty,
+      price: parseFloat(
+        (Number(selectedProduct.productPrice || 0) * (1 - Number(selectedProduct.percentDiscount || 0)/100)).toFixed(2)
+      ),
+      cartId,
+      size: size?.sizeName || null,
+      nameColor: color?.name_color || null,
+      colorAsin: selectedProduct.colorAsin || "[]", // backend của bạn đang expect JSON string
+    };
+
+    const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+    if (response.data.cartId) localStorage.setItem("cartId", response.data.cartId);
+
+    window.dispatchEvent(new Event("cartUpdated"));
+    triggerToast("✅ Thêm vào giỏ hàng thành công!", "success");
+  } catch (error) {
+    console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
+    triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
+  }
+};
+  // Xu li wishlist
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const handleToggleWishlist = async (asin) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+  
+    const isInWishlist = wishlistItems.some((item) => item.asin === asin);
+    try {
+      if (isInWishlist) {
+        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        triggerToast("🗑️ Đã xóa sản phẩm khỏi wishlist");
+      } else {
+        await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
+      }
+  
+      const res = await axios.get("http://localhost:8083/api/wishlist", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWishlistItems(res.data);
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    } catch (error) {
+      console.error("❌ Lỗi cập nhật wishlist:", error);
+    }
+  };
+  const isProductInWishlist = (asin) => wishlistItems.some((item) => item.asin === asin);
+  // Xu li them vao gio hang
+  const [listCart, setListCart] = useState([]);
+  const isProductInCart = (asin) => {
+    return listCart.some((item) => item.asin === asin);
+  };
+
+  // ====== WOW init ======
+  useEffect(() => {
+    const wow = new WOW.WOW();
+    wow.init();
+  }, []);
+  // 
+  useEffect(() => {
+    // Gỡ mọi click handler mà theme đã gán cho .filters li (nếu có)
+    if (window.jQuery) {
+      try {
+        window.jQuery('.filters li').off('click');        // gỡ toàn cục của theme
+        window.jQuery('#hp-filter-list li').off('click'); // phòng trường hợp bind nhầm
+      } catch (_) {}
     }
   }, []);
   return (
@@ -32,193 +326,134 @@ const showToastMessage = (msg) => {
 <div className="page-content bg-light">
   <div className="main-slider-wrapper">
     <div className="slider-inner">
-      <div className="row">
-        <div className="col-lg-6">
-          <div className="slider-main">
-            <div className="slick-slide">
-              <div className="content-info">
-                <h1 className="title">Beautiful Woman Purple Sweater.</h1>
-                <div className="swiper-meta-items">
-                  <div className="meta-content">
-                    <span className="price-name">Price</span>
-                    <span className="price-num d-inline-block">$80.00</span>
-                  </div>
-                </div>
-                <div className="content-btn m-b30">
-                  <a
-                    href="shop-wishlist.html"
-                    className="btn btn-secondary me-xl-3 me-2 btnhover20"
-                  >
-                    {/* ADD TO CART */}
-                    THÊM VÀO GIỎ HÀNG
-                  </a>
-                  <a
-                    href="product-default.html"
-                    className="btn btn-outline-secondary btnhover20"
-                  >
-                    {/* VIEW DETAIL */}
-                    XEM CHI TIẾT{" "}
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="slick-slide">
-              <div className="content-info">
-                <h1 className="title">Shot Slad Curly Woman.</h1>
-                <div className="swiper-meta-items">
-                  <div className="meta-content">
-                    <span className="price-name">Price</span>
-                    <span className="price-num d-inline-block">$30.00</span>
-                  </div>
-                </div>
-                <div className="content-btn m-b30">
-                  <a
-                    href="shop-wishlist.html"
-                    className="btn btn-secondary me-xl-3 me-2 btnhover20"
-                  >
-                    ADD TO CART
-                  </a>
-                  <a
-                    href="product-default.html"
-                    className="btn btn-outline-secondary btnhover20"
-                  >
-                    VIEW DETAIL{" "}
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="slick-slide">
-              <div className="content-info">
-                <h1 className="title">Athletic Mesh Sports Leggings.</h1>
-                <div className="swiper-meta-items">
-                  <div className="meta-content">
-                    <span className="price-name">Price</span>
-                    <span className="price-num d-inline-block">$75.00</span>
-                  </div>
-                </div>
-                <div className="content-btn m-b30">
-                  <a
-                    href="shop-wishlist.html"
-                    className="btn btn-secondary me-xl-3 me-2 btnhover20"
-                  >
-                    ADD TO CART
-                  </a>
-                  <a
-                    href="product-default.html"
-                    className="btn btn-outline-secondary btnhover20"
-                  >
-                    VIEW DETAIL{" "}
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="slick-slide">
-              <div className="content-info">
-                <h1 className="title">Curly Girl Beautiful Dress.</h1>
-                <div className="swiper-meta-items">
-                  <div className="meta-content">
-                    <span className="price-name">Price</span>
-                    <span className="price-num d-inline-block">$50.00</span>
-                  </div>
-                </div>
-                <div className="content-btn m-b30">
-                  <a
-                    href="shop-wishlist.html"
-                    className="btn btn-secondary me-xl-3 me-2 btnhover20"
-                  >
-                    ADD TO CART
-                  </a>
-                  <a
-                    href="product-default.html"
-                    className="btn btn-outline-secondary btnhover20"
-                  >
-                    VIEW DETAIL{" "}
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="slick-slide">
-              <div className="content-info">
-                <h1 className="title">Vintage Denim Overalls Shorts.</h1>
-                <div className="swiper-meta-items">
-                  <div className="meta-content">
-                    <span className="price-name">Price</span>
-                    <span className="price-num d-inline-block">$65.00</span>
-                  </div>
-                </div>
-                <div className="content-btn m-b30">
-                  <a
-                                      href="shop-wishlist.html"
-                    className="btn btn-secondary me-xl-3 me-2 btnhover20"
-                  >
-                    ADD TO CART
-                  </a>
-                  <a
-                    href="product-default.html"
-                    className="btn btn-outline-secondary btnhover20"
-                  >
-                    VIEW DETAIL{" "}
-                  </a>
-                </div>
-              </div>
+    <div className="row">
+  <div className="col-lg-6">
+  <div className="slider-main">
+  {top5Products.map((p) => {
+    // chuẩn hoá object theo format các trang khác dùng
+    const norm = {
+      ...p,
+      asin: p.asin,
+      productTitle: p.nameProduct,
+      productThumbnail: p.thumbnail,
+      percentDiscount: p.discountPercent,
+      // dùng giá đã giảm khi add cart
+      productPrice: priceAfterDiscount(p.price, p.discountPercent),
+    };
+
+    return (
+      <div className="slick-slide" key={`main-${p.asin}`}>
+        <div className="content-info">
+          <h1 className="title">{p.nameProduct}</h1>
+
+          <div className="swiper-meta-items">
+            <div className="meta-content">
+              <span className="price-name">
+                {p.discountPercent > 0 ? `Price (−${p.discountPercent}%)` : "Price"}
+              </span>
+              <span className="price-num d-inline-block">
+                {money(priceAfterDiscount(p.price, p.discountPercent))}
+              </span>
             </div>
           </div>
-        </div>
-        <div className="col-lg-6">
-          <div className="slider-thumbs">
-            <div className="slick-slide">
-              <div className="banner-media" data-name="MÙA ĐÔNG">
-                <div className="img-preview">
-                  <img
-                    src="../../assets/user/images/banner/banner-media.png"
-                    alt="banner-media"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="slick-slide">
-              <div className="banner-media" data-name="MÙA HÈ">
-                <div className="img-preview">
-                  <img
-                    src="../../assets/user/images/banner/banner-media2.png"
-                    alt="banner-media"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="slick-slide">
-              <div className="banner-media" data-name="XÀ CẠP">
-                <div className="img-preview">
-                  <img
-                    src="../../assets/user/images/banner/banner-media.png"
-                    alt="banner-media"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="slick-slide">
-              <div className="banner-media" data-name="ĐẦM">
-                <div className="img-preview">
-                  <img
-                    src="../../assets/user/images/banner/banner-media4.png"
-                    alt="banner-media"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="slick-slide">
-              <div className="banner-media" data-name="QUẦN SHORT">
-                <div className="img-preview">
-                  <img
-                    src="../../assets/user/images/banner/banner-media5.png"
-                    alt="banner-media"
-                  />
-                </div>
-              </div>
-            </div>
+
+          <div className="content-btn m-b30">
+            {/* THÊM VÀO GIỎ HÀNG */}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                addCartWithQuantity(1, norm);
+              }}
+              className="btn btn-secondary me-xl-3 me-2 btnhover20"
+            >
+              THÊM VÀO GIỎ HÀNG
+            </a>
+
+            {/* XEM CHI TIẾT */}
+            <a
+              href={`/user/productstructure/ProductDetail?asin=${p.asin}`}
+              className="btn btn-outline-secondary btnhover20"
+              onClick={() => {
+                // nếu bạn muốn lưu lịch sử xem/đề xuất:
+                // handleSearchAsin(p.asin);
+              }}
+            >
+              XEM CHI TIẾT
+            </a>
           </div>
         </div>
       </div>
+    );
+  })}
+</div>
+
+  </div>
+
+  <div className="col-lg-6">
+    <div className="slider-thumbs">
+      {top5Products.length > 0 ? (
+        top5Products.map((p, idx) => (
+          <div className="slick-slide" key={`thumb-${p.asin}`}>
+            <div
+              className="banner-media"
+              data-name={p.salesRank ?? p?.product?.salesRank}
+            >
+              <div className="img-preview">
+                {/* dùng src trực tiếp để ảnh load sẵn như bản đổ cứng */}
+                <img
+                  src={imgUrl(p.thumbnail)}
+                  alt={p.nameProduct || `product-${idx + 1}`}
+                  loading="eager"
+                  onError={(e) => { e.currentTarget.src = "/assets/images/placeholder.png"; }}
+                />
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        // fallback giữ y nguyên ảnh cứng
+        <>
+          <div className="slick-slide">
+            <div className="banner-media" data-name="MÙA ĐÔNG">
+              <div className="img-preview">
+                <img src="../../assets/user/images/banner/banner-media.png" alt="banner-media" />
+              </div>
+            </div>
+          </div>
+          <div className="slick-slide">
+            <div className="banner-media" data-name="MÙA HÈ">
+              <div className="img-preview">
+                <img src="../../assets/user/images/banner/banner-media2.png" alt="banner-media" />
+              </div>
+            </div>
+          </div>
+          <div className="slick-slide">
+            <div className="banner-media" data-name="XÀ CẠP">
+              <div className="img-preview">
+                <img src="../../assets/user/images/banner/banner-media.png" alt="banner-media" />
+              </div>
+            </div>
+          </div>
+          <div className="slick-slide">
+            <div className="banner-media" data-name="ĐẦM">
+              <div className="img-preview">
+                <img src="../../assets/user/images/banner/banner-media4.png" alt="banner-media" />
+              </div>
+            </div>
+          </div>
+          <div className="slick-slide">
+            <div className="banner-media" data-name="QUẦN SHORT">
+              <div className="img-preview">
+                <img src="../../assets/user/images/banner/banner-media5.png" alt="banner-media" />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+</div>
       <div
         className="bottom-content align-items-end wow fadeInUp"
         data-wow-delay="1.0s"
@@ -284,205 +519,106 @@ const showToastMessage = (msg) => {
     </div>
   </div>
   {/* Shop Section Start */}
-  <section className="shop-section overflow-hidden">
-    <div className="container-fluid p-0">
-      <div className="row">
-        <div className="col-lg-8 left-box">
-          <div className="swiper swiper-shop">
-            <div className="swiper-wrapper">
-              <div className="swiper-slide">
-                <div
-                  className="shop-box style-1 wow fadeInUp"
-                  data-wow-delay="0.2s"
-                >
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/clothes/1.png" alt="image" />
+{/* === Featured Categories (4 items, click -> category page) === */}
+<section className="shop-section overflow-hidden">
+  <div className="container-fluid p-0">
+    <div className="row">
+      {/* LEFT: slider of category cards */}
+      <div className="col-lg-8 left-box">
+        <div className="swiper swiper-shop">
+          <div className="swiper-wrapper">
+            {(() => {
+              // 1) Chọn 4 loại từ productTypeCount, bỏ 2 loại ít hàng
+              const blocked = new Set(["Outerwear", "Bottoms"]);
+              const types = Object.keys(productTypeCount || {})
+                .filter(t => !blocked.has(t))
+                .slice(0, 4);
+
+              // 2) Icon gợi ý (PNG nền trong suốt). Có thể thay sau bằng Cloudinary của bạn.
+              const ICONS = {
+                Dresses:        "https://tse3.mm.bing.net/th/id/OIP.B3ZjrxhR4E1Qq0uIt39RBQHaHa?pid=Api",
+                Tops:           "https://tse4.mm.bing.net/th/id/OIP.jd4cctfhy6Vk6NJE40BKXQHaHa?r=0&pid=Api",
+                "Other Clothing":"https://tse2.mm.bing.net/th/id/OIP.KWTn7Z1Izoqb_DwVtGCMjgAAAA?pid=Api",
+                Other:          "https://tse1.mm.bing.net/th/id/OIP.vN_ZuUp72eAAnBpMUoHglAHaHa?pid=Api",
+              };
+              const imgFor = (type) => ICONS[type] || "/assets/images/placeholder.png";
+
+              return types.map((type, idx) => (
+                <div className="swiper-slide" key={type}>
+                  <div
+                    className="shop-box style-1 wow fadeInUp"
+                    data-wow-delay={`${0.2 + idx * 0.2}s`}
+                  >
+                    <div className="dz-media" style={{display:"flex",justifyContent:"center"}}>
+                      <img
+                        src={imgFor(type)}
+                        alt={type}
+                        style={{ width: 140, height: 140, objectFit: "contain" }}
+                      />
+                    </div>
+
+                    <h6 className="product-name" style={{ textAlign: "center" }}>
+                      <a
+                        href={`/user/shop/shopWithCategory?productType=${encodeURIComponent(type)}`}
+                      >
+                        {type}
+                      </a>
+                    </h6>
                   </div>
-                  <h6 className="product-name">
-                    <a href="shop-with-category.html">
-                      {/* Shirts */}
-                      Áo sơ mi</a>
-                  </h6>
                 </div>
-              </div>
-              <div className="swiper-slide">
-                <div
-                  className="shop-box style-1 wow fadeInUp"
-                  data-wow-delay="0.4s"
-                >
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/clothes/2.png" alt="image" />
-                  </div>
-                  <h6 className="product-name">
-                    <a href="shop-with-category.html">
-                      {/* Shorts */}
-                      Quần short</a>
-                  </h6>
-                </div>
-              </div>
-              <div className="swiper-slide">
-                <div
-                  className="shop-box style-1 wow fadeInUp"
-                  data-wow-delay="0.6s"
-                >
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/clothes/3.png" alt="image" />
-                  </div>
-                  <h6 className="product-name">
-                    <a href="shop-with-category.html">
-                      {/* t-Shirt  */}
-                      Áo thun</a>
-                  </h6>
-                </div>
-              </div>
-              <div className="swiper-slide">
-                <div
-                  className="shop-box style-1 wow fadeInUp"
-                  data-wow-delay="0.8s"
-                >
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/clothes/4.png" alt="image" />
-                  </div>
-                  <h6 className="product-name">
-                    <a href="shop-with-category.html">
-                      {/* t-Jeans */}
-                      Quần Jeans</a>
-                  </h6>
-                </div>
-              </div>
-              <div className="swiper-slide">
-                <div
-                  className="shop-box style-1 wow fadeInUp"
-                  data-wow-delay="0.9s"
-                >
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/clothes/5.png" alt="image" />
-                  </div>
-                  <h6 className="product-name">
-                    <a href="shop-with-category.html">t-Jeans</a>
-                  </h6>
-                </div>
-              </div>
-              <div className="swiper-slide">
-                <div
-                  className="shop-box style-1 wow fadeInUp"
-                  data-wow-delay="1.0s"
-                >
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/clothes/2.png" alt="image" />
-                  </div>
-                  <h6 className="product-name">
-                    <a href="shop-with-category.html">Shorts</a>
-                  </h6>
-                </div>
-              </div>
-              <div className="swiper-slide">
-                <div
-                  className="shop-box style-1 wow fadeInUp"
-                  data-wow-delay="1.1s"
-                >
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/clothes/3.png" alt="image" />
-                  </div>
-                  <h6 className="product-name">
-                    <a href="shop-with-category.html">t-Shirt</a>
-                  </h6>
-                </div>
-              </div>
-            </div>
+              ));
+            })()}
           </div>
-          <a className="icon-button" href="shop-standard.html">
-            <div className="text-row word-rotate-box c-black border-secondary">
-              <span className="word-rotate">
-                {/* More Collection Explore */}
-                Thêm bộ sưu tập Khám phá</span>
-              <svg
-                className="badge__emoji"
-                xmlns="http://www.w3.org/2000/svg"
-                width={40}
-                height={40}
-                viewBox="0 0 35 35"
-                fill="none"
-              >
-                <path
-                  d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z"
-                  fill="#000"
-                />
+        </div>
+
+        {/* CTA dưới cùng (giữ nguyên) */}
+        <a className="icon-button" href="/user/shop/shopWithCategory">
+          <div className="text-row word-rotate-box c-black border-secondary">
+            <span className="word-rotate">Thêm bộ sưu tập Khám phá</span>
+            <svg className="badge__emoji" xmlns="http://www.w3.org/2000/svg" width={40} height={40} viewBox="0 0 35 35" fill="none">
+              <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="#000"/>
+            </svg>
+          </div>
+        </a>
+      </div>
+
+      {/* RIGHT: title + prev/next (theme swiper sẽ hook 2 nút này nếu có) */}
+      <div className="col-lg-4 right-box">
+        <div>
+          <h3 className="title wow fadeInUp" data-wow-delay="1.2s">Danh mục nổi bật</h3>
+          <p className="text wow fadeInUp" data-wow-delay="1.4s">
+            Khám phá những sản phẩm thịnh hành nhất tại Pixio.
+          </p>
+          <div className="pagination-align wow fadeInUp" data-wow-delay="1.6s">
+            <div className="shop-button-prev">
+              <svg xmlns="http://www.w3.org/2000/svg" width={35} height={35} viewBox="0 0 35 35" fill="none">
+                <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="white"/>
               </svg>
             </div>
-          </a>
-        </div>
-        <div className="col-lg-4 right-box">
-          <div>
-            <h3 className="title wow fadeInUp" data-wow-delay="1.2s">
-              {/* Featured Categories */}
-              Danh mục nổi bật
-            </h3>
-            <p className="text wow fadeInUp" data-wow-delay="1.4s">
-              {/* Discover the most trending products in Pixio. */}
-              Khám phá những sản phẩm thịnh hành nhất tại Pixio.
-            </p>
-            <div
-              className="pagination-align wow fadeInUp"
-              data-wow-delay="1.6s"
-            >
-              <div className="shop-button-prev">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={35}
-                  height={35}
-                  viewBox="0 0 35 35"
-                  fill="none"
-                >
-                  <path
-                    d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z"
-                    fill="white"
-                  />
-                </svg>
-              </div>
-              <div className="shop-button-next">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={35}
-                  height={35}
-                  viewBox="0 0 35 35"
-                  fill="none"
-                >
-                  <path
-                    d="M2.73549 16.9503H30.9186L24.2492 10.4669C23.7396 9.97176 24.4954 9.1837 25.0119 9.68289L32.6481 17.1063C32.8709 17.3092 32.8531 17.6755 32.648 17.8903L25.0118 25.3169C24.4979 25.81 23.7378 25.0367 24.2492 24.5328L30.921 18.0441H2.73549C2.03663 18.0375 2.00064 16.9636 2.73549 16.9503Z"
-                    fill="white"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <a className="icon-button" href="shop-standard.html">
-            <div className="text-row word-rotate-box c-black border-white">
-              <span className="word-rotate">
-                {/* More Collection Explore */}
-                Thêm bộ sưu tập Khám phá </span>
-              <svg
-                className="badge__emoji"
-                xmlns="http://www.w3.org/2000/svg"
-                width={40}
-                height={40}
-                viewBox="0 0 35 35"
-                fill="none"
-              >
-                <path
-                  d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z"
-                  fill="white"
-                />
+            <div className="shop-button-next">
+              <svg xmlns="http://www.w3.org/2000/svg" width={35} height={35} viewBox="0 0 35 35" fill="none">
+                <path d="M2.73549 16.9503H30.9186L24.2492 10.4669C23.7396 9.97176 24.4954 9.1837 25.0119 9.68289L32.6481 17.1063C32.8709 17.3092 32.8531 17.6755 32.648 17.8903L25.0118 25.3169C24.4979 25.81 23.7378 25.0367 24.2492 24.5328L30.921 18.0441H2.73549C2.03663 18.0375 2.00064 16.9636 2.73549 16.9503Z" fill="white"/>
               </svg>
             </div>
-          </a>
+          </div>
         </div>
+
+        <a className="icon-button" href="/user/shop/shopWithCategory">
+          <div className="text-row word-rotate-box c-black border-white">
+            <span className="word-rotate">Thêm bộ sưu tập Khám phá</span>
+            <svg className="badge__emoji" xmlns="http://www.w3.org/2000/svg" width={40} height={40} viewBox="0 0 35 35" fill="none">
+              <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="white"/>
+            </svg>
+          </div>
+        </a>
       </div>
     </div>
-  </section>
+  </div>
+</section>
+
   {/* Shop Section End */}
   {/* About Section Start */}
-  <section className="content-inner overflow-hidden">
+  {/* <section className="content-inner overflow-hidden">
     <div className="container">
       <div className="row about-style1">
         <div className="col-lg-6 col-md-12 m-b30">
@@ -497,7 +633,6 @@ const showToastMessage = (msg) => {
               href="shop-list.html"
               className="btn btn-outline-secondary btn-light btn-xl"
             >
-              {/* Woman collection */}
               Bộ sưu tập phụ nữ
             </a>
           </div>
@@ -509,13 +644,9 @@ const showToastMessage = (msg) => {
               data-wow-delay="0.4s"
             >
               <h3 className="title ">
-                {/* Set your wardrobe with our amazing selection! */}
                 Hãy sắm sửa tủ đồ của bạn với bộ sưu tập tuyệt vời của chúng tôi!
               </h3>
               <p>
-                {/* Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the */}
                 Lorem Ipsum đơn giản là văn bản giả của ngành in ấn và sắp chữ. Lorem Ipsum đã trở thành văn bản giả tiêu chuẩn của ngành kể từ khi
               </p>
             </div>
@@ -563,7 +694,6 @@ const showToastMessage = (msg) => {
                       href="shop-list.html"
                       className="btn btn-outline-secondary btn-light btn-md"
                     >
-                      {/* Child Fashion */}
                       Thời trang trẻ em
                     </a>
                   </div>
@@ -582,7 +712,6 @@ const showToastMessage = (msg) => {
                       href="shop-list.html"
                       className="btn btn-outline-secondary btn-light btn-md"
                     >
-                      {/* Man collection */}
                       Bộ sưu tập đàn ông
                     </a>
                   </div>
@@ -598,600 +727,238 @@ const showToastMessage = (msg) => {
         </div>
       </div>
     </div>
-  </section>
+  </section> */}
   {/* About Section End */}
   {/* Dz Silder Start */}
   <section className="content-inner-3 overflow-hidden">
     <div className="dz-features-wrapper overflow-hidden">
-      <ul className="dz-features text-wrapper">
+    <ul className="dz-features text-wrapper">
+  {(() => {
+    const ranks = Object.keys(salesRankCount || {});
+    if (ranks.length === 0) return null;
+
+    // nhân đôi danh sách để hiệu ứng slide liên tục
+    const loop = [...ranks, ...ranks];
+
+    const Separator = () => (
+      <li className="item" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width={61} height={60} viewBox="0 0 61 60" fill="none">
+          <path
+            opacity="0.3"
+            d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
+            fill="black"
+          />
+        </svg>
+      </li>
+    );
+
+    return loop.map((rank, i) => (
+      <React.Fragment key={`cat-run-${i}-${rank}`}>
         <li className="item">
           <h2 className="title">
-            Áo khoác
-            {/* Jacket */}
-            </h2>
+            <a
+              href={`/user/shop/shopWithCategory?salesRank=${encodeURIComponent(rank)}`}
+              style={{ color: "inherit", textDecoration: "none" }}
+            >
+              {rank}
+            </a>
+          </h2>
         </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">
-          Quần jean
-            {/* Jeans */}
-            </h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">
-          Áo sơ mi
-            {/* Shirts */}
-            </h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">
-          Quần short
-            {/* Shorts */}
-            </h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">
-          Áo thun
-            {/* t-shirt */}
-            </h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">
-            Áo blazer
-            {/* Blazer */}
-            </h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">
-          Áo khoác
-            {/* Jacket */}
-            </h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">
-            Quần jean
-            {/* Jeans */}
-            </h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">Shirts</h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-        <li className="item">
-          <h2 className="title">Shorts</h2>
-        </li>
-        <li className="item">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={61}
-            height={60}
-            viewBox="0 0 61 60"
-            fill="none"
-          >
-            <path
-              opacity="0.3"
-              d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-              fill="black"
-            />
-          </svg>
-        </li>
-      </ul>
+        <Separator />
+      </React.Fragment>
+    ));
+  })()}
+</ul>
+
     </div>
   </section>
   {/* Dz Silder End */}
   {/* Products Section Start */}
   <section className="content-inner">
-    <div className="container">
-      <div className=" row justify-content-md-between align-items-start">
-        <div className="col-lg-6 col-md-12">
-          <div
-            className="section-head style-1 m-b30  wow fadeInUp"
-            data-wow-delay="0.2s"
-          >
-            <div className="left-content">
-              <h2 className="title">
-              Sản phẩm phổ biến nhất
-                {/* Most popular products */}
-                </h2>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-12">
-          <div
-            className="site-filters clearfix style-1 align-items-center wow fadeInUp ms-lg-auto"
-            data-wow-delay="0.4s"
-          >
-            <ul className="filters" data-bs-toggle="buttons">
-              <li className="btn active">
-                <input type="radio" />
-                <a href="javascript:void(0);">
-                  Tất cả
-{/* ALL */}
-                </a>
-              </li>
-              <li data-filter=".Dresses" className="btn">
-                <input type="radio" />
-                <a href="javascript:void(0);">
-                Váy
-                  {/* Dresses */}
-                  </a>
-              </li>
-              <li data-filter=".Tops" className="btn">
-                <input type="radio" />
-                <a href="javascript:void(0);">
-                  Hàng đầu
-                  {/* Tops */}
-                  </a>
-              </li>
-              <li data-filter=".Outerwear" className="btn">
-                <input type="radio" />
-                <a href="javascript:void(0);">
-                Áo khoác ngoài
-                  {/* Outerwear */}
-                  </a>
-              </li>
-              <li data-filter=".Jacket" className="btn">
-                <input type="radio" />
-                <a href="javascript:void(0);">
-                  Áo khoác
-                  {/* Jacket */}
-                  </a>
-              </li>
-            </ul>
+  <div className="container">
+    <div className=" row justify-content-md-between align-items-start">
+      <div className="col-lg-6 col-md-12">
+        <div
+          className="section-head style-1 m-b30  wow fadeInUp"
+          data-wow-delay="0.2s"
+        >
+          <div className="left-content">
+            <h2 className="title">Sản phẩm phổ biến nhất</h2>
           </div>
         </div>
       </div>
-      <div className="clearfix">
-        <ul id="masonry" className="row g-xl-4 g-3">
-          <li
-            className="card-container col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 Tops wow fadeInUp"
-            data-wow-delay="0.6s"
-          >
-            <div className="shop-card">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/1.png" alt="image" />
-                <div className="shop-meta">
-                  <a
-                    href="javascript:void(0);"
-                    className="btn btn-secondary btn-md btn-rounded"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">
-                      Xem nhanh
-                      {/* Quick View */}
-                      </span>
-                  </a>
-                  <div className="btn btn-primary meta-icon dz-wishicon">
-                    <i className="icon feather icon-heart dz-heart" />
-                    <i className="icon feather icon-heart-on dz-heart-fill" />
-                  </div>
-                  <div className="btn btn-primary meta-icon dz-carticon">
-                    <i className="flaticon flaticon-basket" />
-                    <i className="flaticon flaticon-basket-on dz-heart-fill" />
-                  </div>
-                </div>
-              </div>
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
-                </h5>
-                <h5 className="price">$80</h5>
-              </div>
-              <div className="product-tag">
-                <span className="badge ">
-                  Giảm giá 20%
-                  {/* Get 20% Off */}
-                  </span>
-              </div>
-            </div>
+
+      <div className="col-lg-6 col-md-12">
+      <div
+  className="hp-filter-wrap clearfix style-1 align-items-center wow fadeInUp"
+  data-wow-delay="0.4s"
+  style={{ marginLeft: 0 }}
+>
+  <ul
+    id="hp-filter-list"
+    className="hp-filters"   // <-- Đổi class, KHÔNG dùng 'filters'
+    style={{
+      display: "block",
+      whiteSpace: "nowrap",
+      overflowX: "auto",
+      overflowY: "hidden",
+      padding: "8px 10px",
+      margin: 0,
+      width: "100%",
+    }}
+  >
+    {(() => {
+      const pillBase = (active) => ({
+        display: "inline-block",
+        padding: "8px 14px",
+        borderRadius: "9999px",
+        border: "1px solid #000",
+        lineHeight: 1.1,
+        fontWeight: 600,
+        background: active ? "#000" : "#fff",
+        color: active ? "#fff" : "#000",
+        textDecoration: "none",
+        whiteSpace: "nowrap",
+        marginRight: "8px",
+        cursor: "pointer",
+      });
+
+      // Ẩn bớt type ít hàng nếu muốn:
+      const types = Object.keys(productTypeCount || {})
+        .filter(t => !["Outerwear", "Bottoms"].includes(t)); // bỏ 2 mục ít sản phẩm
+
+      return (
+        <>
+          {/* Tất cả */}
+          <li style={{ display: "inline-block", padding: 0, margin: 0, border: 0 }}>
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePickType("ALL")(e); }}
+              style={pillBase(selectedType === "ALL")}
+            >
+              Tất cả
+            </a>
           </li>
-          <li
-            className="card-container col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 Dresses Jacket wow fadeInUp"
-            data-wow-delay="0.8s"
-          >
-            <div className="shop-card">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/2.png" alt="image" />
-                <div className="shop-meta">
-                  <a
-                    href="javascript:void(0);"
-                    className="btn btn-secondary btn-md btn-rounded"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">Quick View</span>
-                  </a>
-                  <div className="btn btn-primary meta-icon dz-wishicon">
-                    <i className="icon feather icon-heart dz-heart" />
-                    <i className="icon feather icon-heart-on dz-heart-fill" />
-                  </div>
-                  <div className="btn btn-primary meta-icon dz-carticon">
-                    <i className="flaticon flaticon-basket" />
-                    <i className="flaticon flaticon-basket-on dz-heart-fill" />
-                  </div>
-                </div>
-              </div>
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href="shop-list.html">Sophisticated Swagger Suit</a>
-                </h5>
-                <h5 className="price">$80</h5>
-              </div>
-              <div className="product-tag">
-                <span className="badge ">Get 20% Off</span>
-              </div>
-            </div>
-          </li>
-          <li
-            className="card-container col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 Dresses wow fadeInUp"
-            data-wow-delay="1.0s"
-          >
-            <div className="shop-card">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/3.png" alt="image" />
-                <div className="shop-meta">
-                  <a
-                    href="javascript:void(0);"
-                    className="btn btn-secondary btn-md btn-rounded"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">Quick View</span>
-                  </a>
-                  <div className="btn btn-primary meta-icon dz-wishicon">
-                    <i className="icon feather icon-heart dz-heart" />
-                    <i className="icon feather icon-heart-on dz-heart-fill" />
-                  </div>
-                  <div className="btn btn-primary meta-icon dz-carticon">
-                    <i className="flaticon flaticon-basket" />
-                    <i className="flaticon flaticon-basket-on dz-heart-fill" />
-                  </div>
-                </div>
-              </div>
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href="shop-list.html">Classic Denim Skinny Jeans</a>
-                </h5>
-                <h5 className="price">$80</h5>
-              </div>
-              <div className="product-tag">
-                <span className="badge ">Get 20% Off</span>
-              </div>
-            </div>
-          </li>
-          <li
-            className="card-container col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 Tops Jacket wow fadeInUp"
-            data-wow-delay="1.2s"
-          >
-            <div className="shop-card">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/4.png" alt="image" />
-                <div className="shop-meta">
-                  <a
-                    href="javascript:void(0);"
-                    className="btn btn-secondary btn-md btn-rounded"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">Quick View</span>
-                  </a>
-                  <div className="btn btn-primary meta-icon dz-wishicon">
-                    <i className="icon feather icon-heart dz-heart" />
-                    <i className="icon feather icon-heart-on dz-heart-fill" />
-                  </div>
-                  <div className="btn btn-primary meta-icon dz-carticon">
-                    <i className="flaticon flaticon-basket" />
-                    <i className="flaticon flaticon-basket-on dz-heart-fill" />
-                  </div>
-                </div>
-              </div>
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href="shop-list.html">Athletic Mesh Sports Leggings</a>
-                </h5>
-                <h5 className="price">$80</h5>
-              </div>
-              <div className="product-tag">
-                <span className="badge ">Get 20% Off</span>
-              </div>
-            </div>
-          </li>
-          <li
-            className="card-container col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 Dresses wow fadeInUp"
-            data-wow-delay="0.2s"
-          >
-            <div className="shop-card">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/5.png" alt="image" />
-                <div className="shop-meta">
-                  <a
-                    href="javascript:void(0);"
-                    className="btn btn-secondary btn-md btn-rounded"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">Quick View</span>
-                  </a>
-                  <div className="btn btn-primary meta-icon dz-wishicon">
-                    <i className="icon feather icon-heart dz-heart" />
-                    <i className="icon feather icon-heart-on dz-heart-fill" />
-                  </div>
-                  <div className="btn btn-primary meta-icon dz-carticon">
-                    <i className="flaticon flaticon-basket" />
-                    <i className="flaticon flaticon-basket-on dz-heart-fill" />
-                  </div>
-                </div>
-              </div>
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href="shop-list.html">Vintage Denim Overalls Shorts</a>
-                </h5>
-                <h5 className="price">$80</h5>
-              </div>
-              <div className="product-tag">
-                <span className="badge ">Get 20% Off</span>
-              </div>
-            </div>
-          </li>
-          <li
-            className="card-container col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 Outerwear wow fadeInUp"
-            data-wow-delay="0.4s"
-          >
-            <div className="shop-card">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/6.png" alt="image" />
-                <div className="shop-meta">
-                  <a
-                    href="javascript:void(0);"
-                    className="btn btn-secondary btn-md btn-rounded"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">Quick View</span>
-                  </a>
-                  <div className="btn btn-primary meta-icon dz-wishicon">
-                    <i className="icon feather icon-heart dz-heart" />
-                    <i className="icon feather icon-heart-on dz-heart-fill" />
-                  </div>
-                  <div className="btn btn-primary meta-icon dz-carticon">
-                    <i className="flaticon flaticon-basket" />
-                    <i className="flaticon flaticon-basket-on dz-heart-fill" />
-                  </div>
-                </div>
-              </div>
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href="shop-list.html">Satin Wrap Party Blouse</a>
-                </h5>
-                <h5 className="price">$80</h5>
-              </div>
-              <div className="product-tag">
-                <span className="badge ">Get 20% Off</span>
-              </div>
-            </div>
-          </li>
-          <li
-            className="card-container col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 Dresses wow fadeInUp"
-            data-wow-delay="0.6s"
-          >
-            <div className="shop-card">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/7.png" alt="image" />
-                <div className="shop-meta">
-                  <a
-                    href="javascript:void(0);"
-                    className="btn btn-secondary btn-md btn-rounded"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">Quick View</span>
-                  </a>
-                  <div className="btn btn-primary meta-icon dz-wishicon">
-                    <i className="icon feather icon-heart dz-heart" />
-                    <i className="icon feather icon-heart-on dz-heart-fill" />
-                  </div>
-                  <div className="btn btn-primary meta-icon dz-carticon">
-                    <i className="flaticon flaticon-basket" />
-                    <i className="flaticon flaticon-basket-on dz-heart-fill" />
-                  </div>
-                </div>
-              </div>
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href="shop-list.html">Plaid Wool Winter Coat</a>
-                </h5>
-                <h5 className="price">$80</h5>
-              </div>
-              <div className="product-tag">
-                <span className="badge ">Get 20% Off</span>
-              </div>
-            </div>
-          </li>
-          <li
-            className="card-container col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 Tops wow fadeInUp"
-            data-wow-delay="2.0s"
-          >
-            <div className="shop-card">
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/8.png" alt="image" />
-                <div className="shop-meta">
-                  <a
-                    href="javascript:void(0);"
-                    className="btn btn-secondary btn-md btn-rounded"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <i className="fa-solid fa-eye d-md-none d-block" />
-                    <span className="d-md-block d-none">Quick View</span>
-                  </a>
-                  <div className="btn btn-primary meta-icon dz-wishicon">
-                    <i className="icon feather icon-heart dz-heart" />
-                    <i className="icon feather icon-heart-on dz-heart-fill" />
-                  </div>
-                  <div className="btn btn-primary meta-icon dz-carticon">
-                    <i className="flaticon flaticon-basket" />
-                    <i className="flaticon flaticon-basket-on dz-heart-fill" />
-                  </div>
-                </div>
-              </div>
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href="shop-list.html">
-                    Water-Resistant Windbreaker Jacket
-                  </a>
-                </h5>
-                <h5 className="price">$80</h5>
-              </div>
-              <div className="product-tag">
-                <span className="badge ">Get 20% Off</span>
-              </div>
-            </div>
-          </li>
-        </ul>
+
+          {/* Các loại */}
+          {types.map((type) => (
+            <li key={type} style={{ display: "inline-block", padding: 0, margin: 0, border: 0 }}>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePickType(type)(e); }}
+                style={pillBase(selectedType === type)}
+              >
+                {type}
+              </a>
+            </li>
+          ))}
+        </>
+      );
+    })()}
+  </ul>
+</div>
       </div>
     </div>
-  </section>
+
+    {/* GRID 8 SẢN PHẨM */}
+    <div className="clearfix">
+    <ul
+  id="hp-grid" // đổi id để theme không hook Masonry
+  key={selectedType} // ép reflow khi đổi type
+  className="row g-xl-4 g-3"
+  style={{
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "stretch",
+    margin: 0,
+    padding: 0,
+    listStyle: "none",
+  }}
+>
+        {grid8.map((p, idx) => (
+          <li
+          key={p.asin || p.productId || idx}
+          className={`col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 wow fadeInUp`} // bỏ "card-container"
+          data-wow-delay={`${0.2 + (idx % 8) * 0.2}s`}
+          style={{
+            position: "static", // chống Masonry set absolute
+            listStyle: "none",
+          }}
+        >
+             <div className="shop-card" style={{ height: "100%" }}>
+    <div className="dz-media" style={{ position: "relative" }}>
+      <img
+        src={img300(p.productThumbnail)}
+        alt={p.productTitle}
+        style={{
+          width: "100%",
+          height: "auto",
+          display: "block",
+          objectFit: "cover",
+        }}
+      />
+
+                <div className="shop-meta">
+                  {/* Quick View */}
+                  <a
+  href="javascript:void(0);"
+  className="btn btn-secondary btn-md btn-rounded"
+  data-bs-toggle="modal"
+  data-bs-target="#exampleModal"
+  onClick={(e) => { e.preventDefault(); fetchProductDetail(p.asin); }}
+>
+  <i className="fa-solid fa-eye d-md-none d-block" />
+  <span className="d-md-block d-none">Xem nhanh</span>
+</a>
+                  {/* Wishlist */}
+                  <div
+                    className="btn btn-primary meta-icon dz-wishicon"
+                    onClick={() => handleToggleWishlist && handleToggleWishlist(p.asin)}
+                    title="Yêu thích"
+                    style={{ cursor: "pointer" }}
+                  >
+                    <i className={`icon feather ${isProductInWishlist && isProductInWishlist(p.asin) ? "icon-heart-on" : "icon-heart"}`} />
+                  </div>
+
+                  {/* Cart */}
+                  <div
+                    className="btn btn-primary meta-icon dz-carticon"
+                    onClick={() => addCartWithQuantity && addCartWithQuantity(1, p)}
+                    title="Thêm giỏ hàng"
+                    style={{ cursor: "pointer" }}
+                  >
+                    <i className={`flaticon ${isProductInCart && isProductInCart(p.asin) ? "flaticon-basket-on dz-heart-fill" : "flaticon-basket"}`} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="dz-content">
+                <h5 className="title">
+                  <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>
+                    {p.productTitle}
+                  </a>
+                </h5>
+                <h5 className="price">
+                  ${(
+                    Number(p.productPrice || 0) -
+                    Number(p.productPrice || 0) * Number(p.percentDiscount || 0) / 100
+                  ).toFixed(2)}
+                </h5>
+              </div>
+
+              {(p.percentDiscount || 0) > 0 && (
+                <div className="product-tag">
+                  <span className="badge">Giảm giá {p.percentDiscount}%</span>
+                </div>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
   {/* Products Section Start */}
   {/* Collection Section Start */}
   <section className="adv-area">
@@ -1214,7 +981,7 @@ const showToastMessage = (msg) => {
                 Mùa hè<span>2023</span>
               </h2>
               <a
-                href="shop-list.html"
+                href="/user/shop/shopStandard"
                 className="btn btn-outline-secondary btn-lg text-uppercase"
               >
                 {/* Shop Now */}
@@ -1243,7 +1010,7 @@ const showToastMessage = (msg) => {
                   </h2>
               </div>
               <a
-                href="shop-list.html"
+                href="/user/shop/shopWithCategory"
                 className="btn btn-secondary btn-lg text-uppercase"
               >
                 Mua ngay
@@ -1289,7 +1056,7 @@ const showToastMessage = (msg) => {
             >
               <a
                 className="icon-button d-md-block d-none ms-md-auto m-b30"
-                href="shop-standard.html"
+                href="/user/shop/shopStandard"
               >
                 <div className="text-row word-rotate-box c-black">
                   <span className="word-rotate">
@@ -1404,107 +1171,61 @@ const showToastMessage = (msg) => {
   <section className="content-inner overflow-hidden p-b0">
     <div className="container">
       <div className="row ">
-        <div className="col-lg-6 col-md-12 align-self-center">
-          <div className="row">
-            <div className="col-lg-6 col-md-6 col-sm-6 m-b30">
-              <div
-                className="shop-card style-3 wow fadeInUp"
-                data-wow-delay="0.2s"
-              >
-                <div className="dz-media">
-                  <img src="../../assets/user/images/shop/product-2/1.png" alt="image" />
-                </div>
-                <div className="dz-content">
-                  <div>
-                    <span className="sale-title">Giảm giá đến 79%</span>
-                    <h6 className="title">
-                      <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
-                    </h6>
-                  </div>
-                  <h6 className="price">
-                    $80
-                    <del>$95</del>
-                  </h6>
-                </div>
-              </div>
+      <div className="col-lg-6 col-md-12 align-self-center">
+  <div className="row">
+    {(top5Products.length ? top5Products.slice(0, 4) : []).map((p, i) => {
+      const delays = ["0.2s", "0.3s", "0.4s", "0.6s"]; // giữ như template
+      const off = Number(p.discountPercent || 0);
+      const priceNew = priceAfterDiscount(p.price, off);
+      const name = p?.nameProduct || "";
+      const shortName = name.length > 28 ? name.slice(0, 28).trim() + "…" : name;
+
+      const thumb =
+        p?.thumbnail?.startsWith("http")
+          ? p.thumbnail
+          : p?.thumbnail
+          ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_600,h_600/imgProduct/IMG/${p.thumbnail}`
+          : "/assets/images/placeholder.png";
+
+      return (
+        <div className="col-lg-6 col-md-6 col-sm-6 m-b30" key={p.asin || i}>
+          <div className="shop-card style-3 wow fadeInUp" data-wow-delay={delays[i] || "0.2s"}>
+            <div className="dz-media">
+              <img
+                src={thumb}
+                alt={shortName}
+                onError={(e) => (e.currentTarget.src = "/assets/images/placeholder.png")}
+              />
             </div>
-            <div className="col-lg-6 col-md-6 col-sm-6 m-b30">
-              <div
-                className="shop-card style-3 wow fadeInUp"
-                data-wow-delay="0.3s"
-              >
-                <div className="dz-media">
-                  <img src="../../assets/user/images/shop/product-2/2.png" alt="image" />
-                </div>
-                <div className="dz-content">
-                  <div>
-                    <span className="sale-title text-success">
-                      Free delivery
-                    </span>
-                    <h6 className="title">
-                      <a href="shop-list.html">Sophisticated Swagger Suit</a>
-                    </h6>
-                  </div>
-                  <h6 className="price">
-                    $80
-                    <del>$95</del>
-                  </h6>
-                </div>
-                <span className="sale-badge">
-                  50%
-                  <br />
-                  Sale <img src="../../assets/user/images/star.png" alt="" />
+
+            <div className="dz-content">
+              <div>
+                {/* dòng phụ như template: có giảm thì hiển thị “Up to xx% Off”, không thì Free delivery */}
+                <span className={`sale-title ${off ? "" : "text-success"}`}>
+                  {off ? `Up to ${off}% Off` : "Free delivery"}
                 </span>
+                <h6 className="title">
+                  <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortName}</a>
+                </h6>
               </div>
+              <h6 className="price">
+                {money(priceNew)} {off > 0 && <del>{money(p.price)}</del>}
+              </h6>
             </div>
-            <div className="col-lg-6 col-md-6 col-sm-6 m-b30">
-              <div
-                className="shop-card style-3 wow fadeInUp"
-                data-wow-delay="0.4s"
-              >
-                <div className="dz-media">
-                  <img src="../../assets/user/images/shop/product-2/3.png" alt="image" />
-                </div>
-                <div className="dz-content">
-                  <div>
-                    <span className="sale-title text-success">
-                      Free delivery
-                    </span>
-                    <h6 className="title">
-                      <a href="shop-list.html">Classic Denim Skinny Jeans</a>
-                    </h6>
-                  </div>
-                  <h6 className="price">
-                    $80
-                    <del>$95</del>
-                  </h6>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6 col-md-6 col-sm-6 m-b30">
-              <div
-                className="shop-card style-3 wow fadeInUp"
-                data-wow-delay="0.6s"
-              >
-                <div className="dz-media">
-                  <img src="../../assets/user/images/shop/product-2/4.png" alt="image" />
-                </div>
-                <div className="dz-content">
-                  <div>
-                    <span className="sale-title">up to 79% off</span>
-                    <h6 className="title">
-                      <a href="shop-list.html">Athletic Mesh Sports Leggings</a>
-                    </h6>
-                  </div>
-                  <h6 className="price">
-                    $80
-                    <del>$95</del>
-                  </h6>
-                </div>
-              </div>
-            </div>
+
+            {/* ⭐ Badge ở góc phải – luôn hiển thị */}
+            <span className="sale-badge">
+              {off ? `${off}%` : "Sale"}
+              {off ? <br /> : <><br /></>}
+              Sale <img src="../../assets/user/images/star.png" alt="star" />
+            </span>
           </div>
         </div>
+      );
+    })}
+  </div>
+</div>
+
         <div className="col-lg-6 col-md-12 m-b30">
           <div className="about-box style-1  clearfix h-100 right">
             <div className="dz-media h-100">
@@ -1514,11 +1235,11 @@ const showToastMessage = (msg) => {
                 Tiết kiệm lớn cho các nhu yếu phẩm hàng ngày
                   {/* Great saving on everyday essentials */}
                 </h2>
-                <h5 className="sub-title">
+                <h5 className="/user/shop/shopWithCategory">
                 Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
                   {/* Up to 60% off + up to $107 Cashback */}
                 </h5>
-                <a href="shop-list.html" className="btn btn-white btn-lg">
+                <a href="/user/shop/shopStandard" className="btn btn-white btn-lg">
                   Xem Tất Cả
                   {/* See All */}
                 </a>
@@ -1537,304 +1258,151 @@ const showToastMessage = (msg) => {
   </section>
   {/* About Section */}
   {/* Map Area Start*/}
-  <section className="content-inner-3 overflow-hidden " id="Maping">
-    <div className="container-fluid p-0">
-      <div className="row align-items-start">
-        <div className="col-xl-7 col-lg-12 col-md-12">
-          <div className="map-area">
-            <img src="../../assets/user/images/map/map2.png" alt="image" />
-            <div className="map-line" id="map-line">
-              <img src="../../assets/user/images/map/map-line.png" alt="image" />
-            </div>
-            <div className="loction-b wow" data-wow-delay="0.2s">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width={35}
-                height={47}
-                viewBox="0 0 35 47"
-                fill="none"
-              >
-                <path
-                  d="M17.8211 5.10059C11.2718 5.10059 5.96484 10.4115 5.96484 16.9568C5.96484 23.5061 11.2757 28.8131 17.8211 28.8131C24.3704 28.8131 29.6773 23.5061 29.6773 16.9568C29.6773 10.4075 24.3704 5.10059 17.8211 5.10059ZM17.8211 26.8761C12.3435 26.8761 7.90185 22.4344 7.90185 16.9568C7.90185 11.4792 12.3395 7.0376 17.8211 7.0376C23.2987 7.0376 27.7403 11.4792 27.7403 16.9568C27.7403 22.4344 23.2987 26.8761 17.8211 26.8761Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M17.8227 2.75879C9.8603 2.75879 3.40625 9.21284 3.40625 17.1752C3.40625 17.5404 3.42213 17.9135 3.45388 18.2946C4.36681 29.1267 17.8187 46.7583 17.8187 46.7583C17.8187 46.7583 30.1592 30.5795 32.0049 19.6957C32.1557 18.8185 32.2351 17.973 32.2351 17.1713C32.2391 9.21284 25.7851 2.75879 17.8227 2.75879ZM17.8227 27.666C13.2461 27.666 9.34033 24.7962 7.80422 20.7595C7.35172 19.5727 7.10562 18.2906 7.10562 16.945C7.10562 11.0268 11.9045 6.22794 17.8227 6.22794C23.7409 6.22794 28.5397 11.0268 28.5397 16.945C28.5397 18.6121 28.1587 20.1919 27.4799 21.601C25.7493 25.1932 22.0738 27.666 17.8227 27.666Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M17.8242 2.75879V6.23191C23.7424 6.23191 28.5413 11.0308 28.5413 16.949C28.5413 18.6161 28.1602 20.1958 27.4815 21.6049C25.7509 25.1932 22.0753 27.67 17.8242 27.67V46.7622C17.8242 46.7622 30.1647 30.5834 32.0104 19.6997C32.1613 18.8225 32.2407 17.977 32.2407 17.1752C32.2407 9.21284 25.7866 2.75879 17.8242 2.75879Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M26.3002 25.437C30.983 20.7542 30.983 13.1618 26.3002 8.47904C21.6174 3.79623 14.0251 3.79623 9.34225 8.47904C4.65945 13.1618 4.65945 20.7542 9.34226 25.437C14.0251 30.1198 21.6174 30.1198 26.3002 25.437Z"
-                  stroke="white"
-                  strokeWidth="0.5007"
-                  strokeMiterlimit={10}
-                />
-                <path
-                  opacity="0.39"
-                  d="M32.239 17.1752C32.239 17.973 32.1597 18.8185 32.0088 19.6997C30.6513 20.4578 29.1311 21.1008 27.4799 21.6049C28.1586 20.1958 28.5397 18.6161 28.5397 16.949C28.5397 11.0308 23.7408 6.23191 17.8226 6.23191C11.9044 6.23191 7.10556 11.0308 7.10556 16.949C7.10556 18.2906 7.35166 19.5766 7.80415 20.7634C6.16881 20.0807 4.70414 19.2432 3.45779 18.2946C3.42603 17.9135 3.41016 17.5404 3.41016 17.1752C3.41016 9.21284 9.86421 2.75879 17.8266 2.75879C25.785 2.75879 32.239 9.21284 32.239 17.1752Z"
-                  fill="white"
-                />
-                <path
-                  d="M17.9283 23.1084H14.0781V10.9187C15.7174 10.8472 16.9003 10.8115 17.6267 10.8115C18.9603 10.8115 19.9923 11.0695 20.7227 11.5895C21.453 12.1095 21.8182 12.8517 21.8182 13.8163C21.8182 14.3839 21.584 14.8999 21.1196 15.3643C20.6512 15.8287 20.1352 16.1224 19.5716 16.2375C20.6393 16.4717 21.4173 16.8567 21.9055 17.3926C22.3938 17.9324 22.6399 18.6628 22.6399 19.5876C22.6399 20.6593 22.2072 21.5127 21.3379 22.1518C20.4647 22.7908 19.3295 23.1084 17.9283 23.1084ZM15.9199 12.2484V15.7533C16.3049 15.785 16.7852 15.8049 17.3567 15.8049C19.0993 15.8049 19.9725 15.1658 19.9725 13.8837C19.9725 12.7565 19.1707 12.1928 17.5671 12.1928C16.9558 12.1889 16.4081 12.2087 15.9199 12.2484ZM15.9199 17.0433V21.6953C16.551 21.7509 17.0392 21.7786 17.3766 21.7786C18.5317 21.7786 19.3731 21.5842 19.905 21.1912C20.4369 20.7982 20.7029 20.179 20.7029 19.3217C20.7029 18.5278 20.4488 17.9443 19.9447 17.5672C19.4367 17.1902 18.5912 16.9996 17.4083 16.9996L15.9199 17.0433Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M18.319 23.1084H14.4688V10.9187C16.1081 10.8472 17.2909 10.8115 18.0173 10.8115C19.351 10.8115 20.383 11.0695 21.1133 11.5895C21.8437 12.1095 22.2088 12.8517 22.2088 13.8163C22.2088 14.3839 21.9747 14.8999 21.5103 15.3643C21.0419 15.8287 20.5259 16.1224 19.9622 16.2375C21.03 16.4717 21.808 16.8567 22.2962 17.3926C22.7844 17.9324 23.0305 18.6628 23.0305 19.5876C23.0305 20.6593 22.5978 21.5127 21.7286 22.1518C20.8514 22.7908 19.7161 23.1084 18.319 23.1084ZM16.3105 12.2484V15.7533C16.6955 15.785 17.1758 15.8049 17.7474 15.8049C19.4899 15.8049 20.3631 15.1658 20.3631 13.8837C20.3631 12.7565 19.5613 12.1928 17.9578 12.1928C17.3425 12.1889 16.7948 12.2087 16.3105 12.2484ZM16.3105 17.0433V21.6953C16.9416 21.7509 17.4298 21.7786 17.7672 21.7786C18.9223 21.7786 19.7638 21.5842 20.2957 21.1912C20.8275 20.7982 21.0935 20.179 21.0935 19.3217C21.0935 18.5278 20.8394 17.9443 20.3353 17.5672C19.8273 17.1902 18.9818 16.9996 17.799 16.9996L16.3105 17.0433Z"
-                  fill="#CC0D39"
-                />
-              </svg>
-            </div>
-            <div className="loction-center wow fadeInUp" data-wow-delay="1.0s">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width={61}
-                height={38}
-                viewBox="0 0 61 38"
-                fill="none"
-              >
-                <path
-                  opacity="0.41"
-                  d="M41.1005 33.4829C41.1005 35.7087 36.4963 37.5077 30.7944 37.5077C25.1077 37.5077 20.4883 35.7087 20.4883 33.4829C20.4883 31.257 25.0925 29.458 30.7944 29.458C36.4811 29.458 41.1005 31.257 41.1005 33.4829Z"
-                  fill="#050505"
-                />
-                <path
-                  d="M40.6576 32.3699C40.6576 34.5043 36.2364 36.227 30.7937 36.227C25.3509 36.227 20.9297 34.5043 20.9297 32.3699C20.9297 30.2355 25.3509 28.5127 30.7937 28.5127C36.2364 28.5127 40.6576 30.2355 40.6576 32.3699Z"
-                  fill="#C92020"
-                  stroke="white"
-                  strokeWidth="0.6087"
-                  strokeMiterlimit={10}
-                />
-                <path
-                  d="M0.589844 0.870117V17.8605H27.0772L30.795 29.9002L34.4936 17.8605H61.0003V0.870117H0.589844Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M59.8647 1.83398H1.78516V16.821H59.8647V1.83398Z"
-                  stroke="white"
-                  strokeWidth="0.3472"
-                  strokeMiterlimit={10}
-                />
-                <path
-                  d="M11.1641 12.6794L11.8575 11.7547C12.3391 12.1785 12.9363 12.3904 13.6683 12.3904C15.0167 12.3904 15.691 11.851 15.691 10.7723C15.691 10.2714 15.4984 9.88615 15.0938 9.57793C14.7086 9.26971 14.1692 9.1156 13.5335 9.1156H13.4179V8.15242H13.4757C14.7085 8.15242 15.325 7.70935 15.325 6.82323C15.325 5.89858 14.7471 5.43625 13.572 5.43625C12.9363 5.43625 12.4355 5.60963 12.0695 5.95638L11.4145 5.14731C11.8768 4.66572 12.6281 4.43457 13.6876 4.43457C14.6122 4.43457 15.3828 4.64645 15.9799 5.05099C16.5771 5.45552 16.8661 5.97563 16.8661 6.61133C16.8661 7.09292 16.6927 7.53598 16.3652 7.90198C16.0377 8.26799 15.6525 8.51841 15.2094 8.65326C15.8258 8.80737 16.3074 9.09634 16.6734 9.48161C17.0394 9.86688 17.2128 10.3484 17.2128 10.9071C17.2128 11.7162 16.9046 12.3519 16.2689 12.7949C15.6332 13.238 14.7663 13.4499 13.6298 13.4499C13.1482 13.4499 12.6859 13.3728 12.2235 13.238C11.7805 13.0646 11.4338 12.8913 11.1641 12.6794Z"
-                  fill="white"
-                />
-                <path
-                  d="M19.8919 9.03866L19.3911 8.74969V4.51172H24.7078V5.53268H20.778V7.65168C21.144 7.43979 21.5871 7.32421 22.1457 7.32421C23.1474 7.32421 23.8988 7.57461 24.4189 8.0562C24.939 8.53779 25.2087 9.23129 25.2087 10.1174C25.2087 12.3135 24.0143 13.4115 21.6256 13.4115C20.6239 13.4115 19.7956 13.1803 19.1406 12.7373L19.6993 11.7355C20.3542 12.1786 20.9899 12.3905 21.6064 12.3905C22.9741 12.3905 23.6676 11.697 23.6676 10.2908C23.6676 8.98086 22.9934 8.32589 21.6449 8.32589C21.0092 8.36442 20.412 8.57634 19.8919 9.03866Z"
-                  fill="white"
-                />
-                <path
-                  d="M28.6176 11.6387C28.9258 11.6387 29.1762 11.735 29.3881 11.9084C29.6 12.0817 29.7156 12.2936 29.7156 12.5441C29.7156 12.7945 29.6 13.0064 29.3881 13.1798C29.1762 13.3531 28.9258 13.4494 28.6176 13.4494C28.3094 13.4494 28.0589 13.3531 27.847 13.1798C27.6351 13.0064 27.5195 12.7945 27.5195 12.5441C27.5195 12.2936 27.6351 12.0817 27.847 11.9084C28.0589 11.7157 28.3094 11.6387 28.6176 11.6387Z"
-                  fill="white"
-                />
-                <path
-                  d="M37.9599 10.9258V13.3144H36.5729V10.9258H31.6992V10.2515L37.4397 4.53027H37.9599V10.0011H39.0386V10.9258H37.9599ZM36.5729 6.91896L33.4329 10.0204H36.5729V6.91896Z"
-                  fill="white"
-                />
-                <path
-                  d="M42.9309 13.3152L41.4669 11.4082L40.7541 12.0053V13.296H39.9258V7.95996H40.7541V11.2733L42.5264 9.50105H43.4895L42.0063 10.9458L43.817 13.296H42.9309V13.3152Z"
-                  fill="white"
-                />
-                <path
-                  d="M49.7889 13.3146V10.9067C49.7889 10.3095 49.4807 10.0206 48.845 10.0206C48.6523 10.0206 48.4597 10.0784 48.2863 10.1747C48.1129 10.271 47.9974 10.3866 47.9396 10.5214V13.3339H47.1113V10.637C47.1113 10.4444 47.0342 10.3095 46.8608 10.1939C46.6874 10.0784 46.4563 10.0398 46.1866 10.0398C46.0132 10.0398 45.8399 10.0976 45.6665 10.1939C45.4739 10.2903 45.339 10.4059 45.2619 10.5407V13.3339H44.4336V9.53898H44.973L45.2427 9.98204C45.5509 9.63529 45.9554 9.4812 46.437 9.4812C47.092 9.4812 47.5736 9.65456 47.824 9.98204C47.9203 9.84719 48.0937 9.71234 48.3441 9.61603C48.5945 9.51971 48.8449 9.46191 49.1146 9.46191C49.5962 9.46191 49.9622 9.57751 50.2319 9.80867C50.5016 10.0398 50.6172 10.3673 50.6172 10.7911V13.3339H49.7889V13.3146Z"
-                  fill="white"
-                />
-              </svg>
-            </div>
-            <div className="loction-a wow" data-wow-delay="1.2s">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width={56}
-                height={86}
-                viewBox="0 0 56 86"
-                fill="none"
-              >
-                <path
-                  d="M28.1688 5.40039C15.5701 5.40039 5.35547 15.6183 5.35547 28.217C5.35547 40.819 15.5701 51.0337 28.1721 51.0337C40.7741 51.0337 50.9888 40.819 50.9888 28.217C50.9888 15.6183 40.7708 5.40039 28.1688 5.40039ZM28.1688 47.3061C17.6282 47.3061 9.08306 38.761 9.08306 28.2203C9.08306 17.6797 17.6282 9.13127 28.1688 9.13127C38.7095 9.13127 47.2546 17.6764 47.2546 28.217C47.2546 38.7577 38.7095 47.3061 28.1688 47.3061Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M28.1692 0.895508C12.8473 0.895508 0.429688 13.3164 0.429688 28.6351C0.429688 29.3365 0.462617 30.051 0.525182 30.7853C2.28689 51.6328 28.1692 85.5631 28.1692 85.5631C28.1692 85.5631 51.9178 54.4318 55.4675 33.4888C55.754 31.7963 55.9121 30.1729 55.9121 28.6351C55.9121 13.3164 43.4912 0.895508 28.1692 0.895508ZM28.1692 48.8272C19.364 48.8272 11.8462 43.3083 8.8892 35.5403C8.01987 33.2583 7.54569 30.7853 7.54569 28.2037C7.54569 16.8135 16.779 7.57684 28.1692 7.57684C39.5594 7.57684 48.7961 16.8102 48.7961 28.2037C48.7961 31.411 48.0618 34.4504 46.7545 37.1604C43.422 44.0624 36.3521 48.8272 28.1692 48.8272Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M28.168 0.895508V7.57684C39.5582 7.57684 48.7948 16.8102 48.7948 28.2037C48.7948 31.411 48.0605 34.4504 46.7532 37.1604C43.4208 44.0657 36.3509 48.8272 28.168 48.8272V85.5631C28.168 85.5631 51.9165 54.4318 55.4663 33.4888C55.7528 31.7963 55.9108 30.1729 55.9108 28.6351C55.9108 13.3164 43.4899 0.895508 28.168 0.895508Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M28.1672 51.2905C40.9104 51.2905 51.2407 40.9602 51.2407 28.217C51.2407 15.4739 40.9104 5.14355 28.1672 5.14355C15.4241 5.14355 5.09375 15.4739 5.09375 28.217C5.09375 40.9602 15.4241 51.2905 28.1672 51.2905Z"
-                  stroke="white"
-                  strokeWidth="1.1614"
-                  strokeMiterlimit={10}
-                />
-                <path
-                  d="M34.3107 39.1875L32.7593 34.4661H24.3855L22.7259 39.1875H19.2852L28.4265 16.4961H29.2399L37.7219 39.1875H34.3107ZM28.6856 22.3651L25.199 32.2199H31.8836L28.6856 22.3651Z"
-                  fill="#CC0D39"
-                />
-                <path
-                  d="M34.3107 39.1875L32.7593 34.4661H24.3855L22.7259 39.1875H19.2852L28.4265 16.4961H29.2399L37.7219 39.1875H34.3107ZM28.6856 22.3651L25.199 32.2199H31.8836L28.6856 22.3651Z"
-                  fill="#CC0D39"
-                />
-              </svg>
-            </div>
-            <div className="area-box1 wow" data-wow-delay="1.4s">
-              <div className="shop-card style-7 ">
-                <div className="dz-media">
-                  <img src="../../assets/user/images/shop/product/medium/3.png" alt="image" />
-                </div>
-                <div className="dz-content">
-                  <h5 className="title">
-                    <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
-                  </h5>
-                  <span className="sale-title">Giảm đến 79%</span>
-                </div>
-              </div>
-            </div>
-            <div className="area-box2 wow" data-wow-delay="1.6s">
-              <div className="shop-card style-7 ">
-                <div className="dz-media">
-                  <img src="../../assets/user/images/shop/product/medium/4.png" alt="image" />
-                </div>
-                <div className="dz-content">
-                  <h5 className="title">
-                    <a href="shop-list.html">Sophisticated Swagger Suit</a>
-                  </h5>
-                  <span className="sale-title">up to 79% off</span>
-                </div>
-              </div>
-            </div>
-            <div className="area-box3 wow" data-wow-delay="1.8s">
-              <div className="shop-card style-7 ">
-                <div className="dz-media">
-                  <img src="../../assets/user/images/shop/product/medium/5.png" alt="image" />
-                </div>
-                <div className="dz-content">
-                  <h5 className="title">
-                    <a href="shop-list.html">Classic Denim Skinny Jeans</a>
-                  </h5>
-                  <span className="sale-title">up to 79% off</span>
-                </div>
-              </div>
-            </div>
+  <section className="content-inner-3 overflow-hidden" id="Maping">
+  <div className="container-fluid p-0">
+    <div className="row align-items-start">
+      {/* LEFT MAP + 3 cards */}
+      <div className="col-xl-7 col-lg-12 col-md-12">
+        <div className="map-area">
+          <img src="../../assets/user/images/map/map2.png" alt="image" />
+          <div className="map-line" id="map-line">
+            <img src="../../assets/user/images/map/map-line.png" alt="image" />
           </div>
+
+          {/* các icon trang trí giữ nguyên */}
+          <div className="loction-b wow" data-wow-delay="0.2s">...svg...</div>
+          <div className="loction-center wow fadeInUp" data-wow-delay="1.0s">...svg...</div>
+          <div className="loction-a wow" data-wow-delay="1.2s">...svg...</div>
+
+          {/* ========== 3 ô nổi trên bản đồ: lấy top5Products[0..2] ========== */}
+          {top5Products.slice(0, 3).map((p, i) => {
+            const shortTitle =
+              p?.nameProduct ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..." : "";
+            const boxClass = ["area-box1", "area-box2", "area-box3"][i] || "area-box1";
+            return (
+              <div className={`${boxClass} wow`} data-wow-delay={`${1.4 + i * 0.2}s`} key={`mapbox-${p.asin || i}`}>
+                <div className="shop-card style-7">
+                  <div className="dz-media">
+                    <img
+                      src={
+                        p?.thumbnail?.startsWith("http")
+                          ? p.thumbnail
+                          : p?.thumbnail
+                          ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
+                          : "/assets/images/placeholder.png"
+                      }
+                      alt={shortTitle || "product"}
+                      onError={(e) => (e.currentTarget.src = "/assets/images/placeholder.png")}
+                    />
+                  </div>
+                  <div className="dz-content">
+                    <h5 className="title">
+                      <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortTitle}</a>
+                    </h5>
+                    {Number(p.discountPercent || 0) > 0 && (
+                      <span className="sale-title">
+                        Giảm đến {Number(p.discountPercent)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-        <div className="col-xl-5 col-lg-12 col-md-12 custom-width">
-          <div
-            className="section-head style-1 wow fadeInUp d-lg-flex align-items-end justify-content-between"
-            data-wow-delay="0.1s"
-          >
-            <div className="left-content">
-              <h2 className="title">
-               Khám phá những điểm đến hấp dẫn nhất gần khu vực của bạn
-               {/*  Discovering the Hottest Nearby Destinations in Your Area */}
-              </h2>
-              <p className="text-capitalize text-secondary m-0">
-                Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
-                {/* Up to 60% off + up to $107 Cashback */}
-              </p>
-            </div>
-            <a
-              href="shop-list.html"
-              className="text-secondary font-14 d-flex align-items-center gap-1 m-b15"
-            >
-              Xem tất cả
-              <i className="icon feather icon-chevron-right font-18" />
-            </a>
+      </div>
+
+      {/* RIGHT TITLE + SLIDER */}
+      <div className="col-xl-5 col-lg-12 col-md-12 custom-width">
+        <div
+          className="section-head style-1 wow fadeInUp d-lg-flex align-items-end justify-content-between"
+          data-wow-delay="0.1s"
+        >
+          <div className="left-content">
+            <h2 className="title">Khám phá những điểm đến hấp dẫn nhất gần khu vực của bạn</h2>
+            <p className="text-capitalize text-secondary m-0">
+              Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
+            </p>
           </div>
-          <div className="swiper swiper-shop2 swiper-visible">
-            <div className="swiper-wrapper">
-              <div className="swiper-slide wow fadeInUp" data-wow-delay="0.1s">
-                <div className="shop-card style-7 ">
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/medium/3.png" alt="image" />
-                  </div>
-                  <div className="dz-content">
-                    <h5 className="title">
-                      <a href="shop-list.html">Cardigan Sweater</a>
-                    </h5>
-                    <span className="sale-title text-success">
-                     Giảm đến 79%
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="swiper-slide wow fadeInUp" data-wow-delay="0.2s">
-                <div className="shop-card style-7 ">
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/medium/4.png" alt="image" />
-                  </div>
-                  <div className="dz-content">
-                    <h5 className="title">
-                      <a href="shop-list.html">Swagger Suit</a>
-                    </h5>
-                    <span className="sale-title">up to 79% off</span>
-                  </div>
-                </div>
-              </div>
-              <div className="swiper-slide wow fadeInUp" data-wow-delay="0.4s">
-                <div className="shop-card style-7 ">
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/medium/5.png" alt="image" />
-                  </div>
-                  <div className="dz-content">
-                    <h5 className="title">
-                      <a href="shop-list.html">Skinny Jeans</a>
-                    </h5>
-                    <span className="sale-title">up to 79% off</span>
-                  </div>
-                </div>
-              </div>
-              <div className="swiper-slide wow fadeInUp" data-wow-delay="0.5s">
-                <div className="shop-card style-7 ">
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/medium/6.png" alt="image" />
-                  </div>
-                  <div className="dz-content">
-                    <h5 className="title">
-                      <a href="shop-list.html">Sports Leggings</a>
-                    </h5>
-                    <span className="sale-title">up to 79% off</span>
+          <a
+            href="/user/shop/shopWithCategory"
+            className="text-secondary font-14 d-flex align-items-center gap-1 m-b15"
+          >
+            Xem tất cả <i className="icon feather icon-chevron-right font-18" />
+          </a>
+        </div>
+
+        {/* clamp tên 2 dòng để không vỡ form */}
+        <style>{`
+          #Maping .shop-card.style-7 .title a{
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+            overflow:hidden;
+          }
+          #Maping .shop-card.style-7 .dz-media img{
+            width:120px;height:120px;object-fit:cover;border-radius:12px;
+          }
+        `}</style>
+
+        <div className="swiper swiper-shop2 swiper-visible">
+          <div className="swiper-wrapper">
+            {(top5Products.length ? top5Products : []).map((p, idx) => {
+              const shortTitle =
+                p?.nameProduct ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..." : "";
+              return (
+                <div className="swiper-slide wow fadeInUp" data-wow-delay={`${0.1 + idx * 0.1}s`} key={`slide-${p.asin || idx}`}>
+                  <div className="shop-card style-7">
+                    <div className="dz-media">
+                      <img
+                        src={
+                          p?.thumbnail?.startsWith("http")
+                            ? p.thumbnail
+                            : p?.thumbnail
+                            ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
+                            : "/assets/images/placeholder.png"
+                        }
+                        alt={shortTitle || "product"}
+                        onError={(e) => (e.currentTarget.src = "/assets/images/placeholder.png")}
+                      />
+                    </div>
+                    <div className="dz-content">
+                      <h5 className="title">
+                        <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortTitle}</a>
+                      </h5>
+                      {Number(p.discountPercent || 0) > 0 && (
+                        <span className="sale-title">
+                          up to {Number(p.discountPercent)}% off
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="swiper-slide wow fadeInUp" data-wow-delay="0.6s">
-                <div className="shop-card style-7 ">
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/medium/3.png" alt="image" />
-                  </div>
-                  <div className="dz-content">
-                    <h5 className="title">
-                      <a href="shop-list.html">Cardigan Sweater</a>
-                    </h5>
-                    <span className="sale-title text-success">
-                      up to 79% off
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="swiper-slide wow fadeInUp" data-wow-delay="0.7s">
-                <div className="shop-card style-7 ">
-                  <div className="dz-media">
-                    <img src="../../assets/user/images/shop/product/medium/4.png" alt="image" />
-                  </div>
-                  <div className="dz-content">
-                    <h5 className="title">
-                      <a href="shop-list.html">Swagger Suit</a>
-                    </h5>
-                    <span className="sale-title">up to 79% off</span>
+              );
+            })}
+
+            {/* Fallback giữ form nếu chưa có dữ liệu */}
+            {top5Products.length === 0 &&
+              [3, 4, 5, 6, 3].map((n, i) => (
+                <div className="swiper-slide wow fadeInUp" data-wow-delay={`${0.1 + i * 0.1}s`} key={`fallback-${i}`}>
+                  <div className="shop-card style-7">
+                    <div className="dz-media">
+                      <img src={`../../assets/user/images/shop/product/medium/${n}.png`} alt="image" />
+                    </div>
+                    <div className="dz-content">
+                      <h5 className="title"><a href="#">Loading...</a></h5>
+                      <span className="sale-title">up to 79% off</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              ))}
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
+
   {/* Blockbuster deal Start */}
-  <section className="content-inner-2 overflow-hidden">
+  {/* <section className="content-inner-2 overflow-hidden">
     <div className="container">
       <div
         className="section-head style-1 wow fadeInUp d-lg-flex justify-content-between"
@@ -1842,8 +1410,7 @@ const showToastMessage = (msg) => {
       >
         <div className="left-content">
           <h2 className="title">
-          Ưu đãi bom tấn
-            {/* Blockbuster deals */}
+          Nổi bật bây giờ
           </h2>
         </div>
         <a
@@ -1851,7 +1418,6 @@ const showToastMessage = (msg) => {
           className="text-secondary font-14 d-flex align-items-center gap-1"
         >
           Xem tất cả ưu đãi
-          {/* See all deals */}
           <i className="icon feather icon-chevron-right font-18" />
         </a>
       </div>
@@ -1980,10 +1546,10 @@ const showToastMessage = (msg) => {
         </div>
       </div>
     </div>
-  </section>
+  </section> */}
   {/* Blockbuster deal Start */}
   {/* Offer Section Start */}
-  <section className="content-inner-2">
+  {/* <section className="content-inner-2">
     <div className="container">
       <div
         className="section-head style-1 wow fadeInUp d-flex justify-content-between m-b30"
@@ -1992,7 +1558,6 @@ const showToastMessage = (msg) => {
         <div className="left-content">
           <h2 className="title">
           Ưu đãi nổi bật dành cho bạn
-            {/* Featured offer for you */}
           </h2>
         </div>
         <a
@@ -2020,18 +1585,15 @@ const showToastMessage = (msg) => {
                 <div className="main-content">
                   <span className="offer">
                   Giảm giá 20%
-                    {/* 20% Off */}
                   </span>
                   <h2 className="product-name">
                   Áo lót cao cấp
-                    {/* Luxury Bras */}
                   </h2>
                   <a
                     href="shop-list.html"
                     className="btn btn-outline-secondary btn-rounded btn-lg"
                   >
                     Thu thập ngay
-                    {/* Collect Now */}
                   </a>
                 </div>
               </div>
@@ -2050,7 +1612,6 @@ const showToastMessage = (msg) => {
                 <div className="main-content">
                   <span className="offer">
                   Giảm giá lên đến 50%
-                    {/* Sale Up to 50% Off */}
                   </span>
                   <h2 className="sub-title1">
                     Mùa hè <span className="year">2024</span>
@@ -2059,8 +1620,7 @@ const showToastMessage = (msg) => {
                     href="shop-list.html"
                     className="btn btn-outline-secondary btn-rounded btn-lg"
                   >
-                    Thu thập ngay
-                    {/* Collect Now */}                   
+                    Thu thập ngay                 
                   </a>
                 </div>
               </div>
@@ -2079,22 +1639,18 @@ const showToastMessage = (msg) => {
                 <div className="main-content">
                   <span className="offer">
                   Giảm giá 20%
-                    {/* 20% Off */}
                   </span>
                   <h2 className="sub-title2">
                   Đồ bơi
-                    {/* Swimwear  */}
                     <span className="bg-title">
                     Doanh thu
-                      {/* Sale */}
                     </span>
                   </h2>
                   <a
                     href="shop-list.html"
                     className="btn btn-outline-secondary btn-rounded btn-lg"
                   >
-                    Thu thập ngay
-                    {/* Collect Now  */}                   
+                    Thu thập ngay                  
                   </a>
                 </div>
               </div>
@@ -2113,18 +1669,15 @@ const showToastMessage = (msg) => {
                 <div className="main-content">
                   <span className="offer">
                   Giảm giá 20%
-                    {/* 20% Off */}
                   </span>
                   <h2 className="product-name">
                   Áo lót cao cấp
-                    {/* Luxury Bras */}
                   </h2>
                   <a
                     href="shop-list.html"
                     className="btn btn-outline-secondary btn-rounded btn-lg"
                   >
                     Thu thập ngay
-                    {/* Collect Now */}
                   </a>
                 </div>
               </div>
@@ -2183,201 +1736,126 @@ const showToastMessage = (msg) => {
         </div>
       </div>
     </div>
-  </section>
+  </section> */}
   {/* Product End */}
   {/* Featured Section Start */}
-  <section className="content-inner  overflow-hidden">
-    <div className="container">
-      <div
-        className="section-head style-1 wow fadeInUp d-flex justify-content-between"
-        data-wow-delay="0.2s"
-      >
-        <div className="left-content">
-          <h2 className="title">
-          Nổi bật bây giờ
-            {/* Featured now */}
-             </h2>
-        </div>
-        <a
-          href="shop-list.html"
-          className="text-secondary font-14 d-flex align-items-center gap-1"
-        >
-          Xem Tất Cả
-          {/* See All */}
-          <i className="icon feather icon-chevron-right font-18" />
-        </a>
+  <section className="content-inner overflow-hidden">
+  <div className="container">
+    <div
+      className="section-head style-1 wow fadeInUp d-flex justify-content-between"
+      data-wow-delay="0.2s"
+    >
+      <div className="left-content">
+        <h2 className="title">Ưu đãi bom tấn</h2>
       </div>
-      <div className="swiper swiper-product2 swiper-visible ">
-        <div className="swiper-wrapper">
-          <div className="swiper-slide">
-            <div
-              className="shop-card style-4 wow fadeInUp"
-              data-wow-delay="0.4s"
-            >
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/1.png" alt="image" />
-              </div>
-              <div className="dz-content">
-                <div>
-                  <h6 className="title">
-                    <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
-                  </h6>
-                  <span className="sale-title">Up to 40% Off</span>
+
+      <a
+        href="/user/shop/shopWithCategory"
+        className="text-secondary font-14 d-flex align-items-center gap-1"
+      >
+        Xem Tất Cả
+        <i className="icon feather icon-chevron-right font-18" />
+      </a>
+    </div>
+
+    {/* style nhỏ để giữ form/size card giống template */}
+    <style>{`
+      .hp-featured-swiper .shop-card.style-4 { min-height: 150px; }
+      .hp-featured-swiper .dz-media img {
+        width: 120px; height: 120px; object-fit: cover; border-radius: 12px;
+      }
+      .hp-featured-swiper .title {
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden; min-height: 44px; line-height: 1.15;
+      }
+      .hp-featured-swiper .sale-title { font-size: 12px; color: #ff4d4f; }
+      .hp-featured-swiper .price del { margin-left: 6px; opacity: .6; }
+    `}</style>
+
+    <div className="swiper swiper-product2 swiper-visible hp-featured-swiper">
+      <div className="swiper-wrapper">
+        {top5Products.slice(0, 5).map((p, i) => {
+          const shortTitle =
+            p?.nameProduct
+              ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..."
+              : "";
+
+          const after = (Number(p.price || 0) * (1 - Number(p.discountPercent || 0) / 100)).toFixed(2);
+
+          return (
+            <div className="swiper-slide" key={p.asin || i}>
+              <div className="shop-card style-4 wow fadeInUp" data-wow-delay={`${0.4 + i * 0.2}s`}>
+                <div className="dz-media">
+                  <img
+                    src={
+                      p?.thumbnail?.startsWith("http")
+                        ? p.thumbnail
+                        : p?.thumbnail
+                        ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
+                        : "/assets/images/placeholder.png"
+                    }
+                    alt={p?.nameProduct || "product"}
+                    onError={(e) => (e.currentTarget.src = "/assets/images/placeholder.png")}
+                  />
                 </div>
-                <div className="d-flex align-items-center">
-                  <h6 className="price">
-                    $80<del>$95</del>
-                  </h6>
-                  <span className="review">
-                    <i className="fa-solid fa-star" />
-                    (2k Review)
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="swiper-slide">
-            <div
-              className="shop-card style-4 wow fadeInUp"
-              data-wow-delay="0.6s"
-            >
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/2.png" alt="image" />
-              </div>
-              <div className="dz-content">
-                <div>
-                  <h6 className="title">
-                    <a href="shop-list.html">Sophisticated Swagger Suit</a>
-                  </h6>
-                  <span className="sale-title">Up to 40% Off</span>
-                </div>
-                <div className="d-flex align-items-center">
-                  <h6 className="price">
-                    $80<del>$95</del>
-                  </h6>
-                  <span className="review">
-                    <i className="fa-solid fa-star" />
-                    (2k Review)
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="swiper-slide">
-            <div
-              className="shop-card style-4 wow fadeInUp"
-              data-wow-delay="0.8s"
-            >
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/3.png" alt="image" />
-              </div>
-              <div className="dz-content">
-                <div>
-                  <h6 className="title">
-                    <a href="shop-list.html">Classic Denim Skinny Jeans</a>
-                  </h6>
-                  <span className="sale-title">Up to 40% Off</span>
-                </div>
-                <div className="d-flex align-items-center">
-                  <h6 className="price">
-                    $80<del>$95</del>
-                  </h6>
-                  <span className="review">
-                    <i className="fa-solid fa-star" />
-                    (2k Review)
-                  </span>
+
+                <div className="dz-content">
+                  <div>
+                    <h6 className="title">
+                      <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>
+                        {shortTitle}
+                      </a>
+                    </h6>
+
+                    {Number(p.discountPercent || 0) > 0 && (
+                      <span className="sale-title">Up to {p.discountPercent}% Off</span>
+                    )}
+                  </div>
+
+                  <div className="d-flex align-items-center">
+                    <h6 className="price mb-0">
+                      ${after}
+                      {Number(p.discountPercent || 0) > 0 && <del>${Number(p.price || 0).toFixed(2)}</del>}
+                    </h6>
+                    <span className="review ms-2">
+                      <i className="fa-solid fa-star" /> (2k Review)
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="swiper-slide">
-            <div
-              className="shop-card style-4 wow fadeInUp"
-              data-wow-delay="0.4s"
-            >
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/1.png" alt="image" />
-              </div>
-              <div className="dz-content">
-                <div>
-                  <h6 className="title">
-                    <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
-                  </h6>
-                  <span className="sale-title">Up to 40% Off</span>
+          );
+        })}
+
+        {/* fallback giữ form nếu chưa có dữ liệu */}
+        {top5Products.length === 0 &&
+          [1, 2, 3, 4, 5].map((n, i) => (
+            <div className="swiper-slide" key={`skeleton-${i}`}>
+              <div className="shop-card style-4 wow fadeInUp" data-wow-delay={`${0.4 + i * 0.2}s`}>
+                <div className="dz-media">
+                  <img src={`../../assets/user/images/shop/product/${((i % 3) + 1)}.png`} alt="image" />
                 </div>
-                <div className="d-flex align-items-center">
-                  <h6 className="price">
-                    $80<del>$95</del>
-                  </h6>
-                  <span className="review">
-                    <i className="fa-solid fa-star" />
-                    (2k Review)
-                  </span>
+                <div className="dz-content">
+                  <div>
+                    <h6 className="title"><a href="#">Loading...</a></h6>
+                    <span className="sale-title">Up to 40% Off</span>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <h6 className="price">$80<del>$95</del></h6>
+                    <span className="review"><i className="fa-solid fa-star" />(2k Review)</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="swiper-slide">
-            <div
-              className="shop-card style-4 wow fadeInUp"
-              data-wow-delay="0.6s"
-            >
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/2.png" alt="image" />
-              </div>
-              <div className="dz-content">
-                <div>
-                  <h6 className="title">
-                    <a href="shop-list.html">Sophisticated Swagger Suit</a>
-                  </h6>
-                  <span className="sale-title">Up to 40% Off</span>
-                </div>
-                <div className="d-flex align-items-center">
-                  <h6 className="price">
-                    $80<del>$95</del>
-                  </h6>
-                  <span className="review">
-                    <i className="fa-solid fa-star" />
-                    (2k Review)
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="swiper-slide">
-            <div
-              className="shop-card style-4 wow fadeInUp"
-              data-wow-delay="0.8s"
-            >
-              <div className="dz-media">
-                <img src="../../assets/user/images/shop/product/3.png" alt="image" />
-              </div>
-              <div className="dz-content">
-                <div>
-                  <h6 className="title">
-                    <a href="shop-list.html">Classic Denim Skinny Jeans</a>
-                  </h6>
-                  <span className="sale-title">Up to 40% Off</span>
-                </div>
-                <div className="d-flex align-items-center">
-                  <h6 className="price">
-                    $80<del>$95</del>
-                  </h6>
-                  <span className="review">
-                    <i className="fa-solid fa-star" />
-                    (2k Review)
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          ))}
       </div>
     </div>
-  </section>
+  </div>
+</section>
+
   {/* Featured Section End */}
   {/* About Section */}
-  <section className="content-inner overflow-hidden p-b0">
+  {/* <section className="content-inner overflow-hidden p-b0">
     <div className="container">
       <div className="row">
         <div className="col-lg-6 col-md-12 m-b30">
@@ -2390,17 +1868,14 @@ const showToastMessage = (msg) => {
               <div className="media-contant">
                 <h2 className="title">
                 Những bổ sung gần đây vào danh sách rút gọn của bạn
-                  {/* Recent Additions to Your Shortlist */}
                 </h2>
                 <a href="shop-list.html" className="btn btn-white">
                 Mua ngay
-                  {/* Shop Now */}
                 </a>
               </div>
               <svg className="title animation-text" viewBox="0 0 1320 300">
                 <text x={0} y="">
                   Danh sách rút gọn
-                  {/* Shortlist */}
                 </text>
               </svg>
             </div>
@@ -2505,10 +1980,10 @@ const showToastMessage = (msg) => {
         </div>
       </div>
     </div>
-  </section>
+  </section> */}
   {/* About Section */}
   {/* company-box Start */}
-  <section className="content-inner-2">
+  {/* <section className="content-inner-2">
     <div className="container">
       <div
         className="section-head style-1 wow fadeInUp d-flex  justify-content-between"
@@ -2517,7 +1992,6 @@ const showToastMessage = (msg) => {
         <div className="left-content">
           <h2 className="title">
           Được tài trợ
-            {/* Sponsored */}
           </h2>
         </div>
         <a
@@ -2674,10 +2148,10 @@ const showToastMessage = (msg) => {
         </div>
       </div>
     </div>
-  </section>
+  </section> */}
   {/* company-box End */}
   {/* Blog Start */}
-  <section className="content-inner-3 overflow-hidden p-b0">
+  {/* <section className="content-inner-3 overflow-hidden p-b0">
     <div className="container">
       <div className="row justify-content-between align-items-center">
         <div className="col-lg-6 col-md-8 col-sm-12">
@@ -2688,7 +2162,6 @@ const showToastMessage = (msg) => {
             <div className="left-content">
               <h2 className="title">
               Khám phá bài đăng thịnh hành nhất trên Pixio.
-                {/* Discover the most trending Post in Pixio. */}
               </h2>
             </div>
           </div>
@@ -3127,7 +2600,7 @@ const showToastMessage = (msg) => {
         </div>
       </div>
     </div>
-  </section>
+  </section> */}
   {/* Blog End */}
   {/* collection-bx */}
   <section className="collection-bx content-inner-3 overflow-hidden">
@@ -3138,7 +2611,7 @@ const showToastMessage = (msg) => {
       </h2>
       <div className="text-center">
         <a
-          href="shop-list.html"
+          href="/user/shop/shopWithCategory"
           className="btn btn-secondary btn-lg wow fadeInUp m-b30"
           data-wow-delay="0.4s"
         >
@@ -3169,7 +2642,21 @@ const showToastMessage = (msg) => {
 
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
-        <QuickViewModal />
+         <QuickViewModal
+  product={selectedProduct}
+  quantity={quantity}
+  setQuantity={setQuantity}
+  availableStock={availableStock}
+  selectedSize={selectedSize}
+  setSelectedSize={setSelectedSize}
+  selectedColor={selectedColor}
+  setSelectedColor={setSelectedColor}
+  onAdd={(q, picked) => addCartFromModal(q, picked)}
+  onToggleWishlist={() => selectedProduct && handleToggleWishlist(selectedProduct.asin)}
+  inWishlist={isProductInWishlist?.(selectedProduct?.asin)}
+  triggerToast={triggerToast}
+  requireSelection
+/>
         {showToast && (
   <div style={{
     position: 'fixed',

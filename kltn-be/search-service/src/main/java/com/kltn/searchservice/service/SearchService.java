@@ -1,5 +1,6 @@
 package com.kltn.searchservice.service;
 
+import com.kltn.searchservice.dtos.EsSearchResult;
 import com.kltn.searchservice.dtos.ProductDocument;
 import com.kltn.searchservice.dtos.ProductDto;
 import com.kltn.searchservice.dtos.req.RequestRecommend;
@@ -47,4 +48,8 @@ public interface SearchService {
             List<Double> percentDiscount,
             Pageable pageable
     );
+    EsSearchResult<ProductDocument> searchByStoreWithFacets(
+            Long storeId, String q, String sort, String category,
+            Double min, Double max, Boolean discountOnly,
+            int page, int size);
 }
