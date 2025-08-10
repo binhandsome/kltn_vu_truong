@@ -3,11 +3,14 @@ package com.kltnbe.productservice.controllers;
 
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.clients.UploadServiceProxy;
+import com.kltnbe.productservice.dtos.CategoryCountDTO;
 import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
 import com.kltnbe.productservice.dtos.ProductStatsDTO;
+import com.kltnbe.productservice.dtos.StoreProductFilter;
 import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.*;
 import com.kltnbe.productservice.entities.*;
+import com.kltnbe.productservice.enums.ProductStatus;
 import com.kltnbe.productservice.repositories.*;
 import com.kltnbe.productservice.services.AsyncUploadService;
 import com.kltnbe.productservice.services.ProductService;
@@ -489,6 +492,50 @@ public class ProductController {
     @GetMapping("getEvaluateByAsinProduct")
     public ResponseEntity<List<EvaluateResponse>> getEvaluateByAsinProduct(@RequestParam String asin) {
         return ResponseEntity.ok(productService.getEvaluateByProductAsin(asin));
+    }
+    @GetMapping("/top-discounted")
+    public List<ProductResponse> topDiscounted(
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) ProductStatus status // parse trực tiếp enum
+    ) {
+        return productService.getTopDiscounted(size, status);
+    }
+    @GetMapping("/{storeId}")
+    public Page<ProductResponse> search(
+            @PathVariable Long storeId,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false, defaultValue = "") String sort,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Double min,
+            @RequestParam(required = false) Double max,
+            @RequestParam(required = false) Boolean discountOnly,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        StoreProductFilter f = new StoreProductFilter(q, sort, category, min, max, discountOnly);
+        Pageable pz = PageRequest.of(page, size);
+        return productService.searchProductsByStore(storeId, f, pz);
+    }
+
+    // đếm cho filter nhanh
+    @GetMapping("/{storeId}/counts/productType")
+    public List<CategoryCountDTO> countType(@PathVariable Long storeId) {
+        return productService.getProductTypeCountByStore(storeId);
+    }
+
+    @GetMapping("/{storeId}/counts/salesRank")
+    public List<CategoryCountDTO> countSalesRank(@PathVariable Long storeId) {
+        return productService.getSalesRankCountByStore(storeId);
+    }
+
+    @GetMapping("/{storeId}/counts/tags")
+    public List<CategoryCountDTO> countTags(@PathVariable Long storeId) {
+        return productService.getTagCountByStore(storeId);
+    }
+
+    @GetMapping("/{storeId}/counts/discounting")
+    public long countDiscounting(@PathVariable Long storeId) {
+        return productService.countDiscountingProductsByStore(storeId);
     }
 
 }

@@ -436,4 +436,37 @@ public class SellerController {
     public ResponseEntity<?> updateStatusEvaluate(@RequestParam Long evaluateId,@RequestParam int status) {
         return sellerService.updateStatusEvaluate(evaluateId, status);
     }
+    @GetMapping("/public/{shopId}")
+    public ResponseEntity<ShopHeaderDTO> getShopHeader(@PathVariable Long shopId) {
+        return ResponseEntity.ok(sellerService.getShopHeader(shopId));
+    }
+
+    @PostMapping("/public/{shopId}/follow")
+    public ResponseEntity<Map<String, Object>> followShop(
+            @PathVariable Long shopId,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        long followers = sellerService.followShop(shopId, user.getAuthId());
+        return ResponseEntity.ok(Map.of(
+                "followed", true,
+                "followers", followers
+        ));
+    }
+    @DeleteMapping("/public/{shopId}/follow")
+    public ResponseEntity<Map<String, Object>> unfollowShop(
+            @PathVariable Long shopId,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        long followers = sellerService.unfollowShop(shopId, user.getAuthId());
+        return ResponseEntity.ok(Map.of(
+                "followed", false,
+                "followers", followers
+        ));
+    }
+    @GetMapping("/public/{shopId}/follow-status")
+    public ResponseEntity<Map<String, Boolean>> followStatus(
+            @PathVariable Long shopId,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        boolean followed = sellerService.isFollowed(shopId, user.getAuthId());
+        return ResponseEntity.ok(Map.of("followed", followed));
+    }
+
 }

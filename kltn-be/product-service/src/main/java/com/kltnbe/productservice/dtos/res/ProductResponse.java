@@ -21,8 +21,10 @@ public class ProductResponse {
     private String productStatus;
     private String selectedCategory;
     private String selectedType;
+    private String salesRank;
     private String selectedGender;
     private Integer discountPercent;
+    private Long storeId;
     private List<ColorDTO> selectedColors;
     private List<List<String>> categoryList;
     private String description;

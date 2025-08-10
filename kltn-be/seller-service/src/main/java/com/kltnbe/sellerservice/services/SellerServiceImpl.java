@@ -36,6 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +57,7 @@ public class SellerServiceImpl implements SellerService {
 //    private final UserUseDiscountRepository userUseDiscountRepository;
     private final ImageUploadService imageUploadService; // Bean mới
     private final ProductServiceProxy productFeignClient;
+    private final ShopFollowRepository shopFollowRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -916,6 +918,72 @@ public class SellerServiceImpl implements SellerService {
     @Override
     public ResponseEntity<?> updateStatusEvaluate(Long evaluateId, int status) {
         return productServiceProxy.updateStatusEvaluate(evaluateId, status);
+    }
+
+    @Override
+    @Transactional
+    public ShopHeaderDTO getShopHeader(Long shopId) {
+        Shop s = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found: " + shopId));
+
+        long followers = shopFollowRepository.countByShopId(shopId);
+
+        return ShopHeaderDTO.builder()
+                .id(s.getShopId())
+                .name(s.getNameShop())
+                .avatar(s.getThumbnailShop())
+                .banner(null)                 // DB chưa có banner → FE fallback
+                .verified(false)              // DB chưa có cờ verified
+                .rating(s.getEvaluateShop())
+                .reviewCount(0L)              // chưa thống kê review
+                .followers(followers)         // lấy từ bảng follow
+                .productCount(0L)             // bạn xử lý phần count ở chỗ khác
+                .address(s.getShopAddress())
+                .joinedAt(s.getCreatedAt() != null ? s.getCreatedAt().toString() : null)
+                .build();
+    }
+
+    /* ================== FOLLOW / UNFOLLOW ================== */
+
+    @Override
+    @Transactional
+    public long followShop(Long shopId, Long userId) {
+        // đảm bảo shop tồn tại
+        if (!shopRepository.existsById(shopId)) {
+            throw new IllegalArgumentException("Shop not found: " + shopId);
+        }
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found: " + shopId));
+        shop.setFollowersShop(shop.getFollowersShop() + 1);
+        shopRepository.save(shop);
+
+        // idempotent: chỉ tạo nếu chưa tồn tại
+        if (!shopFollowRepository.existsByUserIdAndShopId(userId, shopId)) {
+            ShopFollow f = ShopFollow.builder()
+                    .userId(userId)
+                    .shopId(shopId)
+                    .build();
+            shopFollowRepository.save(f);
+        }
+
+        return shopFollowRepository.countByShopId(shopId);
+    }
+
+    @Override
+    @Transactional
+    public long unfollowShop(Long shopId, Long userId) {
+        shopFollowRepository.deleteByUserIdAndShopId(userId, shopId);
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new IllegalArgumentException("Shop not found: " + shopId));
+        shop.setFollowersShop(shop.getFollowersShop() - 1);
+        shopRepository.save(shop);
+        return shopFollowRepository.countByShopId(shopId);
+    }
+
+    @Override
+    @Transactional
+    public boolean isFollowed(Long shopId, Long userId) {
+        return shopFollowRepository.existsByUserIdAndShopId(userId, shopId);
     }
 
 
