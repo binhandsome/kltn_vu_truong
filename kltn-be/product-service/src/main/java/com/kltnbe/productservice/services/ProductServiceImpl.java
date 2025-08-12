@@ -5,16 +5,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kltnbe.productservice.clients.SearchServiceProxy;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
-import com.kltnbe.productservice.dtos.ColorDTO;
-import com.kltnbe.productservice.dtos.ProductDto;
-import com.kltnbe.productservice.dtos.TitleAndImgSeller;
-import com.kltnbe.productservice.dtos.ProductStatsDTO;
+import com.kltnbe.productservice.dtos.*;
 import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.EvaluateResponse;
 import com.kltnbe.productservice.dtos.res.ProductResponse;
 import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.enums.ProductStatus;
 import com.kltnbe.productservice.repositories.*;
+import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -24,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -672,8 +671,9 @@ validateShopOwnership(product.getStoreId(), authId);
         dto.setDiscountPercent(product.getPercentDiscount() != null ? product.getPercentDiscount().intValue() : 0);
         dto.setDescription(product.getTags());
         dto.setThumbnail(product.getProductThumbnail());
+        dto.setSalesRank(product.getSalesRank());
         dto.setSize(product.getSizes());
-
+        dto.setStoreId(product.getStoreId());
         // Category list
         if (product.getCategory() != null) {
             List<List<String>> categoryList = new ArrayList<>();
@@ -815,5 +815,41 @@ validateShopOwnership(product.getStoreId(), authId);
         List<EvaluateProduct> evaluateProduct = evaluateProductRepository.findByProductAsin(asin);
         return evaluateProduct.stream().map(e -> modelMapper.map(e, EvaluateResponse.class))
                 .collect(Collectors.toList());
+    }
+    @Override
+    public List<ProductResponse> getTopDiscounted(int size, ProductStatus status) {
+        int n = Math.max(1, size);
+        Page<Product> page = productRepository.findTopDiscounted(status, PageRequest.of(0, n));
+        return page.getContent().stream()
+                .map(this::mapProductToDTO) // hàm map bạn đã có
+                .toList();
+    }
+    @Override
+    public Page<ProductResponse> searchProductsByStore(Long storeId, StoreProductFilter filter, Pageable pageable) {
+        Sort s = ProductSpecs.sortOf(filter != null ? filter.sort() : null);
+        Pageable pz = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), s);
+
+        Page<Product> page = productRepository.findAll(ProductSpecs.byStoreAndFilter(storeId, filter), pz);
+        return page.map(this::mapProductToDTO);
+    }
+
+    @Override
+    public List<CategoryCountDTO> getProductTypeCountByStore(Long storeId) {
+        return productRepository.countProductTypeByStore(storeId);
+    }
+
+    @Override
+    public List<CategoryCountDTO> getSalesRankCountByStore(Long storeId) {
+        return productRepository.countSalesRankByStore(storeId);
+    }
+
+    @Override
+    public List<CategoryCountDTO> getTagCountByStore(Long storeId) {
+        return productRepository.countTagsByStore(storeId);
+    }
+
+    @Override
+    public long countDiscountingProductsByStore(Long storeId) {
+        return productRepository.countDiscountingByStore(storeId);
     }
 }

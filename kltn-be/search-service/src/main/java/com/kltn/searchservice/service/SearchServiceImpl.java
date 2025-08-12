@@ -2,10 +2,16 @@ package com.kltn.searchservice.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.json.JsonData;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.kltn.searchservice.dtos.EsSearchResult;
+import com.kltn.searchservice.dtos.FacetBucket;
 import com.kltn.searchservice.dtos.ProductDocument;
 import com.kltn.searchservice.dtos.ProductDto;
 import com.kltn.searchservice.dtos.req.ProductFileterAll;
@@ -640,4 +646,157 @@ public class SearchServiceImpl implements SearchService {
 
         return result;
     }
+    // map sort
+    private List<SortOptions> sortOf(String sort) {
+        return switch (sort == null ? "" : sort) {
+            case "new"        -> List.of(SortOptions.of(s -> s.field(f -> f.field("createdAt").order(SortOrder.Desc))));
+            case "bestseller" -> List.of(SortOptions.of(s -> s.field(f -> f.field("numberOfRatings").order(SortOrder.Desc))));
+            case "priceAsc"   -> List.of(SortOptions.of(s -> s.field(f -> f.field("productPrice").order(SortOrder.Asc))));
+            case "priceDesc"  -> List.of(SortOptions.of(s -> s.field(f -> f.field("productPrice").order(SortOrder.Desc))));
+            default -> List.of(SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc))));
+        };
+    }
+
+    @Override
+    public EsSearchResult<ProductDocument> searchByStoreWithFacets(
+            Long storeId, String q, String sort, String category,
+            Double min, Double max, Boolean discountOnly,
+            int page, int size) {
+
+        try {
+            var b = new co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery.Builder();
+
+            // filter theo store
+            b.filter(f -> f.term(t -> t.field("storeId").value(storeId)));
+
+            // keyword
+            if (q != null && !q.isBlank()) {
+                String lowered = q.toLowerCase();
+
+                b.must(m -> m.bool(inner -> inner
+                        // match tiêu chuẩn + fuzziness
+                        .should(s -> s.match(mm -> mm
+                                .field("productTitle")
+                                .query(q)
+                                .fuzziness("AUTO")
+                        ))
+                        // multi-match ĐÚNG dạng danh sách field
+                        .should(s -> s.multiMatch(mm -> mm
+                                .fields(Arrays.asList("productTitle^3", "brandName", "tags"))
+                                .query(q)
+                                .fuzziness("AUTO")
+                        ))
+                        // wildcard trên subfield keyword, không phải query_string
+                        .should(s -> s.wildcard(w -> w
+                                .field("productTitle.keyword")
+                                .value("*" + lowered + "*")
+                                .caseInsensitive(true)
+                        ))
+                        .minimumShouldMatch("1")
+                ));
+            }
+
+
+            // category: cho phép nhiều -> match productType / salesRank / tags
+            if (category != null && !category.isBlank()) {
+                var cats = Arrays.stream(category.split(","))
+                        .map(String::trim).filter(s -> !s.isEmpty()).toList();
+                if (!cats.isEmpty()) {
+                    var values = cats.stream().map(FieldValue::of).toList();
+                    b.filter(f -> f.bool(or -> or
+                            .should(s -> s.terms(t -> t.field("productType.keyword").terms(ts -> ts.value(values))))
+                            .should(s -> s.terms(t -> t.field("salesRank.keyword").terms(ts -> ts.value(values))))
+                            .should(s -> s.terms(t -> t.field("tags.keyword").terms(ts -> ts.value(values))))
+                            .minimumShouldMatch("1")
+                    ));
+                }
+            }
+
+            // price
+            if (min != null || max != null) {
+                b.filter(f -> f.range(r -> {
+                    r.field("productPrice");
+                    if (min != null) r.gte(JsonData.of(min));
+                    if (max != null) r.lte(JsonData.of(max));
+                    return r;
+                }));
+            }
+
+            // chỉ sản phẩm đang giảm
+            if (Boolean.TRUE.equals(discountOnly)) {
+                b.filter(f -> f.range(r -> r.field("percentDiscount").gt(JsonData.of(0))));
+            }
+
+            SearchRequest req = SearchRequest.of(s -> s
+                    .index(INDEX_NAME)
+                    .from(page * size)
+                    .size(size)
+                    .query(qb -> qb.bool(b.build()))
+                    .sort(sortOf(sort))
+                    .aggregations("productTypeAgg", a -> a.terms(t -> t.field("productType.keyword").size(200)))
+                    .aggregations("salesRankAgg",  a -> a.terms(t -> t.field("salesRank.keyword").size(200)))
+                    .aggregations("tagsAgg",       a -> a.terms(t -> t.field("tags.keyword").size(200)))
+                    .aggregations("discountingAgg",a -> a.filter(fa -> fa.range(r -> r.field("percentDiscount").gt(JsonData.of(0)))))
+                    .trackTotalHits(t -> t.enabled(true))
+            );
+
+            SearchResponse<ProductDocument> resp = elasticsearchClient.search(req, ProductDocument.class);
+
+            // hits
+            List<ProductDocument> content = resp.hits().hits().stream()
+                    .map(Hit::source).filter(Objects::nonNull).toList();
+
+            long total = resp.hits().total() != null ? resp.hits().total().value() : content.size();
+            int totalPages = size == 0 ? 1 : (int) Math.ceil((double) total / size);
+
+            // ---- helper: chuyển Aggregate -> buckets (8.11: sterms().buckets().array() hoặc keyed()) ----
+            java.util.function.Function<Aggregate, List<FacetBucket>> toBuckets = agg -> {
+                if (agg == null || agg.sterms() == null || agg.sterms().buckets() == null) return List.of();
+
+                var buckets = agg.sterms().buckets();
+
+                if (buckets.array() != null) {
+                    return buckets.array().stream()
+                            .map(bk -> new FacetBucket(
+                                    // key có thể là string hoặc number; dùng ._toJsonString() an toàn
+                                    bk.key()._toJsonString().replace("\"", ""),
+                                    bk.docCount()
+                            ))
+                            .toList();
+                }
+                if (buckets.keyed() != null) {
+                    return buckets.keyed().values().stream()
+                            .map(bk -> new FacetBucket(
+                                    bk.key()._toJsonString().replace("\"", ""),
+                                    bk.docCount()
+                            ))
+                            .toList();
+                }
+                return List.of();
+            };
+
+            var aggs = resp.aggregations();
+            var typeBuckets = toBuckets.apply(aggs.get("productTypeAgg"));
+            var rankBuckets = toBuckets.apply(aggs.get("salesRankAgg"));
+            var tagBuckets  = toBuckets.apply(aggs.get("tagsAgg"));
+
+            long discountingCount = 0L;
+            var dAgg = aggs.get("discountingAgg");
+            if (dAgg != null && dAgg.filter() != null) {
+                discountingCount = dAgg.filter().docCount();
+            }
+
+            return new EsSearchResult<>(
+                    content, total, totalPages,
+                    typeBuckets, rankBuckets, tagBuckets,
+                    discountingCount
+            );
+
+        } catch (Exception e) {
+            log.error("searchByStoreWithFacets error: {}", e.getMessage(), e);
+            return new EsSearchResult<>(List.of(), 0, 0, List.of(), List.of(), List.of(), 0);
+        }
+    }
+
+
 }

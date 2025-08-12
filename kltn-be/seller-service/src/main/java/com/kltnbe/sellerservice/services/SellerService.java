@@ -138,5 +138,8 @@ public interface SellerService {
     ResponseEntity<?> updateCommentBySeller(Long evaluateId, String commentBySeller);
 
     ResponseEntity<?> updateStatusEvaluate(Long evaluateId, int status);
-
+    ShopHeaderDTO getShopHeader(Long shopId);
+    long followShop(Long shopId, Long userId);
+    long unfollowShop(Long shopId, Long userId);
+    boolean isFollowed(Long shopId, Long userId);
 }

@@ -1,5 +1,6 @@
 package com.kltn.searchservice.controllers;
 
+import com.kltn.searchservice.dtos.EsSearchResult;
 import com.kltn.searchservice.dtos.ProductDocument;
 import com.kltn.searchservice.dtos.ProductDto;
 import com.kltn.searchservice.dtos.req.RequestRecommend;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -160,6 +162,39 @@ public class SearchController {
         Page<ProductDocument> result = searchService.searchAdvancedSeller(
                 keyword, minPrice, maxPrice, tags, storeId, status,selectedDiscounts, pageable);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/store/{storeId}")
+    public Map<String, Object> searchStore(
+            @PathVariable Long storeId,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Double min,
+            @RequestParam(required = false) Double max,
+            @RequestParam(required = false) Boolean discountOnly,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        EsSearchResult<ProductDocument> r =
+                searchService.searchByStoreWithFacets(storeId, q, sort, category, min, max, discountOnly, page, size);
+
+        Map<String, Object> facets = new HashMap<>();
+        facets.put("productType", r.productType()); // [{key,count}]
+        facets.put("salesRank",  r.salesRank());    // [{key,count}]
+        facets.put("tags",       r.tags());         // [{key,count}] nếu có
+        facets.put("discounting",r.discounting());  // long
+
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("content",      r.content());
+        dto.put("total",        r.total());
+        dto.put("totalPages",   r.totalPages());
+        dto.put("facets",       facets);
+
+        // (tuỳ FE có dùng hay không)
+        dto.put("totalElements", r.total());
+
+        return dto;
     }
 
 }
