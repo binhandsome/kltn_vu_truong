@@ -13,6 +13,11 @@ import { useLocation } from "react-router-dom";
 import { param } from 'jquery';
 import { useNavigate } from "react-router-dom";
 import { Box, Modal, Button, TextField, Typography, IconButton } from '@mui/material';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import { Navigation, Pagination } from 'swiper/modules';
 const modalStyle = {
 	position: 'absolute',
 	top: '50%',
@@ -35,6 +40,9 @@ function OrdersDetails() {
 	const navigate = useNavigate();
 	const [provinces, setProvinces] = useState([]);
 	const [districts, setDistricts] = useState([]);
+	const [quantity, setQuantity] = useState(1);
+	const [selectedColor, setSelectedColor] = useState(null);
+	const [selectedSize, setSelectedSize] = useState(null);
 	const [wards, setWards] = useState([]);
 	const [country, setCountry] = useState('');
 	const [district, setDistrict] = useState('');
@@ -51,10 +59,12 @@ function OrdersDetails() {
 	const [openEvaluate, setOpenEvaluate] = useState(false);
 	const [showToast, setShowToast] = useState(false);
 	const [selectedItem, setSelectedItem] = useState([]);
-
+	const [selectedProduct, setSelectedProduct] = useState(null);
 	const [comment, setComment] = useState("");
 	const [rating, setRating] = useState(0);
 	const [images, setImages] = useState([]);
+	const [priceDiscount, setPriceDiscount] = useState(0);
+const { state } = useLocation();
 	const [previewImages, setPreviewImages] = useState([]);
 	const ratingDescriptions = [
 		'Rất tệ',
@@ -63,7 +73,17 @@ function OrdersDetails() {
 		'Tốt',
 		'Tuyệt vời'
 	];
-
+	useEffect(() => {
+		if (selectedProduct) {
+			const discountPrice = (
+				selectedProduct.productPrice * quantity -
+				(selectedProduct.productPrice * selectedProduct.percentDiscount) / 100 * quantity
+			).toFixed(2);
+			setPriceDiscount(discountPrice);
+		} else {
+			setPriceDiscount(0);
+		}
+	}, [selectedProduct, quantity]);
 	const handleOpenEvaluate1 = () => setOpenEvaluate(true);
 	const handleCloseEvaluate = () => setOpenEvaluate(false);
 	const showToastMessage = (msg) => {
@@ -73,11 +93,47 @@ function OrdersDetails() {
 			setShowToast(false);
 		}, 1500);
 	};
+	const addCart = async () => {
+		const cartId = localStorage.getItem("cartId") || "";
+		const token = localStorage.getItem("accessToken") || "";
+
+		try {
+			const payload = {
+				token,
+				asin: selectedProduct.asin,
+				quantity,
+				price: parseFloat(priceDiscount),
+				cartId,
+				size: selectedSize,
+				nameColor: selectedColor?.name_color,
+				colorAsin: JSON.stringify(selectedProduct.colors || []),
+			};
+
+			const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+			if (response.data.cartId) {
+				localStorage.setItem("cartId", response.data.cartId);
+			}
+
+			window.dispatchEvent(new Event("cartUpdated"));
+
+			// 👉 Chuyển sang trang Cart
+			window.location.href = "/user/shoppages/cart";
+		} catch (error) {
+			console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
+		}
+	};
+	const handleChange = (e) => {
+		const value = e.target.value;
+		const parsed = parseInt(value);
+		setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
+	};
 	const [selectedOrder, setSelectedOrder] = useState(null); // Lưu order được chọn
 	const [recipientName, setRecipientName] = useState('');
 	const [id, setId] = useState();
-	const { order } = location.state || {}; // 👈 Lấy data từ Link state
+	const [order, setOrder] = useState(location.state?.order || {}); // Init từ location.state, fallback {}
 	const [open, setOpen] = React.useState(false);
+	const [recommendations, setRecommendations] = useState([]);
+	const [loading, setLoading] = useState(false);
 	const style = {
 		position: 'absolute',
 		top: '50%',
@@ -115,6 +171,51 @@ function OrdersDetails() {
 				return "";
 		}
 	};
+	const extractAsins = (data) => {
+		const asinSet = new Set(); // Set để unique
+		if (data && data.listOfOrders && Array.isArray(data.listOfOrders)) {
+			data.listOfOrders.forEach((order) => {
+				if (order.orderItemResponses && Array.isArray(order.orderItemResponses)) {
+					order.orderItemResponses.forEach((item) => {
+						if (item.asin) {
+							asinSet.add(item.asin); // Thêm vào Set để tránh trùng
+						}
+					});
+				}
+			});
+		}
+		return Array.from(asinSet); // Chuyển Set thành Array
+	};
+	const fetchRecommendations = async (asins) => {
+		setLoading(true);
+		try {
+			const response = await axios.get('http://localhost:8085/api/search/getRecommendByAsins', {
+				params: { asins }, // axios sẽ chuyển thành ?asins=B00AQZHC5K&asins=B00AQZO4J2
+				paramsSerializer: (params) => {
+					// Đảm bảo list được serialize đúng cách
+					return Object.entries(params)
+						.flatMap(([key, values]) =>
+							Array.isArray(values)
+								? values.map((v) => `${key}=${encodeURIComponent(v)}`)
+								: `${key}=${encodeURIComponent(values)}`
+						)
+						.join('&');
+				},
+			});
+			setRecommendations(response.data);
+			console.log('datanhan lai la', response.data)
+		} catch (error) {
+			console.error('Error fetching recommendations:', error);
+		} finally {
+			setLoading(false);
+		}
+	};
+	useEffect(() => {
+		const asins = extractAsins(order);
+		if (asins.length > 0) {
+			fetchRecommendations(asins);
+		}
+	}, [order]);
 	const cancelButton = async (orderId) => {
 		const confirmCancel = window.confirm("Bạn có chắc muốn hủy đơn hàng này?");
 		if (!confirmCancel) return;
@@ -139,9 +240,7 @@ function OrdersDetails() {
 
 			showToastMessage("✅ Đã hủy đơn hàng thành công!");
 
-			setTimeout(() => {
-				navigate("/user/myaccount/orders");
-			}, 1000);
+			navigate(-1); // Navigate back về trang order, trigger refetch
 		} catch (error) {
 			showToastMessage("❌ Hủy đơn hàng thất bại!");
 			console.error('Lỗi:', error.response?.data || error.message);
@@ -180,7 +279,9 @@ function OrdersDetails() {
 			console.error("❌ Lỗi khi cập nhật địa chỉ:", error.response?.data || error.message);
 		}
 	};
-
+useEffect(() => {
+    getMyOrderDetail();
+  }, []); // Dependency empty để chỉ gọi 1 lần khi mount
 	const handleOpen = (order) => {
 		if (!order) return;
 
@@ -238,62 +339,89 @@ function OrdersDetails() {
 	const handleStarClick = (star) => {
 		setRating(star);
 	};
+const getMyOrderDetail = async () => {
+  console.log("📦 [getMyOrderDetail] Bắt đầu gọi API...");
+  const accessToken = localStorage.getItem("accessToken");
+  console.log("🔑 [Token]", accessToken);
+  try {
+    setLoading(true);
+    const response = await axios.get(
+      "http://localhost:8086/api/orders/getOrderByIdUserAndMasterOrderId",
+      {
+        params: {
+          masterOrderId: order.masterOrderId,
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
-	const addEvaluate = async () => {
-		try {
-			const formData = new FormData();
-			const data = {
-				orderItemId: selectedItem.orderItemId,
-				productAsin: selectedItem.asin,
-				comment,
-				rating,
-			};
-			formData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
+    console.log("✅ [API Response]", response);
+    console.log("📂 [Response Data]", response.data);
+    setOrder(response.data);
+  } catch (err) {
+    console.error("❌ [API Error]", err);
+    if (err.response) {
+      console.error("⚠️ [Error Response]", err.response);
+    }
+  } finally {
+    setLoading(false);
+    console.log("⏳ [getMyOrderDetail] Kết thúc gọi API.");
+  }
+};
 
-			// Append each file to formData
-			images.forEach((file) => {
-				formData.append("files", file);
-			});
+const addEvaluate = async () => {
+  try {
+    const formData = new FormData();
+    const data = {
+      orderItemId: selectedItem.orderItemId,
+      productAsin: selectedItem.asin,
+      comment,
+      rating,
+    };
+    formData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
 
-			const response = await axios.post("http://localhost:8083/api/products/uploadImgToProductEvaluate", formData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-			});
-			console.log("✅ Success:", response.data);
-			setToastMessage("Đã đánh giá thành công");
-			setShowToast(true);
-			setComment('');
-			setRating(0);
-			setImages([]);
-			setPreviewImages([]);
-			setTimeout(() => {
-				navigate('/user/myaccount/orders');
-			}, 2000);
-		} catch (error) {
-			console.error("Error submitting evaluation:", error);
-			alert("Failed to submit evaluation. Please try again.");
-		}
-	};
+    images.forEach((file) => {
+      formData.append("files", file);
+    });
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (!comment || rating === 0) {
-			alert("Please provide a comment and rating");
-			return;
-		}
-		addEvaluate();
-	};
+    const response = await axios.post("http://localhost:8083/api/products/uploadImgToProductEvaluate", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
+    console.log("✅ Success:", response.data);
+    setToastMessage("Đã đánh giá thành công");
+    setShowToast(true);
+    setComment('');
+    setRating(0);
+    setImages([]);
+    setPreviewImages([]);
+  handleCloseEvaluate();
+
+  getMyOrderDetail();
+ } catch (error) {
+    console.error("Error submitting evaluation:", error);
+    alert("Failed to submit evaluation. Please try again.");
+  }
+};
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+  if (!comment || rating === 0) {
+    alert("Please provide a comment and rating");
+    return;
+  }
+  addEvaluate();
+
+};
 	const handleOpenEvaluate = (orderItem) => {
 		setSelectedItem(orderItem);
 		setOpenEvaluate(true);
 	}
 
-
-	useEffect(() => {
-		console.log("📦 [Order Details] Data nhận từ Link:", order);
-	}, [order]);
 	useEffect(() => {
 		if (hasBgClass) {
 			document.body.classList.add('bg');
@@ -794,6 +922,17 @@ function OrdersDetails() {
 														>
 															Thông Tin Sản Phẩm
 														</button>
+														<button
+															className="nav-link"
+															id={`nav-Suggestion-tab-${index}`}
+															data-bs-toggle="tab"
+															data-bs-target={`#nav-Suggestion-${index}`}
+															role="tab"
+															aria-controls={`nav-Suggestion-${index}`}
+															aria-selected="false"
+														>
+															Gợi Ý Sau Mua
+														</button>
 													</div>
 												</div>
 												<div className="tab-content" id={`nav-tabContent-${index}`}>
@@ -848,7 +987,6 @@ function OrdersDetails() {
 																	);
 																})}
 															</ul>
-
 														</div>
 													</div>
 													<div
@@ -860,7 +998,6 @@ function OrdersDetails() {
 													>
 														<h5>Chi Tiết Sản Phẩm</h5>
 														{orderStore?.orderItemResponses?.map((orderItem, itemIndex) => (
-
 															<div className="tracking-item" key={`order-item-${index}-${itemIndex}`} style={{
 																display: 'flex',
 																alignItems: 'flex-start',
@@ -938,8 +1075,6 @@ function OrdersDetails() {
 																	</div>
 																</div>
 															</div>
-
-
 														))}
 														<div className="tracking-item-content">
 															<span>Total Price</span>
@@ -953,8 +1088,214 @@ function OrdersDetails() {
 															<span>Order Total</span>
 															<h6>${orderStore.discountedSubtotal}</h6>
 														</div>
+{loading ? (
+  <p>Đang tải gợi ý...</p>
+) : (
+  (() => {
+    // 1. Lọc orderItemResponses theo điều kiện evaluateNumber & isEvaluate
+    const filteredItems = (orderStore?.orderItemResponses || []).filter(
+      item =>
+        (item.evaluateNumber === 4 || item.evaluateNumber === 5) &&
+        item.isEvaluate === 1
+    );
 
+    // 2. Lấy danh sách asin từ item đã lọc
+    const uniqueAsins = [...new Set(filteredItems.map(item => item.asin))];
 
+    const allProducts = [];
+    const seenProducts = new Set();
+
+    // 3. Ghép gợi ý theo asin đã lọc
+    uniqueAsins.forEach(asin => {
+      if (recommendations[asin]) {
+        recommendations[asin].forEach(product => {
+          if (!seenProducts.has(product.asin)) {
+            seenProducts.add(product.asin);
+            allProducts.push(product);
+          }
+        });
+      }
+    });
+
+    // 4. Lấy top 10
+    const topProducts = allProducts.slice(0, 10);
+
+    return topProducts.length > 0 ? (
+      <div className="mb-4">
+        <h6>Top 10 sản phẩm mua cùng</h6>
+        <Swiper
+          modules={[Navigation, Pagination]}
+          spaceBetween={20}
+          slidesPerView={5}
+          navigation
+          pagination={{ clickable: true }}
+          breakpoints={{
+            320: { slidesPerView: 2, spaceBetween: 10 },
+            768: { slidesPerView: 3, spaceBetween: 15 },
+            1024: { slidesPerView: 5, spaceBetween: 20 },
+          }}
+        >
+          {topProducts.map((product, idx) => (
+            <SwiperSlide key={idx}>
+              <div className="shop-card style-1">
+                <div className="dz-media">
+                  <img
+                    src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_400,h_400/imgProduct/IMG/${product.productThumbnail}`}
+                    alt="image"
+                  />
+                  <div className="shop-meta">
+                    <div
+                      className="btn btn-secondary btn-md btn-rounded"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setTimeout(() => {
+                          const modal = new window.bootstrap.Modal(
+                            document.getElementById('exampleModal')
+                          );
+                          modal.show();
+                        }, 100);
+                      }}
+                    >
+                      <i className="fa-solid fa-eye d-md-none d-block" />
+                      <span className="d-md-block d-none">Quick View</span>
+                    </div>
+                    <div className="btn btn-primary meta-icon dz-wishicon">
+                      <i className="icon feather icon-heart dz-heart" />
+                      <i className="icon feather icon-heart-on dz-heart-fill" />
+                    </div>
+                    <div className="btn btn-primary meta-icon dz-carticon">
+                      <i className="flaticon flaticon-basket" />
+                      <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
+                    </div>
+                  </div>
+                </div>
+                <div className="dz-content">
+                  <h5 className="title">
+                    <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>
+                      {product.productTitle}
+                    </a>
+                  </h5>
+                  <h5 className="price">
+                    $
+                    {(
+                      product.productPrice -
+                      (product.productPrice * (product.percentDiscount / 100))
+                    ).toFixed(2)}
+                  </h5>
+                </div>
+                <div className="product-tag">
+                  <span className="badge">Get {product.percentDiscount}% Off</span>
+                </div>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
+    ) : (
+      <p>Không có gợi ý nào.</p>
+    );
+  })()
+)}
+								</div>
+													{/* Thêm tab-pane mới cho Gợi Ý Sau Mua */}
+													<div
+														className="tab-pane fade"
+														id={`nav-Suggestion-${index}`}
+														role="tabpanel"
+														aria-labelledby={`nav-Suggestion-tab-${index}`}
+														tabIndex="0"
+													>
+														<h5>Gợi Ý Sau Mua</h5>
+														{loading ? (
+															<p>Đang tải gợi ý...</p>
+														) : (
+															(() => {
+																const asins = orderStore?.orderItemResponses?.map(item => item.asin) || [];
+																const uniqueAsins = [...new Set(asins)];
+																return uniqueAsins.length > 0 ? (
+																	uniqueAsins.map((asin) => (
+																		recommendations[asin] ? (
+																			<div key={asin} className="mb-4">
+																				<h6>Gợi ý cho sản phẩm (ASIN: {asin})</h6>
+																				<div className="row gx-xl-4 g-3">
+																					<Swiper
+          modules={[Navigation, Pagination]}
+          spaceBetween={20}
+          slidesPerView={5}
+          navigation
+          pagination={{ clickable: true }}
+          breakpoints={{
+            320: { slidesPerView: 2, spaceBetween: 10 },
+            768: { slidesPerView: 3, spaceBetween: 15 },
+            1024: { slidesPerView: 5, spaceBetween: 20 },
+          }}
+        >
+          {recommendations[asin].map((product, idx) => (
+            <SwiperSlide key={idx}>
+              <div className="shop-card style-1">
+                <div className="dz-media">
+                  <img
+                    src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_400,h_400/imgProduct/IMG/${product.productThumbnail}`}
+                    alt="image"
+                  />
+                  <div className="shop-meta">
+                    <div
+                      className="btn btn-secondary btn-md btn-rounded"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setTimeout(() => {
+                          const modal = new window.bootstrap.Modal(
+                            document.getElementById('exampleModal')
+                          );
+                          modal.show();
+                        }, 100);
+                      }}
+                    >
+                      <i className="fa-solid fa-eye d-md-none d-block" />
+                      <span className="d-md-block d-none">Quick View</span>
+                    </div>
+                    <div className="btn btn-primary meta-icon dz-wishicon">
+                      <i className="icon feather icon-heart dz-heart" />
+                      <i className="icon feather icon-heart-on dz-heart-fill" />
+                    </div>
+                    <div className="btn btn-primary meta-icon dz-carticon">
+                      <i className="flaticon flaticon-basket" />
+                      <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
+                    </div>
+                  </div>
+                </div>
+                <div className="dz-content">
+                  <h5 className="title">
+                    <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>
+                      {product.productTitle}
+                    </a>
+                  </h5>
+                  <h5 className="price">
+                    $
+                    {(
+                      product.productPrice -
+                      (product.productPrice * (product.percentDiscount / 100))
+                    ).toFixed(2)}
+                  </h5>
+                </div>
+                <div className="product-tag">
+                  <span className="badge">Get {product.percentDiscount}% Off</span>
+                </div>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+																				</div>
+																			</div>
+																		) : null
+																	))
+																) : (
+																	<p>Không có gợi ý nào.</p>
+																);
+															})()
+														)}
 													</div>
 												</div>
 											</div>
@@ -962,6 +1303,268 @@ function OrdersDetails() {
 									))}
 
 								</section>
+							</div>
+							<div className="modal quick-view-modal fade"
+								id="exampleModal"
+								tabIndex={-1}
+								aria-hidden="true"
+							>
+								<div className="modal-dialog modal-dialog-centered">
+									<div className="modal-content">
+										<button
+											type="button"
+											className="btn-close"
+											data-bs-dismiss="modal"
+											aria-label="Close"
+										>
+											<i className="icon feather icon-x" />
+										</button>
+										<div className="modal-body">
+											<div className="row g-xl-4 g-3">
+												<div className="col-xl-6 col-md-6">
+													<div className="dz-product-detail mb-0">
+														<div className="swiper-btn-center-lr">
+															<div className="swiper quick-modal-swiper2">
+																<div className="swiper-wrapper" id="lightgallery">
+
+																	{selectedProduct !== null && (
+																		<div className="swiper-slide">
+																			<div className="dz-media DZoomImage">
+																				<a
+																					className="mfp-link lg-item"
+																					href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+																					data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+																				>
+																					<i className="feather icon-maximize dz-maximize top-right" />
+																				</a>
+																				<img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`} alt="image" />
+																			</div>
+																		</div>
+																	)}
+																</div>
+															</div>
+															<div className="swiper quick-modal-swiper thumb-swiper-lg thumb-sm swiper-vertical">
+																<div className="swiper-wrapper">
+																	{selectedProduct !== null && (
+																		<div className="swiper-slide">
+																			<img
+																				src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${selectedProduct.productThumbnail}`}
+																				alt="image"
+																			/>
+																		</div>
+																	)}
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+												<div className="col-xl-6 col-md-6">
+													<div className="dz-product-detail style-2 ps-xl-3 ps-0 pt-2 mb-0">
+
+														<div className="dz-content">
+
+
+															<div className="dz-content-footer">
+																<div className="dz-content-start">
+																	{selectedProduct !== null && (
+
+																		<span className="badge bg-secondary mb-2">
+																			SALE {selectedProduct.percentDiscount}% Off
+																		</span>
+																	)}
+																	<h4 className="title mb-1">
+																		{selectedProduct !== null && (
+																			<a href={`/user/productstructure/ProductDetail?asin=${selectedProduct.asin}`}>{selectedProduct.productTitle}</a>
+																		)}
+																	</h4>
+																	<div className="review-num">
+																		<ul className="dz-rating me-2">
+																			<li className="star-fill">
+																				<i className="flaticon-star-1" />
+																			</li>
+																			<li className="star-fill">
+																				<i className="flaticon-star-1" />
+																			</li>
+																			<li className="star-fill">
+																				<i className="flaticon-star-1" />
+																			</li>
+																			<li>
+																				<i className="flaticon-star-1" />
+																			</li>
+																			<li>
+																				<i className="flaticon-star-1" />
+																			</li>
+																		</ul>
+																		<span className="text-secondary me-2">4.7 Rating</span>
+																		<a href="javascript:void(0);">(5 customer reviews)</a>
+																	</div>
+																</div>
+															</div>
+															<p className="para-text">
+																{selectedProduct !== null && (
+																	selectedProduct.productTitle
+																)}
+															</p>
+															<div className="meta-content m-b20 d-flex align-items-end">
+																<div className="me-3">
+																	<span className="form-label">Price</span>
+																	{selectedProduct !== null && (
+
+																		<span className="price">${priceDiscount} <del>${selectedProduct.productPrice}</del></span>
+
+																	)}
+																</div>
+																<div className="btn-quantity light me-0">
+																	<label className="form-label fw-bold">Quantity</label>
+																	<div className="input-group">
+																		<button
+																			className="btn btn-dark rounded-circle p-0"
+																			style={{
+																				width: '40px',
+																				height: '40px',
+																				backgroundColor: '#000',
+																				color: '#fff',
+																				border: 'none',
+																				minWidth: 'unset',      // ép bỏ min-width của Bootstrap
+																				flex: '0 0 auto'         // ngăn input-group ép dãn
+																			}}
+																			onClick={() => setQuantity(q => Math.max(1, q - 1))}
+																		>
+																			-
+																		</button>
+																		<input
+																			type="text"
+																			min="1"
+																			value={quantity}
+																			onChange={handleChange}
+																			className="form-control text-center"
+																		/>
+																		<button
+																			className="btn btn-dark rounded-circle p-0"
+																			style={{
+																				width: '40px',
+																				height: '40px',
+																				backgroundColor: '#000',
+																				color: '#fff',
+																				border: 'none',
+																				minWidth: 'unset',      // ép bỏ min-width của Bootstrap
+																				flex: '0 0 auto'         // ngăn input-group ép dãn
+																			}}
+																			onClick={() => setQuantity(q => Math.max(1, q + 1))}
+																		>+</button>
+																	</div>
+																</div>
+															</div>
+
+															<div className=" cart-btn">
+																<button onClick={addCart}
+																	className="btn btn-secondary text-uppercase"
+																>
+																	Add To Cart
+																</button>
+																<button
+																	className="btn btn-md btn-outline-secondary btn-icon"
+																// onClick={() => handleToggleWishlist(selectedProduct.asin)}
+																>
+																	<svg
+																		width={19}
+																		height={17}
+																		viewBox="0 0 19 17"
+																		fill="none"
+																		xmlns="http://www.w3.org/2000/svg"
+																	>
+																		<path
+																			d="M9.24805 16.9986C8.99179 16.9986 8.74474 16.9058 8.5522 16.7371C7.82504 16.1013 7.12398 15.5038 6.50545 14.9767L6.50229 14.974C4.68886 13.4286 3.12289 12.094 2.03333 10.7794C0.815353 9.30968 0.248047 7.9162 0.248047 6.39391C0.248047 4.91487 0.755203 3.55037 1.67599 2.55157C2.60777 1.54097 3.88631 0.984375 5.27649 0.984375C6.31552 0.984375 7.26707 1.31287 8.10464 1.96065C8.52734 2.28763 8.91049 2.68781 9.24805 3.15459C9.58574 2.68781 9.96875 2.28763 10.3916 1.96065C11.2292 1.31287 12.1807 0.984375 13.2197 0.984375C14.6098 0.984375 15.8885 1.54097 16.8202 2.55157C17.741 3.55037 18.248 4.91487 18.248 6.39391C18.248 7.9162 17.6809 9.30968 16.4629 10.7792C15.3733 12.094 13.8075 13.4285 11.9944 14.9737C11.3747 15.5016 10.6726 16.1001 9.94376 16.7374C9.75136 16.9058 9.50417 16.9986 9.24805 16.9986ZM5.27649 2.03879C4.18431 2.03879 3.18098 2.47467 2.45108 3.26624C1.71033 4.06975 1.30232 5.18047 1.30232 6.39391C1.30232 7.67422 1.77817 8.81927 2.84508 10.1066C3.87628 11.3509 5.41011 12.658 7.18605 14.1715L7.18935 14.1743C7.81021 14.7034 8.51402 15.3033 9.24654 15.9438C9.98344 15.302 10.6884 14.7012 11.3105 14.1713C13.0863 12.6578 14.6199 11.3509 15.6512 10.1066C16.7179 8.81927 17.1938 7.67422 17.1938 6.39391C17.1938 5.18047 16.7858 4.06975 16.045 3.26624C15.3152 2.47467 14.3118 2.03879 13.2197 2.03879C12.4197 2.03879 11.6851 2.29312 11.0365 2.79465C10.4585 3.24179 10.0558 3.80704 9.81975 4.20255C9.69835 4.40593 9.48466 4.52733 9.24805 4.52733C9.01143 4.52733 8.79774 4.40593 8.67635 4.20255C8.44041 3.80704 8.03777 3.24179 7.45961 2.79465C6.811 2.29312 6.07643 2.03879 5.27649 2.03879Z"
+																			fill="black"
+																		/>
+																	</svg>
+																	Add To Wishlist
+																</button>
+															</div>
+															<div className="dz-info mb-0">
+																{selectedProduct !== null && (
+
+																	<ul><li><strong>SKU:</strong></li><li>{selectedProduct.asin}</li></ul>
+																)}
+																<ul>
+																	<li>
+																		<strong>Categories:</strong>
+																	</li>
+																	{selectedProduct !== null && (
+																		<>
+																			<li>
+																				<a href={`/user/shop/shopWithCategory?salesRank=${selectedProduct.salesRank}`}>
+																					{selectedProduct.salesRank}
+																					{selectedProduct.productType && ','}
+																				</a>
+																			</li>
+
+																			{selectedProduct.productType && (
+																				<li>
+																					<a href={`/user/shop/shopWithCategory?productType=${selectedProduct.productType}`}>{selectedProduct.productType}</a>
+																				</li>
+																			)}
+																		</>
+																	)}
+																</ul>
+
+																<div className="dz-social-icon">
+																	<ul>
+																		<li>
+																			<a
+																				target="_blank"
+																				className="text-dark"
+																				href="https://www.facebook.com/dexignzone"
+																			>
+																				<i className="fab fa-facebook-f" />
+																			</a>
+																		</li>
+																		<li>
+																			<a
+																				target="_blank"
+																				className="text-dark"
+																				href="https://twitter.com/dexignzones"
+																			>
+																				<i className="fab fa-twitter" />
+																			</a>
+																		</li>
+																		<li>
+																			<a
+																				target="_blank"
+																				className="text-dark"
+																				href="https://www.youtube.com/@dexignzone1723"
+																			>
+																				<i className="fa-brands fa-youtube" />
+																			</a>
+																		</li>
+																		<li>
+																			<a
+																				target="_blank"
+																				className="text-dark"
+																				href="https://www.linkedin.com/showcase/3686700/admin/"
+																			>
+																				<i className="fa-brands fa-linkedin-in" />
+																			</a>
+																		</li>
+																		<li>
+																			<a
+																				target="_blank"
+																				className="text-dark"
+																				href="https://www.instagram.com/dexignzone/"
+																			>
+																				<i className="fab fa-instagram" />
+																			</a>
+																		</li>
+																	</ul>
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>

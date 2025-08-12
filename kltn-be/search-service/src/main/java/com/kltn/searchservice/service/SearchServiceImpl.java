@@ -584,6 +584,68 @@ public class SearchServiceImpl implements SearchService {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
     }
+    @Override
+    public Map<String, List<ProductDocument>> getRecommendByAsins(List<String> asins) {
+        if (asins == null || asins.isEmpty()) {
+            log.warn("No ASINs provided for recommendation");
+            return Collections.emptyMap();
+        }
+
+        // Gọi proxy để lấy recommend cho list ASINs
+        Map<String, String[]> asinRecommendMap = recommendServiceProxy.findRecommendByAsins(asins);
+        Map<String, List<ProductDocument>> result = new HashMap<>();
+
+        for (String asin : asins) {
+            String[] recommendedAsins = asinRecommendMap.getOrDefault(asin, new String[0]);
+            if (recommendedAsins.length == 0) {
+                log.warn("No recommended ASINs found for asin: {}", asin);
+                result.put(asin, Collections.emptyList());
+                continue;
+            }
+
+            // Làm sạch dữ liệu
+            List<String> cleanedAsins = Arrays.stream(recommendedAsins)
+                    .map(s -> s.replace("\"", "").trim())
+                    .filter(s -> !s.isEmpty())
+                    .toList();
+
+            if (cleanedAsins.isEmpty()) {
+                log.warn("Cleaned ASIN list is empty for asin: {}", asin);
+                result.put(asin, Collections.emptyList());
+                continue;
+            }
+
+            log.debug("Querying with cleaned ASINs for {}: {}", asin, cleanedAsins);
+
+            // Tạo truy vấn Elasticsearch
+            Query esQuery = Query.of(q -> q.bool(b -> {
+                b.filter(f -> f.terms(t -> t
+                        .field("asin")
+                        .terms(ts -> ts.value(cleanedAsins.stream().map(FieldValue::of).toList()))
+                ));
+                return b;
+            }));
+
+            org.springframework.data.elasticsearch.core.query.Query searchQuery = NativeQuery.builder()
+                    .withQuery(esQuery)
+                    .withMaxResults(1000)
+                    .build();
+
+            try {
+                SearchHits<ProductDocument> hits = elasticsearchOperations.search(searchQuery, ProductDocument.class);
+                log.info("Found {} recommended products for asin: {}", hits.getTotalHits(), asin);
+                List<ProductDocument> products = hits.getSearchHits().stream()
+                        .map(SearchHit::getContent)
+                        .toList();
+                result.put(asin, products);
+            } catch (Exception e) {
+                log.error("Error getting recommended products for asin {}: {}", asin, e.getMessage(), e);
+                result.put(asin, Collections.emptyList());
+            }
+        }
+
+        return result;
+    }
     // map sort
     private List<SortOptions> sortOf(String sort) {
         return switch (sort == null ? "" : sort) {
@@ -735,5 +797,6 @@ public class SearchServiceImpl implements SearchService {
             return new EsSearchResult<>(List.of(), 0, 0, List.of(), List.of(), List.of(), 0);
         }
     }
+
 
 }

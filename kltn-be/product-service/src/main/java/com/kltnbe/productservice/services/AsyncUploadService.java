@@ -102,7 +102,6 @@ public class AsyncUploadService {
                     try {
                         String updatedJson = new ObjectMapper().writeValueAsString(currentUrls);
                         evaluateProduct.setImgEvaluate(updatedJson);
-                        orderServiceProxy.updateStatusEvaluate(evaluateProduct.getOrderItemId());
                         evaluateProductRepository.save(evaluateProduct);
                     } catch (JsonProcessingException e) {
                         System.err.println("❌ Lỗi chuyển sang JSON: " + e.getMessage());
