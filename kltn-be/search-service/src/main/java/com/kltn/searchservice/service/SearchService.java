@@ -48,4 +48,5 @@ public interface SearchService {
             List<Double> percentDiscount,
             Pageable pageable
     );
-    Map<String, List<ProductDocument>> getRecommendByAsins(List<String> asins);}
+    Map<String, List<ProductDocument>> getRecommendByAsins(List<String> asins);
+}
