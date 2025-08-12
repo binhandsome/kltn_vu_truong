@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public interface SearchService {
     void syncProducts() throws IOException;
@@ -47,4 +48,4 @@ public interface SearchService {
             List<Double> percentDiscount,
             Pageable pageable
     );
-}
+    Map<String, List<ProductDocument>> getRecommendByAsins(List<String> asins);}

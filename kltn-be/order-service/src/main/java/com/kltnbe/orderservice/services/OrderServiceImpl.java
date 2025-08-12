@@ -469,6 +469,7 @@ public class OrderServiceImpl implements OrderService {
                     orderItemResponse.setIsEvaluate(orderItem.getIsEvaluate());
 //                    orderItemResponse.setProductPrice(BigDecimal.valueOf(productResponse.getPrice()));
                     orderItemResponse.setQuantity(orderItem.getQuantity());
+                    orderItemResponse.setEvaluateNumber(orderItem.getEvaluateNumber());
                     orderItemResponse.setSize(orderItem.getSize());
                     orderItemResponse.setColor(orderItem.getColor());
                     orderItemResponse.setUnitPrice(orderItem.getUnitPrice());
@@ -481,6 +482,71 @@ public class OrderServiceImpl implements OrderService {
             orderResponse.setListOfOrders(orderWithShopResponses);
             return orderResponse;
         }).toList();
+    }
+
+    @Override
+    public OrderResponse findOrderByUserHeaderAndMasterOrderId(Long authId, Long masterOrderId) {
+        Long userId = userServiceProxy.findUserIdByAuthId(authId);
+        MasterOrder masterOrder = masterOrderRepository.findById(masterOrderId).get();
+
+        AddressInfo fullAddress = userServiceProxy.findByAddressId(masterOrder.getAddressId()).getBody();
+
+        AddressInfo addressInfo = new AddressInfo();
+        addressInfo.setAddressId(fullAddress.getAddressId());
+        addressInfo.setRecipientName(fullAddress.getRecipientName());
+        addressInfo.setDeliveryAddress(fullAddress.getDeliveryAddress());
+        addressInfo.setAddressDetails(fullAddress.getAddressDetails());
+        addressInfo.setRecipientEmail(fullAddress.getRecipientEmail());
+        addressInfo.setRecipientPhone(fullAddress.getRecipientPhone());
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setMasterOrderId(masterOrder.getMasterOrderId());
+        orderResponse.setOrderStatus(masterOrder.getStatus());
+        orderResponse.setTotalAmount(masterOrder.getTotalPrice());
+        orderResponse.setCreatedAt(masterOrder.getCreatedAt());
+        orderResponse.setDeliveryAddress(addressInfo);
+
+        List<OrderWithShopResponse> orderWithShopResponses = masterOrder.getOrders().stream().map(order -> {
+            OrderWithShopResponse orderWithShopResponse = new OrderWithShopResponse();
+            DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(order.getOrderId());
+            ShippingMethod shippingMethod = shippingMethodRepository.findById(deliveryInfo.getShippingMethod().getId()).orElse(null);
+            orderWithShopResponse.setOrderId(order.getOrderId());
+            orderWithShopResponse.setSubTotal(order.getSubtotal());
+            orderWithShopResponse.setDiscountedSubtotal(order.getDiscountedSubtotal());
+            orderWithShopResponse.setStatus(String.valueOf(deliveryInfo.getDeliveryStatus()));
+            orderWithShopResponse.setNameShippingMethod(shippingMethod.getMethodName());
+            TitleAndImgSeller sellerInfo = sellerServiceProxy.getTitleAndImgSeller(order.getStoreId()).getBody();
+
+            if (sellerInfo != null) {
+                orderWithShopResponse.setThumbnailAndTitleShop(sellerInfo);
+            } else {
+                orderWithShopResponse.setThumbnailAndTitleShop(null);
+            }
+
+            List<OrderItemResponse> orderItemResponses = order.getOrderItems().stream().map(orderItem -> {
+                ProductResponse productResponse = productServiceProxy.getProductById(orderItem.getProductId()).getBody();
+                OrderItemResponse orderItemResponse = new OrderItemResponse();
+                orderItemResponse.setAsin(productResponse.getAsin());
+                orderItemResponse.setProductTitle(productResponse.getNameProduct());
+                orderItemResponse.setProductThumbnail(productResponse.getThumbnail());
+                orderItemResponse.setBrandName(productResponse.getNameBrand());
+                orderItemResponse.setOrderItemId(orderItem.getOrderItemId());
+                orderItemResponse.setIsEvaluate(orderItem.getIsEvaluate());
+                orderItemResponse.setEvaluateNumber(orderItem.getEvaluateNumber());
+                // orderItemResponse.setProductPrice(BigDecimal.valueOf(productResponse.getPrice()));
+                orderItemResponse.setQuantity(orderItem.getQuantity());
+                orderItemResponse.setSize(orderItem.getSize());
+                orderItemResponse.setColor(orderItem.getColor());
+                orderItemResponse.setUnitPrice(orderItem.getUnitPrice());
+                return orderItemResponse;
+            }).toList();
+
+            orderWithShopResponse.setOrderItemResponses(orderItemResponses);
+            return orderWithShopResponse;
+        }).toList();
+
+        orderResponse.setListOfOrders(orderWithShopResponses);
+        return orderResponse;
     }
     @Override
     @Transactional
@@ -644,6 +710,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
 }
 
     @Override
+    @Transactional
     public String updateIsEvaluate(Long orderItemId) {
         Optional<OrderItem> orderItem = orderItemRepository.findById(orderItemId);
         orderItem.get().setIsEvaluate(1);
@@ -1019,6 +1086,15 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
     public Page<MasterOrder> findMasterOrdersByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable) {
         return masterOrderRepository.findMasterOrdersByDateRangeAndStatuses(startDate, endDate, statuses, pageable);
     }
+
+    @Override
+    @Transactional
+    public void updateRatingNumber(Long orderItemId, int ratingNumber) {
+        OrderItem orderItem = orderItemRepository.findById(orderItemId).get();
+        orderItem.setEvaluateNumber(ratingNumber);
+        orderItemRepository.save(orderItem);
+    }
+
     public List<MonthlyRevenueDTO> getRevenueByStore(Long storeId) {
         List<Long> productIds = productServiceProxy.getProductIdsByStore(storeId).getBody();
         if (productIds == null || productIds.isEmpty()) {

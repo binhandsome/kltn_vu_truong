@@ -1,6 +1,7 @@
 package com.kltnbe.productservice.controllers;
 
 
+import com.kltnbe.productservice.clients.OrderServiceProxy;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.clients.UploadServiceProxy;
 import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
@@ -51,6 +52,9 @@ public class ProductController {
     private final UploadServiceProxy  uploadServiceProxy;
     private final SellerServiceProxy sellerServiceProxy;
     private final EvaluateProductRepository evaluateProductRepository;
+    @Autowired
+    private OrderServiceProxy orderServiceProxy;
+
     @GetMapping("/getAllProduct")
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
 //        System.out.print(productService.getAllProducts(productFileterAll).get().findFirst().get().getImages().get(0).getProduct());
@@ -333,7 +337,8 @@ public class ProductController {
 
         // Optional: Lưu trước để có ID nếu cần
         evaluateProduct = evaluateProductRepository.save(evaluateProduct);
-
+        orderServiceProxy.updateStatusEvaluate(evaluateProduct.getOrderItemId());
+        orderServiceProxy.updateEvaluateNumber(evalueUserWithItemOrder.getOrderItemId(), evalueUserWithItemOrder.getRating());
         // Đọc bytes và filenames NGAY ĐÂY, trước khi gọi async
         List<byte[]> fileBytesList = new ArrayList<>();
         List<String> filenames = new ArrayList<>();

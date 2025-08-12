@@ -30,6 +30,7 @@ public interface OrderService {
     ResponseEntity<?> placeGuestOrder(OrderRequest orderRequest);
 
     List<OrderResponse> findOrderByUserHeader(Long authId);
+    OrderResponse findOrderByUserHeaderAndMasterOrderId(Long authId, Long masterOrderId);
 
     //    String cancelOrder(Long orderId, Long authId);
     String cancelOrder(Long masterOrderId, Long authId);
@@ -78,5 +79,5 @@ public interface OrderService {
     BigDecimal calculateRevenueByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses);
     List<OrderItemResponse> getListOrderItemsByStoreId(Long storeId);
     Page<MasterOrder> findMasterOrdersByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable);
-
+    void updateRatingNumber(Long orderItemId, int ratingNumber);
 }

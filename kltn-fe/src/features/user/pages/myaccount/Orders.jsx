@@ -36,13 +36,13 @@ function Orders() {
 	const [recipientName, setRecipientName] = useState('');
 	const [id, setId] = useState();
 	const [toastMessage, setToastMessage] = useState('');
-const [showToast, setShowToast] = useState(false);
+	const [showToast, setShowToast] = useState(false);
 
-const showToastNow = (msg) => {
-  setToastMessage(msg);
-  setShowToast(true);
-  setTimeout(() => setShowToast(false), 1500); // tự ẩn sau 1.5s
-};
+	const showToastNow = (msg) => {
+		setToastMessage(msg);
+		setShowToast(true);
+		setTimeout(() => setShowToast(false), 1500); // tự ẩn sau 1.5s
+	};
 	const style = {
 		position: 'absolute',
 		top: '50%',
@@ -172,43 +172,43 @@ const showToastNow = (msg) => {
 	}, [currentPage]);
 	const updateAddress = async (orderId) => {
 		console.log("🛠 orderId:", orderId);
-	  
+
 		const accessToken = localStorage.getItem("accessToken");
-	  
+
 		const payload = {
-		  recipientName,
-		  recipientPhone: phone,
-		  recipientEmail: email,
-		  addressDetails: `${selectedProvince}, ${selectedDistrict}, ${ward}`,
-		  deliveryAddress: `${street} / ${optionalStreet}`,
+			recipientName,
+			recipientPhone: phone,
+			recipientEmail: email,
+			addressDetails: `${selectedProvince}, ${selectedDistrict}, ${ward}`,
+			deliveryAddress: `${street} / ${optionalStreet}`,
 		};
-	  
+
 		try {
-		  const response = await axios.put(
-			"http://localhost:8086/api/orders/updateMethodOrder",
-			payload, // ✅ Body là DeliveryAddressDTO
-			{
-			  params: {
-				orderId: orderId,
-				method: 'updateaddress',
-			  },
-			  headers: {
-				Authorization: `Bearer ${accessToken}`, // ✅ để server xác định user & gọi user-service
-				"Content-Type": "application/json",
-			  },
-			}
-		  );
-	  
-		  console.log("✅ Server response:", response.data);
-		  showToastNow("✅ Đã cập nhật địa chỉ thành công");
-		  setOpen(false);
-		  await getMyOrder(); 
+			const response = await axios.put(
+				"http://localhost:8086/api/orders/updateMethodOrder",
+				payload, // ✅ Body là DeliveryAddressDTO
+				{
+					params: {
+						orderId: orderId,
+						method: 'updateaddress',
+					},
+					headers: {
+						Authorization: `Bearer ${accessToken}`, // ✅ để server xác định user & gọi user-service
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			console.log("✅ Server response:", response.data);
+			showToastNow("✅ Đã cập nhật địa chỉ thành công");
+			setOpen(false);
+			await getMyOrder();
 		} catch (error) {
-		  console.error("❌ Lỗi khi cập nhật địa chỉ:", error.response?.data || error.message);
-		  showToastNow("❌ Cập nhật địa chỉ thất bại!");
+			console.error("❌ Lỗi khi cập nhật địa chỉ:", error.response?.data || error.message);
+			showToastNow("❌ Cập nhật địa chỉ thất bại!");
 		}
-	  };
-	  
+	};
+
 
 	const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString();
 
@@ -326,7 +326,7 @@ const showToastNow = (msg) => {
 									Địa Chỉ
 								</Typography>
 								<Typography id="modal-modal-description" sx={{ mt: 2 }}>
-										<div className="col-md-12">
+									<div className="col-md-12">
 										<div className="form-group m-b25">
 											<label className="label-title">Họ Và Tên</label>
 											<input name="dzName" required="" className="form-control" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} />
@@ -411,42 +411,41 @@ const showToastNow = (msg) => {
 
 									</div>
 									<a
-  onClick={() => {
-    const isEditable = selectedOrder?.listOfOrders?.every(
-      (o) => o.status === "pending" || o.status === "packed"
-    );
-    if (!isEditable) {
-      alert("❌ Chỉ được đổi địa chỉ khi tất cả đơn trong shop đều đang Pending hoặc Packed!");
-      return;
-    }
+										onClick={() => {
+											const isEditable = selectedOrder?.listOfOrders?.every(
+												(o) => o.status === "pending" || o.status === "packed"
+											);
+											if (!isEditable) {
+												alert("❌ Chỉ được đổi địa chỉ khi tất cả đơn trong shop đều đang Pending hoặc Packed!");
+												return;
+											}
 
-    // ✅ Xác nhận trước khi sửa
-    const confirmEdit = window.confirm("Bạn có chắc muốn sửa địa chỉ không?");
-    if (!confirmEdit) return;
+											// ✅ Xác nhận trước khi sửa
+											const confirmEdit = window.confirm("Bạn có chắc muốn sửa địa chỉ không?");
+											if (!confirmEdit) return;
 
-    // ✅ Gọi hàm cập nhật và hiển thị toast
-    updateAddress(selectedOrder?.masterOrderId)
-      .then(() => {
-        setToastMessage("✅ Đã cập nhật địa chỉ thành công");
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
-        handleClose(); // đóng modal nếu cần
-      })
-      .catch((err) => {
-        console.error("❌ Lỗi khi cập nhật địa chỉ:", err);
-        setToastMessage("❌ Cập nhật địa chỉ thất bại");
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
-      });
-  }}
-  className={`btn btn-secondary me-xl-3 me-2 m-b15 btnhover20 ${
-    selectedOrder?.listOfOrders?.every((o) => o.status === "pending" || o.status === "packed") 
-      ? "" 
-      : "disabled"
-  }`}
->
-  Sửa Địa Chỉ
-</a>
+											// ✅ Gọi hàm cập nhật và hiển thị toast
+											updateAddress(selectedOrder?.masterOrderId)
+												.then(() => {
+													setToastMessage("✅ Đã cập nhật địa chỉ thành công");
+													setShowToast(true);
+													setTimeout(() => setShowToast(false), 3000);
+													handleClose(); // đóng modal nếu cần
+												})
+												.catch((err) => {
+													console.error("❌ Lỗi khi cập nhật địa chỉ:", err);
+													setToastMessage("❌ Cập nhật địa chỉ thất bại");
+													setShowToast(true);
+													setTimeout(() => setShowToast(false), 3000);
+												});
+										}}
+										className={`btn btn-secondary me-xl-3 me-2 m-b15 btnhover20 ${selectedOrder?.listOfOrders?.every((o) => o.status === "pending" || o.status === "packed")
+												? ""
+												: "disabled"
+											}`}
+									>
+										Sửa Địa Chỉ
+									</a>
 								</Typography>
 
 							</Box>
@@ -546,77 +545,77 @@ const showToastNow = (msg) => {
 								</aside>
 
 								<div className="col-xl-9 account-wrapper">
-	<div className="account-card">
-		<div className="table-responsive">
-			<table className="table table-hover mb-4">
-				<thead>
-					<tr>
-						<th>STT</th>
-						<th>Ngày đặt hàng</th>
-						<th>Trạng thái đơn hàng</th>
-						<th>Tổng tiền</th>
-						<th>Địa chỉ đặt hàng</th>
-						<th>Hành động</th>
-					</tr>
-				</thead>
-				<tbody>
-					{myOrders?.map((order, index) => (
-						<tr key={order.masterOrderId}>
-							<td>{index + 1}</td> {/* ✅ STT đúng */}
-							<td>{formatDate(order.createdAt)}</td>
-							<td>
-								<span className={`badge bg-${order.orderStatus === 'delivered' ? 'success' : order.orderStatus === 'cancelled' ? 'danger' : 'info'} m-0`}>
-									{order.orderStatus}
-								</span>
-							</td>
-							<td>${order.totalAmount?.toFixed(2)}</td>
-							<td>
-								<button className="btn btn-sm btn-outline-success" onClick={() => handleOpen(order)}>
-									Xem địa chỉ
-								</button>
-							</td>
-							<td>
-								<div className="d-flex flex-column gap-1">
-									<Link to="/user/myaccount/ordersdetails" state={{ order }} className="btn btn-sm btn-outline-primary">
-										View
-									</Link>
-									{order.canCancel && (
-										<button className="btn btn-sm btn-outline-danger" onClick={() => handleCancelOrder(order.orderId)}>
-											Huỷ đơn
-										</button>
-									)}
-									{order.canReturn && (
-										<button className="btn btn-sm btn-outline-warning" onClick={() => handleReturnOrder(order.orderId)}>
-											Trả hàng
-										</button>
-									)}
-								</div>
-							</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
+									<div className="account-card">
+										<div className="table-responsive">
+											<table className="table table-hover mb-4">
+												<thead>
+													<tr>
+														<th>STT</th>
+														<th>Ngày đặt hàng</th>
+														<th>Trạng thái đơn hàng</th>
+														<th>Tổng tiền</th>
+														<th>Địa chỉ đặt hàng</th>
+														<th>Hành động</th>
+													</tr>
+												</thead>
+												<tbody>
+													{myOrders?.map((order, index) => (
+														<tr key={order.masterOrderId}>
+															<td>{index + 1}</td> {/* ✅ STT đúng */}
+															<td>{formatDate(order.createdAt)}</td>
+															<td>
+																<span className={`badge bg-${order.orderStatus === 'delivered' ? 'success' : order.orderStatus === 'cancelled' ? 'danger' : 'info'} m-0`}>
+																	{order.orderStatus}
+																</span>
+															</td>
+															<td>${order.totalAmount?.toFixed(2)}</td>
+															<td>
+																<button className="btn btn-sm btn-outline-success" onClick={() => handleOpen(order)}>
+																	Xem địa chỉ
+																</button>
+															</td>
+															<td>
+																<div className="d-flex flex-column gap-1">
+																	<Link to="/user/myaccount/ordersdetails" state={{ order }} className="btn btn-sm btn-outline-primary">
+																		View
+																	</Link>
+																	{order.canCancel && (
+																		<button className="btn btn-sm btn-outline-danger" onClick={() => handleCancelOrder(order.orderId)}>
+																			Huỷ đơn
+																		</button>
+																	)}
+																	{order.canReturn && (
+																		<button className="btn btn-sm btn-outline-warning" onClick={() => handleReturnOrder(order.orderId)}>
+																			Trả hàng
+																		</button>
+																	)}
+																</div>
+															</td>
+														</tr>
+													))}
+												</tbody>
+											</table>
+										</div>
 
-		<div className="d-flex justify-content-center">
-			<nav aria-label="Orders Pagination">
-				<ul className="pagination style-1">
-					<li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
-						<a className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Prev</a>
-					</li>
-					{Array.from({ length: totalPages }, (_, i) => (
-						<li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
-							<a className="page-link" onClick={() => handlePageChange(i)}>{i + 1}</a>
-						</li>
-					))}
-					<li className={`page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`}>
-						<a className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Next</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
-	</div>
-</div>
+										<div className="d-flex justify-content-center">
+											<nav aria-label="Orders Pagination">
+												<ul className="pagination style-1">
+													<li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
+														<a className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Prev</a>
+													</li>
+													{Array.from({ length: totalPages }, (_, i) => (
+														<li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+															<a className="page-link" onClick={() => handlePageChange(i)}>{i + 1}</a>
+														</li>
+													))}
+													<li className={`page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`}>
+														<a className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Next</a>
+													</li>
+												</ul>
+											</nav>
+										</div>
+									</div>
+								</div>
 
 							</div>
 						</div>
@@ -626,21 +625,21 @@ const showToastNow = (msg) => {
 				<ScrollTopButton />
 				<QuickViewModal />
 				{showToast && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          zIndex: 9999,
-          padding: '12px 20px',
-          backgroundColor: '#28a745',
-          color: 'white',
-          borderRadius: '8px',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-          transition: 'opacity 0.5s ease-in-out'
-        }}>
-          {toastMessage}
-        </div>
-      )}
+					<div style={{
+						position: 'fixed',
+						top: '20px',
+						right: '20px',
+						zIndex: 9999,
+						padding: '12px 20px',
+						backgroundColor: '#28a745',
+						color: 'white',
+						borderRadius: '8px',
+						boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+						transition: 'opacity 0.5s ease-in-out'
+					}}>
+						{toastMessage}
+					</div>
+				)}
 			</div>
 		</>
 	);

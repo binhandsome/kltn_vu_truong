@@ -57,6 +57,11 @@ public class OrderController {
         Long authId =  userDetails.getAuthId();
         return ResponseEntity.ok(orderService.findOrderByUserHeader(authId));
     }
+    @GetMapping("/getOrderByIdUserAndMasterOrderId")
+    public ResponseEntity<OrderResponse> listOrderByIdUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam Long masterOrderId) {
+        Long authId =  userDetails.getAuthId();
+        return ResponseEntity.ok(orderService.findOrderByUserHeaderAndMasterOrderId(authId, masterOrderId));
+    }
     @PutMapping("/updateMethodOrder")
     public ResponseEntity<String> updateMethodOrder(
             @RequestParam("orderId") Long orderId,
@@ -122,6 +127,10 @@ public class OrderController {
     @GetMapping("/getListOrderItemByStore")
     public ResponseEntity<List<OrderItemResponse>> getListOrderItemByStore(@RequestParam Long storeId) {
         return ResponseEntity.ok(orderService.getListOrderItemsByStoreId(storeId));
+    }
+    @GetMapping("/updateEvaluateNumber")
+    public void updateEvaluateNumber(@RequestParam Long orderItemId, @RequestParam Integer ratingNumber) {
+        orderService.updateRatingNumber(orderItemId, ratingNumber);
     }
     @PutMapping("/updateMethodOrderBySeller")
     public ResponseEntity<String> updateMethodOrderBySeller(
