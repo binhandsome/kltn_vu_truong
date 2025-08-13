@@ -592,6 +592,10 @@ public class SellerServiceImpl implements SellerService {
     public List<ProductResponseDTO> getProductsBySeller(Long storeId, Long authId) {
         return productFeignClient.getProductsBySeller(storeId, authId);
     }
+    @Override
+    public Map<String, Object> getProductsBySellerPaged(Long storeId, Long authId, int page, int size) {
+        return productFeignClient.getProductsBySellerPaged(storeId, authId, page, size);
+    }
 
     @Override
     public List<ProductVariantDTO> getVariantsByProduct(Long productId, Long authId) {

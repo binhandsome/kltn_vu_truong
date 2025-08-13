@@ -281,154 +281,178 @@ const groupedByShop = listCartById?.items?.reduce((acc, item) => {
   useEffect(() => {
     console.log('fasjbfaiusbfas', selectedDiscounts);
   })
-  const saveOrder = async () => {
-    try {
-      const tokenAccess = localStorage.getItem("accessToken");
-      const cartId = localStorage.getItem("cartId") || '';
-  
-      if (!listCartById?.items || listCartById.items.length === 0) {
-        alert("Không có sản phẩm nào trong đơn hàng.");
-        return;
-      }
-  
-      if (!totalPrice || isNaN(totalPrice)) {
-        alert("Giá trị đơn hàng không hợp lệ.");
-        return;
-      }
-  
-      if (!selectBank) {
-        alert("Vui lòng chọn phương thức thanh toán.");
-        return;
-      }
-  
-      for (const item of listCartById.items) {
-        if (item.hasColor && !item.nameColor) {
-          alert(`Sản phẩm "${item.productName}" yêu cầu chọn màu`);
-          return;
-        }
-        if (item.hasSize && !item.size) {
-          alert(`Sản phẩm "${item.productName}" yêu cầu chọn size`);
-          return;
-        }
-      }
-  
-      // ✅ Convert colorName → colorId
-      const convertColorNameToId = async (colorName) => {
-        try {
-          const res = await axios.get("http://localhost:8083/api/products/color-id", {
-            params: { nameColor: colorName }
-          });
-          return res.data; // colorId
-        } catch (err) {
-          console.error(`❌ Không tìm thấy colorId cho "${colorName}"`, err);
-          throw new Error(`Không tìm thấy mã màu: ${colorName}`);
-        }
-      };
-  
-      // ✅ Tạo orderItemRequests async
-      const orderItemRequests = await Promise.all(listCartById.items.map(async (item) => {
-        const req = {
-          productId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.itemTotalPrice,
-          size: item.size,
-          color: item.nameColor,
-        };
-      // Convert từ shopSubtotals sang list TotalPages
-      
+// helper: refresh toàn bộ giỏ sau khi BE đã xoá
+const refreshWholeCart = async () => {
+  const token = localStorage.getItem("accessToken") || "";
+  const cartId = localStorage.getItem("cartId") || "";
+  try {
+    const res = await axios.get("http://localhost:8084/api/cart/getItemCart", {
+      params: {
+        token: token || undefined,
+        cartId: token ? undefined : cartId,
+      },
+    });
+    // nếu bạn có header badge, có thể lắng nghe event này để cập nhật số lượng
+    window.dispatchEvent(new CustomEvent("cart:updated", { detail: res.data }));
+    return res.data;
+  } catch (e) {
+    console.warn("Refresh cart failed", e);
+    return null;
+  }
+};
+const saveOrder = async () => {
+  try {
+    const tokenAccess = localStorage.getItem("accessToken");
+    const cartId = localStorage.getItem("cartId") || "";
 
-
-
-        // ✅ Tìm ID tương ứng nếu chưa có
-        const sizeObj = item.sizes?.find(s => s.sizeName === item.size);
-        req.sizeId = sizeObj?.sizeId || null;
-      
-        const colorList = item.colorAsin ? JSON.parse(item.colorAsin) : [];
-        const colorId = colorList.find(c => c.name_color === item.nameColor)?.color_id;
-        req.colorId = colorId || null;
-      
-        return req;
-      }));
-  
-      const ip = await fetch("https://api.ipify.org?format=json")
-        .then(res => res.json())
-        .then(data => data.ip);
-  
-      let payload = {
-        orderNotes: orderNote || "",
-        totalPrice,
-        orderItemRequests,
-        selectBank,
-        ipAddress: ip,
-        shippingMethodId: selectedShippingMethod?.id,
-        shippingFee: selectedShippingMethod?.cost || 0,
-        totalPages: totalPages,
-        selectedDiscounts
-      };
-  
-      let endpoint = "";
-  
-      if (tokenAccess) {
-        if (!addressMain) {
-          alert("Vui lòng chọn địa chỉ giao hàng.");
-          return;
-        }
-  
-        payload = {
-          ...payload,
-          accessToken: tokenAccess,
-          addressId: addressMain
-        };
-        endpoint = "http://localhost:8086/api/orders/placeOrder";
-      } else {
-        if (!firstName || !lastName || !phone || !email || !selectedProvince || !selectedDistrict || !ward || !street) {
-          alert("Vui lòng nhập đầy đủ thông tin giao hàng.");
-          return;
-        }
-  
-        const guestAddress = `${street}, ${ward}, ${selectedDistrict}, ${selectedProvince}`;
-  
-        payload = {
-          ...payload,
-          cartId,
-          guestName: `${firstName} ${lastName}`,
-          guestPhone: phone,
-          guestEmail: email,
-          guestAddress,
-           totalPages: totalPages,
-        selectedDiscounts
-        };
-        endpoint = "http://localhost:8086/api/orders/placeGuestOrder";
-      }
-  
-      const response = await axios.post(endpoint, payload);
-      const { message, paymentUrl, masterOrderId } = response.data;
-      const effectiveId = masterOrderId;
-  
-      if ((selectBank === "BANK" || selectBank === "PAYPAL") && paymentUrl) {
-        window.location.href = paymentUrl;
-        return;
-      }  
-      try {
-        await axios.delete("http://localhost:8084/api/cart/clearCart", {
-          token: tokenAccess || '',
-          cartId
-        });
-      } catch (e) {
-        console.warn("❌ Không gọi được clearCart từ backend:", e);
-      }
-  
-      await getCartProductById();
-      setListCartById({ items: [], totalPrice: 0 });      
-      if (effectiveId) {
-        localStorage.setItem("pendingOrderId", effectiveId);
-      }
-      navigate(`/user/shoppages/paymentReturn?success=true&masterOrderId=${effectiveId}`);
-    } catch (error) {
-      console.error("❌ Lỗi khi đặt hàng:", error);
-      alert(error.response?.data?.error || error.message);
+    // Validate cơ bản
+    if (!listCartById?.items || listCartById.items.length === 0) {
+      alert("Không có sản phẩm nào trong đơn hàng.");
+      return;
     }
-  };
+    if (!totalPrice || isNaN(totalPrice)) {
+      alert("Giá trị đơn hàng không hợp lệ.");
+      return;
+    }
+    if (!selectBank) {
+      alert("Vui lòng chọn phương thức thanh toán.");
+      return;
+    }
+    for (const item of listCartById.items) {
+      if (item.hasColor && !item.nameColor) {
+        alert(`Sản phẩm "${item.productName}" yêu cầu chọn màu`);
+        return;
+      }
+      if (item.hasSize && !item.size) {
+        alert(`Sản phẩm "${item.productName}" yêu cầu chọn size`);
+        return;
+      }
+    }
+
+    // Tạo orderItemRequests: GỬI ĐƠN GIÁ (không gửi tổng)
+    const orderItemRequests = listCartById.items.map((item) => {
+      const sizeObj = item.sizes?.find((s) => s.sizeName === item.size);
+      const colorList = item.colorAsin ? JSON.parse(item.colorAsin) : [];
+      const colorId =
+        colorList.find((c) => c.name_color === item.nameColor)?.color_id ?? null;
+
+      return {
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.discountedUnitPrice ?? item.unitPrice ?? item.productPrice ?? 0,
+        size: item.size,
+        color: item.nameColor,
+        sizeId: sizeObj?.sizeId ?? null,
+        colorId,
+      };
+    });
+
+    // Lấy IP
+    const ip = await fetch("https://api.ipify.org?format=json")
+      .then((res) => res.json())
+      .then((data) => data.ip);
+
+    // Payload chung
+    let payload = {
+      orderNotes: orderNote || "",
+      totalPrice,
+      orderItemRequests,
+      selectBank,
+      ipAddress: ip,
+      shippingMethodId: selectedShippingMethod?.id,
+      shippingFee: selectedShippingMethod?.cost || 0,
+      totalPages,
+      selectedDiscounts,
+    };
+
+    // Xác định endpoint + payload theo user/guest
+    let endpoint = "";
+    if (tokenAccess) {
+      if (!addressMain) {
+        alert("Vui lòng chọn địa chỉ giao hàng.");
+        return;
+      }
+      payload = {
+        ...payload,
+        accessToken: tokenAccess,
+        addressId: addressMain,
+      };
+      endpoint = "http://localhost:8086/api/orders/placeOrder";
+    } else {
+      if (
+        !firstName ||
+        !lastName ||
+        !phone ||
+        !email ||
+        !selectedProvince ||
+        !selectedDistrict ||
+        !ward ||
+        !street
+      ) {
+        alert("Vui lòng nhập đầy đủ thông tin giao hàng.");
+        return;
+      }
+      const guestAddress = `${street}, ${ward}, ${selectedDistrict}, ${selectedProvince}`;
+      payload = {
+        ...payload,
+        cartId,
+        guestName: `${firstName} ${lastName}`,
+        guestPhone: phone,
+        guestEmail: email,
+        guestAddress,
+        totalPages,
+        selectedDiscounts,
+      };
+      endpoint = "http://localhost:8086/api/orders/placeGuestOrder";
+    }
+
+    // Gọi đặt hàng
+    const resp = await axios.post(endpoint, payload);
+    const { paymentUrl, masterOrderId } = resp.data;
+
+    // Nếu thanh toán online → redirect, không xoá trước
+    if ((selectBank === "BANK" || selectBank === "PAYPAL") && paymentUrl) {
+      if (masterOrderId) localStorage.setItem("pendingOrderId", masterOrderId);
+      localStorage.setItem("refreshCartAfterReturn", "1"); // để PaymentReturn xử lý xoá/refresh
+      window.location.href = paymentUrl;
+      return;
+    }
+
+    // COD hoặc thanh toán tại chỗ: xoá item đã mua khỏi giỏ ở BE + cập nhật FE
+    const purchasedAsins = [...new Set(listCartById.items.map((i) => i.asin))];
+
+    // Xoá ở BE (best-effort, không fail toàn bộ nếu 1 item lỗi)
+    await Promise.all(
+      purchasedAsins.map((asin) =>
+        axios
+          .post("http://localhost:8084/api/cart/removeItem", {
+            token: tokenAccess || "",
+            cartId,
+            asin,
+          })
+          .catch(() => null)
+      )
+    );
+
+    // Optimistic: update ngay UI checkout
+    setListCartById((prev) => ({
+      ...prev,
+      items: (prev.items || []).filter((i) => !purchasedAsins.includes(i.asin)),
+      totalPrice: 0,
+    }));
+
+    // Đồng bộ giỏ thật + bắn event để Header/offcanvas tự refresh (KHÔNG sửa file khác)
+    await refreshWholeCart();
+    window.dispatchEvent(new Event("cartUpdated"));
+
+    if (masterOrderId) localStorage.setItem("pendingOrderId", masterOrderId);
+    navigate(`/user/shoppages/paymentReturn?success=true&masterOrderId=${masterOrderId}`);
+  } catch (error) {
+    console.error("❌ Lỗi khi đặt hàng:", error);
+    alert(error.response?.data?.error || error.message);
+  }
+};
+
   useEffect(()=> {
     console.log('selectedShippingMethod', selectedShippingMethod);
   }

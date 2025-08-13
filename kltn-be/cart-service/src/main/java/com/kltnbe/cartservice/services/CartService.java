@@ -1,5 +1,6 @@
 package com.kltnbe.cartservice.services;
 
+import com.kltnbe.cartservice.dtos.CartItemDto;
 import com.kltnbe.cartservice.dtos.req.CartRequest;
 import com.kltnbe.cartservice.dtos.res.CartResponse;
 
@@ -13,4 +14,5 @@ public interface CartService {
     CartResponse clearCart(CartRequest cartRequest);
     CartResponse getCartByID(String cartId, List<String> asin);
     CartResponse removeMultipleItemsFromCart(CartRequest cartRequest, List<String> asinList);
+    CartResponse removePurchasedItems(CartRequest base, List<CartItemDto> purchasedItems);
 }

@@ -10,12 +10,10 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import com.kltn.searchservice.dtos.EsSearchResult;
-import com.kltn.searchservice.dtos.FacetBucket;
-import com.kltn.searchservice.dtos.ProductDocument;
-import com.kltn.searchservice.dtos.ProductDto;
+import com.kltn.searchservice.dtos.*;
 import com.kltn.searchservice.dtos.req.ProductFileterAll;
 import com.kltn.searchservice.dtos.req.RequestRecommend;
+import com.kltn.searchservice.helpers.OrderServiceProxy;
 import com.kltn.searchservice.helpers.ProductServiceProxy;
 import com.kltn.searchservice.helpers.RecommendServiceProxy;
 import com.kltn.searchservice.helpers.UserServiceProxy;
@@ -41,6 +39,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,6 +53,7 @@ public class SearchServiceImpl implements SearchService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final UserServiceProxy userServiceProxy;
     private final RecommendServiceProxy recommendServiceProxy;
+    private final OrderServiceProxy orderServiceProxy;
     @Override
     public void syncProducts() throws IOException {
         int page = 0;
@@ -297,6 +297,7 @@ public class SearchServiceImpl implements SearchService {
 
         return new PageImpl<>(results, pageable, hits.getTotalHits());
     }
+    @Override
     public Page<ProductDocument> searchAdvanced(
             String keyword,
             BigDecimal minPrice,
@@ -304,7 +305,6 @@ public class SearchServiceImpl implements SearchService {
             List<String> tags,
             Pageable pageable
     ) {
-
         Query esQuery = Query.of(q -> q.bool(b -> {
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String loweredKeyword = keyword.toLowerCase();
@@ -312,14 +312,14 @@ public class SearchServiceImpl implements SearchService {
                         .should(s -> s.match(match -> match
                                 .field("productTitle")
                                 .query(keyword)
-                                .fuzziness("AUTO")  // để sai chính tả vẫn tìm được
+                                .fuzziness("AUTO")
                         ))
                         .should(s -> s.queryString(qs -> qs
                                 .defaultField("productTitle")
-                                .query("*" + loweredKeyword + "*") // hỗ trợ *keyword*
+                                .query("*" + loweredKeyword + "*")
                         ))
                         .should(s -> s.multiMatch(mm -> mm
-                                .fields("productTitle") // nếu có field phụ ngram
+                                .fields("productTitle")
                                 .query(keyword)
                                 .fuzziness("AUTO")
                         ))
@@ -327,50 +327,83 @@ public class SearchServiceImpl implements SearchService {
                 ));
             }
 
-            // Price range filter (only add if at least one bound is non-null)
             if (minPrice != null || maxPrice != null) {
                 b.filter(f -> f.range(r -> {
                     r.field("productPrice");
-                    if (minPrice != null) {
-                        r.gte(JsonData.of(minPrice));
-                    }
-                    if (maxPrice != null) {
-                        r.lte(JsonData.of(maxPrice));
-                    }
+                    if (minPrice != null) r.gte(JsonData.of(minPrice));
+                    if (maxPrice != null) r.lte(JsonData.of(maxPrice));
                     return r;
                 }));
             }
 
-            // Tags filter
             if (tags != null && !tags.isEmpty()) {
                 b.filter(f -> f.terms(t -> t
                         .field("tags.keyword")
-                        .terms(ts -> ts.value(tags.stream()
-                                .filter(tag -> tag != null) // Avoid null tags
-                                .map(FieldValue::of)
-                                .toList()))
+                        .terms(ts -> ts.value(
+                                tags.stream()
+                                        .filter(Objects::nonNull)
+                                        .map(FieldValue::of)
+                                        .toList()))
                 ));
             }
-
             return b;
         }));
 
-        org.springframework.data.elasticsearch.core.query.Query springQuery = NativeQuery.builder()
+        var springQuery = NativeQuery.builder()
                 .withQuery(esQuery)
                 .withPageable(pageable)
                 .build();
 
         try {
-            SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
+            SearchHits<ProductDocument> hits =
+                    elasticsearchOperations.search(springQuery, ProductDocument.class);
 
-            List<ProductDocument> results = hits.getSearchHits().stream()
+            List<ProductDocument> results = hits.getSearchHits()
+                    .stream()
                     .map(SearchHit::getContent)
                     .toList();
 
+            // ----- enrich soldCount (delivered, shipped, packed) -----
+            List<Long> ids = results.stream()
+                    .map(ProductDocument::getProductId)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            Map<Long, Long> soldMap = Collections.emptyMap();
+            if (!ids.isEmpty()) {
+                try {
+                    String csv = ids.stream().map(String::valueOf).collect(Collectors.joining(","));
+                    String statusesCsv = "delivered,shipped,packed";
+
+                    // Feign trả Map<String, Long>
+                    Map<String, Long> raw = orderServiceProxy.getSoldCounts(csv, null, statusesCsv);
+
+                    Map<Long, Long> converted = new HashMap<>();
+                    if (raw != null) {
+                        for (Map.Entry<String, Long> e : raw.entrySet()) {
+                            try {
+                                converted.put(Long.valueOf(e.getKey()), e.getValue() == null ? 0L : e.getValue());
+                            } catch (NumberFormatException ignore) {}
+                        }
+                    }
+                    soldMap = converted;
+                } catch (Exception ignore) {
+                    soldMap = Collections.emptyMap();
+                }
+            }
+
+            // dùng for-each để không cần biến final trong lambda
+            for (ProductDocument doc : results) {
+                Long pid = doc.getProductId();
+                if (pid != null) {
+                    doc.setSoldCount(soldMap.getOrDefault(pid, 0L));
+                }
+            }
+            // ---------------------------------------------------------
+
             return new PageImpl<>(results, pageable, hits.getTotalHits());
         } catch (Exception e) {
-            // Log the error and throw a custom exception or return an empty page
-            log.error("Error executing Elasticsearch query: {}", e.getMessage());
+            log.error("Error executing Elasticsearch query", e);
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
     }
@@ -796,6 +829,46 @@ public class SearchServiceImpl implements SearchService {
             log.error("searchByStoreWithFacets error: {}", e.getMessage(), e);
             return new EsSearchResult<>(List.of(), 0, 0, List.of(), List.of(), List.of(), 0);
         }
+    }
+    // SearchServiceImpl.java
+    @Override
+    public List<ProductDocument> getTopSellers(int size, Integer days, String statusesCsv, Long storeId) {
+        int limit = Math.max(1, Math.min(size, 50));
+        if (statusesCsv == null || statusesCsv.isBlank()) {
+            statusesCsv = "delivered,shipped,packed";
+        }
+
+        // 1) Lấy top productId từ order-service
+        List<TopProductDTO> top = orderServiceProxy.getTopProducts(limit, days, statusesCsv, storeId);
+        if (top == null || top.isEmpty()) return Collections.emptyList();
+
+        List<Long> ids = top.stream().map(TopProductDTO::getProductId).toList();
+        Map<Long, Long> soldMap = top.stream().collect(Collectors.toMap(
+                TopProductDTO::getProductId, TopProductDTO::getTotalQuantity));
+
+        // 2) Lấy ProductDocument theo productId, giữ đúng thứ tự
+        Query q = Query.of(b -> b.terms(t -> t
+                .field("productId") // <- đảm bảo field này tồn tại trong ProductDocument mapping
+                .terms(v -> v.value(ids.stream().map(FieldValue::of).toList()))
+        ));
+
+        var nativeQ = NativeQuery.builder().withQuery(q).withPageable(PageRequest.of(0, limit)).build();
+        SearchHits<ProductDocument> hits = elasticsearchOperations.search(nativeQ, ProductDocument.class);
+
+        Map<Long, ProductDocument> byId = hits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .filter(d -> d.getProductId() != null)
+                .collect(Collectors.toMap(ProductDocument::getProductId, d -> d, (a,b)->a));
+
+        List<ProductDocument> out = new ArrayList<>();
+        for (Long id : ids) {
+            ProductDocument doc = byId.get(id);
+            if (doc != null) {
+                doc.setSoldCount(soldMap.getOrDefault(id, 0L));
+                out.add(doc);
+            }
+        }
+        return out;
     }
 
 

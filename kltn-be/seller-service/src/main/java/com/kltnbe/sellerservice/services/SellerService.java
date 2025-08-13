@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public interface SellerService {
     ResponseEntity<?> registerSeller(SellerDTO sellerDTO);
@@ -70,6 +71,7 @@ public interface SellerService {
     ResponseEntity<?> deleteProduct(String asin, Long authId);
 
     List<ProductResponseDTO> getProductsBySeller(Long storeId, Long authId);
+    Map<String, Object> getProductsBySellerPaged(Long storeId, Long authId, int page, int size);
 
     List<ProductVariantDTO> getVariantsByProduct(Long productId, Long authId);
 

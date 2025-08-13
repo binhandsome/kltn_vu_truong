@@ -2,6 +2,83 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { parseISO } from 'date-fns';
+// 💡 null-safe lowercase
+const safeLower = (s) => (s ?? "").toString().toLowerCase();
+
+// EN -> VI (shop)
+const toVNStatus = (s) => {
+  const v = safeLower(s);
+  if (v === "active") return "Đang hoạt động";
+  if (v === "inactive") return "Ngừng hoạt động";
+  if (v === "pending") return "Chờ duyệt";
+  if (v === "suspended") return "Tạm ngưng";
+  return "—";
+};
+
+// EN -> VI (order)
+const toVNOrderStatus = (s) => {
+  const v = safeLower(s);
+  if (v === "pending") return "Chờ xử lý";
+  if (v === "processing") return "Đang xử lý";
+  if (v === "shipped") return "Đã gửi hàng";
+  if (v === "completed") return "Hoàn tất";
+  if (v === "cancelled" || v === "canceled") return "Đã hủy";
+  return "Không rõ";
+};
+
+// EN -> VI (payment)
+const toVNPaymentStatus = (s) => {
+  const v = safeLower(s);
+  if (v === "paid") return "Đã thanh toán";
+  if (v === "unpaid") return "Chưa thanh toán";
+  if (v === "refunded") return "Đã hoàn tiền";
+  if (v === "failed") return "Thanh toán thất bại";
+  if (v === "pending") return "Chờ thanh toán";
+  return s || "—";
+};
+
+// EN -> VI (delivery)
+const toVNDeliveryStatus = (s) => {
+  const v = safeLower(s);
+  if (v === "pending") return "Chờ lấy hàng";
+  if (v === "picking") return "Đang lấy hàng";
+  if (v === "in_transit") return "Đang vận chuyển";
+  if (v === "delivered") return "Đã giao";
+  if (v === "returned") return "Đã hoàn hàng";
+  if (v === "failed") return "Giao thất bại";
+  return s || "—";
+};
+
+// Badge class (order)
+const orderBadge = (s) =>
+  ({
+    pending: "badge-warning",
+    processing: "badge-info",
+    shipped: "badge-primary",
+    completed: "badge-success",
+    cancelled: "badge-danger",
+    canceled: "badge-danger",
+  }[safeLower(s)] || "badge-secondary");
+
+// Badge class (shop/product)
+const statusBadgeClass = (s) => {
+  const v = safeLower(s);
+  if (v === "active") return "badge-success";
+  if (v === "inactive") return "badge-secondary";
+  if (v === "pending") return "badge-warning";
+  if (v === "suspended") return "badge-danger";
+  return "badge-light";
+};
+
+// (tùy chọn) Badge class cho payment
+const paymentBadge = (s) =>
+  ({
+    paid: "badge-success",
+    refunded: "badge-info",
+    failed: "badge-danger",
+    unpaid: "badge-warning",
+    pending: "badge-warning",
+  }[safeLower(s)] || "badge-secondary");
 
 function AdminDashboard() {
   const [hasShop, setHasShop] = useState(null);
@@ -845,14 +922,12 @@ useEffect(() => {
                                 <td>{shopInfo?.shopPhone}</td>
                                 <td>{shopInfo?.shopEmail}</td>
                                 <td>
-                                  <label
-                                    className="mb-0 badge badge-success"
-                                    title=""
-                                    data-original-title="Pending"
-                                  >
-                                    {shopInfo?.shopStatus}
-                                  </label>
-                                </td>
+  <label
+    className={`mb-0 badge ${statusBadgeClass(shopInfo?.shopStatus)}`}
+  >
+    {toVNStatus(shopInfo?.shopStatus)}
+  </label>
+</td>
                                 <td>
                                   <span className="img-thumb">
                                     <span className="ml-2">{shopInfo?.createdAt}</span>
@@ -866,7 +941,7 @@ useEffect(() => {
                                     onClick={handleOpenModalShop}
 
                                   >
-                                    View Detail
+                                    Xem chi tiết
                                   </button>
                                 </td>
                                 <td className="relative">
@@ -895,7 +970,7 @@ useEffect(() => {
                                         <a onClick={() => setShowEditModal(true)}
                                         >
                                           <i className="far fa-edit mr-2 " />
-                                          Edit
+                                          Sửa
                                         </a>
                                       </li>
                                       {/* <li>
@@ -1476,9 +1551,9 @@ useEffect(() => {
               <p><b>Ngày tạo:</b> {selectedOrder.createdAt}</p>
               <p><b>Tổng tiền:</b> ${selectedOrder.totalPrice}</p>
               <p><b>Trạng thái:</b> 
-                <span className={`badge ${statusColors[selectedOrder.status]}`}>
-                  {selectedOrder.status}
-                </span>
+              <span className={`badge ${orderBadge(selectedOrder.status)}`}>
+  {toVNOrderStatus(selectedOrder.status)}
+</span>
               </p>
               <p><b>Số sản phẩm:</b> {selectedOrder.itemCount}</p>
             </div>
@@ -1520,7 +1595,7 @@ useEffect(() => {
             {/* 3️⃣ Delivery Info */}
             <div className="card p-3 shadow-sm">
               <h6 className="mb-3">🚚 Giao hàng</h6>
-              <p><b>Trạng thái:</b> {selectedOrder.deliveryStatus || "Chưa có"}</p>
+              <p><b>Trạng thái:</b> {toVNDeliveryStatus(selectedOrder.deliveryStatus) || "Chưa có"}</p>
               <p><b>Mã tracking:</b> {selectedOrder.trackingNumber || "Chưa có"}</p>
               <p><b>Phí ship:</b> ${selectedOrder.shippingFee || 0}</p>
               <p><b>Ngày dự kiến:</b> {selectedOrder.estimatedDeliveryDate || "Chưa có"}</p>
@@ -1538,9 +1613,11 @@ useEffect(() => {
             <div className="card p-3 shadow-sm" >
               <h6 className="mb-3">💳 Thanh toán</h6>
               <p><b>Phương thức:</b> {selectedOrder.paymentMethod}</p>
-              <p><b>Trạng thái:</b> 
-                <span className="badge badge-success">{selectedOrder.statusPayment}</span>
-              </p>
+              <p><b>Trạng thái:</b>
+  <span className={`badge ${paymentBadge(selectedOrder?.statusPayment)}`}>
+    {toVNPaymentStatus(selectedOrder?.statusPayment)}
+  </span>
+</p>
             </div>
 
           </div>
@@ -2165,13 +2242,13 @@ useEffect(() => {
                                             <li>
                                               <a onClick={() => handleOpenModalDiscount(discount)}>
                                                 <i className="far fa-edit mr-2 " />
-                                                Edit
+                                                Sửa 
                                               </a>
                                             </li>
                                             <li>
                                               <a onClick={() => handleOpenDeleteModalDiscount(discount)}>
                                                 <i className="far fa-trash-alt mr-2 " />
-                                                Delete
+                                                Xoá
                                               </a>
                                             </li>
                                           </ul>
@@ -2263,11 +2340,9 @@ useEffect(() => {
                                   <td>{order.createdAt}</td>
                                   <td>${order.totalPrice}</td>
                                   <td>
-                                    <label
-                                      className={`mb-0 badge ${statusColors[order.status] || "badge-secondary"}`}
-                                    >
-                                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                    </label>
+                                  <label className={`mb-0 badge ${orderBadge(order.status)}`}>
+  {toVNOrderStatus(order.status)}
+</label>
                                   </td>
                                   <td>
                                     <span className="img-thumb">
@@ -2281,7 +2356,7 @@ useEffect(() => {
     className="mb-0 badge badge-primary"
     onClick={() => handleViewDetail(order)} // Gọi hàm khi click
   >
-    View Detail
+   Xem chi tiết
   </button>
 </td>
 

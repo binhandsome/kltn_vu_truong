@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import queryString from "query-string";
 import axios from "axios";
-import { authFetch } from '../../apiService/authFetch';
 
 const PaymentReturn = () => {
   const location = useLocation();
@@ -15,6 +14,25 @@ const PaymentReturn = () => {
   const parsed = queryString.parse(location.search);
   const rawMasterOrderId = parsed.masterOrderId || localStorage.getItem("pendingOrderId");
   const masterOrderId = rawMasterOrderId ? Number(rawMasterOrderId) : null;
+
+  // NEW: Đồng bộ lại giỏ hàng từ BE để phản ánh trạng thái "đã xoá item đã mua"
+  const refreshWholeCart = async () => {
+    try {
+      const token = localStorage.getItem("accessToken") || "";
+      const cartId = localStorage.getItem("cartId") || "";
+      const res = await axios.get("http://localhost:8084/api/cart/getItemCart", {
+        params: { token, cartId },
+      });
+
+      const data = res.data || {};
+      // tuỳ app bạn đang đọc badge/cart từ đâu, ở đây lưu tạm vào localStorage + bắn event
+      localStorage.setItem("cartTotalQuantity", String(data.totalQuantity ?? 0));
+      localStorage.setItem("cartTotalPrice", String(data.totalPrice ?? 0));
+      window.dispatchEvent(new CustomEvent("cart:updated", { detail: data }));
+    } catch (e) {
+      console.warn("Không thể đồng bộ giỏ hàng sau thanh toán:", e);
+    }
+  };
 
   useEffect(() => {
     const maybeId = parsed.masterOrderId;
@@ -31,11 +49,14 @@ const PaymentReturn = () => {
     if (isVnpSuccess || isPaypalSuccess) {
       setPaymentStatus("success");
       setMessage("✅ Thanh toán thành công!");
+      // NEW: đồng bộ giỏ ngay khi thành công
+      refreshWholeCart();
     } else {
       setPaymentStatus("fail");
       setMessage("❌ Thanh toán thất bại hoặc bị huỷ.");
     }
-  }, [location.search, parsed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   const handleView = async () => {
     if (!masterOrderId) {
@@ -48,16 +69,13 @@ const PaymentReturn = () => {
 
     try {
       const response = await axios.get("http://localhost:8086/api/orders/getOrderByIdUser", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      const listOrders = response.data;
-      const foundOrder = listOrders.find(
-        (order) => order.masterOrderId === masterOrderId
-      );
+      const listOrders = response.data || [];
+      const foundOrder = listOrders.find((order) => order.masterOrderId === masterOrderId);
 
+      // Dọn pendingOrderId khi đã tìm thấy order để tránh tồn rác
       if (foundOrder) {
         localStorage.removeItem("pendingOrderId");
         navigate("/user/myaccount/ordersdetails", { state: { order: foundOrder } });
@@ -66,7 +84,7 @@ const PaymentReturn = () => {
         navigate("/user/myaccount/orders");
       }
     } catch (error) {
-      console.error("❌ Lỗi khi lấy danh sách đơn hàng:", error.response?.data || error.message);
+      console.error("❌ Lỗi khi lấy danh sách đơn hàng:", error?.response?.data || error?.message);
       navigate("/user/myaccount/orders");
     } finally {
       setLoading(false);
@@ -78,6 +96,7 @@ const PaymentReturn = () => {
       <h2 className={paymentStatus === "success" ? "text-success" : "text-danger"}>
         {message}
       </h2>
+
       <button
         className={`btn mt-3 ${masterOrderId ? "btn-primary" : "btn-secondary"}`}
         onClick={handleView}

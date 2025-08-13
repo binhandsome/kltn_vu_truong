@@ -127,6 +127,21 @@ useEffect(() => {
       const productsPage = response.data.products;
       setProducts(productsPage.content);
       setTotalPages(productsPage.totalPages);
+
+      // cố lấy soldCount nếu backend 8083 không trả
+setSoldMap(prev => ({ ...prev, ...buildSoldMapFromList(productsPage.content) }));
+
+// Fallback: lôi top-sellers từ search để bù số đã bán
+try {
+  const { data: top } = await axios.get(`${API_SEARCH}/api/search/top-sellers`, {
+    params: { size: 200, statuses: 'delivered,shipped,packed' }
+  });
+  const topMap = buildSoldMapFromList(Array.isArray(top) ? top : []);
+  // ưu tiên dữ liệu hiện có, sau đó bù thêm từ topMap
+  setSoldMap(prev => ({ ...topMap, ...prev }));
+} catch (e) {
+  // im lặng nếu fail, UI vẫn chạy bình thường
+}
   
       setSalesRankCategories(response.data.salesRankCategories || []);
       setProductTypeCategories(response.data.productTypeCategories || []);
@@ -166,6 +181,7 @@ useEffect(() => {
 
         setProducts(res.data.content);
         setTotalPages(res.data.totalPages);
+        setSoldMap(prev => ({ ...prev, ...buildSoldMapFromList(res.data.content) }));
       } catch (error) {
         console.error('❌ Lỗi fetchProductsData:', error);
         setProducts([]);
@@ -529,6 +545,26 @@ useEffect(() => {
 
   fetchAvailableStock();
 }, [selectedProduct, selectedSizeId, selectedColorId]); // ✅ Giữ dependency array
+const API_SEARCH = process.env.REACT_APP_API_SEARCH || "http://localhost:8085";
+
+// Lưu số đã bán theo asin
+const [soldMap, setSoldMap] = useState({});
+const formatSold = (n) => Number(n ?? 0).toLocaleString('vi-VN');
+
+// gom soldCount từ một danh sách sản phẩm
+const buildSoldMapFromList = (list=[]) => {
+  const m = {};
+  list.forEach(p => {
+    if (p?.asin) m[p.asin] = Number(p.soldCount ?? p.orderCount ?? 0);
+  });
+  return m;
+};
+const modalSoldCount = useMemo(() => {
+  const asin = selectedProduct?.asin;
+  if (!asin) return 0;
+  // ưu tiên map → nếu không có, thử lấy từ selectedProduct nếu backend có
+  return Number(soldMap[asin] ?? selectedProduct?.soldCount ?? selectedProduct?.orderCount ?? 0);
+}, [selectedProduct?.asin, soldMap]);
   return (
     <>
       <div className="page-wraper">
@@ -1510,6 +1546,10 @@ useEffect(() => {
   >+</button>
 </div>
                   </div>
+                  <div className="ms-3">
+    <div className="label">Đã bán</div>
+    <div className="value">{formatSold(modalSoldCount)}</div>
+  </div>
                 </div>
 {/* Color */}
 {selectedProduct?.colorAsin && (() => {

@@ -1,16 +1,34 @@
 // src/pages/components/home/QuickViewModal.jsx
 import React, { useMemo } from "react";
 
-const img300 = (f) => f
-  ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${f}`
-  : "/assets/images/placeholder.png";
-const img60 = (f) => f
-  ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${f}`
-  : "/assets/images/placeholder.png";
-const money = (n) => Number(n || 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
+const img300 = (f) => {
+  if (!f) return "/assets/images/placeholder.png";
+  const s = String(f);
+  return s.startsWith("http")
+    ? s
+    : `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${s}`;
+};
+const img60 = (f) => {
+  if (!f) return "/assets/images/placeholder.png";
+  const s = String(f);
+  return s.startsWith("http")
+    ? s
+    : `https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${s}`;
+};
+const money = (n) =>
+  Number(n || 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
+
+// ✨ helper format số đã bán: 1.2k / 3.4M ...
+const formatSold = (n) => {
+  const x = Number(n || 0);
+  if (x >= 1_000_000) return (x / 1_000_000).toFixed(x % 1_000_000 ? 1 : 0) + "M";
+  if (x >= 1_000) return (x / 1_000).toFixed(x % 1_000 ? 1 : 0) + "k";
+  return String(x);
+};
 
 function QuickViewModal({
   product,
+  soldCount,
   onAdd,
   onToggleWishlist,
   inWishlist = false,
@@ -27,11 +45,15 @@ function QuickViewModal({
   setSelectedColor,
 }) {
   // chuẩn hoá mảng size & color
-  const normSizes = useMemo(() => (product?.sizes || []).map((s) => ({
-    sizeId: Number(s.sizeId ?? s.size_id ?? s.id),
-    sizeName: s.sizeName ?? s.name ?? s.label ?? String(s.sizeId ?? s.size_id ?? s.id),
-    _raw: s,
-  })), [product]);
+  const normSizes = useMemo(
+    () =>
+      (product?.sizes || []).map((s) => ({
+        sizeId: Number(s.sizeId ?? s.size_id ?? s.id),
+        sizeName: s.sizeName ?? s.name ?? s.label ?? String(s.sizeId ?? s.size_id ?? s.id),
+        _raw: s,
+      })),
+    [product]
+  );
 
   const normColors = useMemo(() => {
     try {
@@ -42,7 +64,9 @@ function QuickViewModal({
         code_color: c.code_color ?? c.code ?? "#000",
         _raw: c,
       }));
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }, [product]);
 
   const priceAfter = useMemo(() => {
@@ -51,6 +75,14 @@ function QuickViewModal({
     const percent = Number(product.percentDiscount || 0);
     return (base - (base * percent) / 100).toFixed(2);
   }, [product]);
+
+  // ✨ số lượng đã bán: ưu tiên prop từ Home, fallback từ product.* (soldCount / orderCount / orders)
+  const resolvedSold = useMemo(() => {
+    if (soldCount != null && Number.isFinite(Number(soldCount))) return Number(soldCount);
+    const raw = product?.soldCount ?? product?.orderCount ?? product?.orders ?? 0;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  }, [soldCount, product]);
 
   const sizeStyles = `
     .product-size .btn { border-radius:50%; width:40px; height:40px; padding:0;
@@ -62,8 +94,10 @@ function QuickViewModal({
 
   const handleAdd = () => {
     if (requireSelection && product) {
-      if (normSizes.length > 0 && !selectedSize)  return triggerToast?.("⚠️ Vui lòng chọn size.", "error");
-      if (normColors.length > 0 && !selectedColor) return triggerToast?.("⚠️ Vui lòng chọn màu.", "error");
+      if (normSizes.length > 0 && !selectedSize)
+        return triggerToast?.("⚠️ Vui lòng chọn size.", "error");
+      if (normColors.length > 0 && !selectedColor)
+        return triggerToast?.("⚠️ Vui lòng chọn màu.", "error");
     }
     onAdd?.(quantity || 1, {
       size: selectedSize ? { sizeId: selectedSize.sizeId, sizeName: selectedSize.sizeName } : null,
@@ -91,10 +125,14 @@ function QuickViewModal({
                         {product && (
                           <div className="swiper-slide">
                             <div className="dz-media DZoomImage">
-                              <a className="mfp-link lg-item" href={img300(product.productThumbnail)} data-src={img300(product.productThumbnail)}>
+                              <a
+                                className="mfp-link lg-item"
+                                href={img300(product.productThumbnail)}
+                                data-src={img300(product.productThumbnail)}
+                              >
                                 <i className="feather icon-maximize dz-maximize top-right" />
                               </a>
-                              <img src={img300(product.productThumbnail)} alt={product.productTitle} />
+                              <img src={img300(product.productThumbnail)} alt={product?.productTitle || "product"} />
                             </div>
                           </div>
                         )}
@@ -104,7 +142,7 @@ function QuickViewModal({
                       <div className="swiper-wrapper">
                         {product && (
                           <div className="swiper-slide">
-                            <img src={img60(product.productThumbnail)} alt={product.productTitle} />
+                            <img src={img60(product.productThumbnail)} alt={product?.productTitle || "product"} />
                           </div>
                         )}
                       </div>
@@ -119,16 +157,26 @@ function QuickViewModal({
                   <div className="dz-content">
                     <div className="dz-content-footer">
                       <div className="dz-content-start">
-                        {product?.percentDiscount > 0 && (
-                          <span className="badge bg-secondary mb-2">Giảm {product.percentDiscount}%</span>
+                        {Number(product?.percentDiscount || 0) > 0 && (
+                          <span className="badge bg-secondary mb-2">
+                            Giảm {product.percentDiscount}%
+                          </span>
                         )}
                         <h4 className="title mb-1">
-                          {product ? <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>{product.productTitle}</a> : "—"}
+                          {product ? (
+                            <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>
+                              {product.productTitle}
+                            </a>
+                          ) : (
+                            "—"
+                          )}
                         </h4>
                         <div className="review-num">
                           <ul className="dz-rating me-2">
                             {[...Array(5)].map((_, i) => (
-                              <li key={i} className={i < 4 ? "star-fill" : ""}><i className="flaticon-star-1" /></li>
+                              <li key={i} className={i < 4 ? "star-fill" : ""}>
+                                <i className="flaticon-star-1" />
+                              </li>
                             ))}
                           </ul>
                           <span className="text-secondary me-2">4.7 sao</span>
@@ -139,16 +187,20 @@ function QuickViewModal({
 
                     <p className="para-text">{product?.productTitle || ""}</p>
 
-                    {/* GIÁ + SỐ LƯỢNG */}
-                    <div className="meta-content m-b20 d-flex align-items-end">
+                    {/* GIÁ + SỐ LƯỢNG + ĐÃ BÁN */}
+                    <div className="meta-content m-b20 d-flex align-items-end flex-wrap gap-3">
                       <div className="me-3">
-                        <span className="form-label">Giá</span>
+                        <span className="form-label">Giá</span>{" "}
                         {product ? (
                           <span className="price">
                             {money(priceAfter)}{" "}
-                            {Number(product.percentDiscount || 0) > 0 && <del>{money(product.productPrice)}</del>}
+                            {Number(product.percentDiscount || 0) > 0 && (
+                              <del>{money(product.productPrice)}</del>
+                            )}
                           </span>
-                        ) : <span className="price">N/A</span>}
+                        ) : (
+                          <span className="price">N/A</span>
+                        )}
                       </div>
 
                       <div className="btn-quantity light me-0">
@@ -161,7 +213,9 @@ function QuickViewModal({
                               if ((quantity || 1) > 1) setQuantity?.((q) => Math.max(1, (q || 1) - 1));
                               else triggerToast?.("⚠️ Số lượng tối thiểu là 1", "error");
                             }}
-                          >-</button>
+                          >
+                            -
+                          </button>
 
                           <input
                             type="number"
@@ -184,8 +238,15 @@ function QuickViewModal({
                                 triggerToast?.(`❌ Chỉ còn ${availableStock} sản phẩm có sẵn`, "error");
                               else setQuantity?.((q) => (q || 1) + 1);
                             }}
-                          >+</button>
+                          >
+                            +
+                          </button>
                         </div>
+                      </div>
+
+                      <div className="ms-0">
+                        <span className="form-label fw-bold">Đã bán:</span>{" "}
+                        <span>{formatSold(resolvedSold)}</span>
                       </div>
                     </div>
 
@@ -196,7 +257,9 @@ function QuickViewModal({
                         <div className="d-flex align-items-center flex-wrap gap-2">
                           {normColors.map((c, idx) => {
                             const id = `colorModal-${c.colorId}-${idx}`;
-                            const active = (selectedColor?.colorId ?? selectedColor?.color_id ?? selectedColor?.id) === c.colorId;
+                            const active =
+                              (selectedColor?.colorId ?? selectedColor?.color_id ?? selectedColor?.id) ===
+                              c.colorId;
                             return (
                               <div className="form-check" key={id}>
                                 <input
@@ -212,9 +275,12 @@ function QuickViewModal({
                                   htmlFor={id}
                                   style={{
                                     backgroundColor: c.code_color,
-                                    width: 32, height: 32, borderRadius: "50%",
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: "50%",
                                     border: active ? "2px solid #000" : "1px solid #ccc",
-                                    cursor: "pointer", padding: 0,
+                                    cursor: "pointer",
+                                    padding: 0,
                                   }}
                                   title={c.name_color}
                                 />
@@ -233,7 +299,8 @@ function QuickViewModal({
                         {normSizes.length > 0 ? (
                           normSizes.map((s, i) => {
                             const id = `sizeModal-${s.sizeId}-${i}`;
-                            const active = (selectedSize?.sizeId ?? selectedSize?.size_id ?? selectedSize?.id) === s.sizeId;
+                            const active =
+                              (selectedSize?.sizeId ?? selectedSize?.size_id ?? selectedSize?.id) === s.sizeId;
                             return (
                               <React.Fragment key={id}>
                                 <input
@@ -245,11 +312,15 @@ function QuickViewModal({
                                   checked={!!active}
                                   onChange={() => setSelectedSize?.(s)}
                                 />
-                                <label className="btn m-1" htmlFor={id}>{s.sizeName}</label>
+                                <label className="btn m-1" htmlFor={id}>
+                                  {s.sizeName}
+                                </label>
                               </React.Fragment>
                             );
                           })
-                        ) : <p>Không có kích thước nào</p>}
+                        ) : (
+                          <p>Không có kích thước nào</p>
+                        )}
                       </div>
                     </div>
 
@@ -257,7 +328,7 @@ function QuickViewModal({
                     {availableStock !== null && (
                       <div className="mb-3">
                         <label className="form-label fw-bold d-flex align-items-center">
-                          Quantity: <span className="ms-2">({availableStock} sản phẩm)</span>
+                          Tồn kho: <span className="ms-2">({availableStock} sản phẩm)</span>
                         </label>
                       </div>
                     )}
@@ -267,7 +338,11 @@ function QuickViewModal({
                       <button className="btn btn-secondary text-uppercase" onClick={handleAdd} disabled={!product}>
                         Add To Cart
                       </button>
-                      <button className="btn btn-md btn-outline-secondary btn-icon" onClick={onToggleWishlist} disabled={!product}>
+                      <button
+                        className="btn btn-md btn-outline-secondary btn-icon"
+                        onClick={onToggleWishlist}
+                        disabled={!product}
+                      >
                         <i className={`icon feather ${inWishlist ? "icon-heart-on" : "icon-heart"}`} />
                         {inWishlist ? " Bỏ yêu thích" : " Thêm vào yêu thích"}
                       </button>
@@ -276,14 +351,22 @@ function QuickViewModal({
                     {/* META */}
                     <div className="dz-info mb-0">
                       {product && (
-                        <ul><li><strong>SKU:</strong></li><li>{product.asin}</li></ul>
+                        <ul>
+                          <li>
+                            <strong>SKU:</strong>
+                          </li>
+                          <li>{product.asin}</li>
+                        </ul>
                       )}
                       <ul>
-                        <li><strong>Danh mục:</strong></li>
+                        <li>
+                          <strong>Danh mục:</strong>
+                        </li>
                         {product?.salesRank && (
                           <li>
                             <a href={`/user/shop/shopWithCategory?salesRank=${product.salesRank}`}>
-                              {product.salesRank}{product?.productType ? "," : ""}
+                              {product.salesRank}
+                              {product?.productType ? "," : ""}
                             </a>
                           </li>
                         )}
