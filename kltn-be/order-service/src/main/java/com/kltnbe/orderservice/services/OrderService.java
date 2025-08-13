@@ -3,6 +3,7 @@ package com.kltnbe.orderservice.services;
 
 import com.kltnbe.orderservice.dtos.DeliveryAddressDTO;
 import com.kltnbe.orderservice.dtos.SalesStatsDTO;
+import com.kltnbe.orderservice.dtos.TopProductDTO;
 import com.kltnbe.orderservice.dtos.req.DashboardStatsResponse;
 import com.kltnbe.orderservice.dtos.req.OrderRequest;
 import com.kltnbe.orderservice.dtos.res.MonthlyRevenueDTO;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -80,4 +82,8 @@ public interface OrderService {
     List<OrderItemResponse> getListOrderItemsByStoreId(Long storeId);
     Page<MasterOrder> findMasterOrdersByDateRangeAndStatuses(Timestamp startDate, Timestamp endDate, List<String> statuses, Pageable pageable);
     void updateRatingNumber(Long orderItemId, int ratingNumber);
+
+    Map<Long, Long> getSoldCounts(Long storeId, List<String> statuses, Collection<Long> productIds);
+    Long getSoldCount(Long storeId, List<String> statuses, Long productId);
+    List<TopProductDTO> getTopProducts(int size, Integer days, List<String> statuses, Long storeId);
 }

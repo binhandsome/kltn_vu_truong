@@ -54,4 +54,7 @@ public interface SearchService {
             Long storeId, String q, String sort, String category,
             Double min, Double max, Boolean discountOnly,
             int page, int size);
+    // SearchService.java
+    List<ProductDocument> getTopSellers(int size, Integer days, String statusesCsv, Long storeId) throws IOException;
+
 }

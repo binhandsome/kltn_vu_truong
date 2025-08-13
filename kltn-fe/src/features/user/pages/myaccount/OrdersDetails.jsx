@@ -499,7 +499,31 @@ const handleSubmit = (e) => {
 		const date = new Date(timestamp);
 		return date.toLocaleString('en-GB');
 	};
-
+// Convert trạng thái sang tiếng Việt
+// ===== Map trạng thái -> tiếng Việt (đơn cấp shop / child order) =====
+const CHILD_STATUS_LABELS = {
+	pending: 'Chờ xác nhận',
+	packed: 'Đã đóng gói',
+	shipped: 'Đang vận chuyển',
+	delivered: 'Đã giao',
+	failed: 'Giao thất bại',
+	cancelled: 'Đã hủy',          // phòng khi sau này server trả "cancelled"
+  };
+  
+  // (Tuỳ – dùng khi cần hiển thị masterOrderStatus)
+  const MASTER_STATUS_LABELS = {
+	pending: 'Chờ xác nhận',
+	processing: 'Đang xử lý',
+	shipped: 'Đang vận chuyển',
+	completed: 'Hoàn tất',
+	cancelled: 'Đã hủy',
+	cancelledAdmin: 'Đã hủy (Admin)',
+	cancelledSeller: 'Đã hủy (Người bán)',
+  };
+  
+  const childStatusToVi = (s) => CHILD_STATUS_LABELS[s] || s;
+  const masterStatusToVi = (s) => MASTER_STATUS_LABELS[s] || s;
+  
 	return (
 		<>
 			<div className="page-wraper">
@@ -847,7 +871,7 @@ const handleSubmit = (e) => {
 													<img src={orderStore.thumbnailAndTitleShop?.thumbnail} alt="" />
 												</div>
 												<div className="clearfix m-l20">
-													<div className="badge">{orderStore.status}</div>
+												<div className="badge">{childStatusToVi(orderStore.status)}</div>
 													<h4 className="mb-0">{orderStore.thumbnailAndTitleShop?.title}</h4>
 												</div>
 											</div>

@@ -221,7 +221,14 @@ public class OrderServiceImpl implements OrderService {
             }
 
             // Clear cart
-            cartClient.clearCart(cartRequest);
+            List<CartItemDTO> purchased = buildPurchasedAsins(orderRequest);
+            if (!purchased.isEmpty()) {
+                cartClient.removePurchased(
+                        isGuest ? null : orderRequest.getAccessToken(),
+                        isGuest ? orderRequest.getCartId() : null,
+                        purchased
+                );
+            }
 
             // Prepare response
             Map<String, Object> body = (Map<String, Object>) paymentResp.getBody();
@@ -239,6 +246,55 @@ public class OrderServiceImpl implements OrderService {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "Lỗi đặt hàng: " + e.getMessage()));
         }
+    }
+//    Helper: Xoa cartItem khi dat hang thanh cong
+private Map<Long, String> loadAsinMapByProductIds(Set<Long> productIds) {
+    Map<Long, String> map = new HashMap<>();
+    if (productIds == null || productIds.isEmpty()) return map;
+    try {
+        List<ProductSimpleDTO> list = productServiceProxy.getProductsByIds(new ArrayList<>(productIds));
+        if (list != null) {
+            for (ProductSimpleDTO p : list) {
+                // tuỳ DTO của bạn, bắt đủ các tên getter có thể có:
+                Long pid = null;
+                try { pid = (Long) p.getClass().getMethod("getProductId").invoke(p); } catch (Exception ignored) {}
+                if (pid == null) try { pid = (Long) p.getClass().getMethod("getId").invoke(p); } catch (Exception ignored) {}
+
+                String asin = null;
+                try { asin = (String) p.getClass().getMethod("getProductAsin").invoke(p); } catch (Exception ignored) {}
+                if (asin == null) try { asin = (String) p.getClass().getMethod("getAsin").invoke(p); } catch (Exception ignored) {}
+
+                if (pid != null && asin != null) map.put(pid, asin);
+            }
+        }
+    } catch (Exception e) {
+        // log.warn("loadAsinMapByProductIds error", e);
+    }
+    return map;
+}
+
+    /** Helper: build danh sách CartItemDto chỉ chứa asin để xoá trong cart */
+    private List<CartItemDTO> buildPurchasedAsins(OrderRequest req) {
+        // 1) gom các productId trong đơn
+        Set<Long> pids = req.getOrderItemRequests().stream()
+                .map(OrderItemRequest::getProductId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 2) map productId -> asin
+        Map<Long, String> id2asin = loadAsinMapByProductIds(pids);
+
+        // 3) build list asin distinct
+        return req.getOrderItemRequests().stream()
+                .map(oi -> id2asin.get(oi.getProductId()))
+                .filter(Objects::nonNull)
+                .distinct()
+                .map(asin -> {
+                    CartItemDTO d = new CartItemDTO();
+                    d.setProductAsin(asin);
+                    return d;
+                })
+                .collect(Collectors.toList());
     }
     @Override
     @Transactional
@@ -395,7 +451,11 @@ public class OrderServiceImpl implements OrderService {
             ResponseEntity<?> paymentResponse = paymentServiceProxy.savePayment(paymentRequest);
 
             // 🧹 Xoá giỏ hàng
-            cartClient.clearCart(cartRequest);
+            List<CartItemDTO> purchased = buildPurchasedAsins(orderRequest);
+            if (!purchased.isEmpty()) {
+                cartClient.removePurchased(null, orderRequest.getCartId(), purchased);
+            }
+//            cartClient.clearCart(cartRequest);
 
             if (paymentResponse.getStatusCode().is2xxSuccessful()) {
                 Map<String, Object> body = (Map<String, Object>) paymentResponse.getBody();
@@ -1235,7 +1295,44 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
                 && Objects.equals(oldAddr.getDeliveryAddress(), newAddr.getDeliveryAddress())
                 && Objects.equals(oldAddr.getAddressDetails(), newAddr.getAddressDetails());
     }
+    @Override
+    public Map<Long, Long> getSoldCounts(Long storeId, List<String> statuses, Collection<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) return Map.of();
+        var rows = orderItemRepository.sumSoldByProductIds(storeId,
+                (statuses == null || statuses.isEmpty()) ? null : statuses,
+                new ArrayList<>(productIds));
+        Map<Long, Long> map = new HashMap<>();
+        for (Long id : productIds) map.put(id, 0L);
+        for (var r : rows) map.put(r.getProductId(), r.getTotalQuantity()); // alias khớp projection
+        return map;
+    }
 
+    @Override
+    public Long getSoldCount(Long storeId, List<String> statuses, Long productId) {
+        Long sold = orderItemRepository.sumSoldByProductId(storeId,
+                (statuses == null || statuses.isEmpty()) ? null : statuses,
+                productId);
+        return sold != null ? sold : 0L;
+    }
+
+    @Override
+    public List<TopProductDTO> getTopProducts(int size, Integer days, List<String> statuses, Long storeId) {
+        int limit = Math.max(1, Math.min(size, 100));
+        LocalDateTime end = LocalDateTime.now();
+        LocalDateTime start = (days == null) ? LocalDateTime.of(2000,1,1,0,0) : end.minusDays(days);
+
+        List<TopProductProjection> rows = orderItemRepository.findTopProductsBySales(
+                Timestamp.valueOf(start),
+                Timestamp.valueOf(end),
+                (statuses == null || statuses.isEmpty()) ? null : statuses,
+                storeId,
+                PageRequest.of(0, limit)
+        );
+
+        return rows.stream()
+                .map(r -> new TopProductDTO(r.getProductId(), r.getTotalQuantity()))
+                .toList();
+    }
 //    @Override
 //    public Page<OrderResponse> getOrdersByAccessToken(String accessToken, int page, int size) {
 //        String rawToken = accessToken != null && accessToken.startsWith("Bearer ")

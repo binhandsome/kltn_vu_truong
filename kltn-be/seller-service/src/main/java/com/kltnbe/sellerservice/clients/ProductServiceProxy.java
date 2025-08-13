@@ -51,7 +51,13 @@ public interface ProductServiceProxy {
     public ResponseEntity<?> deleteProduct(@PathVariable String asin,@RequestParam Long authId);
     @GetMapping("/api/products/by-seller/{storeId}")
     List<ProductResponseDTO> getProductsBySeller(@PathVariable("storeId") Long storeId, @RequestParam Long authId);
-
+    @GetMapping("/api/products/by-seller/{storeId}/paged")
+    Map<String, Object> getProductsBySellerPaged(
+            @PathVariable("storeId") Long storeId,
+            @RequestParam Long authId,
+            @RequestParam int page,
+            @RequestParam int size
+    );
 
     @PutMapping("/api/products/{productId}/status")
     void updateStatus(@PathVariable("productId") Long productId,

@@ -616,6 +616,12 @@ validateShopOwnership(product.getStoreId(), authId);
                 .map(this::mapProductToDTO)
                 .collect(Collectors.toList());
     }
+    @Override
+    public Page<ProductResponse> getProductsByStoreId(Long storeId, Long authId, Pageable pageable) {
+        validateShopOwnership(storeId, authId);
+        Page<Product> page = productRepository.findByStoreId(storeId, pageable);
+        return page.map(this::mapProductToDTO);
+    }
 
     @Override
     public void updateStatus(Long productId, String status, Long authId) {

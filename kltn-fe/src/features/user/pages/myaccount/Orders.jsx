@@ -91,9 +91,6 @@ function Orders() {
 		setId(order?.masterOrderId)
 		setOpen(true);
 	};
-
-
-
 	useEffect(() => {
 		console.log("📌 selectedOrder:", selectedOrder);
 		console.log("📌 Province:", selectedProvince);
@@ -297,6 +294,39 @@ function Orders() {
 			console.log("Đã chọn quận:", selectedDistrict);
 		}
 	}, [selectedDistrict, districts]);
+	// Chuyen trang thai sang tieng Viet
+	// Hiển thị tiếng Việt cho trạng thái MasterOrder
+const MASTER_STATUS_LABELS = {
+	pending: 'Chờ xác nhận',
+	processing: 'Đang xử lý',
+	shipped: 'Đang vận chuyển',
+	completed: 'Hoàn tất',
+	cancelled: 'Đã hủy',
+	paid:'Trả hàng',
+	cancelledAdmin: 'Đã hủy (Admin)',
+	cancelledSeller: 'Đã hủy (Người bán)',
+  };
+  
+  const masterStatusToVi = (s) => MASTER_STATUS_LABELS[s] || 'Không xác định';
+  
+  // Màu badge theo trạng thái
+  const masterStatusBadge = (s) => {
+	switch (s) {
+	  case 'completed':
+		return 'success';
+	  case 'cancelled':
+	  case 'cancelledAdmin':
+	  case 'cancelledSeller':
+		return 'danger';
+	  case 'pending':
+		return 'warning';
+	  case 'processing':
+	  case 'shipped':
+	  case 'paid':
+	  default:
+		return 'info';
+	}
+  };
 	return (
 		<>
 			<div className="page-wraper">
@@ -564,9 +594,10 @@ function Orders() {
 															<td>{index + 1}</td> {/* ✅ STT đúng */}
 															<td>{formatDate(order.createdAt)}</td>
 															<td>
-																<span className={`badge bg-${order.orderStatus === 'delivered' ? 'success' : order.orderStatus === 'cancelled' ? 'danger' : 'info'} m-0`}>
-																	{order.orderStatus}
-																</span>
+															<span className={`badge bg-${masterStatusBadge(order.orderStatus)} m-0`}>
+  {masterStatusToVi(order.orderStatus)}
+</span>
+
 															</td>
 															<td>${order.totalAmount?.toFixed(2)}</td>
 															<td>

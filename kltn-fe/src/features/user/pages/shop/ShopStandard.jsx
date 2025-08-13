@@ -1,5 +1,5 @@
 // src/pages/common/HomePage.js
-import React, { useCallback, useEffect,useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet'; 
 // import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
@@ -42,6 +42,127 @@ const API_SELLER = process.env.REACT_APP_API_SELLER || "http://localhost:8089";
 // thêm state
 const [shopHeader, setShopHeader] = useState(null);
 const [shopLoadingShop, setShopLoadingShop] = useState(false);
+// format số lượng đã bán
+const formatSold = (n) => Number(n ?? 0).toLocaleString('vi-VN');
+// ===== State best-sellers
+const [bestSellers, setBestSellers] = useState([]);
+const [bestIndex, setBestIndex] = useState(0);
+
+const API_SEARCH = process.env.REACT_APP_API_SEARCH || "http://localhost:8085";
+useEffect(() => {
+  let cancelled = false;
+  (async () => {
+    try {
+      const { data } = await axios.get(`${API_SEARCH}/api/search/top-sellers`, {
+        params: {
+          size: 20,
+          statuses: 'delivered,shipped,packed', // <-- đổi ở đây
+          // days: 30,      // mở nếu muốn lọc theo 30 ngày gần nhất
+          // storeId: ...   // mở nếu muốn theo shop
+        }
+      });
+      if (!cancelled) {
+        setBestSellers(Array.isArray(data) ? data : []);
+        setBestIndex(0);
+      }
+    } catch (e) {
+      if (!cancelled) setBestSellers([]);
+    }
+  })();
+  return () => { cancelled = true; };
+}, []);
+
+// ===== Fallback (chỉ dùng khi API không trả được gì)
+useEffect(() => {
+  if (bestSellers.length === 0 && product?.length) {
+    const top = [...product]
+      .filter(p => p && (p.soldCount ?? 0) >= 0)
+      .sort((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
+      .slice(0, 20);
+    setBestSellers(top);
+    setBestIndex(0);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [product, bestSellers.length]);
+
+// ===== Card tái dùng
+const renderProductCard = (p) => {
+  const price = Number(p.productPrice || 0);
+  const discount = Number(p.percentDiscount || 0);
+  const finalPrice = (price - (price * discount) / 100).toFixed(2);
+
+  return (
+    <div className="shop-card style-1" key={p.asin}>
+      <div className="dz-media">
+        <img
+          src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.productThumbnail}`}
+          alt={p.productTitle}
+          style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+        />
+        <div className="shop-meta">
+          <div
+            className="btn btn-secondary btn-md btn-rounded"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              fetchProductDetail(p.asin);
+              handleSearchAsin(p.asin);
+              setTimeout(() => {
+                const modal = new window.bootstrap.Modal(document.getElementById('exampleModal'));
+                modal.show();
+              }, 100);
+            }}
+          >
+            <i className="fa-solid fa-eye d-md-none d-block" />
+            <span className="d-md-block d-none">Xem nhanh</span>
+          </div>
+
+          <div style={{ position:'absolute', top:10, right:10, display:'flex', flexDirection:'column', gap:10, zIndex:2 }}>
+            <div onClick={() => handleToggleWishlist(p.asin)}
+                 style={{ width:40, height:40, background:'rgba(0,0,0,.4)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+              <i className={`icon feather ${isProductInWishlist(p.asin) ? 'icon-heart-on' : 'icon-heart'}`}
+                 style={{ fontSize:20, color: isProductInWishlist(p.asin) ? 'red' : '#fff' }}/>
+            </div>
+            <div onClick={() => addCartWithQuantity(1, p)}
+                 style={{ width:40, height:40, background:'rgba(0,0,0,.4)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+              <i className="icon feather icon-shopping-cart"
+                 style={{ fontSize:20, color: isProductInCart(p.asin) ? 'red' : '#fff' }}/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="dz-content">
+        <h5 className="title">
+          <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{p.productTitle}</a>
+        </h5>
+        <h5 className="price">${finalPrice}</h5>
+        {/* <div className="small text-muted mt-1">Đã bán: {formatSold(p.soldCount)}</div> */}
+      </div>
+
+      <div className="product-tag">
+        <span className="badge">Giảm {discount}%</span>
+      </div>
+    </div>
+  );
+};
+
+// ===== Carousel layout (giữ nguyên)
+const BEST_CARD_W = 260;
+const BEST_GAP = 16;
+const bestContainerRef = useRef(null);
+const [bestVisible, setBestVisible] = useState(4);
+
+useEffect(() => {
+  const calc = () => {
+    const w = bestContainerRef.current?.clientWidth || 0;
+    const visible = Math.max(1, Math.floor((w - 96) / (BEST_CARD_W + BEST_GAP)));
+    setBestVisible(visible);
+    setBestIndex(i => Math.min(i, Math.max(0, (bestSellers.length - visible))));
+  };
+  calc();
+  window.addEventListener('resize', calc);
+  return () => window.removeEventListener('resize', calc);
+}, [bestSellers.length]);
 
 // lấy header shop khi đổi sản phẩm trong QuickView
 useEffect(() => {
@@ -510,6 +631,30 @@ const handleInputChangeSearch = (e) => {
       console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);
     }
   };
+  // Xử lí việc hiện số lượng bán
+  const modalSoldCount = useMemo(() => {
+    const asin = selectedProduct?.asin;
+    if (!asin) return 0;
+  
+    // 1) từ API chi tiết
+    if (typeof selectedProduct?.soldCount === 'number') {
+      return selectedProduct.soldCount;
+    }
+  
+    // 2) fallback từ danh sách đang hiển thị
+    const inList = product?.find?.(p => p.asin === asin);
+    if (typeof inList?.soldCount === 'number') {
+      return inList.soldCount;
+    }
+  
+    // 3) fallback từ best-sellers (nếu có)
+    const inBest = bestSellers?.find?.(p => p.asin === asin);
+    if (typeof inBest?.soldCount === 'number') {
+      return inBest.soldCount;
+    }
+  
+    return 0;
+  }, [selectedProduct, product, bestSellers]);
   
   return (
     <>
@@ -890,6 +1035,89 @@ const handleInputChangeSearch = (e) => {
               </div>
             </div>
           </div>
+{/* ===== BEST SELLERS (carousel nhiều sản phẩm) ===== */}
+<div className="mb-4">
+  <div className="d-flex align-items-center justify-content-between mb-2">
+    <h4 className="mb-0">🔥 Bán chạy nhất</h4>
+    {bestSellers.length > 0 && (
+      <div className="text-muted small">
+        {(() => {
+          const start = bestIndex + 1;
+          const end = Math.min(bestIndex + bestVisible, bestSellers.length);
+          return `${start}–${end} / ${bestSellers.length}`;
+        })()}
+      </div>
+    )}
+  </div>
+
+  <div
+    ref={bestContainerRef}
+    className="position-relative"
+    style={{
+      border: '1px solid #eee',
+      borderRadius: '12px',
+      padding: '16px 48px',
+      overflow: 'hidden',
+      minHeight: 380
+    }}
+  >
+    {/* Prev */}
+    {bestSellers.length > bestVisible && (
+      <button
+        type="button"
+        className="btn btn-light shadow-sm position-absolute"
+        style={{ left: 8, top: '50%', transform: 'translateY(-50%)', borderRadius: '50%' }}
+        onClick={() => setBestIndex(i => Math.max(0, i - 1))}
+        disabled={bestIndex <= 0}
+        aria-label="Prev"
+      >
+        ‹
+      </button>
+    )}
+
+    {/* Next */}
+    {bestSellers.length > bestVisible && (
+      <button
+        type="button"
+        className="btn btn-light shadow-sm position-absolute"
+        style={{ right: 8, top: '50%', transform: 'translateY(-50%)', borderRadius: '50%' }}
+        onClick={() => setBestIndex(i =>
+          Math.min(i + 1, Math.max(0, bestSellers.length - bestVisible))
+        )}
+        disabled={bestIndex >= Math.max(0, bestSellers.length - bestVisible)}
+        aria-label="Next"
+      >
+        ›
+      </button>
+    )}
+
+    {/* Track */}
+    <div
+      style={{
+        display: 'flex',
+        gap: BEST_GAP,
+        transform: `translateX(-${bestIndex * (BEST_CARD_W + BEST_GAP)}px)`,
+        transition: 'transform .35s ease',
+        width: bestSellers.length
+          ? (bestSellers.length * BEST_CARD_W) + ((bestSellers.length - 1) * BEST_GAP)
+          : '100%'
+      }}
+    >
+      {bestSellers.length ? (
+        bestSellers.map((p) => (
+          <div key={p.asin} style={{ width: BEST_CARD_W, flex: '0 0 auto' }}>
+            {renderProductCard(p)}
+          </div>
+        ))
+      ) : (
+        <div className="text-muted p-3">Chưa có dữ liệu bán chạy</div>
+      )}
+    </div>
+  </div>
+</div>
+
+{/* ===== /BEST SELLERS ===== */}
+
           <div className="row">
             <div className="col-12 tab-content shop-" id="pills-tabContent">
               <div
@@ -955,17 +1183,20 @@ const handleInputChangeSearch = (e) => {
               </p>
             </div>
             <div className="rate">
-              <div className="d-flex align-items-center mb-xl-3 mb-2">
-                <div className="meta-content">
-                  <span className="price-name">Giá</span>
-                  <span className="price">
-                    ${(
-                      product.productPrice -
-                      product.productPrice * product.percentDiscount / 100
-                    ).toFixed(2)}
-                  </span>
-                </div>
-              </div>
+            <div className="meta-content">
+  <span className="price-name">Giá</span>
+  <span className="price">
+    ${(
+      product.productPrice -
+      product.productPrice * product.percentDiscount / 100
+    ).toFixed(2)}
+  </span>
+{/* 
+  <div className="mt-1">
+    Đã bán: {formatSold(product.soldCount)}
+  </div> */}
+</div>
+
               <div className="d-flex">
                 <button
                   className="btn btn-secondary btn-md btn-icon"
@@ -1164,6 +1395,7 @@ const handleInputChangeSearch = (e) => {
                         (product.productPrice * product.percentDiscount) / 100
                       ).toFixed(2)}
                     </h5>
+                    {/* <div className="small mt-1">Đã bán: {formatSold(product.soldCount)}</div> */}
                   </div>
 
                   <div className="product-tag">
@@ -1303,6 +1535,7 @@ const handleInputChangeSearch = (e) => {
                   (product.productPrice * product.percentDiscount) / 100
                 ).toFixed(2)}
               </h5>
+              {/* <div className="small mt-1">Đã bán: {formatSold(product.soldCount)}</div> */}
             </div>
 
             <div className="product-tag">
@@ -1380,6 +1613,15 @@ const handleInputChangeSearch = (e) => {
       >
         <i className="icon feather icon-x" />
       </button>
+      <style>{`
+  .qv-divider{height:1px;background:#eee;margin:8px 0 12px}
+  .qv-grid .label{font-size:12px;color:#6c757d;margin-bottom:4px}
+  .qv-grid .value{font-size:20px;font-weight:700;line-height:1}
+  .qv-grid .value del{font-size:13px;color:#9aa0a6;margin-left:6px}
+  .qv-qty .btn{width:40px;height:40px;border-radius:50%;padding:0}
+  .qv-qty input.form-control{max-width:76px;height:40px}
+  .chip{display:inline-block;font-size:12px;background:#f6f7f9;border:1px solid #e9eaee;padding:4px 8px;border-radius:10px}
+`}</style>
       <div className="modal-body">
         <div className="row g-xl-4 g-3">
           <div className="col-xl-6 col-md-6">
@@ -1520,6 +1762,7 @@ const handleInputChangeSearch = (e) => {
     <span className="price">N/A</span>
   )}
 </div>
+ 
        <div className="btn-quantity light me-0">
     <label className="form-label fw-bold">Số lượng</label>
     <div className="input-group">
@@ -1576,6 +1819,9 @@ const handleInputChangeSearch = (e) => {
   </button>
 </div>
   </div>
+  <div className="ms-3" >
+   Đã bán: {formatSold(modalSoldCount)}
+ </div>
                 </div>
 {/* --- CHỌN MÀU --- */}
 {selectedProduct?.colorAsin && (() => {

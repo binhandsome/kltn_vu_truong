@@ -3,6 +3,69 @@ import axios from 'axios';
 import { Chart } from 'chart.js';
 import { parseISO, format } from 'date-fns';
 
+// EN -> VI (order/master status)
+const toVNOrderStatus = (s = "") => {
+  const v = s.toLowerCase();
+  if (v === "pending") return "Chờ xử lý";
+  if (v === "processing") return "Đang xử lý";
+  if (v === "shipped") return "Đang vận chuyển";
+  if (v === "completed") return "Hoàn tất";
+  if (v === "cancelled" || v === "canceled") return "Đã hủy";
+  if (v === "cancelledseller") return "Shop hủy";
+  if (v === "cancelledbyadmin") return "Admin hủy";
+  return "Không rõ";
+};
+
+// Delivery status
+const toVNDeliveryStatus = (s = "") => {
+  const v = s.toLowerCase();
+  if (v === "pending") return "Chờ lấy hàng";
+  if (v === "packed") return "Đã đóng gói";
+  if (v === "shipped") return "Đang vận chuyển";
+  if (v === "delivered") return "Đã giao";
+  if (v === "failed") return "Giao thất bại";
+  if (v === "cancelledbyadmin") return "Admin hủy";
+  return s || "—";
+};
+
+// Payment status
+const toVNPaymentStatus = (s = "") => {
+  const v = (s || "").toLowerCase();
+  if (v === "paid") return "Đã thanh toán";
+  if (v === "unpaid") return "Chưa thanh toán";
+  if (v === "refunded") return "Đã hoàn tiền";
+  if (v === "failed") return "Thanh toán thất bại";
+  if (v === "pending") return "Chờ thanh toán";
+  return s || "—";
+};
+
+// Badge cho order/master status
+const orderBadge = (s = "") => {
+  const v = s.toLowerCase();
+  return (
+    {
+      pending: "badge-warning",
+      processing: "badge-info",
+      shipped: "badge-primary",
+      completed: "badge-success",
+      cancelled: "badge-danger",
+      canceled: "badge-danger",
+      cancelledseller: "badge-danger",
+      cancelledbyadmin: "badge-danger",
+    }[v] || "badge-secondary"
+  );
+};
+
+// Badge cho payment status
+const paymentBadge = (s = "") => {
+  const v = (s || "").toLowerCase();
+  if (v === "paid") return "badge-success";
+  if (v === "refunded") return "badge-info";
+  if (v === "failed") return "badge-danger";
+  if (v === "pending" || v === "unpaid") return "badge-warning";
+  return "badge-secondary";
+};
+
 const cardStyle = {
   background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(88, 28, 135, 0.9))',
   border: '1px solid rgba(0, 255, 255, 0.3)',
@@ -467,28 +530,25 @@ const deliveryOptions = {
         )}
       </div>
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        {statusOptions.map((status) => (
-          <button
-            key={status}
-            onClick={() => toggleStatus(status)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: selectedStatuses.includes(status)
-                ? '2px solid #00ffcc'
-                : '2px solid #ccc',
-              background: selectedStatuses.includes(status)
-                ? 'linear-gradient(90deg, #00ffcc, #0099ff)'
-                : '#f3f4f6',
-              color: selectedStatuses.includes(status) ? '#fff' : '#333',
-              cursor: 'pointer',
-              fontWeight: '600',
-              transition: 'all 0.3s ease',
-            }}
-          >
-            {status}
-          </button>
-        ))}
+      {statusOptions.map((status) => (
+  <button
+    key={status}
+    onClick={() => toggleStatus(status)}
+    style={{
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: selectedStatuses.includes(status) ? '2px solid #00ffcc' : '2px solid #ccc',
+      background: selectedStatuses.includes(status) ? 'linear-gradient(90deg, #00ffcc, #0099ff)' : '#f3f4f6',
+      color: selectedStatuses.includes(status) ? '#fff' : '#333',
+      cursor: 'pointer',
+      fontWeight: '600',
+      transition: 'all 0.3s ease',
+    }}
+  >
+    {toVNOrderStatus(status)}
+  </button>
+))}
+
       </div>
       <div className="row">
         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
@@ -524,9 +584,9 @@ const deliveryOptions = {
                           <td>{format(parseISO(masterOrder.createdAt), 'yyyy-MM-dd HH:mm:ss')}</td>
                           <td>${masterOrder.totalPrice.toFixed(2)}</td>
                           <td>
-                            <label className={`mb-0 badge ${statusColors[masterOrder.status] || 'badge-secondary'}`}>
-                              {masterOrder.status.charAt(0).toUpperCase() + masterOrder.status.slice(1)}
-                            </label>
+                          <label className={`mb-0 badge ${orderBadge(masterOrder.status)}`}>
+  {toVNOrderStatus(masterOrder.status)}
+</label>
                           </td>
                           <td>{masterOrder.orders?.length || 0}</td>
                           <td>
@@ -534,7 +594,7 @@ const deliveryOptions = {
                               className="mb-0 badge badge-primary"
                               onClick={() => handleViewDetail(masterOrder)}
                             >
-                              View Detail
+                              Xem chi tiết
                             </button>
                           </td>
                         </tr>
@@ -616,9 +676,9 @@ const deliveryOptions = {
                   <p><b>Ngày tạo:</b> {format(parseISO(selectedMasterOrder.createdAt), 'yyyy-MM-dd HH:mm:ss')}</p>
                   <p><b>Tổng tiền:</b> ${selectedMasterOrder.totalPrice.toFixed(2)}</p>
                   <p><b>Trạng thái:</b>
-                    <span className={`badge ${statusColors[selectedMasterOrder.status]}`}>
-                      {selectedMasterOrder.status.charAt(0).toUpperCase() + selectedMasterOrder.status.slice(1)}
-                    </span>
+                  <span className={`badge ${orderBadge(selectedMasterOrder.status)}`}>
+  {toVNOrderStatus(selectedMasterOrder.status)}
+</span>
                   </p>
                   <p><b>Số sản phẩm:</b> {selectedMasterOrder.itemCount}</p>
                   <p><b>Tên người nhận:</b> {selectedMasterOrder.recipientName}</p>
@@ -675,36 +735,34 @@ const deliveryOptions = {
                         <p><b>Ngày tạo:</b> {format(parseISO(order.createdAt), 'yyyy-MM-dd HH:mm:ss')}</p>
                         <p><b>Tổng tiền:</b> ${order.totalPrice.toFixed(2)}</p>
                         <p><b>Trạng thái:</b>
-                          <span className={`badge ${statusColors[order.status]}`}>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
+                        <span className={`badge ${orderBadge(order.status)}`}>
+  {toVNOrderStatus(order.status)}
+</span>
                         </p>
                         <p><b>Số sản phẩm:</b> {order.itemCount}</p>
                  <div className="mt-3">
-  <label><b>Delivery Status:</b></label>
-  <select
-    className="form-select mt-1 thanhvu"
-    value={deliveryStatus[order.orderId] || ''}
-    disabled={!deliveryOptions[order.status]?.options?.length}
-    onChange={(e) => {
-      setDeliveryStatus({ ...deliveryStatus, [order.orderId]: e.target.value });
-      setCancelOrderId(order.orderId);
-    }}
-  >
-    {/* Default value shown first */}
-    <option value={deliveryOptions[order.status]?.default || ''}>
-      {deliveryOptions[order.status]?.default || 'Chưa có'}
-    </option>
+                 <label><b>Trạng thái giao hàng:</b></label>
+<select
+  className="form-select mt-1 thanhvu"
+  value={deliveryStatus[order.orderId] || ''}
+  disabled={!deliveryOptions[order.status]?.options?.length}
+  onChange={(e) => {
+    setDeliveryStatus({ ...deliveryStatus, [order.orderId]: e.target.value });
+    setCancelOrderId(order.orderId);
+  }}
+>
+  <option value={deliveryOptions[order.status]?.default || ''}>
+    {toVNDeliveryStatus(deliveryOptions[order.status]?.default || '')}
+  </option>
+  {deliveryOptions[order.status]?.options
+    ?.filter((st) => st !== deliveryOptions[order.status]?.default)
+    .map((st) => (
+      <option key={st} value={st}>
+        {toVNDeliveryStatus(st)}
+      </option>
+    ))}
+</select>
 
-    {/* Show other options, excluding default */}
-    {deliveryOptions[order.status]?.options
-      ?.filter((status) => status !== deliveryOptions[order.status]?.default)
-      .map((status) => (
-        <option key={status} value={status}>
-          {status}
-        </option>
-      ))}
-  </select>
 </div>
                       </div>
                       <div>
@@ -734,7 +792,7 @@ const deliveryOptions = {
                       </div>
                       <div>
                         <h6 className="mb-3">🚚 Giao hàng</h6>
-                        <p><b>Trạng thái:</b> {order.deliveryStatus || 'Chưa có'}</p>
+                        <p><b>Trạng thái:</b> {toVNDeliveryStatus(order.deliveryStatus) || 'Chưa có'}</p>
                         <p><b>Mã tracking:</b> {order.trackingNumber || 'Chưa có'}</p>
                         <p><b>Phí ship:</b> ${order.shippingFee || 0}</p>
                         <p><b>Ngày dự kiến:</b> {order.estimatedDeliveryDate ? format(parseISO(order.estimatedDeliveryDate), 'yyyy-MM-dd HH:mm:ss') : 'Chưa có'}</p>
@@ -749,8 +807,10 @@ const deliveryOptions = {
                         <h6 className="mb-3">💳 Thanh toán</h6>
                         <p><b>Phương thức:</b> {order.paymentMethod || 'Chưa có'}</p>
                         <p><b>Trạng thái:</b>
-                          <span className="badge badge-success">{order.statusPayment || 'Chưa có'}</span>
-                        </p>
+  <span className={`badge ${paymentBadge(order.statusPayment)}`}>
+    {toVNPaymentStatus(order.statusPayment)}
+  </span>
+</p>
                       </div>
                     </div>
                     {/* {['pending', 'processing'].includes(order.status?.trim().toLowerCase()) && (

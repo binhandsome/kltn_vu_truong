@@ -2,49 +2,79 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const PAGE_SIZE = 10; // số item mỗi trang
+const PAGE_SIZE = 10; // mỗi trang 10 sp
 
 const InventoryProduct = () => {
-  const [products, setProducts] = useState([]);
-  const [page, setPage] = useState(1); // 1-based cho dễ nhìn
+  const [items, setItems] = useState([]);               // dữ liệu TRANG HIỆN TẠI
+  const [page, setPage] = useState(1);                  // 1-based cho UI
+  const [totalPages, setTotalPages] = useState(1);      // lấy từ BE
+  const [totalElements, setTotalElements] = useState(0);// lấy từ BE
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  // map EN -> VI cho trạng thái sản phẩm
+const toVNProductStatus = (s) => {
+  const v = (s || "").toLowerCase();
+  if (v === "active") return "Đang bán";
+  if (v === "inactive") return "Ngừng bán";
+  return "—";
+};
 
-  const fetchProducts = async () => {
+  // Gọi BE có phân trang
+  const fetchProducts = async (uiPage = 1) => {
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) return navigate("/login");
 
+    setLoading(true);
     try {
       const res = await axios.get("http://localhost:8089/api/seller/products", {
+        params: {
+          page: uiPage - 1, // Spring Data dùng 0-based
+          size: PAGE_SIZE,
+        },
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      setProducts(res.data ?? []);
-      setPage(1); // về trang 1 mỗi lần load mới
+
+      // Hỗ trợ cả 2 kiểu: {content,totalPages,totalElements} HOẶC [] (fallback)
+      const data = res.data || {};
+      const pageContent = Array.isArray(data.content)
+        ? data.content
+        : Array.isArray(data)
+        ? data
+        : [];
+
+      setItems(pageContent);
+      setTotalPages(
+        Number.isFinite(data.totalPages)
+          ? data.totalPages
+          : Math.max(1, Math.ceil(pageContent.length / PAGE_SIZE))
+      );
+      setTotalElements(
+        Number.isFinite(data.totalElements) ? data.totalElements : pageContent.length
+      );
+      setPage(uiPage);
     } catch (error) {
       console.error("❌ Lỗi khi lấy danh sách sản phẩm:", error);
+      setItems([]);
+      setTotalPages(1);
+      setTotalElements(0);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // tải lần đầu và khi đổi trang
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
-  // ---- PHÂN TRANG FE ----
-  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
-  const start = (page - 1) * PAGE_SIZE;
-  const paged = products.slice(start, start + PAGE_SIZE);
-
-  // nếu số lượng sp thay đổi khiến page > totalPages thì kéo về trang cuối
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [totalPages, page]);
-
-  // hiển thị tối đa 5 nút trang xung quanh trang hiện tại
+  // hiển thị tối đa 5 nút trang quanh trang hiện tại
   const pageNumbers = useMemo(() => {
     const MAX = 5;
     let from = Math.max(1, page - Math.floor(MAX / 2));
     let to = Math.min(totalPages, from + MAX - 1);
     from = Math.max(1, to - MAX + 1);
-    return Array.from({ length: to - from + 1 }, (_, i) => from + i);
+    return Array.from({ length: Math.max(0, to - from + 1) }, (_, i) => from + i);
   }, [page, totalPages]);
 
   const handleToggleStatus = async (productId, currentStatus) => {
@@ -58,8 +88,8 @@ const InventoryProduct = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         }
       );
-      // Cập nhật cục bộ để đỡ fetch lại toàn bộ
-      setProducts((prev) =>
+      // cập nhật cục bộ trang hiện tại
+      setItems((prev) =>
         prev.map((x) => (x.productId === productId ? { ...x, productStatus: newStatus } : x))
       );
     } catch (err) {
@@ -71,6 +101,9 @@ const InventoryProduct = () => {
   const handleViewVariants = (productId) => {
     navigate(`/seller/inventory/product/${productId}/variants`);
   };
+
+  const startIndex = items.length ? (page - 1) * PAGE_SIZE + 1 : 0;
+  const endIndex = Math.min(page * PAGE_SIZE, totalElements);
 
   return (
     <div className="main-content">
@@ -118,17 +151,21 @@ const InventoryProduct = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {paged.length === 0 ? (
+                    {loading ? (
+                      <tr>
+                        <td colSpan="9" className="text-center">Đang tải...</td>
+                      </tr>
+                    ) : items.length === 0 ? (
                       <tr>
                         <td colSpan="9" className="text-center">Không có sản phẩm</td>
                       </tr>
                     ) : (
-                      paged.map((p, idx) => (
-                        <tr key={p.asin ?? p.productId}>
+                      items.map((p, idx) => (
+                        <tr key={p.asin ?? p.productId ?? idx}>
                           <td>
                             <div className="checkbox">
-                              <input id={`checkbox${start + idx}`} type="checkbox" />
-                              <label htmlFor={`checkbox${start + idx}`}></label>
+                              <input id={`checkbox${(page - 1) * PAGE_SIZE + idx}`} type="checkbox" />
+                              <label htmlFor={`checkbox${(page - 1) * PAGE_SIZE + idx}`}></label>
                             </div>
                           </td>
                           <td>
@@ -151,11 +188,14 @@ const InventoryProduct = () => {
                           <td>{p.selectedType}</td>
                           <td>{p.discountPercent}%</td>
                           <td>
-                            <label
-                              className={`mb-0 badge ${p.productStatus === "active" ? "badge-success" : "badge-danger"}`}
-                            >
-                              {p.productStatus?.toUpperCase()}
-                            </label>
+                          {(() => {
+  const st = (p.productStatus ?? "").toLowerCase();
+  return (
+    <label className={`mb-0 badge ${st === "active" ? "badge-success" : "badge-secondary"}`}>
+      {toVNProductStatus(st)}
+    </label>
+  );
+})()}
                           </td>
                           <td className="relative">
                             <a className="action-btn" href="#!" onClick={() => handleViewVariants(p.productId)}>
@@ -173,10 +213,10 @@ const InventoryProduct = () => {
                 </table>
               </div>
 
-              {/* Pagination thật (FE) */}
+              {/* Pagination (BE) */}
               <div className="d-flex align-items-center justify-content-between mt-3">
                 <div className="text-muted">
-                  Hiển thị {paged.length ? start + 1 : 0}-{Math.min(start + PAGE_SIZE, products.length)} / {products.length}
+                  Hiển thị {startIndex}-{endIndex} / {totalElements}
                 </div>
                 <nav className="d-inline-block">
                   <ul className="pagination mb-0">

@@ -46,6 +46,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>,JpaSpeci
     List<Object[]> countProductsByTags();
     Page<Product> findProductByProductTitleContains(String productTitle, Pageable pageable);
     List<Product> findByStoreId(Long storeId);
+    Page<Product> findByStoreId(Long storeId, Pageable pageable);
     @Query("SELECT p.productId FROM Product p WHERE p.storeId = :storeId")
     List<Long> findProductIdsByStoreId(@Param("storeId") Long storeId);
     // Hoặc nếu dùng Optional để tránh null

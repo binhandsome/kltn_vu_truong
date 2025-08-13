@@ -352,5 +352,91 @@ public class CartServiceImpl implements CartService {
         cartRedisDtoRedisTemplate.opsForValue().set(key, cartRedisDto);
         return buildCartResponse(cartRedisDto, "Đã xoá danh sách sản phẩm khỏi giỏ hàng", cartRequest.getCartId());
     }
+    // CartServiceImpl.java (thêm helper)
+    private String resolveKey(String token, String cartId) {
+        if (token != null && !token.isEmpty()) {
+            String username = jwtUtil.getUsernameFromToken(token);
+            return "cart:" + username;
+        } else if (cartId != null && !cartId.isEmpty()) {
+            return "cart:" + cartId;
+        }
+        throw new IllegalArgumentException("Không thể xác định người dùng hoặc giỏ hàng");
+    }
+    private static String norm(String s) { return (s == null || s.isBlank()) ? null : s.trim(); }
+    private static String compKey(String asin, String size, String color) {
+        return (asin == null ? "" : asin) + "|" + (norm(size) == null ? "" : norm(size)) + "|" + (norm(color) == null ? "" : norm(color));
+    }
+
+    @Override
+    public CartResponse removePurchasedItems(CartRequest base, List<CartItemDto> purchasedItems) {
+        if (purchasedItems == null || purchasedItems.isEmpty()) {
+            CartResponse r = new CartResponse();
+            r.setMessage("Danh sách purchasedItems rỗng");
+            r.setItems(Collections.emptyList());
+            r.setTotalPrice(BigDecimal.ZERO);
+            r.setTotalQuantity(0);
+            return r;
+        }
+
+        final String key = resolveKey(base.getToken(), base.getCartId());
+        CartRedisDto cart = cartRedisDtoRedisTemplate.opsForValue().get(key);
+        if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
+            CartResponse r = new CartResponse();
+            r.setMessage("Giỏ hàng trống");
+            r.setItems(Collections.emptyList());
+            r.setTotalPrice(BigDecimal.ZERO);
+            r.setTotalQuantity(0);
+            return r;
+        }
+
+        // Gom quantity cần trừ theo biến thể (asin|size|nameColor)
+        Map<String, Integer> needToRemove = new HashMap<>();
+        for (CartItemDto p : purchasedItems) {
+            String ck = compKey(p.getAsin(), p.getSize(), p.getNameColor());
+            int q = Math.max(0, p.getQuantity());
+            if (q > 0) needToRemove.merge(ck, q, Integer::sum);
+        }
+        if (needToRemove.isEmpty()) {
+            return buildCartResponse(cart, "Không có item hợp lệ để xoá", base.getCartId());
+        }
+
+        // Lặp qua giỏ hàng & trừ số lượng tương ứng
+        Iterator<CartItemDto> it = cart.getItems().iterator();
+        while (it.hasNext()) {
+            CartItemDto item = it.next();
+            String ck = compKey(item.getAsin(), item.getSize(), item.getNameColor());
+            Integer removeQ = needToRemove.get(ck);
+            if (removeQ == null || removeQ <= 0) continue;
+
+            int current = item.getQuantity();
+            int toRemove = Math.min(current, removeQ);
+            int remain = current - toRemove;
+
+            if (remain > 0) {
+                item.setQuantity(remain);
+            } else {
+                it.remove(); // mua hết biến thể => bỏ khỏi giỏ
+            }
+
+            // cập nhật còn lại cần trừ (nếu có nhiều dòng trùng biến thể – hiếm khi)
+            int left = removeQ - toRemove;
+            if (left > 0) needToRemove.put(ck, left); else needToRemove.remove(ck);
+        }
+
+        // Nếu rỗng => xoá key; ngược lại => ghi lại
+        if (cart.getItems().isEmpty()) {
+            cartRedisDtoRedisTemplate.delete(key);
+            CartResponse empty = new CartResponse();
+            empty.setMessage("Giỏ hàng rỗng sau khi trừ item đã mua");
+            empty.setItems(new ArrayList<>());
+            empty.setTotalQuantity(0);
+            empty.setTotalPrice(BigDecimal.ZERO);
+            return empty;
+        } else {
+            cartRedisDtoRedisTemplate.opsForValue().set(key, cart);
+            return buildCartResponse(cart, "Đã xoá/trừ các sản phẩm đã đặt khỏi giỏ hàng", base.getCartId());
+        }
+    }
+
 
 }

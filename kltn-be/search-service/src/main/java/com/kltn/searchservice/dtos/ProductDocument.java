@@ -35,6 +35,7 @@ public class ProductDocument {
     private String tags;
     private String productStatus; // ACTIVE, DELETED,...
     private Long storeId;
+    private Long soldCount;
 
     public String getAsin() {
         return asin;
@@ -138,5 +139,13 @@ public class ProductDocument {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public Long getSoldCount() {
+        return soldCount;
+    }
+
+    public void setSoldCount(Long soldCount) {
+        this.soldCount = soldCount;
     }
 }
