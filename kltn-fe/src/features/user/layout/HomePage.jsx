@@ -601,7 +601,7 @@ const addCartFromModal = async (qty, { size, color }) => {
               const imgFor = (type) => ICONS[type] || "/assets/images/placeholder.png";
 
               return types.map((type, idx) => (
-                <div className="swiper-slide">
+                <div className="swiper-slide" key={type}>
                   <div
                     className="shop-box style-1 wow fadeInUp"
                     data-wow-delay={`${0.2 + idx * 0.2}s`}
@@ -966,13 +966,13 @@ const addCartFromModal = async (qty, { size, color }) => {
                             <div className="shop-meta">
                               {/* Quick View */}
                               <a
-                                href=""
+                                href="#"
                                 className="btn btn-secondary btn-md btn-rounded"
                                 data-bs-toggle="modal"
                                 data-bs-target="#exampleModal"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                    e.stopPropagation();
+                                      e.stopPropagation();
                                   fetchProductDetail(p.asin);
                                 }}
                               >
@@ -1854,7 +1854,7 @@ const addCartFromModal = async (qty, { size, color }) => {
           const after = (Number(p.price || 0) * (1 - Number(p.discountPercent || 0) / 100)).toFixed(2);
 
           return (
-            <div className="swiper-slide" key={`mapbox-${p.asin || i}`|| i}>
+            <div className="swiper-slide" key={p.asin || i}>
               <div className="shop-card style-4 wow fadeInUp" data-wow-delay={`${0.4 + i * 0.2}s`}>
                 <div className="dz-media">
                   <img
