@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { parseISO } from 'date-fns';
+import { api } from '../../utils/api';
 
 function AdminDashboard() {
   const [hasShop, setHasShop] = useState(null);
@@ -141,10 +142,9 @@ const getPageRange = () => {
       console.log(key, value);
     }
     try {
-      const response = await axios.put(`${API_URL}/update-discount-shop`, formData, {
+      const response = await api.put(`/update-discount-shop`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
         },
       });
       setMessage(response.data.message);
@@ -165,22 +165,17 @@ const getPageRange = () => {
       return;
     }
     try {
-      await axios.delete(`${API_URL}/delete-discount-shop`, {
+      await api.delete(`/delete-discount-shop`, {
         params: {
           shopDiscountId: selectedDiscount.discountShopId,
         },
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-
-        }
       });
       setMessage('✅ Đã xóa mã giảm giá thành công. ');
       setShowConfirmDeleteModalDiscount(false);
       fetchShopDiscounts();
     } catch (error) {
       console.error('Error deleting shop:', error);
-      setMessage(error.response?.data || '❌ Lỗi khi xóa shop.');
-    }
+setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá. ');    }
   };
   const handleEditSubmit = async (event) => {
     event.preventDefault();
@@ -202,10 +197,9 @@ const getPageRange = () => {
     formData.append('shopEmail', shopEmail);
 
     try {
-      const response = await axios.post(`${API_URL}/create-shop-edit`, formData, {
+      const response = await api.post(`/create-shop-edit`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
 
         }
       });
@@ -231,11 +225,8 @@ const getPageRange = () => {
     }
 
     try {
-      await axios.delete(`${API_URL}/delete-shop`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
+      await api.delete(`/delete-shop`, {
 
-        }
       });
       setShopInfo(null);
       setMessage('✅ Đã xóa shop thành công.');
@@ -294,12 +285,8 @@ const getPageRange = () => {
     };
 
     try {
-      const response = await axios.post(`${API_URL}/create-discount`, discountData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-
-        }
+      const response = await api.post(`/create-discount`, discountData, {
+    
       });
       setMessage('✅ Tạo mã giảm giá thành công!');
       console.log('Discount created:', response.data);
@@ -326,16 +313,13 @@ const getPageRange = () => {
     }
 
     try {
-      const response = await axios.get(`${API_URL}/get-shop-discounts`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-        },
+      const response = await api.get(`/get-shop-discounts`, {
       });
       setDiscounts(response.data);
       setMessage(response.data.length > 0 ? '✅ Đã tải danh sách mã giảm giá.' : '⚠️ Chưa có mã giảm giá nào.');
     } catch (error) {
       console.error('Error fetching shop discounts:', error);
-      setMessage(error.response?.data || '❌ Lỗi khi tải danh sách mã giảm giá.');
+      setMessage(error.response?.data?.message || '❌ Lỗi khi tải danh sách mã giảm giá.');
     } finally {
       setIsLoading(false);
     }
@@ -369,10 +353,8 @@ const getPageRange = () => {
       }
 
       try {
-        const response = await axios.get(`${API_URL}/has-shop`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-          },
+        const response = await api.get(`/has-shop`, {
+
         });
         setShopStatus(response.data);
         if (response.data.hasShop) {
@@ -394,7 +376,7 @@ const getPageRange = () => {
         }
       } catch (error) {
         console.error('Error checking shop status:', error);
-        setMessage(error.response?.data || '❌ Lỗi khi kiểm tra trạng thái shop.');
+        setMessage(error.response?.data?.message || '❌ Lỗi khi kiểm tra trạng thái shop.');
       }
     };
 
@@ -412,14 +394,12 @@ const getPageRange = () => {
       }
 
       try {
-        const response = await axios.get(`${API_URL}/getDashboard`, {
+        const response = await api.get(`/getDashboard`, {
           params: {
             page: pageNumber,
             size: pageSize,
           },
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-          },
+         
         });
         setDashboardSeller(response.data);
         setMessage('✅ Đã tải thông tin dashboard thành công.');
@@ -427,7 +407,7 @@ const getPageRange = () => {
 
       } catch (error) {
         console.error('Error fetching shop info:', error);
-        setMessage(error.response?.data || '❌ Lỗi khi tải thông tin shop.');
+        setMessage(error.response?.data?.message || '❌ Lỗi khi tải thông tin shop.');
           
       } finally {
         setIsLoading(false);
@@ -447,16 +427,14 @@ const getPageRange = () => {
       }
 
       try {
-        const response = await axios.get(`${API_URL}/get-shop-info`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-          },
+        const response = await api.get(`/get-shop-info`, {
+      
         });
         setShopInfo(response.data);
         setMessage('✅ Đã tải thông tin shop thành công.');
       } catch (error) {
         console.error('Error fetching shop info:', error);
-        setMessage(error.response?.data || '❌ Lỗi khi tải thông tin shop.');
+       setMessage(error.response?.data?.message || '❌ Lỗi khi tải thông tin shop.');
       } finally {
         setIsLoading(false);
       }

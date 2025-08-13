@@ -53,6 +53,8 @@ import ProductVariantPage from '../pages/inventory/ProductVariantPage';
 import AddProductVariant from '../pages/inventory/AddProductVariant';
 import SellerCommentsDashboard from '../pages/review/SellerCommentsDashboard';
 import ProductReviewManagement from '../pages/review/ProductReviewManagement';
+import SellerLocked from '../pages/notification/SellerLocked';
+import SellerPending from '../pages/notification/SellerPending';
 const SellerRoutes = () => {
   return (
     <Routes>
@@ -109,7 +111,8 @@ const SellerRoutes = () => {
         <Route path="/product/ActionProduct/:asin" element={<ActionProduct />} />
         <Route path="comments" element={<SellerCommentsDashboard />} />
         <Route path="comments/product/:asin" element={<ProductReviewManagement/>} />
-
+        <Route path="notification/locked" element={<SellerLocked />} />
+        <Route path="notification/pending" element={<SellerPending />} />
       </Route>
     </Routes>
   );

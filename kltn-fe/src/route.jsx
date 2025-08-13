@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+
 import AdminRoutes from './features/admin/routes';
 import UserRoutes from './features/user/routes';
 import SellerRoutes from './features/seller/routes';
@@ -13,7 +15,11 @@ import Login from './features/user/pages/auth/Login';
 import ForgetPassword from './features/user/pages/auth/ForgetPassword';
 import UserLayout from './features/user/layout/UserLayout';
 import { useAuthReady } from './features/user/apiService/useAuthReady';
+import { useNavigate } from 'react-router-dom';
+import { setNavigator } from './features/seller/utils/navigation';
 const AppRoutes = () => {
+  const navigate = useNavigate();
+  useEffect(() => { setNavigator(navigate); }, [navigate]);
     const isReady = useAuthReady();
 
   if (!isReady) return <div>⏳ Đang xác thực...</div>;

@@ -329,7 +329,7 @@ const addCartFromModal = async (qty, { size, color }) => {
     <div className="row">
   <div className="col-lg-6">
   <div className="slider-main">
-  {top5Products.map((p) => {
+  {top5Products?.map((p) => {
     // chuẩn hoá object theo format các trang khác dùng
     const norm = {
       ...p,
@@ -900,16 +900,19 @@ const addCartFromModal = async (qty, { size, color }) => {
 
                 <div className="shop-meta">
                   {/* Quick View */}
-                  <a
-  href="javascript:void(0);"
+  <a
+  href="#"
   className="btn btn-secondary btn-md btn-rounded"
-  data-bs-toggle="modal"
-  data-bs-target="#exampleModal"
-  onClick={(e) => { e.preventDefault(); fetchProductDetail(p.asin); }}
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fetchProductDetail(p.asin); // trong fetchProductDetail bạn đã modal.show()
+  }}
 >
   <i className="fa-solid fa-eye d-md-none d-block" />
   <span className="d-md-block d-none">Xem nhanh</span>
 </a>
+
                   {/* Wishlist */}
                   <div
                     className="btn btn-primary meta-icon dz-wishicon"
