@@ -1176,26 +1176,91 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
             order.get().setStatus(OrderStatus.processing.name());
         }else{
             order.get().setStatus(status);
-
         }
+        order.get().setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         orderRepository.save(order.get());
-        return "Update status thành công rồi";
+        MasterOrder master = order.get().getMasterOrder(); 
+        Long masterId = master.getMasterOrderId();
+        List<Order> children = orderRepository.findAllByMasterOrder_MasterOrderId(masterId);
+        boolean allDelivered =
+                children.stream().allMatch(o -> equalsAnyIgnoreCase(o.getStatus(), "delivered", "completed"));
+        if (allDelivered) {
+            setMasterStatusIfChanged(master, "completed");
+            return "Cập nhật trạng thái Order & MasterOrder (completed) thành công";
+        }
+        String first = children.get(0).getStatus();
+        boolean allSame = children.stream().allMatch(o -> first.equalsIgnoreCase(o.getStatus()));
+        if (allSame) {
+            setMasterStatusIfChanged(master, first);
+            return "Cập nhật trạng thái Order & MasterOrder (đồng nhất) thành công";
+        }
+
+        return "Cập nhật trạng thái Order thành công (MasterOrder giữ nguyên)";
     }
-    @Override
     @Transactional
     public String updateStatusByAdmin(Long orderId, String status) {
-        Optional<Order> order = orderRepository.findById(orderId);
-        if (status.equalsIgnoreCase("packed")) {
-            order.get().setStatus(OrderStatus.processing.name());
-        }else if (status.equalsIgnoreCase("shipped")) {
-            order.get().setStatus(OrderStatus.shipped.name());
-        } else if (status.equalsIgnoreCase("delivered")) {
-            order.get().setStatus(OrderStatus.completed.name());
-        }else {
-            order.get().setStatus(status);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        // Map status đầu vào -> status lưu ở Order
+        String normalized = normalizeChildStatus(status);
+        order.setStatus(normalized);
+        order.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        orderRepository.save(order);
+
+        // Rollup sang master
+        MasterOrder master = order.getMasterOrder(); // LAZY nhưng đang trong @Transactional nên OK
+        Long masterId = master.getMasterOrderId();
+        List<Order> children = orderRepository.findAllByMasterOrder_MasterOrderId(masterId);
+
+        // ---- QUY TẮC ROLLUP ----
+        // 1) Tất cả delivered/completed -> master = completed
+        boolean allDelivered =
+                children.stream().allMatch(o -> equalsAnyIgnoreCase(o.getStatus(), "delivered", "completed"));
+        if (allDelivered) {
+            setMasterStatusIfChanged(master, "completed");
+            return "Cập nhật trạng thái Order & MasterOrder (completed) thành công";
         }
-        orderRepository.save(order.get());
-        return "Update status thành công rồi";
+
+        // 2) Tất cả cùng một trạng thái -> master = trạng thái đó
+        String first = children.get(0).getStatus();
+        boolean allSame = children.stream().allMatch(o -> first.equalsIgnoreCase(o.getStatus()));
+        if (allSame) {
+            // Nếu cùng 'delivered' thì nhánh 1 đã bắt; còn lại set đúng y chang
+            setMasterStatusIfChanged(master, first);
+            return "Cập nhật trạng thái Order & MasterOrder (đồng nhất) thành công";
+        }
+
+        // 3) Lẫn lộn -> giữ nguyên master (hoặc tuỳ chọn: set "processing")
+        // setMasterStatusIfChanged(master, "processing");
+        return "Cập nhật trạng thái Order thành công (MasterOrder giữ nguyên)";
+    }
+
+    // Chuẩn hoá status của Order con theo rule bạn đang dùng
+    private String normalizeChildStatus(String status) {
+        if (status == null) return "pending";
+        if (status.equalsIgnoreCase("packed"))      return OrderStatus.processing.name(); // như bạn đang map
+        if (status.equalsIgnoreCase("shipped"))     return OrderStatus.shipped.name();
+        if (status.equalsIgnoreCase("delivered"))   return OrderStatus.completed.name(); // hoặc vẫn lưu "delivered"
+        // Các case khác: pending, failed, cancelled, cancelledSeller...
+        return status.toLowerCase();
+    }
+
+    private void setMasterStatusIfChanged(MasterOrder master, String newStatus) {
+        if (!equalsIgnoreCase(master.getStatus(), newStatus)) {
+            master.setStatus(newStatus.toLowerCase());
+            master.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            masterOrderRepository.save(master);
+        }
+    }
+
+    // ===== helpers nhỏ =====
+    private static boolean equalsIgnoreCase(String a, String b) {
+        return a != null && b != null && a.equalsIgnoreCase(b);
+    }
+    private static boolean equalsAnyIgnoreCase(String a, String... bs) {
+        for (String b : bs) if (equalsIgnoreCase(a, b)) return true;
+        return false;
     }
     @Override
     public String cancelBySeller(Long orderId, Long shopId) {

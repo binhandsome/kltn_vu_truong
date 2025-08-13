@@ -1,10 +1,11 @@
+// src/layout/UserLayout.jsx
 import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import UserHeader from './UserHeader';
 import UserFooter from './UserFooter';
-import 'mutation-observer';
 
+// ====== CONFIG (giữ những file thật sự cần) ======
 const cssFiles = [
   '/assets/user/icons/feather/css/iconfont.css',
   '/assets/user/icons/fontawesome/css/all.min.css',
@@ -52,121 +53,124 @@ const jsFiles = [
   '/assets/user/js/custom.min.js',
   '/assets/user/js/dashbord-account.js',
 ];
+// ====== Loader an toàn, chống chèn trùng ======
+const loadedCSS = new Set();
+const loadedJS = new Map(); // src -> Promise<void>
+
+function loadCSSOnce(href) {
+  if (loadedCSS.has(href)) return;
+  if (!document.querySelector(`link[href="${href}"]`)) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+  loadedCSS.add(href);
+}
+
+function loadScriptOnce(src) {
+  if (loadedJS.has(src)) return loadedJS.get(src);
+  const existing = document.querySelector(`script[src="${src}"]`);
+  if (existing) {
+    const p = Promise.resolve();
+    loadedJS.set(src, p);
+    return p;
+  }
+  const p = new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = false; // giữ thứ tự
+    s.onload = () => resolve();
+    s.onerror = (err) => {
+      console.warn(`Failed to load: ${src}`, err);
+      resolve(); // không chặn flow
+    };
+    document.body.appendChild(s);
+  });
+  loadedJS.set(src, p);
+  return p;
+}
+
+// ====== Swiper helpers ======
+function safeInitSwiper(selector, options) {
+  if (!window.Swiper) return null;
+  const el = document.querySelector(selector);
+  if (!el) return null;
+
+  // destroy instance cũ (nếu có)
+  if (el.swiper && !el.swiper.destroyed) {
+    try { el.swiper.destroy(true, true); } catch {}
+    el.swiper = null;
+  }
+
+  // option sạch: bỏ pagination/nav nếu element không tồn tại
+  if (options?.pagination?.el && !document.querySelector(options.pagination.el)) {
+    options = { ...options };
+    delete options.pagination;
+  }
+  if (options?.navigation) {
+    const { nextEl, prevEl } = options.navigation;
+    if (!document.querySelector(nextEl) || !document.querySelector(prevEl)) {
+      options = { ...options };
+      delete options.navigation;
+    }
+  }
+  if (options?.thumbs?.swiper == null) {
+    options = { ...options };
+    delete options.thumbs;
+  }
+
+  const inst = new window.Swiper(el, options);
+  el.swiper = inst;
+  return inst;
+}
+
+function destroyAllSwipers(root = document) {
+  root.querySelectorAll('.swiper').forEach((el) => {
+    if (el.swiper && !el.swiper.destroyed) {
+      try { el.swiper.destroy(true, true); } catch {}
+    }
+    el.swiper = null;
+  });
+}
 
 const UserLayout = () => {
   const location = useLocation();
-  const isInitializing = useRef(false);
+  const bootedRef = useRef(false);          // đảm bảo load assets 1 lần
+  const inittingRef = useRef(false);        // chống re-entrant
+  const createdSwipersRef = useRef([]);     // nếu muốn track cụ thể instance
 
-  // Inject CSS once
+  // 1) Load CSS ngay khi mount (mỗi file 1 lần)
   useEffect(() => {
-    cssFiles.forEach((href) => {
-      if (!document.querySelector(`link[href="${href}"]`)) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        document.head.appendChild(link);
-      }
-    });
-
-    return () => {
-      // Optional: Cleanup CSS on layout unmount
-      // cssFiles.forEach((href) => {
-      //   const el = document.querySelector(`link[href="${href}"]`);
-      //   if (el) el.remove();
-      // });
-    };
+    cssFiles.forEach(loadCSSOnce);
   }, []);
 
-  // Load JS and initialize Swiper on route change
+  // 2) Mỗi lần đổi route: đảm bảo JS đã load, rồi init các Swiper có mặt
   useEffect(() => {
-    const loadScript = (src) =>
-      new Promise((resolve) => {
-        if (document.querySelector(`script[src="${src}"]`)) return resolve();
-        const script = document.createElement('script');
-        script.src = src;
-        script.async = false;
-        script.onload = resolve;
-        script.onerror = (err) => {
-          console.warn(`Failed to load script: ${src}`, err);
-          resolve();
-        };
-        document.body.appendChild(script);
-      });
+    let cancelled = false;
 
-    const initSwiper = (selector, options) => {
-      if (!window.Swiper) {
-        return null;
-      }
-      const element = document.querySelector(selector);
-      if (!element) {
-        return null;
-      }
-      // Prevent reinitialization if already valid
-      if (element.swiper && typeof element.swiper.destroy === 'function') {
-        return element.swiper;
-      }
-
-      // Dynamically remove pagination config if el doesn't exist
-      if (options.pagination && options.pagination.el) {
-        if (!document.querySelector(options.pagination.el)) {
-          delete options.pagination;
+    const ensureAssets = async () => {
+      // JS assets chỉ load 1 lần cho toàn app
+      if (!bootedRef.current) {
+        for (const src of jsFiles) {
+          // giữ thứ tự (Bootstrap trước, Swiper sau)
+          // eslint-disable-next-line no-await-in-loop
+          await loadScriptOnce(src);
         }
+        bootedRef.current = true;
       }
-
-      // Dynamically remove navigation config if nextEl or prevEl doesn't exist
-      if (options.navigation) {
-        const next = document.querySelector(options.navigation.nextEl);
-        const prev = document.querySelector(options.navigation.prevEl);
-        if (!next || !prev) {
-          delete options.navigation;
-        }
-      }
-
-      // Dynamically remove thumbs if swiper is null (though already handled in calls)
-      if (options.thumbs && options.thumbs.swiper === null) {
-        delete options.thumbs;
-      }
-
-      const swiperInstance = new window.Swiper(element, options);
-      element.swiper = swiperInstance;
-      return swiperInstance;
     };
 
-    const loadScriptsAndInitSwiper = async () => {
-      if (isInitializing.current) {
-        return;
-      }
-      isInitializing.current = true;
+    const initCarousels = () => {
+      if (cancelled || inittingRef.current) return;
+      inittingRef.current = true;
 
-      for (const src of jsFiles) {
-        await loadScript(src);
-      }
-
-      // Removed unnecessary setTimeout; useEffect runs after DOM render
-      // Initialize .category-swiper if present
-      initSwiper('.category-swiper', {
-        slidesPerView: 4,
-        spaceBetween: 30,
-        loop: true,
-        autoplay: { delay: 2000, disableOnInteraction: false },
-        pagination: { el: '.swiper-pagination', clickable: true },
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        breakpoints: {
-          576: { slidesPerView: 2 },
-          768: { slidesPerView: 3 },
-          992: { slidesPerView: 4 },
-          1200: { slidesPerView: 5 },
-          1500: { slidesPerView: 6 },
-          2000: { slidesPerView: 7 },
-        },
-      });
-
-      // Thumb config (horizontal to avoid stacking)
+      // ====== CẤU HÌNH SWIPER ======
       const thumbConfig = {
         slidesPerView: 4,
-        spaceBetween: -8, // Assuming this is intentional for overlap; adjust if needed
+        spaceBetween: 8,
         direction: 'horizontal',
-        loop: true,
+        loop: false,                // loop dễ gây clone node → tránh
         freeMode: true,
         watchSlidesProgress: true,
         breakpoints: {
@@ -182,33 +186,30 @@ const UserLayout = () => {
       const mainConfig = {
         slidesPerView: 1,
         spaceBetween: 10,
-        loop: true,
-        zoomedSlideClass: 'swiper-slide-zoomed',
+        loop: false,                // tránh clone
         pagination: { el: '.swiper-pagination', clickable: true },
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
       };
 
-      // Product Gallery Thumb and Main
-      // Initialize main even if thumb is missing, but without thumbs
-      const productThumb = initSwiper('.product-gallery-swiper.thumb-swiper-lg', thumbConfig);
-      initSwiper('.product-gallery-swiper2', {
-        ...mainConfig,
-        thumbs: productThumb ? { swiper: productThumb } : undefined,
+      // ====== KHỞI TẠO TÙY VÀO DOM ĐANG CÓ ======
+      // Category swiper
+      const cat1 = safeInitSwiper('.category-swiper', {
+        slidesPerView: 4, spaceBetween: 30, loop: false,
+        autoplay: { delay: 2000, disableOnInteraction: false },
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        breakpoints: {
+          576: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          992: { slidesPerView: 4 },
+          1200: { slidesPerView: 5 },
+          1500: { slidesPerView: 6 },
+          2000: { slidesPerView: 7 },
+        },
       });
 
-      // Quick Modal Thumb and Main
-      // Initialize main even if thumb is missing, but without thumbs
-      const quickThumb = initSwiper('.quick-modal-swiper.thumb-swiper-lg', thumbConfig);
-      initSwiper('.quick-modal-swiper2', {
-        ...mainConfig,
-        thumbs: quickThumb ? { swiper: quickThumb } : undefined,
-      });
-
-      // Category Swiper 2
-      initSwiper('.category-swiper2', {
-        slidesPerView: 3,
-        spaceBetween: 20,
-        loop: true,
+      const cat2 = safeInitSwiper('.category-swiper2', {
+        slidesPerView: 3, spaceBetween: 20, loop: false,
         autoplay: { delay: 3000, disableOnInteraction: false },
         pagination: { el: '.swiper-pagination', clickable: true },
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
@@ -220,38 +221,51 @@ const UserLayout = () => {
         },
       });
 
-      // Swiper Four (likely related products carousel)
-      initSwiper('.swiper-four', {
-        slidesPerView: 2,
-        spaceBetween: 15,
-        loop: true,
-        autoplay: { delay: 2500, disableOnInteraction: false },
-        pagination: { el: '.swiper-pagination', clickable: true },
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        breakpoints: {
-          576: { slidesPerView: 2 },
-          768: { slidesPerView: 3 },
-          992: { slidesPerView: 4 },
-        },
+      // Product gallery (page)
+      const productThumb = safeInitSwiper('.product-gallery-swiper.thumb-swiper-lg', thumbConfig);
+      const productMain = safeInitSwiper('.product-gallery-swiper2', {
+        ...mainConfig,
+        ...(productThumb ? { thumbs: { swiper: productThumb } } : {}),
       });
 
-      isInitializing.current = false;
+      // Quick modal gallery (chỉ init nếu modal đang trong DOM)
+      const quickThumb = safeInitSwiper('.quick-modal-swiper.thumb-swiper-lg', thumbConfig);
+      const quickMain = safeInitSwiper('.quick-modal-swiper2', {
+        ...mainConfig,
+        ...(quickThumb ? { thumbs: { swiper: quickThumb } } : {}),
+      });
+
+      // Lưu nếu bạn muốn chủ động destroy theo instance
+      createdSwipersRef.current = [cat1, cat2, productThumb, productMain, quickThumb, quickMain].filter(Boolean);
+
+      inittingRef.current = false;
     };
 
-    loadScriptsAndInitSwiper();
+    const run = async () => {
+      await ensureAssets();   // JS sẵn sàng
+      if (cancelled) return;
+
+      // Dọn các instance cũ (nếu route trước có)
+      destroyAllSwipers(document);
+
+      // Init theo DOM hiện tại
+      initCarousels();
+    };
+
+    run();
 
     return () => {
-      document.querySelectorAll('.swiper').forEach((el) => {
-        if (el.swiper && typeof el.swiper.destroy === 'function') {
-          el.swiper.destroy(true, true);
-          el.swiper = null;
-        } else if (el.swiper) {
-          el.swiper = null;
-        }
-      });
-      isInitializing.current = false;
+      cancelled = true;
+      // Dọn sạch Swiper khi rời route (hoặc unmount layout)
+      destroyAllSwipers(document);
+      createdSwipersRef.current = [];
+      inittingRef.current = false;
     };
   }, [location.pathname]);
+
+  // ====== Lưu ý về loader ngoài React ======
+  // <div id="loading-area"> nên ở ngoài #root trong index.html. Nếu bạn vẫn xoá bằng JS,
+  // hãy đảm bảo React không render/điều khiển node đó.
 
   return (
     <HelmetProvider>
@@ -265,6 +279,7 @@ const UserLayout = () => {
       </Helmet>
 
       <UserHeader />
+      {/* Outlet có key để force remount theo route, nhưng do chúng ta destroy trước/after nên OK */}
       <Outlet key={location.pathname} />
       <UserFooter />
     </HelmetProvider>

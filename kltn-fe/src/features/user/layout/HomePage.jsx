@@ -966,12 +966,13 @@ const addCartFromModal = async (qty, { size, color }) => {
                             <div className="shop-meta">
                               {/* Quick View */}
                               <a
-                                href="javascript:void(0);"
+                                href="#"
                                 className="btn btn-secondary btn-md btn-rounded"
                                 data-bs-toggle="modal"
                                 data-bs-target="#exampleModal"
                                 onClick={(e) => {
                                   e.preventDefault();
+                                      e.stopPropagation();
                                   fetchProductDetail(p.asin);
                                 }}
                               >

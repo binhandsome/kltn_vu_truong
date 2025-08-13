@@ -113,6 +113,7 @@ public class AuthServiceImpl implements AuthService {
             auth.setUpdatedAt(new Date());
             auth.setUserRole(UserRole.USER);
             auth.setIsBanned(false);
+            auth.setIsActive(true);
             Auth savedAuth = authRepository.save(auth);
             User user = new User();
             user.setAuth(savedAuth);
@@ -156,10 +157,18 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(request.getPassword(), auth.getPasswordHash())) {
             throw new RuntimeException("Tên người dùng hoặc mật khẩu không đúng");
         }
+        if (auth.getIsBanned()) {
+            throw new RuntimeException("Tài khoản bạn đã bị khóa vui lòng liên hệ ADMIN");
+        }
+        if (!auth.getIsActive()) {
+            throw new RuntimeException("Bạn chưa kích hoạt tài khoản");
+        }
 
-        String accessToken = jwtUtil.generateAccessToken(auth.getUsername(), auth.getAuthId(), auth.getUserRole().toString());
+        String accessToken = jwtUtil.generateAccessToken(auth.getUsername(), auth.getAuthId(),
+                auth.getUserRole().toString());
         String refreshToken = jwtUtil.generateRefreshToken();
-        redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set("refresh:" + auth.getUsername(), refreshToken, 7L,
+                TimeUnit.DAYS);
         return new LoginResponse(accessToken, refreshToken, auth.getUsername());
     }
 

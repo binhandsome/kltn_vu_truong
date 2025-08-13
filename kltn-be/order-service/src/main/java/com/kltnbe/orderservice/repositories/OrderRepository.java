@@ -22,6 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByMasterOrder(MasterOrder masterOrder);
     @EntityGraph(attributePaths = "masterOrder")
     Optional<Order> findWithMasterOrderByOrderId(Long orderId);
+    List<Order> findAllByMasterOrder_MasterOrderId(Long masterOrderId);
 
 //    Page<Order> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 //    Optional<Order> findByOrderId(Long orderId);

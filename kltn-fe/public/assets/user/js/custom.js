@@ -745,50 +745,6 @@ var Pixio = function () {
 		});
 	}
 
-	var handleOpenModal = function () {
-		var modalBox = `<div class="modal fade inquiry-modal style-1" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-			<div class="modal-dialog" role="document">
-				<div class="inquiry-adv">
-					<img src="images/adv-2.png" alt=""/>
-				</div>
-				<div class="modal-content">
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-					  <span aria-hidden="true">
-						<i class="icon feather icon-x"></i>
-					  </span>
-					</button>
-					<div>
-						<div class="modal-header">
-							<span class="title-head">Newsletter</span>
-							<h3 class="modal-title" id="exampleModalLongTitle">Subscribe Now</h3>
-							<p class="text">Stay updated on all that's new add noteworthy</p>
-						</div>
-						<div class="modal-body">
-							<form action="script/mailchamp.php" class="dzSubscribe" method="post">
-								<div class="dzSubscribeMsg"></div>
-								<div class="form-group">
-									<label class="form-label">Email Address</label>
-									<input type="email" name="dzEmail" class="form-control" required placeholder="Enter Email Address">
-								</div>
-								<button name="submit" type="submit" value="Submit" class="btn btn-secondary btn-block m-b15 text-uppercase">Subscribe</button>
-								<div class="custom-checkbox">
-									<input type="checkbox" class="form-check-input" id="basic_checkbox_3">
-									<label class="form-check-label" for="basic_checkbox_3">I agree to receive marketing materials</label>
-								</div>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>`;
-
-		if (getCookie('prevent_subscription') != 'true') {
-			jQuery('body').append(modalBox);
-			setTimeout(function () {
-				jQuery("#myModal").modal('show');
-			}, 5000)
-		}
-	}
 
 	var handleOpenModalCookie = function () {
 		$(document).on('click', '.modal-content .btn-close', function () {

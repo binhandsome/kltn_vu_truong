@@ -36,16 +36,16 @@ public class Auth implements Serializable {
     @Column(name = "is_banned")
     private Boolean isBanned;
 
-    @Column(name = "is_active", nullable = true, insertable = false, updatable = false)
+    @Column(name = "is_active", nullable = true)
     private Boolean isActive;
 
-    @Column(name = "last_login", nullable = true, insertable = false, updatable = false)
+    @Column(name = "last_login", nullable = true)
     private Date lastLogin;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at")
     private Date createdAt;
 
-    @Column(name = "updated_at", insertable = false, updatable = false)
+    @Column(name = "updated_at")
     private Date updatedAt;
 
     @Column(name = "last_login_ip", length = 45)
@@ -56,6 +56,9 @@ public class Auth implements Serializable {
 
     @Column(name = "email", unique = true, length = 100)
     private String email;
+
+    @Column(nullable = false)
+    private Integer tokenVersion = 0;
 
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
