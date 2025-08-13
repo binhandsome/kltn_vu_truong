@@ -144,4 +144,5 @@ public interface SellerService {
     long followShop(Long shopId, Long userId);
     long unfollowShop(Long shopId, Long userId);
     boolean isFollowed(Long shopId, Long userId);
+    String checkStatusByShop(Long authId);
 }

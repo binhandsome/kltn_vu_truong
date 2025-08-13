@@ -3,6 +3,7 @@ import { authFetch } from "../../user/apiService/authFetch"
 
 import axios from 'axios';
 import { data } from 'jquery';
+import { api } from '../utils/api';
 function AdminHeader() {
     const [username, setUsername] = useState();
     const [email, setEmail] = useState();
@@ -13,13 +14,8 @@ function AdminHeader() {
   window.dispatchEvent(new Event('loggedOut'));
 };
    const getInfoSeller = async () => {
-    const accessToken = localStorage.getItem("accessToken");
     try {
-        const response = await axios.get("http://localhost:8089/api/seller/userProfileResponse", {
-            headers: {
-                Authorization: `Bearer ${accessToken}`, // 🔑 Gửi accessToken qua Header
-            },
-        });
+        const response = await api.get("/userProfileResponse");
         console.log(response.data.email);
         setEmail(response.data.email);
         setUsername(response.data.username);
@@ -29,6 +25,7 @@ function AdminHeader() {
         console.log(error);
     }
 };
+
 
 useEffect(() => {
     getInfoSeller();
