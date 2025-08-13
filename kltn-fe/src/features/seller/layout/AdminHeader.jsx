@@ -130,16 +130,16 @@ return (
                                 <ul>
                                
                                
-                                    <li>
-                                        <button  onClick={() => {
+                                   <li>
+                                        <a onClick={() => {
                                                   logout();
                                                   window.dispatchEvent(new Event('loggedOut'));
-                                                  window.location.href = '/seller';
+                                                  window.location.href = '/admin';
                                                 }}>
                                         {/* Logout */}
-                                            <i className="fas fa-sign-out-alt"></i> 
-                                            Đăng xuất
-                                        </button>
+                                            <i className="fas fa-sign-out-alt" ></i> 
+                                            Đăng Xuất
+                                        </a>
                                     </li>
                                 </ul>
                             </div>

@@ -19,7 +19,7 @@ public class InternalApiAspect {
     @Value("${internal.secret}")
     private String internalSecretKey;
 
-    @Before("@within(com.kltnbe.security.utils.InternalApi) || @annotation(com.kltnbe.security.ul.InternalApi)")
+    @Before("@within(com.kltnbe.security.utils.InternalApi) || @annotation(com.kltnbe.security.utils.InternalApi)")
     public void checkInternalSecret() {
         String secret = request.getHeader("X-Internal-Secret");
         if (secret == null || !secret.equals(internalSecretKey)) {

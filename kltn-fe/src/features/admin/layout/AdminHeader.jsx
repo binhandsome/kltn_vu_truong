@@ -1,8 +1,11 @@
 
 import { authFetch } from "../../user/apiService/authFetch"
 function AdminHeader() {
-
-
+    const accessToken = localStorage.getItem("accessToken");
+const logout = () => {
+  localStorage.clear();
+  window.dispatchEvent(new Event('loggedOut'));
+};
     return(
     <>
 
@@ -57,7 +60,28 @@ function AdminHeader() {
                                     <span className="main-circle"></span>
                                 </div>
                             </a>
-                            <div className="user-info-box">
+                            {accessToken ? (
+ <div className="user-info-box">
+                                <div className="drop-down-header">
+                                    <h4>Admin</h4>
+                                </div>
+                                <ul>
+                                  
+                                    <li>
+                                        <a onClick={() => {
+                                                  logout();
+                                                  window.dispatchEvent(new Event('loggedOut'));
+                                                  window.location.href = '/admin';
+                                                }}>
+                                        {/* Logout */}
+                                            <i className="fas fa-sign-out-alt" ></i> 
+                                            Đăng Xuất
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            ):(
+                                <div className="user-info-box">
                                 <div className="drop-down-header">
                                     <h4>Chưa đăng nhập</h4>
                                 </div>
@@ -72,6 +96,8 @@ function AdminHeader() {
                                     </li>
                                 </ul>
                             </div>
+                            )}
+                           
                         </div>
                     </div>
                 </div>

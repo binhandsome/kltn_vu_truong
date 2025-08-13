@@ -3,6 +3,10 @@ import { useLocation, Link } from 'react-router-dom';
 
 export default function SellerLocked() {
   const { state } = useLocation(); // { code, message }
+       const logout = () => {
+  localStorage.clear();
+  window.dispatchEvent(new Event('loggedOut'));
+};
   return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#0f172a'}}>
       <div style={{maxWidth:560,background:'#111827',borderRadius:16,padding:28,boxShadow:'0 20px 50px rgba(0,0,0,.35)',color:'#e5e7eb'}}>
@@ -14,10 +18,15 @@ export default function SellerLocked() {
           {state?.message || 'Tài khoản SELLER của bạn đang bị khóa. Bạn chỉ có thể truy cập Dashboard trạng thái.'}
         </p>
         <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-          <Link to="/seller/dashboard/locked"
-                style={{padding:'10px 16px',borderRadius:10,background:'#2563eb',color:'#fff',textDecoration:'none',fontWeight:600}}>
-            Mở Dashboard trạng thái
-          </Link>
+              <button style={{padding:'10px 16px',borderRadius:10,background:'#374151',color:'#fff',textDecoration:'none',fontWeight:600}}  onClick={() => {
+                                                  logout();
+                                                  window.dispatchEvent(new Event('loggedOut'));
+                                                  window.location.href = '/seller';
+                                                }}>
+                                        {/* Logout */}
+                                            <i className="fas fa-sign-out-alt"></i> 
+                                            Đăng xuất
+                                        </button>
           <Link to="/"
                 style={{padding:'10px 16px',borderRadius:10,background:'#374151',color:'#fff',textDecoration:'none',fontWeight:600}}>
             Về trang chủ
