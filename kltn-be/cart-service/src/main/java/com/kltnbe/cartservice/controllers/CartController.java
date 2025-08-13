@@ -1,10 +1,12 @@
 package com.kltnbe.cartservice.controllers;
 
+import com.kltnbe.cartservice.dtos.CartItemDto;
 import com.kltnbe.cartservice.dtos.req.CartRequest;
 import com.kltnbe.cartservice.dtos.req.RemoveSelectedItemsRequest;
 import com.kltnbe.cartservice.dtos.res.CartResponse;
 import com.kltnbe.cartservice.services.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -86,5 +88,18 @@ public class CartController {
         System.out.println("Trả về response: " + cartResponse);
         return cartResponse;
     }
+    @PostMapping("/removePurchased")
+    public ResponseEntity<CartResponse> removePurchased(
+            @RequestParam(required = false) String token,
+            @RequestParam(required = false) String cartId,
+            @RequestBody List<CartItemDto> items
+    ) {
+        CartRequest base = new CartRequest();
+        base.setToken(token);
+        base.setCartId(cartId);
+        CartResponse res = cartService.removePurchasedItems(base, items);
+        return ResponseEntity.ok(res);
+    }
+
 
 }

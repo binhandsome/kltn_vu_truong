@@ -53,6 +53,7 @@ public interface ProductService {
     Optional<String> findProductNameById(Long productId);
     ProductResponse getProductById(Long idProduct);
     List<ProductResponse> getProductsByStoreId(Long storeId, Long authId);
+    public Page<ProductResponse> getProductsByStoreId(Long storeId, Long authId, Pageable pageable);
     void updateStatus(Long productId, String status, Long authId);
     Optional<Long> getStoreIdByProductId(Long productId);
     List<ProductStatsDTO> getProductCountByStatus();

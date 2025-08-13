@@ -5,6 +5,33 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 
+// EN -> VI cho trạng thái shop
+const toVNShopStatus = (s = "") => {
+  const v = s.toLowerCase();
+  if (v === "active") return "Hoạt động";
+  if (v === "inactive") return "Không hoạt động";
+  if (v === "pending") return "Chờ duyệt";
+  if (v === "suspended") return "Tạm ngưng";
+  if (v === "banned") return "Bị khóa";
+  if (v === "rejected") return "Bị từ chối";
+  return "Không rõ";
+};
+
+// Badge màu cho trạng thái shop
+const shopBadge = (s = "") => {
+  const v = s.toLowerCase();
+  return (
+    {
+      active: "badge-success",
+      pending: "badge-warning",
+      inactive: "badge-secondary",
+      suspended: "badge-danger",
+      banned: "badge-danger",
+      rejected: "badge-danger",
+    }[v] || "badge-secondary"
+  );
+};
+
 const style = {
   position: 'absolute',
   top: '50%',
@@ -395,7 +422,11 @@ const handleViewCccd = async (shopId) => {
                 <td>{shop.nameShop}</td>
                 <td>{shop.shopEmail}</td>
                  <td>{shop.shopPhone}</td>
-                <td>{shop.shopStatus}</td>
+                 <td>
+  <span className={`badge ${shopBadge(shop.shopStatus)}`}>
+    {toVNShopStatus(shop.shopStatus)}
+  </span>
+</td>
                 <td>
                   <button className="btn btn-success btn-sm me-2" onClick={() => approveShop(shop.shopId)}>Duyệt</button>
                   <button className="btn btn-danger btn-sm" onClick={() => banShop(shop.shopId)}>Khóa</button>

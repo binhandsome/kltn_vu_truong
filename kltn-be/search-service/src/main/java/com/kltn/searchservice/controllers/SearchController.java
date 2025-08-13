@@ -196,5 +196,13 @@ public class SearchController {
 
         return dto;
     }
-
+    @GetMapping("/api/search/top-sellers")
+    public List<ProductDocument> topSellers(
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Integer days,
+            @RequestParam(defaultValue = "delivered,shipped,packed") String statuses,
+            @RequestParam(required = false) Long storeId
+    ) throws IOException {
+        return searchService.getTopSellers(size, days, statuses, storeId);
+    }
 }

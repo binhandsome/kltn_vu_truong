@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -415,7 +416,22 @@ public class ProductController {
     ) {
         return ResponseEntity.ok(productService.getProductsByStoreId(storeId, authId));
     }
+    @GetMapping("/by-seller/{storeId}/paged")
+    public ResponseEntity<Map<String, Object>> getProductsBySellerPaged(
+            @PathVariable Long storeId,
+            @RequestParam Long authId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<ProductResponse> result = productService.getProductsByStoreId(storeId, authId, pageable);
 
+        Map<String, Object> body = new HashMap<>();
+        body.put("content", result.getContent());
+        body.put("totalPages", result.getTotalPages());
+        body.put("totalElements", result.getTotalElements());
+        return ResponseEntity.ok(body);
+    }
     @PutMapping("/{productId}/status")
     public ResponseEntity<?> updateStatus(
             @PathVariable Long productId,

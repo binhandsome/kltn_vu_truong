@@ -1,14 +1,18 @@
 package com.kltnbe.orderservice.controllers;
 
+import com.kltnbe.orderservice.dtos.CartItemDTO;
 import com.kltnbe.orderservice.dtos.DeliveryAddressDTO;
 import com.kltnbe.orderservice.dtos.SalesStatsDTO;
+import com.kltnbe.orderservice.dtos.TopProductDTO;
 import com.kltnbe.orderservice.dtos.req.DashboardStatsResponse;
+import com.kltnbe.orderservice.dtos.req.OrderItemRequest;
 import com.kltnbe.orderservice.dtos.req.OrderRequest;
 import com.kltnbe.orderservice.dtos.res.MonthlyRevenueDTO;
 import com.kltnbe.orderservice.dtos.res.OrderItemResponse;
 import com.kltnbe.orderservice.dtos.res.OrderResponse;
 import com.kltnbe.orderservice.dtos.res.ResponseDashboardAdmin;
 import com.kltnbe.orderservice.entities.MasterOrder;
+import com.kltnbe.orderservice.repositories.TopProductProjection;
 import com.kltnbe.orderservice.services.OrderService;
 import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
@@ -31,9 +35,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -241,6 +244,41 @@ public class OrderController {
     public BigDecimal getTotalRevenue() {
         return orderService.getTotalRevenue();
     }
+
+    @GetMapping("/sold-count")
+    public Map<String, Long> getSoldCounts(@RequestParam("productIds") String productIdsCsv,
+                                           @RequestParam(value="storeId", required=false) Long storeId,
+                                           @RequestParam(value="statuses", required=false) String statusesCsv) {
+        List<Long> ids = Arrays.stream(productIdsCsv.split(","))
+                .filter(s -> !s.isBlank())
+                .map(Long::valueOf)
+                .toList();
+
+        List<String> statuses = (statusesCsv == null || statusesCsv.isBlank())
+                ? null
+                : Arrays.stream(statusesCsv.split(",")).map(String::trim).toList();
+
+        Map<Long, Long> raw = orderService.getSoldCounts(storeId, statuses, ids);
+
+        Map<String, Long> out = new LinkedHashMap<>();
+        ids.forEach(id -> out.put(String.valueOf(id), raw.getOrDefault(id, 0L)));
+        return out;
+    }
+
+    @GetMapping("/top-products")
+    public List<TopProductDTO> getTopProducts(@RequestParam(defaultValue = "20") int size,
+                                              @RequestParam(value="days", required=false) Integer days,
+                                              @RequestParam(value="statuses", required=false) String statusesCsv,
+                                              @RequestParam(value="storeId", required=false) Long storeId) {
+        List<String> statuses = (statusesCsv == null || statusesCsv.isBlank())
+                ? null
+                : Arrays.stream(statusesCsv.split(",")).map(String::trim).toList();
+        return orderService.getTopProducts(size, days, statuses, storeId);
+    }
+
+//    Helper xoá item sau khi đặt
+
+
 //    @GetMapping("/revenue")
 //    public ResponseEntity<Map<String, BigDecimal>> getRevenue(
 //            @RequestParam Long storeId,
@@ -269,6 +307,7 @@ public class OrderController {
 //
 //        return ResponseEntity.ok(response);
 //    }
+
 
 
 

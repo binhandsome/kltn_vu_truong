@@ -176,16 +176,28 @@ public class SellerController {
         return sellerService.getVariant(variantId);
     }
 
-    @GetMapping("/products")
-    public ResponseEntity<List<ProductResponseDTO>> getMyProducts(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+//    @GetMapping("/products")
+//    public ResponseEntity<List<ProductResponseDTO>> getMyProducts(
+//            @AuthenticationPrincipal CustomUserDetails userDetails) {
+//
+//        Long authId = userDetails.getAuthId();
+//        Long storeId = sellerService.getIdShopByAuthId(authId);
+//
+//        List<ProductResponseDTO> products = sellerService.getProductsBySeller(storeId, authId);
+//        return ResponseEntity.ok(products);
+//    }
+@GetMapping("/products")
+public ResponseEntity<Map<String, Object>> getMyProducts(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+) {
+    Long authId  = userDetails.getAuthId();
+    Long storeId = sellerService.getIdShopByAuthId(authId);
 
-        Long authId = userDetails.getAuthId();
-        Long storeId = sellerService.getIdShopByAuthId(authId);
-
-        List<ProductResponseDTO> products = sellerService.getProductsBySeller(storeId, authId);
-        return ResponseEntity.ok(products);
-    }
+    Map<String, Object> data = sellerService.getProductsBySellerPaged(storeId, authId, page, size);
+    return ResponseEntity.ok(data);
+}
 
     @PostMapping("/variants")
     public ResponseEntity<ProductVariantDTO> createVariant(

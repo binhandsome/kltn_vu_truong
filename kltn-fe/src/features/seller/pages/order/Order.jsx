@@ -4,6 +4,31 @@ import { useNavigate } from 'react-router-dom';
 import { parseISO } from 'date-fns';
 import { Chart } from 'chart.js';
 
+// Map trạng thái
+// VI master order status (giữ nguyên key tiếng Anh để backend dùng)
+const VI_MASTER_STATUS = {
+  pending: 'Chờ xác nhận',
+  processing: 'Đang xử lý',
+  shipped: 'Đang giao',
+  completed: 'Hoàn tất',
+  cancelled: 'Đã hủy',
+  cancelledAdmin: 'Đã hủy (Admin)',
+  cancelledSeller: 'Đã hủy (Người bán)',
+};
+
+// VI delivery status
+const VI_DELIVERY_STATUS = {
+  packed: 'Đã đóng gói',
+  shipped: 'Đã gửi hàng',
+  delivered: 'Đã giao',
+  failed: 'Giao thất bại',
+  
+};
+
+// helper: đổi sang nhãn VI khi render UI
+const toViMaster = (s) => VI_MASTER_STATUS[s?.trim?.().toLowerCase()] ?? s;
+const toViDelivery = (s) => VI_DELIVERY_STATUS[s?.trim?.().toLowerCase()] ?? s;
+
 const cardStyle = {
   background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(88, 28, 135, 0.9))',
   border: '1px solid rgba(0, 255, 255, 0.3)',
@@ -88,7 +113,7 @@ function Order() {
   const [chart, setChart] = useState(null);
   const chartRef = useRef(null); // Sử dụng useRef để quản lý chart
   const [isDataFetched, setIsDataFetched] = useState(false); // Trạng thái để kiểm soát hiển thị
-  const statusOptions = ['completed', 'pending', 'cancelled', 'processing', 'shipped', "cancelledSeller"];
+  const statusOptions = ['completed', 'pending', 'cancelled', 'processing', 'shipped', 'cancelledSeller'];
   const [selectedStatuses, setSelectedStatuses] = useState([]); // Mặc định chọn completed
   const [deliveryStatus, setDeliveryStatus] = useState('');
   const maxPagesToShow = 10;
@@ -124,6 +149,39 @@ function Order() {
         return { icon: "fas fa-credit-card", text: "Khác", color: "text-secondary" };
     }
   };
+  // Convert Giờ Việt Nam
+  const VN_TZ = 'Asia/Ho_Chi_Minh';
+
+// Nhận cả 2 kiểu chuỗi:
+// 1) '2025-08-13 03:11:19'  (giờ VN, KHÔNG offset)
+// 2) '2025-08-12T18:43:36.000+00:00' (ISO có offset)
+const parseServerDate = (val) => {
+  if (!val) return null;
+  if (val instanceof Date) return val;
+  const s = String(val).trim();
+
+  // ISO có 'T' => để JS parse theo offset sẵn có
+  if (s.includes('T')) return new Date(s);
+
+  // 'YYYY-MM-DD HH:mm:ss' => coi là giờ VN, quy về UTC
+  const [datePart, timePart = '00:00:00'] = s.split(' ');
+  const [y, m, d] = datePart.split('-').map(n => parseInt(n, 10));
+  const [hh = 0, mm = 0, ss = 0] = timePart.split(':').map(n => parseInt(n, 10));
+  // Giờ VN = UTC+7  => trừ 7 tiếng để ra UTC millis
+  const utcMillis = Date.UTC(y, (m - 1), d, hh - 7, mm, ss);
+  return new Date(utcMillis);
+};
+
+const formatVNDateTime = (val, withSeconds = false) => {
+  const dt = parseServerDate(val);
+  if (!dt || isNaN(dt)) return '';
+  return new Intl.DateTimeFormat('vi-VN', {
+    timeZone: VN_TZ,
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', ...(withSeconds ? { second: '2-digit' } : {}),
+    hour12: false,
+  }).format(dt);
+};
   // Toggle chọn/bỏ chọn trạng thái
   const toggleStatus = (status) => {
     setSelectedStatuses((prev) =>
@@ -262,7 +320,7 @@ function Order() {
         deliveryStatus !== selectedOrder.deliveryStatus
       ) {
         const confirmChange = window.confirm(
-          `Bạn có muốn thay đổi trạng thái giao hàng thành "${deliveryStatus}" không?`
+          `Bạn có muốn thay đổi trạng thái giao hàng thành "${toViDelivery(deliveryStatus)}" không?`
         );
         if (confirmChange) {
           await orderMethodSeller(selectedOrder.orderId, 'updateStatusBySeller', deliveryStatus);
@@ -524,28 +582,25 @@ function Order() {
           )}
         </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {statusOptions.map((status) => (
-            <button
-              key={status}
-              onClick={() => toggleStatus(status)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '8px',
-                border: selectedStatuses.includes(status)
-                  ? '2px solid #00ffcc'
-                  : '2px solid #ccc',
-                background: selectedStatuses.includes(status)
-                  ? 'linear-gradient(90deg, #00ffcc, #0099ff)'
-                  : '#f3f4f6',
-                color: selectedStatuses.includes(status) ? '#fff' : '#333',
-                cursor: 'pointer',
-                fontWeight: '600',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              {status}
-            </button>
-          ))}
+        {statusOptions.map((status) => (
+  <button
+    key={status}
+    onClick={() => toggleStatus(status)}
+    style={{
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: selectedStatuses.includes(status) ? '2px solid #00ffcc' : '2px solid #ccc',
+      background: selectedStatuses.includes(status) ? 'linear-gradient(90deg, #00ffcc, #0099ff)' : '#f3f4f6',
+      color: selectedStatuses.includes(status) ? '#fff' : '#333',
+      cursor: 'pointer',
+      fontWeight: '600',
+      transition: 'all 0.3s ease',
+    }}
+  >
+    {toViMaster(status)}
+  </button>
+))}
+
         </div>
         {/* <!-- Table Start --> */}
         <div className="row">
@@ -600,15 +655,20 @@ function Order() {
                                 <span className="ml-2 ">{order.recipientName}</span>
                               </span>
                             </td>
-                            <td>{order.createdAt}</td>
+                            <td>{formatVNDateTime(order.createdAt, true)}</td>
                             <td>${order.totalPrice}</td>
                             <td>
+  <label className={`mb-0 badge ${statusColors[order.status] || "badge-secondary"}`}>
+    {toViMaster(order.status)}
+  </label>
+</td>
+                            {/* <td>
                               <label
                                 className={`mb-0 badge ${statusColors[order.status] || "badge-secondary"}`}
                               >
                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </label>
-                            </td>
+                            </td> */}
                             <td>
                               <span className="img-thumb">
                                 <i className={`${getPaymentInfo(order.paymentMethod).icon} ${getPaymentInfo(order.paymentMethod).color}`} />
@@ -620,7 +680,7 @@ function Order() {
                                 className="mb-0 badge badge-primary"
                                 onClick={() => handleViewDetail(order)} // Gọi hàm khi click
                               >
-                                View Detail
+                                Xem chi tiết
                               </button>
                             </td>
                           </tr>
@@ -705,33 +765,35 @@ function Order() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
                     <div className="card p-3 shadow-sm">
                       <h6 className="mb-3">📦 Thông tin đơn hàng</h6>
-                      <p><b>Ngày tạo:</b> {selectedOrder.createdAt}</p>
+                      <p><b>Ngày tạo:</b> {formatVNDateTime(selectedOrder.createdAt, true)}</p>
                       <p><b>Tổng tiền:</b> ${selectedOrder.totalPrice}</p>
-                      <p><b>Order Status:</b>
-                        <span className={`badge ${statusColors[selectedOrder.status]}`}>
-                          {selectedOrder.status}
-                        </span>
-                      </p>
+                      <p>
+  <b>Trạng thái đơn hàng:</b>{' '}
+  <span className={`badge ${statusColors[selectedOrder.status]}`}>
+    {toViMaster(selectedOrder.status)}
+  </span>
+</p>
                       <p><b>Số sản phẩm:</b> {selectedOrder.itemCount}</p>
                       {/* Select trạng thái delivery */}
                       <div className="mt-3">
-                        <label><b>Delivery Status:</b></label>
-                        <select
-                          className="form-select mt-1"
-                          value={deliveryStatus} // ✅ Bind với state deliveryStatus
-                          disabled={deliveryConfig.options.length === 0}
-                          onChange={(e) => setDeliveryStatus(e.target.value)} // Trigger useEffect
-                        >
-                          <option value={deliveryConfig.default}>
-                            {deliveryConfig.default}
-                          </option>
-                          {deliveryConfig.options.map((status) => (
-                            <option key={status} value={status}>
-                              {status}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+  <label><b>Trạng thái giao hàng:</b></label>
+  <select
+    className="form-select mt-1"
+    value={deliveryStatus}
+    disabled={deliveryConfig.options.length === 0}
+    onChange={(e) => setDeliveryStatus(e.target.value)}
+  >
+    <option value={deliveryConfig.default}>
+      {toViDelivery(deliveryConfig.default)}
+    </option>
+    {deliveryConfig.options.map((status) => (
+      <option key={status} value={status}>
+        {toViDelivery(status)}
+      </option>
+    ))}
+  </select>
+</div>
+
                     </div>
                     {/* 🛍 Danh sách sản phẩm */}
                     <div className="card p-3 shadow-sm mt-3">
@@ -768,10 +830,10 @@ function Order() {
                     {/* 3️⃣ Delivery Info */}
                     <div className="card p-3 shadow-sm">
                       <h6 className="mb-3">🚚 Giao hàng</h6>
-                      <p><b>Trạng thái:</b> {selectedOrder.deliveryStatus || "Chưa có"}</p>
+                      <p><b>Trạng thái:</b> {toViDelivery(selectedOrder.deliveryStatus) || "Chưa có"}</p>
                       <p><b>Mã tracking:</b> {selectedOrder.trackingNumber || "Chưa có"}</p>
                       <p><b>Phí ship:</b> ${selectedOrder.shippingFee || 0}</p>
-                      <p><b>Ngày dự kiến:</b> {selectedOrder.estimatedDeliveryDate || "Chưa có"}</p>
+                      <p><b>Ngày dự kiến:</b> {formatVNDateTime(selectedOrder.estimatedDeliveryDate) || "Chưa có"}</p>
                     </div>
                     {/* 4️⃣ Shipping Method */}
                     <div className="card p-3 shadow-sm">

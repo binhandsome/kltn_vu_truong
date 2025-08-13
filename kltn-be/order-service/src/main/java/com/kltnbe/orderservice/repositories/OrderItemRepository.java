@@ -39,4 +39,45 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             @Param("endDate") Timestamp endDate,
             @Param("statuses") List<String> statuses,
             Pageable pageable);
+
+    // Đếm sold cho 1 list productId
+    @Query("""
+           SELECT oi.productId AS productId, SUM(oi.quantity) AS totalQuantity
+           FROM OrderItem oi JOIN oi.order o
+           WHERE (:storeId IS NULL OR o.storeId = :storeId)
+             AND (:statuses IS NULL OR o.status IN :statuses)
+             AND oi.productId IN :productIds
+           GROUP BY oi.productId
+           """)
+    List<TopProductProjection> sumSoldByProductIds(@Param("storeId") Long storeId,
+                                                   @Param("statuses") List<String> statuses,
+                                                   @Param("productIds") List<Long> productIds);
+
+    // Đếm sold cho 1 productId
+    @Query("""
+           SELECT SUM(oi.quantity)
+           FROM OrderItem oi JOIN oi.order o
+           WHERE (:storeId IS NULL OR o.storeId = :storeId)
+             AND (:statuses IS NULL OR o.status IN :statuses)
+             AND oi.productId = :productId
+           """)
+    Long sumSoldByProductId(@Param("storeId") Long storeId,
+                            @Param("statuses") List<String> statuses,
+                            @Param("productId") Long productId);
+
+    // Top product theo quantity bán
+    @Query("""
+           SELECT oi.productId AS productId, SUM(oi.quantity) AS totalQuantity
+           FROM OrderItem oi JOIN oi.order o
+           WHERE o.createdAt BETWEEN :start AND :end
+             AND (:statuses IS NULL OR o.status IN :statuses)
+             AND (:storeId IS NULL OR o.storeId = :storeId)
+           GROUP BY oi.productId
+           ORDER BY totalQuantity DESC
+           """)
+    List<TopProductProjection> findTopProductsBySales(@Param("start") Timestamp start,
+                                                      @Param("end") Timestamp end,
+                                                      @Param("statuses") List<String> statuses,
+                                                      @Param("storeId") Long storeId,
+                                                      Pageable pageable);
 }

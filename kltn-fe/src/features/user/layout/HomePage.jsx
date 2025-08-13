@@ -1,5 +1,5 @@
 // src/pages/common/HomePage.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import QuickViewModal from '../components/home/QuickViewModal';
 import ScrollTopButton from '../layout/ScrollTopButton';
 import { Link } from 'react-router-dom';
@@ -161,28 +161,71 @@ const [priceDiscount, setPriceDiscount] = useState(0);
 
 // (tuỳ chọn) tags để hiển thị trong modal, không ảnh hưởng nơi khác
 const [tags, setTags] = useState({});
-
+// HomePage.js
 const fetchProductDetail = async (asin) => {
   try {
     const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
-    const prod = res.data;
-    setSelectedProduct(prod);
+    const raw = res.data || {};
+
+    // Lấy bản trong danh sách hiện có để fallback (grid/home feed/top5)
+    const fromHome = homeAllProducts.find(p => p.asin === asin) || {};
+    const fromTop5 = top5Products.find(p => p.asin === asin) || {};
+
+    // ---- Chuẩn hoá field cho QuickView ----
+    const product = {
+      // Ưu tiên detail
+      ...raw,
+
+      // Tên & ảnh
+      productTitle:
+        raw.productTitle ?? raw.nameProduct ?? fromHome.productTitle ?? fromHome.nameProduct ?? fromTop5.nameProduct ?? "",
+      productThumbnail:
+        raw.productThumbnail ?? raw.thumbnail ?? fromHome.productThumbnail ?? fromHome.thumbnail ?? fromTop5.thumbnail ?? "",
+
+      // Giá & % giảm
+      productPrice:
+        raw.productPrice ?? raw.price ?? fromHome.productPrice ?? fromHome.price ?? fromTop5.price ?? 0,
+      percentDiscount:
+        raw.percentDiscount ?? raw.discountPercent ?? fromHome.percentDiscount ?? fromHome.discountPercent ?? fromTop5.discountPercent ?? 0,
+
+      // 🔥 SỐ ĐÃ BÁN – gộp từ mọi nguồn
+      soldCount:
+        Number(
+          raw.soldCount ??
+          raw.orderCount ??
+          raw.orders ??
+          fromHome.soldCount ??
+          fromHome.orderCount ??
+          fromHome.orders ??
+          fromTop5.soldCount ??
+          fromTop5.orderCount ??
+          fromTop5.orders ??
+          0
+        ) || 0,
+
+      // Tồn kho (nếu có)
+      stockQuantity: raw.stockQuantity ?? fromHome.stockQuantity ?? null,
+    };
+
+    setSelectedProduct(product);
     setSelectedColor(null);
     setSelectedSize(null);
     setQuantity(1);
-    setAvailableStock(prod?.stockQuantity ?? null);
+    setAvailableStock(product?.stockQuantity ?? null);
 
-    const d = Number(prod.percentDiscount || 0);
-    const p = Number(prod.productPrice || 0);
+    // (tuỳ chọn) nếu bạn vẫn dùng priceDiscount ở nơi khác
+    const d = Number(product.percentDiscount || 0);
+    const p = Number(product.productPrice || 0);
     setPriceDiscount((p - (p * d / 100)).toFixed(2));
 
-    // mở modal (giữ nguyên cách cũ)
+    // mở modal
     const modal = new window.bootstrap.Modal(document.getElementById('exampleModal'));
     modal.show();
   } catch (err) {
     console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);
   }
 };
+
 
 // ====== QUICK VIEW: tính tồn kho theo biến thể ======
 useEffect(() => {
@@ -318,6 +361,23 @@ const addCartFromModal = async (qty, { size, color }) => {
       } catch (_) {}
     }
   }, []);
+  // truyền sold_count
+  const modalSoldCount = useMemo(() => {
+    const asin = selectedProduct?.asin;
+    if (!asin) return 0;
+  
+    // 1) ưu tiên từ API chi tiết
+    if (typeof selectedProduct?.soldCount === 'number') return selectedProduct.soldCount;
+  
+    // 2) fallback từ các list hiện có
+    const fromList =
+      homeAllProducts.find?.(p => p.asin === asin) ||
+      grid8.find?.(p => p.asin === asin) ||
+      top5Products.find?.(p => p.asin === asin);
+  
+    const sc = fromList?.soldCount ?? fromList?.orderCount ?? fromList?.orders;
+    return Number(sc) || 0;
+  }, [selectedProduct, homeAllProducts, grid8, top5Products]);
   return (
     <>
       <div className="page-wraper">
@@ -327,132 +387,129 @@ const addCartFromModal = async (qty, { size, color }) => {
   <div className="main-slider-wrapper">
     <div className="slider-inner">
     <div className="row">
+    <div className="col-lg-6">
+                  <div className="slider-main">
+                    {top5Products.map((p) => {
+                      // chuẩn hoá object theo format các trang khác dùng
+                      const norm = {
+                        ...p,
+                        asin: p.asin,
+                        productTitle: p.nameProduct,
+                        productThumbnail: p.thumbnail,
+                        percentDiscount: p.discountPercent,
+                        // dùng giá đã giảm khi add cart
+                        productPrice: priceAfterDiscount(p.price, p.discountPercent),
+                      };
+
+                      return (
+                        <div className="slick-slide" key={`main-${p.asin}`}>
+                          <div className="content-info">
+                            <h1 className="title">{p.nameProduct}</h1>
+
+                            <div className="swiper-meta-items">
+                              <div className="meta-content">
+                                <span className="price-name">
+                                  {p.discountPercent > 0 ? `Price (−${p.discountPercent}%)` : 'Price'}
+                                </span>
+                                <span className="price-num d-inline-block">
+                                  {money(priceAfterDiscount(p.price, p.discountPercent))}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="content-btn m-b30">
+                              {/* THÊM VÀO GIỎ HÀNG */}
+                              <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  addCartWithQuantity(1, norm);
+                                }}
+                                className="btn btn-secondary me-xl-3 me-2 btnhover20"
+                              >
+                                THÊM VÀO GIỎ HÀNG
+                              </a>
+
+                              {/* XEM CHI TIẾT */}
+                              <a
+                                href={`/user/productstructure/ProductDetail?asin=${p.asin}`}
+                                className="btn btn-outline-secondary btnhover20"
+                                onClick={() => {
+                                  // nếu bạn muốn lưu lịch sử xem/đề xuất:
+                                  // handleSearchAsin(p.asin);
+                                }}
+                              >
+                                XEM CHI TIẾT
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
   <div className="col-lg-6">
-  <div className="slider-main">
-  {top5Products?.map((p) => {
-    // chuẩn hoá object theo format các trang khác dùng
-    const norm = {
-      ...p,
-      asin: p.asin,
-      productTitle: p.nameProduct,
-      productThumbnail: p.thumbnail,
-      percentDiscount: p.discountPercent,
-      // dùng giá đã giảm khi add cart
-      productPrice: priceAfterDiscount(p.price, p.discountPercent),
-    };
-
-    return (
-      <div className="slick-slide" key={`main-${p.asin}`}>
-        <div className="content-info">
-          <h1 className="title">{p.nameProduct}</h1>
-
-          <div className="swiper-meta-items">
-            <div className="meta-content">
-              <span className="price-name">
-                {p.discountPercent > 0 ? `Price (−${p.discountPercent}%)` : "Price"}
-              </span>
-              <span className="price-num d-inline-block">
-                {money(priceAfterDiscount(p.price, p.discountPercent))}
-              </span>
-            </div>
-          </div>
-
-          <div className="content-btn m-b30">
-            {/* THÊM VÀO GIỎ HÀNG */}
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                addCartWithQuantity(1, norm);
-              }}
-              className="btn btn-secondary me-xl-3 me-2 btnhover20"
-            >
-              THÊM VÀO GIỎ HÀNG
-            </a>
-
-            {/* XEM CHI TIẾT */}
-            <a
-              href={`/user/productstructure/ProductDetail?asin=${p.asin}`}
-              className="btn btn-outline-secondary btnhover20"
-              onClick={() => {
-                // nếu bạn muốn lưu lịch sử xem/đề xuất:
-                // handleSearchAsin(p.asin);
-              }}
-            >
-              XEM CHI TIẾT
-            </a>
-          </div>
-        </div>
-      </div>
-    );
-  })}
-</div>
-
-  </div>
-
-  <div className="col-lg-6">
-    <div className="slider-thumbs">
-      {top5Products.length > 0 ? (
-        top5Products.map((p, idx) => (
-          <div className="slick-slide" key={`thumb-${p.asin}`}>
-            <div
-              className="banner-media"
-              data-name={p.salesRank ?? p?.product?.salesRank}
-            >
-              <div className="img-preview">
-                {/* dùng src trực tiếp để ảnh load sẵn như bản đổ cứng */}
-                <img
-                  src={imgUrl(p.thumbnail)}
-                  alt={p.nameProduct || `product-${idx + 1}`}
-                  loading="eager"
-                  onError={(e) => { e.currentTarget.src = "/assets/images/placeholder.png"; }}
-                />
-              </div>
-            </div>
-          </div>
-        ))
-      ) : (
-        // fallback giữ y nguyên ảnh cứng
-        <>
-          <div className="slick-slide">
-            <div className="banner-media" data-name="MÙA ĐÔNG">
-              <div className="img-preview">
-                <img src="../../assets/user/images/banner/banner-media.png" alt="banner-media" />
-              </div>
-            </div>
-          </div>
-          <div className="slick-slide">
-            <div className="banner-media" data-name="MÙA HÈ">
-              <div className="img-preview">
-                <img src="../../assets/user/images/banner/banner-media2.png" alt="banner-media" />
-              </div>
-            </div>
-          </div>
-          <div className="slick-slide">
-            <div className="banner-media" data-name="XÀ CẠP">
-              <div className="img-preview">
-                <img src="../../assets/user/images/banner/banner-media.png" alt="banner-media" />
-              </div>
-            </div>
-          </div>
-          <div className="slick-slide">
-            <div className="banner-media" data-name="ĐẦM">
-              <div className="img-preview">
-                <img src="../../assets/user/images/banner/banner-media4.png" alt="banner-media" />
-              </div>
-            </div>
-          </div>
-          <div className="slick-slide">
-            <div className="banner-media" data-name="QUẦN SHORT">
-              <div className="img-preview">
-                <img src="../../assets/user/images/banner/banner-media5.png" alt="banner-media" />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  </div>
+                  <div className="slider-thumbs">
+                    {top5Products.length > 0 ? (
+                      top5Products.map((p, idx) => (
+                        <div className="slick-slide" key={`thumb-${p.asin}`}>
+                          <div className="banner-media" data-name={p.salesRank ?? p?.product?.salesRank}>
+                            <div className="img-preview">
+                              {/* dùng src trực tiếp để ảnh load sẵn như bản đổ cứng */}
+                              <img
+                                src={imgUrl(p.thumbnail)}
+                                alt={p.nameProduct || `product-${idx + 1}`}
+                                loading="eager"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/assets/images/placeholder.png';
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div className="slick-slide">
+                          <div className="banner-media" data-name="MÙA ĐÔNG">
+                            <div className="img-preview">
+                              <img src="../../assets/user/images/banner/banner-media.png" alt="banner-media" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="slick-slide">
+                          <div className="banner-media" data-name="MÙA HÈ">
+                            <div className="img-preview">
+                              <img src="../../assets/user/images/banner/banner-media2.png" alt="banner-media" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="slick-slide">
+                          <div className="banner-media" data-name="XÀ CẠP">
+                            <div className="img-preview">
+                              <img src="../../assets/user/images/banner/banner-media.png" alt="banner-media" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="slick-slide">
+                          <div className="banner-media" data-name="ĐẦM">
+                            <div className="img-preview">
+                              <img src="../../assets/user/images/banner/banner-media4.png" alt="banner-media" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="slick-slide">
+                          <div className="banner-media" data-name="QUẦN SHORT">
+                            <div className="img-preview">
+                              <img src="../../assets/user/images/banner/banner-media5.png" alt="banner-media" />
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
 </div>
       <div
         className="bottom-content align-items-end wow fadeInUp"
@@ -862,103 +919,123 @@ const addCartFromModal = async (qty, { size, color }) => {
 
     {/* GRID 8 SẢN PHẨM */}
     <div className="clearfix">
-    <ul
-  id="hp-grid" // đổi id để theme không hook Masonry
-  key={selectedType} // ép reflow khi đổi type
-  className="row g-xl-4 g-3"
-  style={{
-    display: "flex",
-    flexWrap: "wrap",
-    alignItems: "stretch",
-    margin: 0,
-    padding: 0,
-    listStyle: "none",
-  }}
->
-        {grid8.map((p, idx) => (
-          <li
-          key={p.asin || p.productId || idx}
-          className={`col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 wow fadeInUp`} // bỏ "card-container"
-          data-wow-delay={`${0.2 + (idx % 8) * 0.2}s`}
-          style={{
-            position: "static", // chống Masonry set absolute
-            listStyle: "none",
-          }}
-        >
-             <div className="shop-card" style={{ height: "100%" }}>
-    <div className="dz-media" style={{ position: "relative" }}>
-      <img
-        src={img300(p.productThumbnail)}
-        alt={p.productTitle}
-        style={{
-          width: "100%",
-          height: "auto",
-          display: "block",
-          objectFit: "cover",
-        }}
-      />
+                <ul
+                  id="hp-grid"
+                  key={selectedType}
+                  className="row g-xl-4 g-3"
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'stretch',
+                    margin: 0,
+                    padding: 0,
+                    listStyle: 'none',
+                  }}
+                >
+                  {grid8.map((p, idx) => {
+                    // ✨ Chuẩn hoá object khi add cart từ GRID: dùng GIÁ ĐÃ GIẢM
+                    const discounted = (
+                      Number(p.productPrice || 0) *
+                      (1 - Number(p.percentDiscount || 0) / 100)
+                    ).toFixed(2);
+                    const forCart = { ...p, productPrice: discounted };
 
-                <div className="shop-meta">
-                  {/* Quick View */}
-  <a
-  href="#"
-  className="btn btn-secondary btn-md btn-rounded"
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    fetchProductDetail(p.asin); // trong fetchProductDetail bạn đã modal.show()
-  }}
->
-  <i className="fa-solid fa-eye d-md-none d-block" />
-  <span className="d-md-block d-none">Xem nhanh</span>
-</a>
+                    return (
+                      <li
+                        key={p.asin || p.productId || idx}
+                        className={`col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 wow fadeInUp`}
+                        data-wow-delay={`${0.2 + (idx % 8) * 0.2}s`}
+                        style={{
+                          position: 'static',
+                          listStyle: 'none',
+                        }}
+                      >
+                        <div className="shop-card" style={{ height: '100%' }}>
+                          <div className="dz-media" style={{ position: 'relative' }}>
+                            <img
+                              src={img300(p.productThumbnail)}
+                              alt={p.productTitle}
+                              style={{
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block',
+                                objectFit: 'cover',
+                              }}
+                            />
 
-                  {/* Wishlist */}
-                  <div
-                    className="btn btn-primary meta-icon dz-wishicon"
-                    onClick={() => handleToggleWishlist && handleToggleWishlist(p.asin)}
-                    title="Yêu thích"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <i className={`icon feather ${isProductInWishlist && isProductInWishlist(p.asin) ? "icon-heart-on" : "icon-heart"}`} />
-                  </div>
+                            <div className="shop-meta">
+                              {/* Quick View */}
+                              <a
+                                href="javascript:void(0);"
+                                className="btn btn-secondary btn-md btn-rounded"
+                                data-bs-toggle="modal"
+                                data-bs-target="#exampleModal"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  fetchProductDetail(p.asin);
+                                }}
+                              >
+                                <i className="fa-solid fa-eye d-md-none d-block" />
+                                <span className="d-md-block d-none">Xem nhanh</span>
+                              </a>
+                              {/* Wishlist */}
+                              <div
+                                className="btn btn-primary meta-icon dz-wishicon"
+                                onClick={() => handleToggleWishlist && handleToggleWishlist(p.asin)}
+                                title="Yêu thích"
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <i
+                                  className={`icon feather ${
+                                    isProductInWishlist && isProductInWishlist(p.asin)
+                                      ? 'icon-heart-on'
+                                      : 'icon-heart'
+                                  }`}
+                                />
+                              </div>
 
-                  {/* Cart */}
-                  <div
-                    className="btn btn-primary meta-icon dz-carticon"
-                    onClick={() => addCartWithQuantity && addCartWithQuantity(1, p)}
-                    title="Thêm giỏ hàng"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <i className={`flaticon ${isProductInCart && isProductInCart(p.asin) ? "flaticon-basket-on dz-heart-fill" : "flaticon-basket"}`} />
-                  </div>
-                </div>
+                              {/* Cart */}
+                              <div
+                                className="btn btn-primary meta-icon dz-carticon"
+                                onClick={() => addCartWithQuantity && addCartWithQuantity(1, forCart)}
+                                title="Thêm giỏ hàng"
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <i
+                                  className={`flaticon ${
+                                    isProductInCart && isProductInCart(p.asin)
+                                      ? 'flaticon-basket-on dz-heart-fill'
+                                      : 'flaticon-basket'
+                                  }`}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="dz-content">
+                            <h5 className="title">
+                              <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{p.productTitle}</a>
+                            </h5>
+                            <h5 className="price">
+                              $
+                              {(
+                                Number(p.productPrice || 0) -
+                                (Number(p.productPrice || 0) * Number(p.percentDiscount || 0)) / 100
+                              ).toFixed(2)}
+                            </h5>
+                          </div>
+
+                          {(p.percentDiscount || 0) > 0 && (
+                            <div className="product-tag">
+                              <span className="badge">Giảm giá {p.percentDiscount}%</span>
+                            </div>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
-
-              <div className="dz-content">
-                <h5 className="title">
-                  <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>
-                    {p.productTitle}
-                  </a>
-                </h5>
-                <h5 className="price">
-                  ${(
-                    Number(p.productPrice || 0) -
-                    Number(p.productPrice || 0) * Number(p.percentDiscount || 0) / 100
-                  ).toFixed(2)}
-                </h5>
-              </div>
-
-              {(p.percentDiscount || 0) > 0 && (
-                <div className="product-tag">
-                  <span className="badge">Giảm giá {p.percentDiscount}%</span>
-                </div>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
   </div>
 </section>
 
@@ -1026,7 +1103,7 @@ const addCartFromModal = async (qty, { size, color }) => {
   </section>
   {/* Collection Section End */}
   {/* About Section Start */}
-  <section className="content-inner-2 overflow-hidden">
+  {/* <section className="content-inner-2 overflow-hidden">
     <div className="container">
       <div className="row  align-items-xl-center align-items-start">
         <div className=" col-lg-5 col-md-12 m-b30 align-self-center">
@@ -1047,8 +1124,6 @@ const addCartFromModal = async (qty, { size, color }) => {
                 <div className="left-content">
                   <h2 className="title">
                   Người dùng đã xem nội dung này cũng đã xem những hồ sơ tương tự này
-                    {/* Users Who Viewed This Also Checked Out These Similar
-                    Profiles */}
                   </h2>
                 </div>
               </div>
@@ -1107,7 +1182,6 @@ const addCartFromModal = async (qty, { size, color }) => {
                   <div>
                     <span className="sale-title">
                     giảm giá tới 79%
-                      {/* up to 79% off */}
                       </span>
                     <h6 className="title">
                       <a href="shop-list.html">Cozy Knit Cardigan Sweater</a>
@@ -1168,7 +1242,7 @@ const addCartFromModal = async (qty, { size, color }) => {
         </div>
       </div>
     </div>
-  </section>
+  </section> */}
   {/* About Section End */}
   {/* About Section */}
   <section className="content-inner overflow-hidden p-b0">
@@ -1203,7 +1277,6 @@ const addCartFromModal = async (qty, { size, color }) => {
 
             <div className="dz-content">
               <div>
-                {/* dòng phụ như template: có giảm thì hiển thị “Up to xx% Off”, không thì Free delivery */}
                 <span className={`sale-title ${off ? "" : "text-success"}`}>
                   {off ? `Up to ${off}% Off` : "Free delivery"}
                 </span>
@@ -1215,8 +1288,6 @@ const addCartFromModal = async (qty, { size, color }) => {
                 {money(priceNew)} {off > 0 && <del>{money(p.price)}</del>}
               </h6>
             </div>
-
-            {/* ⭐ Badge ở góc phải – luôn hiển thị */}
             <span className="sale-badge">
               {off ? `${off}%` : "Sale"}
               {off ? <br /> : <><br /></>}
@@ -1236,21 +1307,17 @@ const addCartFromModal = async (qty, { size, color }) => {
               <div className="media-contant">
                 <h2 className="title">
                 Tiết kiệm lớn cho các nhu yếu phẩm hàng ngày
-                  {/* Great saving on everyday essentials */}
                 </h2>
                 <h5 className="/user/shop/shopWithCategory">
                 Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
-                  {/* Up to 60% off + up to $107 Cashback */}
                 </h5>
                 <a href="/user/shop/shopStandard" className="btn btn-white btn-lg">
                   Xem Tất Cả
-                  {/* See All */}
                 </a>
               </div>
               <svg className="title animation-text" viewBox="0 0 1320 300">
                 <text x={0} y="">
                   Tiết kiệm tuyệt vời
-                  {/* Great saving */}
                 </text>
               </svg>
             </div>
@@ -2646,20 +2713,21 @@ const addCartFromModal = async (qty, { size, color }) => {
         {/* Footer (đã được xử lý trong App.js) */}
          <ScrollTopButton/>
          <QuickViewModal
-  product={selectedProduct}
-  quantity={quantity}
-  setQuantity={setQuantity}
-  availableStock={availableStock}
-  selectedSize={selectedSize}
-  setSelectedSize={setSelectedSize}
-  selectedColor={selectedColor}
-  setSelectedColor={setSelectedColor}
-  onAdd={(q, picked) => addCartFromModal(q, picked)}
-  onToggleWishlist={() => selectedProduct && handleToggleWishlist(selectedProduct.asin)}
-  inWishlist={isProductInWishlist?.(selectedProduct?.asin)}
-  triggerToast={triggerToast}
-  requireSelection
-/>
+          product={selectedProduct}
+          quantity={quantity}
+          setQuantity={setQuantity}
+          availableStock={availableStock}
+          selectedSize={selectedSize}
+          setSelectedSize={setSelectedSize}
+          selectedColor={selectedColor}
+          setSelectedColor={setSelectedColor}
+          onAdd={(q, picked) => addCartFromModal(q, picked)}
+          onToggleWishlist={() => selectedProduct && handleToggleWishlist(selectedProduct.asin)}
+          inWishlist={isProductInWishlist?.(selectedProduct?.asin)}
+          triggerToast={triggerToast}
+          soldCount={selectedProduct?.soldCount}
+          requireSelection
+        />
         {showToast && (
   <div style={{
     position: 'fixed',
