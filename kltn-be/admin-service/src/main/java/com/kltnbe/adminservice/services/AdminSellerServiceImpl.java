@@ -66,6 +66,11 @@ public class AdminSellerServiceImpl implements AdminSellerService {
     public ResponseEntity<List<String>> getUrlCcd(Long shopId) {
         return sellerServiceClient.getUrlCcd(shopId);
     }
+    @Override
+    public ResponseEntity<List<String>> getUrlCccd(Long userId) {
+        return sellerServiceClient.getUrlCccd(userId);
+    }
+
 
 
 }

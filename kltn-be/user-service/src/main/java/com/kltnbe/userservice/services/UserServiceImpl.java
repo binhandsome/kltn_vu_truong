@@ -13,6 +13,7 @@ import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
 import com.kltnbe.userservice.enums.UserRole;
 import com.kltnbe.userservice.helpers.AdminServiceProxy;
+import com.kltnbe.userservice.helpers.UploadServiceProxy;
 import com.kltnbe.userservice.repositories.AddressRepository;
 import com.kltnbe.userservice.repositories.AuthRepository;
 import com.kltnbe.userservice.repositories.UserRepository;
@@ -23,7 +24,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -43,6 +46,7 @@ public class UserServiceImpl implements UserService{
     private final AddressRepository addressRepository;
     private final AuthRepository authRepository;
     private final AdminServiceProxy adminServiceProxy;
+    private final UploadServiceProxy uploadServiceProxy;
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
     @Override
     public Optional<User> findUserById(String username) {
@@ -151,7 +155,6 @@ public class UserServiceImpl implements UserService{
         user.setPhoneNumber(request.getPhoneNumber());
         user.setUserAddress(request.getUserAddress());
         user.setGender(request.getGender());
-        user.setProfilePicture(request.getProfilePicture());
         user.setUserPreferences(request.getUserPreferences());
 
         // Xử lý ngày sinh
@@ -314,6 +317,12 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public Long findAuthIdByUserId(Long userId) {
+        Long authId = userRepository.findById(userId).get().getAuth().getAuthId();
+        return authId;
+    }
+
+    @Override
     @Transactional
     public String toggleBanUser(Long userId) {
         User user = userRepository.findById(userId)
@@ -334,15 +343,17 @@ public class UserServiceImpl implements UserService{
     public String activateUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-
         Auth auth = user.getAuth();
         if (auth == null) {
             throw new RuntimeException("Không tìm thấy Auth tương ứng");
         }
-
+        if (auth.getActive()) {
+            auth.setIsActive(false);
+            authRepository.save(auth);
+            return "Tài khoản đã được tắt kích hoạt";
+        }
         auth.setIsActive(true);
         authRepository.save(auth);
-
         return "Tài khoản đã được kích hoạt";
     }
     @Override
@@ -355,16 +366,14 @@ public class UserServiceImpl implements UserService{
         if (auth == null) {
             throw new RuntimeException("Không tìm thấy Auth tương ứng");
         }
-
-        // Chỉ nâng cấp nếu đang là USER
-        if (auth.getUserRole() != UserRole.USER) {
-            throw new RuntimeException("Tài khoản không phải USER hoặc đã là SELLER");
+        if (auth.getUserRole() == UserRole.SELLER) {
+            auth.setUserRole(UserRole.USER);
+            authRepository.save(auth);
+            return "Tài khoản đã được phân quyền USER";
         }
-
         auth.setUserRole(UserRole.SELLER);
         authRepository.save(auth);
-
-        return "Tài khoản đã được nâng cấp thành SELLER";
+        return "Tài khoản được phân quyền SELLER";
     }
 
     @Override
@@ -549,6 +558,28 @@ public class UserServiceImpl implements UserService{
     @Override
     public List<SystemFeedbackResponseDTO> getMyFeedbacks(Long userId) {
         return adminServiceProxy.getFeedbackByUser(userId);
+    }
+
+    @Override
+    public String uploadImgProfile(MultipartFile multipartFile, Long authId) {
+        Auth auth = authRepository.findById(Long.valueOf(authId)).get();
+        User user = auth.getUser();
+        MultipartFile file = multipartFile;
+        try {
+            byte[] fileBytes = file.getBytes();
+            String fileName = file.getOriginalFilename();
+            ResponseEntity<String> response  = uploadServiceProxy.uploadSingleImage(fileBytes, fileName,"profile");
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                String url = response.getBody();
+                user.setProfilePicture(url);
+                userRepository.save(user);
+                return "Upload Ảnh thành công rồi bạn ơi";
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return "Thất bại";
     }
 
     //fix search

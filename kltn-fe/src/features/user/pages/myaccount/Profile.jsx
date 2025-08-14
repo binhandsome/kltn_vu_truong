@@ -8,7 +8,7 @@ import { getProfile, updateProfile } from '../../apiService/authService';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { parse, format,isValid} from 'date-fns';
-
+import axios from 'axios';
 function Profile() {
   const [hasBgClass, setHasBgClass] = useState(true); 
   const [imagePreview, setImagePreview] = useState(null);
@@ -22,6 +22,8 @@ function Profile() {
     dateOfBirth: '',
     profilePicture: ''
   });
+    const [uploading, setUploading] = useState(false);
+
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const parseDate = (dateString) => {
@@ -74,11 +76,11 @@ const showToastMessage = (msg) => {
           userAddress: data.userAddress || '',
           gender: data.gender || '',
           dateOfBirth: data.dateOfBirth ? formatDateFromAPI(data.dateOfBirth) : '',
-          profilePicture: data.profilePicture || ''
         });
-        if (data.profilePicture) {
-          setImagePreview(data.profilePicture);
-        }
+ setImagePreview(
+        data.profilePicture ||
+        'https://afamilycdn.com/150157425591193600/2020/9/1/base64-15989709587961337336135.png'
+      );
       })
       .catch(error => {
         console.error('Lỗi khi lấy profile:', error);
@@ -87,7 +89,6 @@ const showToastMessage = (msg) => {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2500);
       
-        // Optional: Xoá token + redirect sau đó
         localStorage.removeItem('accessToken');
         localStorage.removeItem('role');
         setTimeout(() => {
@@ -100,6 +101,7 @@ const showToastMessage = (msg) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
   const handleValidation = () => {
     if (!formData.firstName.trim()) {
       showToastMessage("❌ Vui lòng nhập Họ.");
@@ -141,17 +143,58 @@ const showToastMessage = (msg) => {
   };
   
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData(prev => ({ ...prev, profilePicture: reader.result }));
-      };
-      reader.readAsDataURL(file);
+const handleImageChange = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    setImagePreview(reader.result);
+    setFormData(prev => ({
+      ...prev,
+      profilePicture: reader.result,
+      file // lưu lại để uploadImage dùng
+    }));
+  };
+  reader.readAsDataURL(file);
+};
+
+
+
+    const uploadImage = async () => {
+      const token = localStorage.getItem("accessToken");
+    if (!formData.file) {
+      alert("Vui lòng chọn ảnh trước");
+      return;
+    }
+
+    const data = new FormData();
+    data.append("file", formData.file);
+
+    try {
+      setUploading(true);
+      const res = await axios.post("http://localhost:8081/api/user/upload-images-profile",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}` // nếu API yêu cầu token
+          },
+        }
+      );
+      setToastMessage(res.data.message);
+      setShowToast(true);
+      setTimeout(() => {
+         setShowToast(false);
+      }, 3000);
+    } catch (err) {
+      console.error("Lỗi upload:", err);
+      alert("Upload thất bại");
+    } finally {
+      setUploading(false);
     }
   };
+
   const formatToISO = (ddmmyyyy) => {
     const [day, month, year] = ddmmyyyy.split('-');
     return `${year}-${month}-${day}`;
@@ -285,15 +328,33 @@ const showToastMessage = (msg) => {
                       <div className="avatar-upload d-flex align-items-center">
                         <div className="position-relative">
                           <div className="avatar-preview thumb">
-                            <div id="imagePreview" style={{ backgroundImage: `url(${imagePreview || "images/profile3.jpg"})` }} />
+                            <div id="imagePreview" style={{ backgroundImage: `url(${imagePreview || "../../images/profile3.jpg"})` }} />
                           </div>
-                          <div className="change-btn thumb-edit d-flex align-items-center flex-wrap">
-                            <input type="file" className="form-control d-none" id="imageUpload" accept=".png, .jpg, .jpeg" onChange={handleImageChange} />
-                            <label htmlFor="imageUpload" className="btn btn-light ms-0">
-                              <i className="fa-solid fa-camera" />
-                            </label>
-                          </div>
+                           <div>
+      <div className="change-btn thumb-edit d-flex align-items-center flex-wrap">
+        <input
+          type="file"
+          className="form-control d-none"
+          id="imageUpload"
+          accept=".png, .jpg, .jpeg"
+          onChange={handleImageChange}
+        />
+        <label htmlFor="imageUpload" className="btn btn-light ms-0">
+          <i className="fa-solid fa-camera" />
+        </label>
+      </div>
+
+      <button
+        onClick={uploadImage}
+        disabled={uploading}
+        className="btn btn-primary mt-2"
+      >
+        {uploading ? "Upload ..." : "Upload"}
+      </button>
+    </div>
+                          
                         </div>
+                        
                       </div>
                       <div className="clearfix">
                         <h2 className="title mb-0">{formData.firstName} {formData.lastName}</h2>

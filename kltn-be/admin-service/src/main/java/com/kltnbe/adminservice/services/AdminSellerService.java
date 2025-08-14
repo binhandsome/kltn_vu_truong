@@ -20,5 +20,6 @@ public interface AdminSellerService {
     void approveAuthentication(Long id);
     void rejectAuthentication(Long id);
     ResponseEntity<List<String>> getUrlCcd(Long shopId);
+    ResponseEntity<List<String>> getUrlCccd(Long userId);
 
 }

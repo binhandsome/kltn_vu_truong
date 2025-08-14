@@ -76,6 +76,9 @@ public class AdminSellerController {
         }
         return adminSellerService.getUrlCcd(shopId);
      }
-
+    @GetMapping("/getListCCCDByUser")
+    public ResponseEntity<List<String>> getListCCCDByUser(@RequestParam Long userId) {
+        return adminSellerService.getUrlCccd(userId);
+    }
 
 }

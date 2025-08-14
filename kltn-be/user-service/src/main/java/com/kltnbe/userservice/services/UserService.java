@@ -9,6 +9,7 @@ import com.kltnbe.userservice.entities.Address;
 import com.kltnbe.userservice.entities.Auth;
 import com.kltnbe.userservice.entities.User;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +27,7 @@ public interface UserService {
     UserDTO getUserInfoById(Long userId);
     User getOrCreateUserByAuth(Auth auth);
     List<UserDTO> getAllUsers();
-
+    Long findAuthIdByUserId(Long userId);
     String toggleBanUser(Long userId);
 
     String activateUser(Long userId);
@@ -42,5 +43,7 @@ public interface UserService {
     Long createAddressForOrder(DeliveryAddressDTO dto, String accessToken);
     String submitFeedback(SystemFeedbackRequestDTO dto, Long userId);
     List<SystemFeedbackResponseDTO> getMyFeedbacks(Long userId);
+    String uploadImgProfile(MultipartFile multipartFile, Long authId);
+
 
 }

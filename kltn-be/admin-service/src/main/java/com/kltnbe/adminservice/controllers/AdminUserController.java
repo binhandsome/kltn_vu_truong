@@ -81,4 +81,9 @@ public class AdminUserController {
         String result = adminUserService.upgradeToSeller(userId);
         return ResponseEntity.ok(result);
     }
+    @PutMapping("/activeUserById/{userId}")
+    public ResponseEntity<String> activeUserById(@PathVariable Long userId) {
+        return adminUserService.activeUserById(userId);
+    }
+
 }
