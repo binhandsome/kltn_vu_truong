@@ -127,6 +127,8 @@ useEffect(() => {
       const productsPage = response.data.products;
       setProducts(productsPage.content);
       setTotalPages(productsPage.totalPages);
+      const asins = (productsPage?.content || []).map(p => p.asin).filter(Boolean);
+      setEvalMap(await fetchEvalSummary(asins));
 
       // cố lấy soldCount nếu backend 8083 không trả
 setSoldMap(prev => ({ ...prev, ...buildSoldMapFromList(productsPage.content) }));
@@ -181,6 +183,8 @@ try {
 
         setProducts(res.data.content);
         setTotalPages(res.data.totalPages);
+        const asins = (res.data?.content || []).map(p => p.asin).filter(Boolean);
+        setEvalMap(await fetchEvalSummary(asins));
         setSoldMap(prev => ({ ...prev, ...buildSoldMapFromList(res.data.content) }));
       } catch (error) {
         console.error('❌ Lỗi fetchProductsData:', error);
@@ -498,6 +502,8 @@ try {
       const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
       if (res.data) {
         setSelectedProduct(res.data);
+        const sum = await fetchEvalSummary([asin]);
+        setEvalForModal(sum?.[asin] ?? { avg: 0, count: 0 });
         setSelectedColor(null); 
         setSelectedSize(null); 
         setQuantity(1);         
@@ -565,6 +571,43 @@ const modalSoldCount = useMemo(() => {
   // ưu tiên map → nếu không có, thử lấy từ selectedProduct nếu backend có
   return Number(soldMap[asin] ?? selectedProduct?.soldCount ?? selectedProduct?.orderCount ?? 0);
 }, [selectedProduct?.asin, soldMap]);
+// Evaluate
+// near other const API_*
+const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8083";
+
+// rating summary
+const [evalMap, setEvalMap] = useState({});      // { [asin]: {avg, count} }
+const [evalForModal, setEvalForModal] = useState({ avg: 0, count: 0 });
+const fetchEvalSummary = async (asins = []) => {
+  if (!asins.length) return {};
+  try {
+    const { data } = await axios.post(
+      `${API_PRODUCT}/api/products/evaluates/summary`,
+      asins
+    );
+    return data || {};
+  } catch {
+    return {};
+  }
+};
+const StarRating = ({ value = 0 }) => (
+  <ul className="dz-rating me-2" style={{ display: 'flex', gap: 2 }}>
+    {[0,1,2,3,4].map(i => {
+      const fill = Math.max(0, Math.min(1, value - i));
+      return (
+        <li key={i} style={{ position:'relative', width:16, height:16 }}>
+          <i className="flaticon-star-1" style={{ color:'#ddd' }} />
+          <i className="flaticon-star-1"
+             style={{
+               color:'#f5a623',
+               position:'absolute', left:0, top:0,
+               width:`${fill*100}%`, overflow:'hidden'
+             }}/>
+        </li>
+      );
+    })}
+  </ul>
+);
   return (
     <>
       <div className="page-wraper">
@@ -1029,20 +1072,15 @@ const modalSoldCount = useMemo(() => {
                     )}
                   </ul>
                 </div>
-                <div className="review-num">
-                  <ul className="dz-rating">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <li key={i} className={i <= 4 ? "star-fill" : ""}>
-                        <i className="flaticon-star-1" />
-                      </li>
-                    ))}
-                  </ul>
-                  <span>
-                    <a href="javascript:void(0);">
-                      {product.numberOfRatings || 0} đánh giá
-                    </a>
-                  </span>
-                </div>
+                <div className="review-num d-flex align-items-center">
+  <StarRating value={evalMap[product.asin]?.avg ?? 0} />
+  <span className="text-secondary me-2">
+    {(evalMap[product.asin]?.avg ?? 0).toFixed(1)} sao
+  </span>
+  <a href="javascript:void(0);">
+    ({evalMap[product.asin]?.count ?? 0} khách hàng đánh giá)
+  </a>
+</div>
               </div>
 
               <div className="dz-body">
@@ -1434,17 +1472,16 @@ const modalSoldCount = useMemo(() => {
                         <a href={`/user/productstructure/ProductDetail?asin=${selectedProduct.asin}`}>{selectedProduct.productTitle}</a>
                       )}
                     </h4>
-                    <div className="review-num">
-                      <ul className="dz-rating me-2">
-                        {[...Array(5)].map((_, i) => (
-                          <li className={i < 3 ? "star-fill" : ""} key={i}>
-                            <i className="flaticon-star-1" />
-                          </li>
-                        ))}
-                      </ul>
-                      <span className="text-secondary me-2">4.7 sao</span>
-                      <a href="javascript:void(0);">(5 khách hàng đánh giá)</a>
-                    </div>
+                    <div className="review-num d-flex align-items-center">
+  <StarRating value={evalForModal?.avg ?? 0} />
+  <span className="text-secondary me-2">
+    {(evalForModal?.avg ?? 0).toFixed(1)} sao
+  </span>
+  <a href="javascript:void(0);">
+    ({evalForModal?.count ?? 0} khách hàng đánh giá)
+  </a>
+</div>
+
                   </div>
                 </div>
                 <p className="para-text">

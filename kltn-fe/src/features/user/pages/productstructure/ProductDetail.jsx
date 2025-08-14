@@ -31,6 +31,7 @@ function ProductDetail() {
 	const originalPrice = products.productPrice || 0;
 	const discount = products.percentDiscount || 0;
 	const discountedPrice = originalPrice - (originalPrice * discount / 100);
+	
 
 	const showToastMsg = (msg) => {
 		setToastMessage(msg);
@@ -417,7 +418,46 @@ function ProductDetail() {
 		const wow = new WOW.WOW();
 		wow.init();
 	}, []);
+	// Evaluate
+	// ⬇️ thêm state
+const [evaluates, setEvaluates] = useState([]);
 
+// ⬇️ fetch evaluate public theo asin (status=1 đã xử lý ở BE)
+useEffect(() => {
+  if (!asin) return;
+  axios
+    .get(`http://localhost:8083/api/products/getAllEvaluateByOrderItemAndStatus/${asin}`)
+    .then((res) => setEvaluates(res.data || []))
+    .catch((err) => console.error("Lỗi khi fetch evaluates:", err));
+}, [asin]);
+const ratingStats = useMemo(() => {
+	const ratings = (evaluates || [])
+	  .map(e => Number(e.rating) || 0)
+	  .filter(n => n > 0);
+	const count = ratings.length;
+	const avg = count ? ratings.reduce((a, b) => a + b, 0) / count : 0;
+	return { avg, count };
+  }, [evaluates]);
+
+// ⬇️ chuẩn hoá dữ liệu để render (parse ảnh, fallback avatar/username)
+const normalizedEvaluates = useMemo(() => {
+  const parseImgs = (v) => {
+    try {
+      if (!v) return [];
+      return Array.isArray(v) ? v : JSON.parse(v);
+    } catch { return []; }
+  };
+  return (evaluates || []).map((e) => ({
+    id: e.evaluteId ?? e.id,
+    username: e.username ?? "Ẩn danh",
+    avatar: e.avatar ?? "/assets/user/images/default-avatar.png",
+    rating: e.rating ?? 0,
+    comment: e.comment ?? "",
+    sellerReply: e.commentByEvaluate ?? null, // seller rep (nếu có)
+    createdAt: e.createdAt ?? null,
+    images: parseImgs(e.imgEvaluate),
+  }));
+}, [evaluates]);
 	return (
 		<>
 
@@ -569,21 +609,30 @@ function ProductDetail() {
 												<span className="badge bg-purple mb-2">SALE {products.percentDiscount}% Off</span>
 												<h4 className="title mb-1">{products.productTitle}</h4>
 												<div className="review-num d-flex align-items-center">
-													<ul className="dz-rating me-2">
-														{Array.from({ length: 5 }).map((_, i) => (
-															<li key={i}>
-																<svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-																	<path
-																		d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z"
-																		fill={i < 4 ? "#FF8A00" : "#5E626F"} opacity={i < 4 ? "1" : "0.2"}
-																	/>
-																</svg>
-															</li>
-														))}
-													</ul>
-													<span className="text-secondary me-2">4.0 sao</span>
-													<a href="#reviews">({reviews.length} khách hàng đánh giá)</a>
-												</div>
+  <ul className="dz-rating me-2">
+    {Array.from({ length: 5 }).map((_, i) => {
+      const active = i < Math.round(ratingStats.avg || 0); // làm tròn để tô sao
+      return (
+        <li key={i}>
+          <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z"
+              fill={active ? "#FF8A00" : "#5E626F"}
+              opacity={active ? "1" : "0.2"}
+            />
+          </svg>
+        </li>
+      );
+    })}
+  </ul>
+
+  <span className="text-secondary me-2">
+    {(ratingStats.count ? ratingStats.avg.toFixed(1) : "0.0")} sao
+  </span>
+
+  {/* Link sang tab Evaluate */}
+  <a href="#evaluate-tab-pane">({ratingStats.count} người đánh giá)</a>
+</div>
 
 											</div>
 										</div>
@@ -770,8 +819,22 @@ function ProductDetail() {
 										<button className="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Description</button>
 									</li>
 									<li className="nav-item" role="presentation">
-										<button className="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Reviews ({reviews.length})</button>
+										<button className="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Comments ({reviews.length})</button>
 									</li>
+									<li className="nav-item" role="presentation">
+  <button
+    className="nav-link"
+    id="evaluate-tab"
+    data-bs-toggle="tab"
+    data-bs-target="#evaluate-tab-pane"
+    type="button"
+    role="tab"
+    aria-controls="evaluate-tab-pane"
+    aria-selected="false"
+  >
+    Evaluate ({normalizedEvaluates.length})
+  </button>
+</li>
 								</ul>
 								<div className="tab-content" id="myTabContent">
 									<div className="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
@@ -1062,6 +1125,107 @@ function ProductDetail() {
     </div>
   </div>
 </div>
+<div
+  className="tab-pane fade"
+  id="evaluate-tab-pane"
+  role="tabpanel"
+  aria-labelledby="evaluate-tab"
+  tabIndex="0"
+>
+  <div className="clear" id="evaluate-list">
+    <div className="post-comments comments-area style-1 clearfix">
+      <h4 className="comments-title mb-2">
+        Evaluate ({normalizedEvaluates.length})
+      </h4>
+      <p className="text-muted mb-4">
+        Các đánh giá đã duyệt cho sản phẩm.
+      </p>
+
+      <div id="evaluate">
+        <ol className="comment-list list-unstyled">
+          {normalizedEvaluates.length === 0 && (
+            <div className="text-muted mb-3">
+              Chưa có đánh giá nào được duyệt.
+            </div>
+          )}
+
+          {normalizedEvaluates.map((item) => (
+            <li className="comment mb-4 border-bottom pb-3" key={item.id}>
+              <div className="d-flex align-items-start">
+                <img
+                  src={item.avatar}
+                  alt="avatar"
+                  className="rounded-circle me-3"
+                  style={{ width: "45px", height: "45px", objectFit: "cover" }}
+                />
+                <div className="flex-grow-1">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <strong>{item.username}</strong>
+                    {item.createdAt && (
+                      <small className="text-muted">
+                        🕒 {new Date(item.createdAt).toLocaleString("vi-VN")}
+                      </small>
+                    )}
+                  </div>
+
+                  {/* rating */}
+                  <div className="text-warning mb-1">
+                    {Array.from({ length: item.rating || 0 }, (_, i) => (
+                      <i key={i} className="fas fa-star" />
+                    ))}
+                  </div>
+
+                  {/* nội dung */}
+                  <p className="mb-2">{item.comment}</p>
+
+                  {/* ảnh đính kèm */}
+                  {Array.isArray(item.images) && item.images.length > 0 && (
+                    <div className="d-flex flex-wrap gap-2 mt-2">
+                      {item.images.map((url, idx) => (
+                        <img
+                          key={idx}
+                          src={url}
+                          alt="evidence"
+                          style={{
+                            width: 80,
+                            height: 80,
+                            objectFit: "cover",
+                            borderRadius: 6,
+                          }}
+                          loading="lazy"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Seller reply nếu có → thụt vào như comment */}
+              {item.sellerReply && (
+                <div className="ms-5 mt-3">
+                  <div className="d-flex align-items-start">
+                    <img
+                      src="/assets/user/images/default-avatar.png"
+                      alt="/"
+                      className="rounded-circle me-3"
+                      style={{ width: "35px", height: "35px", objectFit: "cover" }}
+                    />
+                    <div>
+                      <span className="badge bg-secondary mb-1">Cửa hàng</span>
+                      <div className="small text-muted">Phản hồi:</div>
+                      <p className="mb-0">{item.sellerReply}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
 								</div>
 							</div>
 						</div>

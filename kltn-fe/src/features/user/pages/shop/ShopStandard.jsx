@@ -632,14 +632,25 @@ const handleInputChangeSearch = (e) => {
   
     fetchAvailableStock();
   }, [selectedProduct, selectedSize, selectedColor]);
+  const fetchEvalSummary = async (asins) => {
+    try {
+      const { data } = await axios.post(`${API_PRODUCT}/api/products/evaluates/summary`, asins);
+      return data || {};
+    } catch {
+      return {};
+    }
+  };
   
   // Xem chi tiết sp
   const fetchProductDetail = async (asin) => {
     try {
       const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
       setSelectedProduct(res.data);
+      const sum = await fetchEvalSummary([asin]);
+    setEvalForModal(sum?.[asin] ?? { avg: 0, count: 0 });
     } catch (err) {
       console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);
+      setEvalForModal({ avg: 0, count: 0 });
     }
   };
   // Xử lí việc hiện số lượng bán
@@ -666,6 +677,28 @@ const handleInputChangeSearch = (e) => {
   
     return 0;
   }, [selectedProduct, product, bestSellers]);
+  const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8083";
+const [evalForModal, setEvalForModal] = useState({ avg: 0, count: 0 });
+const StarRating = ({ value = 0 }) => (
+  <ul className="dz-rating me-2" style={{ display:'flex', gap: 2 }}>
+    {[0,1,2,3,4].map(i => {
+      const fill = Math.max(0, Math.min(1, value - i)); // 0..1 cho mỗi sao
+      return (
+        <li key={i} style={{ position:'relative', width:16, height:16 }}>
+          <i className="flaticon-star-1" style={{ color:'#ddd' }} />
+          <i
+            className="flaticon-star-1"
+            style={{
+              color:'#f5a623',
+              position:'absolute', left:0, top:0,
+              width:`${fill*100}%`, overflow:'hidden'
+            }}
+          />
+        </li>
+      );
+    })}
+  </ul>
+);
   
   return (
     <>
@@ -1690,27 +1723,15 @@ const handleInputChangeSearch = (e) => {
                       <a href=  {`/user/productstructure/ProductDetail?asin=${selectedProduct.asin}`}>{selectedProduct.productTitle}</a>
                             )}
                     </h4>
-                    <div className="review-num">
-                      <ul className="dz-rating me-2">
-                        <li className="star-fill">
-                          <i className="flaticon-star-1" />
-                        </li>
-                        <li className="star-fill">
-                          <i className="flaticon-star-1" />
-                        </li>
-                        <li className="star-fill">
-                          <i className="flaticon-star-1" />
-                        </li>
-                        <li>
-                          <i className="flaticon-star-1" />
-                        </li>
-                        <li>
-                          <i className="flaticon-star-1" />
-                        </li>
-                      </ul>
-                      <span className="text-secondary me-2">4.7 sao</span>
-                      <a href="javascript:void(0);">(5 khách hàng đánh giá)</a>
-                    </div>
+                    <div className="review-num d-flex align-items-center">
+  <StarRating value={evalForModal?.avg ?? 0} />
+  <span className="text-secondary me-2">
+    {(evalForModal?.avg ?? 0).toFixed(1)} sao
+  </span>
+  <a href="javascript:void(0);">
+    ({evalForModal?.count ?? 0} khách hàng đánh giá)
+  </a>
+</div>
                   </div>
                 </div>
                 <p className="para-text">

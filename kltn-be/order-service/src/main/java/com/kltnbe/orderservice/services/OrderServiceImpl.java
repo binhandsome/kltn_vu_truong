@@ -1398,6 +1398,12 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
                 .map(r -> new TopProductDTO(r.getProductId(), r.getTotalQuantity()))
                 .toList();
     }
+    @Override
+    public Long getUserIdByOrderItem(Long orderItemId) {
+        Long userId = orderRepository.findUserIdByOrderItemId(orderItemId);
+        if (userId == null) throw new RuntimeException("Không tìm thấy user cho orderItemId=" + orderItemId);
+        return userId;
+    }
 //    @Override
 //    public Page<OrderResponse> getOrdersByAccessToken(String accessToken, int page, int size) {
 //        String rawToken = accessToken != null && accessToken.startsWith("Bearer ")
