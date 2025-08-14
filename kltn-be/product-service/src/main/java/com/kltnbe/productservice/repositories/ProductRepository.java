@@ -2,6 +2,7 @@ package com.kltnbe.productservice.repositories;
 
 import com.kltnbe.productservice.dtos.CategoryCountDTO;
 import com.kltnbe.productservice.dtos.ProductStatsDTO;
+import com.kltnbe.productservice.dtos.ProductSuggestionProjection;
 import com.kltnbe.productservice.entities.Product;
 import com.kltnbe.productservice.enums.ProductStatus;
 import org.springframework.data.domain.Page;
@@ -104,4 +105,35 @@ List<CategoryCountDTO> countProductTypeByStore(@Param("storeId") Long storeId);
         where p.storeId = :storeId and p.percentDiscount is not null and p.percentDiscount > 0
     """)
     long countDiscountingByStore(@Param("storeId") Long storeId);
+    @Query(value = """
+        SELECT 
+          p.product_id        AS productId,
+          p.asin              AS asin,
+          p.product_title     AS productTitle,
+          p.product_thumbnail AS productThumbnail,
+          p.product_price     AS productPrice
+        FROM products p
+        WHERE p.product_status = 'active'
+          AND p.product_title COLLATE utf8mb4_general_ci LIKE CONCAT('%', :q, '%')
+        ORDER BY p.number_of_ratings DESC, p.created_at DESC
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<ProductSuggestionProjection> searchLike(@Param("q") String q, @Param("limit") int limit);
+
+    // B) FULLTEXT: rất nhanh cho câu dài (yêu cầu FULLTEXT index)
+    @Query(value = """
+        SELECT 
+          p.product_id        AS productId,
+          p.asin              AS asin,
+          p.product_title     AS productTitle,
+          p.product_thumbnail AS productThumbnail,
+          p.product_price     AS productPrice
+        FROM products p
+        WHERE p.product_status = 'active'
+          AND MATCH(p.product_title, p.brand_name, p.tags) AGAINST (:q IN BOOLEAN MODE)
+        ORDER BY p.number_of_ratings DESC, p.created_at DESC
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<ProductSuggestionProjection> searchFullText(@Param("q") String booleanModeQuery,
+                                                     @Param("limit") int limit);
 }

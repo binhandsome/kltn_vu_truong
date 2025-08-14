@@ -4,10 +4,7 @@ package com.kltnbe.productservice.controllers;
 import com.kltnbe.productservice.clients.OrderServiceProxy;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.clients.UploadServiceProxy;
-import com.kltnbe.productservice.dtos.CategoryCountDTO;
-import com.kltnbe.productservice.dtos.CategoryWithImageAndCount;
-import com.kltnbe.productservice.dtos.ProductStatsDTO;
-import com.kltnbe.productservice.dtos.StoreProductFilter;
+import com.kltnbe.productservice.dtos.*;
 import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.*;
 import com.kltnbe.productservice.entities.*;
@@ -557,6 +554,13 @@ public class ProductController {
     @GetMapping("/{storeId}/counts/discounting")
     public long countDiscounting(@PathVariable Long storeId) {
         return productService.countDiscountingProductsByStore(storeId);
+    }
+    @GetMapping("/suggest")
+    public List<ProductSuggestionDto> suggest(
+            @RequestParam("q") String q,
+            @RequestParam(value = "limit", defaultValue = "10") int limit
+    ) {
+        return productService.suggest(q, limit);
     }
 
 }
