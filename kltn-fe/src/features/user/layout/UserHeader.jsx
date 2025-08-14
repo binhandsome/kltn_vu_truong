@@ -20,7 +20,7 @@ import { refreshToken, isAccessTokenExpired } from '../apiService/authService';
     const API_URL = 'http://localhost:8081/api/auth';
     const navigate = useNavigate();
     const [toastMessage, setToastMessage] = useState('');
-const [showToast, setShowToast] = useState(false);
+    const [showToast, setShowToast] = useState(false);
 
 const showToastMessage = (msg) => {
   setToastMessage(msg);
@@ -404,6 +404,89 @@ const getCartProduct = async () => {
         showToastMessage("Có lỗi xảy ra khi kiểm tra tồn kho. Vui lòng thử lại.");
       }
     };      
+    // Xử lí search
+    // --- [SEARCH AUTOSUGGEST] state & refs ---
+const [searchQuery, setSearchQuery] = useState('');
+const [suggestions, setSuggestions] = useState([]);
+const [showSuggest, setShowSuggest] = useState(false);
+const [highlight, setHighlight] = useState(-1); // index item đang hover
+const searchBoxRef = useRef(null);
+const searchInputRef = useRef(null);
+const suggestTimerRef = useRef(null);
+
+// Gọi API suggest (debounced)
+const fetchSuggest = useCallback(async (text) => {
+  if (!text?.trim()) {
+    setSuggestions([]); setShowSuggest(false); return;
+  }
+  try {
+    const res = await axios.get('http://localhost:8083/api/products/suggest', {
+      params: { q: text.trim(), limit: 8 },
+    });
+    setSuggestions(res.data || []);
+    setShowSuggest(true);
+    setHighlight(-1);
+  } catch (e) {
+    console.error('Suggest error:', e);
+  }
+}, []);
+
+const onSearchChange = (e) => {
+  const val = e.target.value;
+  setSearchQuery(val);
+  if (suggestTimerRef.current) clearTimeout(suggestTimerRef.current);
+  suggestTimerRef.current = setTimeout(() => fetchSuggest(val), 250);
+};
+
+const goToProduct = (asin) => {
+  if (!asin) return;
+  navigate(`/user/productstructure/ProductDetail?asin=${encodeURIComponent(asin)}`);
+  setShowSuggest(false);
+  setSearchQuery('');
+};
+const goToSearchPage = () => {
+  if (!searchQuery.trim()) return;
+  navigate(`/user/shop/shopStandard?keyword=${encodeURIComponent(searchQuery.trim())}`);
+  setShowSuggest(false);
+};
+
+const onSearchKeyDown = (e) => {
+  if (!showSuggest) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (searchQuery.trim()) goToSearchPage();
+    }
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    setHighlight((prev) => (prev + 1) % Math.max(suggestions.length, 1));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    setHighlight((prev) => (prev - 1 + Math.max(suggestions.length, 1)) % Math.max(suggestions.length, 1));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (highlight >= 0 && suggestions[highlight]) goToProduct(suggestions[highlight].asin);
+    else if (searchQuery.trim()) goToSearchPage();
+  } else if (e.key === 'Escape') {
+    setShowSuggest(false);
+  }
+};
+// --- [CURRENCY] helper USD ---
+const formatUSD = useCallback(
+  (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+            .format(Number(n || 0)),
+  []
+);
+
+// Click ra ngoài -> đóng dropdown
+useEffect(() => {
+  const handler = (e) => {
+    if (searchBoxRef.current && !searchBoxRef.current.contains(e.target)) setShowSuggest(false);
+  };
+  document.addEventListener('mousedown', handler);
+  return () => document.removeEventListener('mousedown', handler);
+}, []);
     return (
         <header className="site-header mo-left header">
   {/* Main Header */}
@@ -815,6 +898,93 @@ const getCartProduct = async () => {
             </ul>
           </div>
         </div>
+        {/* Header inline search (autosuggest) */}
+<div
+  ref={searchBoxRef}
+  className="d-none d-lg-flex align-items-center position-relative"
+  style={{ flex: 1, maxWidth: 520, marginRight: 16 }}
+>
+  <div className="input-group" style={{ width: '100%' }}>
+    <input
+      ref={searchInputRef}
+      type="search"
+      className="form-control"
+      placeholder="Tìm sản phẩm..."
+      value={searchQuery}
+      onChange={onSearchChange}
+      onKeyDown={onSearchKeyDown}
+      onFocus={() => { if (suggestions.length) setShowSuggest(true); }}
+      aria-label="Tìm sản phẩm"
+    />
+    <button
+      className="btn btn-outline-secondary"
+      type="button"
+      onClick={() => (searchQuery.trim() ? goToSearchPage() : searchInputRef.current?.focus())}
+      aria-label="Tìm kiếm"
+    >
+      <i className="iconly-Light-Search" />
+    </button>
+  </div>
+
+  {showSuggest && suggestions.length > 0 && (
+    <ul
+      className="dropdown-menu show"
+      style={{
+        display: 'block',
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        zIndex: 1051,
+        maxHeight: '60vh',
+        overflowY: 'auto',
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+        width: '100%'
+      }}
+      role="listbox"
+    >
+      {suggestions.map((p, idx) => {
+        const active = idx === highlight ? 'active' : '';
+        const thumb = p.productThumbnail
+          ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_40,h_40/imgProduct/IMG/${p.productThumbnail}`
+          : '/assets/user/images/no-image.jpg';
+        return (
+          <li key={p.asin}>
+            <button
+              type="button"
+              className={`dropdown-item d-flex align-items-center ${active}`}
+              onMouseEnter={() => setHighlight(idx)}
+              onClick={() => goToProduct(p.asin)}
+              role="option"
+              aria-selected={idx === highlight}
+              style={{ gap: 10 }}
+            >
+              <img src={thumb} alt="" width={32} height={32} style={{ objectFit: 'cover', borderRadius: 4 }} />
+              <span className="text-truncate" style={{ maxWidth: 320 }}>{p.productTitle}</span>
+             {p.productPrice != null && (
+  <strong className="ms-auto">
+   {formatUSD(p.productPrice)}
+  </strong>
+)}
+            </button>
+          </li>
+        );
+      })}
+      <li>
+        <button
+          type="button"
+          className="dropdown-item d-flex justify-content-between"
+          onClick={goToSearchPage}
+        >
+          Xem tất cả kết quả cho “{searchQuery.trim()}”
+          <i className="fa fa-arrow-right" />
+        </button>
+      </li>
+    </ul>
+  )}
+</div>
+
         {/* EXTRA NAV */}
         <div className="extra-nav">
           <div className="extra-cell">

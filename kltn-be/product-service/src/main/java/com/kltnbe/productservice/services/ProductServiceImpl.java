@@ -19,6 +19,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -857,5 +858,44 @@ validateShopOwnership(product.getStoreId(), authId);
     @Override
     public long countDiscountingProductsByStore(Long storeId) {
         return productRepository.countDiscountingByStore(storeId);
+    }
+    @Override
+    public List<ProductSuggestionDto> suggest(String q, int limit) {
+        if (q == null) return List.of();
+        String qq = q.trim();
+        if (qq.isEmpty()) return List.of();
+
+        int cappedLimit = Math.min(Math.max(limit, 1), 20);
+
+        // Query ngắn (<3) → LIKE
+        if (qq.length() < 3) {
+            return toDto(productRepository.searchLike(qq, cappedLimit));
+        }
+
+        // Query dài → thử FULLTEXT trước; nếu không có index/không ra kết quả thì fallback LIKE
+        try {
+            String booleanMode = Arrays.stream(qq.split("\\s+"))
+                    .filter(s -> !s.isBlank())
+                    .map(s -> "+" + s + "*")
+                    .collect(Collectors.joining(" "));
+            List<ProductSuggestionProjection> rs = productRepository.searchFullText(booleanMode, cappedLimit);
+            if (!rs.isEmpty()) return toDto(rs);
+        } catch (DataAccessException ignore) {
+            // Nếu chưa có FULLTEXT index hoặc lỗi DB → bỏ qua và fallback LIKE
+        }
+
+        return toDto(productRepository.searchLike(qq, cappedLimit));
+    }
+
+    private List<ProductSuggestionDto> toDto(List<ProductSuggestionProjection> list) {
+        return list.stream()
+                .map(p -> new ProductSuggestionDto(
+                        p.getProductId(),
+                        p.getAsin(),
+                        p.getProductTitle(),
+                        p.getProductThumbnail(),
+                        p.getProductPrice()
+                ))
+                .toList();
     }
 }

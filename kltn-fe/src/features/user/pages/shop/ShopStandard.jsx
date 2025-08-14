@@ -1,5 +1,6 @@
 // src/pages/common/HomePage.js
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet'; 
 // import QuickViewModal from '../../components/home/QuickViewModal'; 
 import ScrollTopButton from '../../layout/ScrollTopButton';
@@ -56,9 +57,7 @@ useEffect(() => {
       const { data } = await axios.get(`${API_SEARCH}/api/search/top-sellers`, {
         params: {
           size: 20,
-          statuses: 'delivered,shipped,packed', // <-- đổi ở đây
-          // days: 30,      // mở nếu muốn lọc theo 30 ngày gần nhất
-          // storeId: ...   // mở nếu muốn theo shop
+          statuses: 'delivered,shipped,packed', 
         }
       });
       if (!cancelled) {
@@ -215,7 +214,19 @@ const toggleClickSearchAsin = (asin) => {
     return prev;
   });
 };
-
+// Truyền giá trị search từ homepage qua shopStandard
+// Đọc keyword từ query string và bind vào input + state lọc
+ const location = useLocation();
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const kw = params.get('keyword') || '';
+  // Đổ vào ô input bên trái
+  setInputValue(kw);
+  // Cập nhật state keyword để trigger fetchProductsData
+ setKeyword(kw);
+  // Reset về trang 1 khi đổi keyword từ URL
+  setCurrentPage(0);
+}, [location.search]);
 // API Thanh search tiền
 useEffect(() => {
   const interval = setInterval(() => {
