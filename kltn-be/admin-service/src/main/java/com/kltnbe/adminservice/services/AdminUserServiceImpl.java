@@ -82,5 +82,12 @@ public class AdminUserServiceImpl implements AdminUserService {
         return userClient.upgradeToSeller(userId);
     }
 
+    @Override
+    public ResponseEntity<String> activeUserById(Long userId) {
+        return userClient.activateUser(userId);
+    }
+
+
+
 
 }

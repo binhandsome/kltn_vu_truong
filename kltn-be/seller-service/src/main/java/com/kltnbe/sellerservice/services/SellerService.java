@@ -138,7 +138,7 @@ public interface SellerService {
     ResponseEntity<EvaluateResponse> getAllEvaluateByOrderItem(Long orderItemId);
 
     ResponseEntity<?> updateCommentBySeller(Long evaluateId, String commentBySeller);
-
+    ResponseEntity<List<String>> showViewCccdUser(Long userId);
     ResponseEntity<?> updateStatusEvaluate(Long evaluateId, int status);
     ShopHeaderDTO getShopHeader(Long shopId);
     long followShop(Long shopId, Long userId);

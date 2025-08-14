@@ -431,6 +431,11 @@ public ResponseEntity<Map<String, Object>> getMyProducts(
     public ResponseEntity<List<String>> getUrlCcd(@RequestParam Long shopId) {
         return sellerService.showViewCccdShop(shopId);
     }
+    @InternalApi
+    @GetMapping("/internal/get-url-cccd-user")
+    public ResponseEntity<List<String>> getUrlCccd(@RequestParam Long userId) {
+        return sellerService.showViewCccdUser(userId);
+    }
     @GetMapping("/getAllOrderItem")
     public ResponseEntity<List<OrderItemResponse>> getAllOrderItem(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long authId = userDetails.getAuthId();

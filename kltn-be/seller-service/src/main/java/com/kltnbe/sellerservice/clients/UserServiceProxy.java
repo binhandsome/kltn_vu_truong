@@ -33,4 +33,6 @@ public interface UserServiceProxy {
     public ResponseEntity<?> getUserWithAccessToken(@RequestParam String accessToken);
     @GetMapping("/api/auth/findIdAuthByAccessToken")
     public Long findIdAuthByAccessToken(@RequestParam String accessToken);
+    @GetMapping("/api/user/findAuthIdByUserId")
+    Long findAuthIdByUserId(@RequestParam Long userId);
 }

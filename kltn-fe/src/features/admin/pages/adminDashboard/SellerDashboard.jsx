@@ -359,29 +359,7 @@ const handleViewCccd = async (shopId) => {
 )}
 
 {/* Modal hiển thị ảnh CCCD */}
-{showCccd && (
-  <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-    <div className="bg-white rounded-2xl shadow-xl w-[600px] p-6 relative">
-      <button
-        className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition"
-        onClick={() => setShowCccd(false)}
-      >
-        ✖
-      </button>
-      <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">🪪 Ảnh căn cước công dân</h3>
-      <div className="grid grid-cols-3 gap-4">
-        {listCccd.map((url, index) => (
-          <img
-            key={index}
-            src={url}
-            alt={`CCCD ${index + 1}`}
-            className="w-full h-40 object-cover rounded-lg border"
-          />
-        ))}
-      </div>
-    </div>
-  </div>
-)}
+
 
 
           </Typography>

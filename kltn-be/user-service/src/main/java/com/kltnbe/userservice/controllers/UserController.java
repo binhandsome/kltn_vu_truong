@@ -1,5 +1,6 @@
 package com.kltnbe.userservice.controllers;
 
+import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.userservice.dtos.UserDTO;
 import com.kltnbe.userservice.dtos.req.*;
 import com.kltnbe.userservice.dtos.res.AddressInfo;
@@ -8,10 +9,15 @@ import com.kltnbe.userservice.entities.Address;
 import com.kltnbe.userservice.entities.User;
 import com.kltnbe.userservice.services.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -89,6 +95,10 @@ public class UserController {
     public ResponseEntity<String> upgradeToSeller(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.upgradeToSeller(userId));
     }
+    @GetMapping("/findAuthIdByUserId")
+    public Long findAuthIdByUserId(@RequestParam Long userId) {
+            return userService.findAuthIdByUserId(userId);
+    }
 
     // ✏️ Cập nhật thông tin hồ sơ người dùng (Admin)
     @PutMapping("/adminUpdate/{userId}")
@@ -142,6 +152,11 @@ public class UserController {
         String tokenValue = token.replace("Bearer ", "");
         Long userId = userService.getIdUserByAccessToken(tokenValue);
         return ResponseEntity.ok(userService.submitFeedback(dto, userId));
+    }
+    @PostMapping(value = "/upload-images-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<?> uploadImageProfile(@RequestParam MultipartFile file, @AuthenticationPrincipal CustomUserDetails userDetails) {
+            Long authId = userDetails.getAuthId();
+            return ResponseEntity.ok(Map.of("message", userService.uploadImgProfile(file, authId)));
     }
 
 }

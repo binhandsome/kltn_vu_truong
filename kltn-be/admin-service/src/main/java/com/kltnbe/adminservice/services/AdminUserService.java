@@ -32,4 +32,5 @@ public interface AdminUserService {
     boolean isEmailUsed(String email);
     boolean isUsernameUsed(String username);
     String upgradeToSeller(Long userId);
+    ResponseEntity<String> activeUserById(Long userId);
 }

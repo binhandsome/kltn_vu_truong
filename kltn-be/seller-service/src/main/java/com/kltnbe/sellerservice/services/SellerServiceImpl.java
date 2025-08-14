@@ -901,6 +901,16 @@ public class SellerServiceImpl implements SellerService {
         list.add(storeAuthentic.get().getRealFaceImageUrl());
         return uploadServiceProxy.getSignedLinks(list);
     }
+    @Override
+    public ResponseEntity<List<String>> showViewCccdUser(Long userId) {
+        Long authId = userServiceProxy.findAuthIdByUserId(userId);
+        Optional<StoreAuthentic> storeAuthentic = storeAuthenticRepository.findByAuthId(authId);
+        List<String> list = new ArrayList<>();
+        list.add(storeAuthentic.get().getFrontCccdUrl());
+        list.add(storeAuthentic.get().getBackCccdUrl());
+        list.add(storeAuthentic.get().getRealFaceImageUrl());
+        return uploadServiceProxy.getSignedLinks(list);
+    }
 
     @Override
     public ResponseEntity<List<OrderItemResponse>> getListOrderItemResponse(Long authId) {

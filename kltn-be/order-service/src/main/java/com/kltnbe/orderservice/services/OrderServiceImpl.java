@@ -1179,7 +1179,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         }
         order.get().setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         orderRepository.save(order.get());
-        MasterOrder master = order.get().getMasterOrder(); 
+        MasterOrder master = order.get().getMasterOrder();
         Long masterId = master.getMasterOrderId();
         List<Order> children = orderRepository.findAllByMasterOrder_MasterOrderId(masterId);
         boolean allDelivered =

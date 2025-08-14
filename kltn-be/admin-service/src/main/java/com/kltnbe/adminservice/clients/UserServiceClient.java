@@ -48,7 +48,11 @@ public interface UserServiceClient {
 
     @GetMapping("/api/auth/checkUsernameExists")
     Boolean checkUsernameExists(@RequestParam("username") String username);
-
+    @GetMapping("/api/user/findAuthIdByUserId")
+    Long findAuthIdByUserId(Long userId);
     @PostMapping("/api/user/upgradeToSeller/{userId}")
     String upgradeToSeller(@PathVariable("userId") Long userId);
+    @PutMapping("/api/user/activate/{userId}")
+    ResponseEntity<String> activateUser(@PathVariable Long userId);
+
 }

@@ -163,6 +163,9 @@ public class AuthServiceImpl implements AuthService {
         if (!auth.getIsActive()) {
             throw new RuntimeException("Bạn chưa kích hoạt tài khoản");
         }
+        if (!auth.getUserRole().equals(UserRole.USER)) {
+            throw new RuntimeException("Hãy vào đúng trang để đăng nhập");
+        }
 
         String accessToken = jwtUtil.generateAccessToken(auth.getUsername(), auth.getAuthId(),
                 auth.getUserRole().toString());

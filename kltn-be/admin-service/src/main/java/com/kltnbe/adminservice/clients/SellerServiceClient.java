@@ -51,4 +51,6 @@ public interface SellerServiceClient {
     ResponseEntity<Map<String, String>> rejectAuthentication(@PathVariable("id") Long id);
     @GetMapping("/api/seller/internal/get-url-cccd")
     ResponseEntity<List<String>> getUrlCcd(@RequestParam Long shopId);
+    @GetMapping("/api/seller/internal/get-url-cccd-user")
+    ResponseEntity<List<String>> getUrlCccd(@RequestParam Long userId);
 }
