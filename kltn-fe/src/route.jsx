@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
 import AdminRoutes from './features/admin/routes';
@@ -10,49 +10,31 @@ import SellerLogin from './features/seller/pages/authentication/Login';
 import RegisterSeller from './features/seller/pages/authentication/Register';
 import AdminLayout from './features/admin/layout/AdminLayout';
 import AdminLayoutSeller from './features/seller/layout/AdminLayout';
-import Registration from './features/user/pages/auth/Registration';
-import Login from './features/user/pages/auth/Login';
-import ForgetPassword from './features/user/pages/auth/ForgetPassword';
-import UserLayout from './features/user/layout/UserLayout';
 import { useAuthReady } from './features/user/apiService/useAuthReady';
-import { useNavigate } from 'react-router-dom';
 import { setNavigator } from './features/seller/utils/navigation';
+
 const AppRoutes = () => {
   const navigate = useNavigate();
   useEffect(() => { setNavigator(navigate); }, [navigate]);
-    const isReady = useAuthReady();
 
+  const isReady = useAuthReady();
   if (!isReady) return <div>⏳ Đang xác thực...</div>;
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/user" replace />} />
-  <Route path="/user/auth" element={<UserLayout/>} >
-    <Route
-      path="login"
-      element={
-        <ProtectedRoute requireAuth={false} redirectIfAuthenticated={true}>
-          <Login />
-        </ProtectedRoute>
-      }
-    />
-       <Route
-      path="registration"
-      element={
-        <ProtectedRoute requireAuth={false} redirectIfAuthenticated={true}>
-          <Registration />
-        </ProtectedRoute>
-      }
-    />
-       <Route
-      path="forgetpassword"
-      element={
-        <ProtectedRoute requireAuth={false} redirectIfAuthenticated={true}>
-          <ForgetPassword />
-        </ProtectedRoute>
-      }
-    />
-  </Route>
-      {/* Seller login & register với redirect nếu đã đăng nhập */}
+
+      {/* Toàn bộ user pages, gồm cả auth, nằm trong UserRoutes */}
+      <Route
+        path="/user/*"
+        element={
+          <ProtectedRoute allowedRoles={['ROLE_USER', 'ROLE_SELLER']} requireAuth={false}>
+            <UserRoutes />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Seller auth */}
       <Route path="/seller/authentication" element={<AdminLayoutSeller />}>
         <Route
           path="login"
@@ -72,7 +54,7 @@ const AppRoutes = () => {
         />
       </Route>
 
-      {/* Admin login với redirect nếu đã đăng nhập */}
+      {/* Admin auth */}
       <Route path="/admin/authentication" element={<AdminLayout />}>
         <Route
           path="login"
@@ -84,17 +66,7 @@ const AppRoutes = () => {
         />
       </Route>
 
-      {/* Route cho /user/* với UserRoutes, không yêu cầu đăng nhập */}
-      <Route
-        path="/user/*"
-        element={
-          <ProtectedRoute allowedRoles={['ROLE_USER', 'ROLE_SELLER']} requireAuth={false}>
-            <UserRoutes />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Route cho /admin/* */}
+      {/* Admin app */}
       <Route
         path="/admin/*"
         element={
@@ -104,7 +76,7 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Route cho /seller/* */}
+      {/* Seller app */}
       <Route
         path="/seller/*"
         element={
