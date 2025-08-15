@@ -1,10 +1,7 @@
 // Service: ProductService.java
 package com.kltnbe.productservice.services;
 
-import com.kltnbe.productservice.dtos.CategoryCountDTO;
-import com.kltnbe.productservice.dtos.ProductStatsDTO;
-import com.kltnbe.productservice.dtos.ProductSuggestionDto;
-import com.kltnbe.productservice.dtos.StoreProductFilter;
+import com.kltnbe.productservice.dtos.*;
 import com.kltnbe.productservice.dtos.req.ProductFileterAll;
 import com.kltnbe.productservice.dtos.req.ProductRequestDTO;
 import com.kltnbe.productservice.dtos.req.SizeRequest;
@@ -22,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ProductService {
@@ -78,4 +76,6 @@ Page<ProductResponse> searchProductsByStore(Long storeId, StoreProductFilter fil
     List<CategoryCountDTO> getTagCountByStore(Long storeId);
     long countDiscountingProductsByStore(Long storeId);
     List<ProductSuggestionDto> suggest(String q, int limit);
+    List<EvaluateResponse> getEvaluatesPublicByAsin(String asin);
+    Map<String, EvaluateSummaryDTO> getEvaluateSummary(List<String> asins);
 }

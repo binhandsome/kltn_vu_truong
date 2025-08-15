@@ -903,13 +903,13 @@ function ShopStandard({ products }) {
                         <span role="img" aria-label="shopping">🛍️</span>
                         Đi mua sắm cho bạn
                       </a>
-                      {/* <div style={{ padding: "20px" }}>
+                      <div style={{ padding: "20px" }}>
                         <h2>Upload ảnh tìm kiếm</h2>
                         <input type="file" accept="image/*" onChange={handleFileChange} />
                         <button onClick={handleUpload} style={{ marginLeft: "10px" }}>
                           Upload
                         </button>
-                      </div> */}
+                      </div>
 
                     </div>
                     <div className="filter-right-area">

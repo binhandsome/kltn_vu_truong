@@ -1,5 +1,6 @@
 // src/pages/components/home/QuickViewModal.jsx
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
+import axios from "axios";
 
 const img300 = (f) => {
   if (!f) return "/assets/images/placeholder.png";
@@ -44,7 +45,30 @@ function QuickViewModal({
   selectedColor,
   setSelectedColor,
 }) {
-  // chuẩn hoá mảng size & color
+  // ========= Evaluate: load & tính sao =========
+  const [evalAvg, setEvalAvg] = useState(0);
+  const [evalCount, setEvalCount] = useState(0);
+
+  useEffect(() => {
+       let cancel = false;
+     const asin = product?.asin;
+       if (!asin) { setEvalAvg(0); setEvalCount(0); return; }
+       axios
+         .post(`${API_PRODUCT}/api/products/evaluates/summary`, [asin])
+         .then(({ data }) => {
+            const s = data?.[asin] || {};
+            if (!cancel) {
+              setEvalAvg(Number(s.avg || 0));
+              setEvalCount(Number(s.count || 0));
+            }
+          })
+          .catch(() => { if (!cancel) { setEvalAvg(0); setEvalCount(0); } });
+        return () => { cancel = true; };
+      }, [product?.asin]);
+
+  const roundedStars = useMemo(() => Math.round(evalAvg || 0), [evalAvg]);
+
+  // ========= chuẩn hoá mảng size & color =========
   const normSizes = useMemo(
     () =>
       (product?.sizes || []).map((s) => ({
@@ -76,7 +100,7 @@ function QuickViewModal({
     return (base - (base * percent) / 100).toFixed(2);
   }, [product]);
 
-  // ✨ số lượng đã bán: ưu tiên prop từ Home, fallback từ product.* (soldCount / orderCount / orders)
+  // ✨ số lượng đã bán (snapshot)
   const resolvedSold = useMemo(() => {
     if (soldCount != null && Number.isFinite(Number(soldCount))) return Number(soldCount);
     const raw = product?.soldCount ?? product?.orderCount ?? product?.orders ?? 0;
@@ -104,7 +128,29 @@ function QuickViewModal({
       color: selectedColor ? { colorId: selectedColor.colorId, name_color: selectedColor.name_color } : null,
     });
   };
+// Evaluate
+// dưới các import/const khác
+const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8083";
 
+// ⭐ vẽ sao theo phần thập phân (giống trang category)
+const StarRating = ({ value = 0 }) => (
+  <ul className="dz-rating me-2" style={{ display:'flex', gap:2 }}>
+    {[0,1,2,3,4].map(i => {
+      const fill = Math.max(0, Math.min(1, value - i));
+      return (
+        <li key={i} style={{ position:'relative', width:16, height:16 }}>
+          <i className="flaticon-star-1" style={{ color:'#ddd' }} />
+          <i className="flaticon-star-1"
+             style={{
+               color:'#f5a623',
+               position:'absolute', left:0, top:0,
+               width: `${fill*100}%`, overflow:'hidden'
+             }} />
+        </li>
+      );
+    })}
+  </ul>
+);
   return (
     <div className="modal quick-view-modal fade" id="exampleModal" tabIndex={-1} aria-hidden="true">
       <style>{sizeStyles}</style>
@@ -171,17 +217,22 @@ function QuickViewModal({
                             "—"
                           )}
                         </h4>
-                        <div className="review-num">
-                          <ul className="dz-rating me-2">
-                            {[...Array(5)].map((_, i) => (
-                              <li key={i} className={i < 4 ? "star-fill" : ""}>
-                                <i className="flaticon-star-1" />
-                              </li>
-                            ))}
-                          </ul>
-                          <span className="text-secondary me-2">4.7 sao</span>
-                          <a href="javascript:void(0);">(5 khách hàng đánh giá)</a>
-                        </div>
+
+                        {/* ✨ RATING từ Evaluate (status=1) */}
+                        <div className="review-num d-flex align-items-center">
+   <StarRating value={evalAvg} />
+   {evalCount > 0 ? (
+     <>
+       <span className="text-secondary me-2">{evalAvg.toFixed(1)} sao</span>
+       <a href={`/user/productstructure/ProductDetail?asin=${product?.asin}`}>
+         ({evalCount} lượt đánh giá)
+       </a>
+     </>
+   ) : (
+    <span className="text-muted">Chưa có đánh giá</span>
+   )}
++ </div>
+                        {/* /RATING */}
                       </div>
                     </div>
 

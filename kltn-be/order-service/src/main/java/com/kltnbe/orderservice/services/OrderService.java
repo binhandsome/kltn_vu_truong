@@ -86,4 +86,5 @@ public interface OrderService {
     Map<Long, Long> getSoldCounts(Long storeId, List<String> statuses, Collection<Long> productIds);
     Long getSoldCount(Long storeId, List<String> statuses, Long productId);
     List<TopProductDTO> getTopProducts(int size, Integer days, List<String> statuses, Long storeId);
+    Long getUserIdByOrderItem(Long orderItemId);
 }

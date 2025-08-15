@@ -1,3 +1,4 @@
+// src/layout/UserLayout.jsx
 import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
@@ -7,12 +8,9 @@ import UserFooter from './UserFooter';
 
 // ===========================
 // UserLayout.jsx — hardened
-// - Loads CSS/JS once, in order
-// - Swiper guard (destroy/re-init on route)
-// - Bootstrap SelectorEngine shim to avoid "Illegal invocation"
 // ===========================
 
-// ---- CSS assets (order irrelevant; load once) ----
+// ---- CSS assets ----
 const cssFiles = [
   '/assets/user/icons/feather/css/iconfont.css',
   '/assets/user/icons/fontawesome/css/all.min.css',
@@ -33,19 +31,17 @@ const cssFiles = [
   '/assets/user/css/custom-fix.css',
 ];
 
-// ---- JS assets (order matters; load once sequentially) ----
+// ---- JS assets (order matters) ----
 const jsFiles = [
   // Core
   '/assets/user/js/jquery.min.js',
   '/assets/user/vendor/bootstrap/dist/js/bootstrap.bundle.min.js',
 
-  // Common vendors (relatively independent)
+  // Vendors
   '/assets/user/vendor/wow/wow.min.js',
   '/assets/user/vendor/imagesloaded/imagesloaded.js',
   '/assets/user/vendor/masonry/masonry-4.2.2.js',
   '/assets/user/vendor/masonry/isotope.pkgd.min.js',
-
-  // UI widgets
   '/assets/user/vendor/bootstrap-select/dist/js/bootstrap-select.min.js',
   '/assets/user/vendor/swiper/swiper-bundle.min.js',
   '/assets/user/vendor/magnific-popup/magnific-popup.js',
@@ -62,9 +58,11 @@ const jsFiles = [
   // Charts
   'https://cdn.jsdelivr.net/npm/apexcharts',
 
-  // Theme scripts — keep last, add back one-by-one if needed
-  // '/assets/user/js/dz.carousel.js',
-  // '/assets/user/js/dz.ajax.js',
+  // Theme core scripts (KHÔI PHỤC để giữ đúng kích thước/behavior gốc)
+  '/assets/user/js/dz.carousel.js',
+  '/assets/user/js/dz.ajax.js',
+
+  // Custom theme
   '/assets/user/js/custom.min.js',
   '/assets/user/js/dashbord-account.js',
 ];
@@ -89,7 +87,6 @@ function loadScriptOnce(src) {
   if (typeof document === 'undefined') return Promise.resolve();
   if (loadedJS.has(src)) return loadedJS.get(src);
 
-  // Reuse existing <script> if present
   const existing = document.querySelector(`script[src="${src}"]`);
   if (existing) {
     const p = new Promise((resolve) => {
@@ -103,15 +100,81 @@ function loadScriptOnce(src) {
   const p = new Promise((resolve) => {
     const s = document.createElement('script');
     s.src = src;
-    s.async = false; // preserve order
+    s.async = false; // giữ thứ tự
     s.defer = false;
     s.dataset.__loaded = '0';
-    s.addEventListener('load', () => { s.dataset.__loaded = '1'; resolve(); }, { once: true });
-    s.addEventListener('error', (err) => { console.warn('[UserLayout] Failed to load script:', src, err); resolve(); }, { once: true });
+    s.addEventListener('load', () => {
+      s.dataset.__loaded = '1';
+      resolve();
+    }, { once: true });
+    s.addEventListener('error', (err) => {
+      console.warn('[UserLayout] Failed to load script:', src, err);
+      resolve(); // không chặn flow
+    }, { once: true });
     document.body.appendChild(s);
   });
   loadedJS.set(src, p);
   return p;
+}
+
+// ---- Bootstrap patches ----
+function patchBootstrapOnce() {
+  if (typeof window === 'undefined' || !window.bootstrap) return;
+
+  // 1) Guard SelectorEngine.findOne (fix Illegal invocation)
+  try {
+    const SE = window.bootstrap.SelectorEngine;
+    if (SE && !SE.__patched) {
+      const origFindOne = SE.findOne.bind(SE);
+      SE.findOne = function (selector, root) {
+        if (!root || !(root.nodeType === 1 || root.nodeType === 9)) root = document;
+        try { return origFindOne(selector, root); } catch (e) {
+          console.warn('[BS patch] findOne crashed:', selector, e);
+          return null;
+        }
+      };
+      SE.__patched = true;
+      requestAnimationFrame(() => {
+        document.querySelectorAll('[data-bs-target]').forEach((el) => {
+          const sel = el.getAttribute('data-bs-target');
+          try {
+            if (!sel || !document.querySelector(sel)) {
+              console.warn('[BS check] Bad data-bs-target:', sel, el);
+            }
+          } catch {
+            console.warn('[BS check] Invalid selector in data-bs-target:', sel, el);
+          }
+        });
+      });
+    }
+  } catch (e) {
+    console.warn('[UserLayout] SelectorEngine patch failed', e);
+  }
+
+  // 2) Guard Modal backdrop (fix QuickView lỗi 'backdrop' undefined)
+  try {
+    const M = window.bootstrap.Modal;
+    if (M && !M.__patchedBackdrop) {
+      const _init = M.prototype._initializeBackdrop;
+      M.prototype._initializeBackdrop = function (...args) {
+        this._config = this._config || {};
+        if (typeof this._config.backdrop === 'undefined') this._config.backdrop = true;
+        return _init ? _init.apply(this, args) : undefined;
+      };
+      const _show = M.prototype.show;
+      M.prototype.show = function (...args) {
+        if (!this._element || !(this._element instanceof Element)) {
+          console.warn('[BS patch] Modal.show with invalid element -> skip');
+          return;
+        }
+        this._config = this._config || { backdrop: true };
+        return _show.apply(this, args);
+      };
+      M.__patchedBackdrop = true;
+    }
+  } catch (e) {
+    console.warn('[UserLayout] Modal backdrop patch failed', e);
+  }
 }
 
 // ---- Swiper helpers ----
@@ -141,7 +204,8 @@ function safeInitSwiper(selector, options) {
 
   try {
     const inst = new window.Swiper(el, clean);
-    el.swiper = inst; return inst;
+    el.swiper = inst;
+    return inst;
   } catch (e) {
     console.warn('[UserLayout] Swiper init failed for', selector, e);
     return null;
@@ -164,9 +228,8 @@ export default function UserLayout() {
   const location = useLocation();
   const bootedRef = useRef(false);
   const inittingRef = useRef(false);
-  const createdSwipersRef = useRef([]);
 
-  // Load CSS once on mount
+  // CSS once
   useEffect(() => { cssFiles.forEach(loadCSSOnce); }, []);
 
   useEffect(() => {
@@ -174,68 +237,14 @@ export default function UserLayout() {
 
     const ensureAssets = async () => {
       if (!bootedRef.current) {
-        // Load sequentially to preserve dependencies
         for (const src of jsFiles) {
           // eslint-disable-next-line no-await-in-loop
           await loadScriptOnce(src);
-
-          // Apply patch immediately after Bootstrap is loaded (before theme scripts that use it)
-          if (src.includes('bootstrap.bundle.min.js')) {
-            try {
-              (function () {
-                if (!window.bootstrap || !window.bootstrap.SelectorEngine) return;
-                const SE = window.bootstrap.SelectorEngine;
-                if (SE.__patched) return;
-
-                const origFindOne = SE.findOne.bind(SE);
-                SE.findOne = function (selector, root) {
-                  if (!root || !(root.nodeType === 1 || root.nodeType === 9)) {
-                    console.warn('[BS patch] Bad root for findOne:', root, 'selector:', selector, '-> fallback to document');
-                    root = document;
-                  }
-                  try {
-                    return origFindOne(selector, root);
-                  } catch (e) {
-                    console.error('[BS patch] findOne crashed for selector:', selector, 'root:', root, e);
-                    return null;
-                  }
-                };
-
-                // Quick validator to surface broken selectors
-                const checkTargets = () => {
-                  document.querySelectorAll('[data-bs-target]').forEach(el => {
-                    const sel = el.getAttribute('data-bs-target');
-                    try {
-                      if (!sel || !document.querySelector(sel)) {
-                        console.warn('[BS check] Bad data-bs-target:', sel, el);
-                      }
-                    } catch (err) {
-                      console.warn('[BS check] Invalid CSS selector in data-bs-target:', sel, el);
-                    }
-                  });
-                  document.querySelectorAll('[data-bs-parent]').forEach(el => {
-                    const sel = el.getAttribute('data-bs-parent');
-                    try {
-                      if (!sel || !document.querySelector(sel)) {
-                        console.warn('[BS check] Bad data-bs-parent:', sel, el);
-                      }
-                    } catch (err) {
-                      console.warn('[BS check] Invalid CSS selector in data-bs-parent:', sel, el);
-                    }
-                  });
-                };
-                requestAnimationFrame(checkTargets);
-
-                SE.__patched = true;
-                console.log('[BS patch] SelectorEngine.findOne patched.');
-              })();
-            } catch (e) {
-              console.warn('[UserLayout] Failed to patch Bootstrap SelectorEngine', e);
-            }
-          }
+          if (src.includes('bootstrap.bundle.min.js')) patchBootstrapOnce();
         }
-
         bootedRef.current = true;
+      } else {
+        patchBootstrapOnce();
       }
     };
 
@@ -243,7 +252,8 @@ export default function UserLayout() {
       if (cancelled || inittingRef.current) return;
       inittingRef.current = true;
 
-      const thumbConfig = {
+      // Chỉ init các Swiper nếu có (không đụng Slick của theme)
+      const thumbCfg = {
         slidesPerView: 4,
         spaceBetween: 8,
         direction: 'horizontal',
@@ -259,8 +269,7 @@ export default function UserLayout() {
           2000: { slidesPerView: 7 },
         },
       };
-
-      const mainConfig = {
+      const mainCfg = {
         slidesPerView: 1,
         spaceBetween: 10,
         loop: false,
@@ -268,7 +277,8 @@ export default function UserLayout() {
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
       };
 
-      const cat1 = safeInitSwiper('.category-swiper', {
+      // Category sliders (nếu dùng Swiper)
+      safeInitSwiper('.category-swiper', {
         slidesPerView: 4, spaceBetween: 30, loop: false,
         autoplay: { delay: 2000, disableOnInteraction: false },
         pagination: { el: '.swiper-pagination', clickable: true },
@@ -283,7 +293,7 @@ export default function UserLayout() {
         },
       });
 
-      const cat2 = safeInitSwiper('.category-swiper2', {
+      safeInitSwiper('.category-swiper2', {
         slidesPerView: 3, spaceBetween: 20, loop: false,
         autoplay: { delay: 3000, disableOnInteraction: false },
         pagination: { el: '.swiper-pagination', clickable: true },
@@ -296,29 +306,35 @@ export default function UserLayout() {
         },
       });
 
-      const productThumb = safeInitSwiper('.product-gallery-swiper.thumb-swiper-lg', thumbConfig);
-      const productMain = safeInitSwiper('.product-gallery-swiper2', {
-        ...mainConfig,
+      // Product gallery page
+      const productThumb = safeInitSwiper('.product-gallery-swiper.thumb-swiper-lg', thumbCfg);
+      safeInitSwiper('.product-gallery-swiper2', {
+        ...mainCfg,
         ...(productThumb ? { thumbs: { swiper: productThumb } } : {}),
       });
 
-      const quickThumb = safeInitSwiper('.quick-modal-swiper.thumb-swiper-lg', thumbConfig);
-      const quickMain = safeInitSwiper('.quick-modal-swiper2', {
-        ...mainConfig,
+      // Quick modal gallery (nếu modal đã render)
+      const quickThumb = safeInitSwiper('.quick-modal-swiper.thumb-swiper-lg', thumbCfg);
+      safeInitSwiper('.quick-modal-swiper2', {
+        ...mainCfg,
         ...(quickThumb ? { thumbs: { swiper: quickThumb } } : {}),
       });
 
-      createdSwipersRef.current = [cat1, cat2, productThumb, productMain, quickThumb, quickMain].filter(Boolean);
       inittingRef.current = false;
     };
 
     const run = async () => {
       await ensureAssets();
       if (cancelled) return;
-      // Wait one frame so <Outlet/> children DOM exists
-      await tick();
+
+      await tick(); // đợi DOM Outlet
+
+      // Swiper: dọn trước rồi init lại theo DOM hiện tại
       destroyAllSwipers(document);
       initCarousels();
+
+      // KHÔNG init Slick ở đây -> để dz.carousel.js của theme làm,
+      // nhờ vậy kích thước & hiệu ứng y như bản gốc.
     };
 
     run();
@@ -326,7 +342,6 @@ export default function UserLayout() {
     return () => {
       cancelled = true;
       destroyAllSwipers(document);
-      createdSwipersRef.current = [];
       inittingRef.current = false;
     };
   }, [location.pathname]);

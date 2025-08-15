@@ -13,4 +13,6 @@ public interface OrderServiceProxy {
     ResponseEntity<String> updateStatusEvaluate(@RequestParam Long orderItemId);
     @GetMapping("/api/orders/updateEvaluateNumber")
     void updateEvaluateNumber(@RequestParam Long orderItemId, @RequestParam Integer ratingNumber);
+    @GetMapping("/api/orders/userIdByOrderItem")
+    Long getUserIdByOrderItem(@RequestParam("orderItemId") Long orderItemId);
 }
