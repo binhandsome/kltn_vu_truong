@@ -3,6 +3,7 @@ package com.kltnbe.productservice.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kltnbe.productservice.clients.RecommendServiceProxy;
 import com.kltnbe.productservice.clients.OrderServiceProxy;
 import com.kltnbe.productservice.clients.SearchServiceProxy;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
@@ -51,6 +52,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSizeRepository productSizeRepository;
     private final ProductSizeRepository sizeRepository;
     private final ProductImageRepository productImageRepository;
+    private final RecommendServiceProxy recommendServiceProxy;
     private final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
     private final ModelMapper modelMapper;
     @Autowired
@@ -144,7 +146,8 @@ public class ProductServiceImpl implements ProductService {
             String json = objectMapper.writeValueAsString(colorDTOs);
             TitleAndImgSeller titleAndImgSeller = sellerServiceProxy.getTitleAndImgSeller(request.getShopId()).getBody();
             String jsonTitleAndThumbnail = objectMapper.writeValueAsString(titleAndImgSeller);
-
+            Map<String, Integer> salesRank = new HashMap<>();
+            salesRank.put(request.getSelectedCategory(), 999);
             Product product = new Product();
             product.setAsin(asin);
             product.setProductTitle(request.getNameProduct());
@@ -159,16 +162,23 @@ public class ProductServiceImpl implements ProductService {
             product.setStoreId(request.getShopId());
             product.setStoreThumTitle(jsonTitleAndThumbnail);
             productRepository.save(product);
-
             if (request.getCategoryList() != null && !request.getCategoryList().isEmpty()) {
                 String jsonCategories = objectMapper.writeValueAsString(request.getCategoryList());
-
                 Category category = new Category();
-                category.setCategories(jsonCategories); // field kiểu String JSON
+                category.setCategories(jsonCategories);
                 category.setProduct(product);
                 category.setDescription(request.getDescription());
                 categoryRepository.save(category);
+                RecommendNewReq recommendNewReq = new RecommendNewReq();
+                recommendNewReq.setTitle(request.getNameProduct());
+                recommendNewReq.setBrand(request.getNameBrand());
+                recommendNewReq.setCategories(request.getCategoryList());
+                recommendNewReq.setSalesRank(salesRank);
+                recommendNewReq.setTopk(100);
+                recommendServiceProxy.recommendNew(recommendNewReq);
             }
+
+
             Optional<Product> product1 = productRepository.findProductByAsin(product.getAsin());
             ProductDto productDto = new ProductDto();
             productDto.setProductId(product.getProductId());

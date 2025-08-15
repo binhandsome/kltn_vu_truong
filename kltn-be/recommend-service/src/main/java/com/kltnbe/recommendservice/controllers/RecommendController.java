@@ -1,5 +1,9 @@
 package com.kltnbe.recommendservice.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.kltnbe.recommendservice.dtos.req.RecommendNewReq;
+import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
 import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import com.kltnbe.recommendservice.services.RecommendService;
@@ -38,5 +42,19 @@ public class RecommendController {
             }
         }
         return result;
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<RecommendResponse> recommendNew(@RequestBody RecommendNewReq req) {
+        if (req.getTopk() == null || req.getTopk() < 1) req.setTopk(10);
+        if (req.getTopk() > 100) req.setTopk(100);
+        RecommendResponse resp = recommendService.recommendNewProduct(req);
+        ObjectWriter ow = new ObjectMapper().writerWithDefaultPrettyPrinter();
+        try {
+            String json = ow.writeValueAsString(resp);
+            System.out.println(json + "\nrecoomend cua bo may la ...");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        return ResponseEntity.ok(resp);
     }
 }

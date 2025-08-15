@@ -914,7 +914,7 @@ useEffect(() => {
           </div>
         </div>
         {/* Header inline search (autosuggest) */}
-<div
+{/* <div
   ref={searchBoxRef}
   className="d-none d-lg-flex align-items-center position-relative"
   style={{ flex: 1, maxWidth: 520, marginRight: 16 }}
@@ -1000,7 +1000,7 @@ useEffect(() => {
       </li>
     </ul>
   )}
-</div>
+</div> */}
 
         {/* EXTRA NAV */}
         <div className="extra-nav">
