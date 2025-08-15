@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -327,37 +328,43 @@ public class ProductController {
     }
     @PostMapping(value = "/uploadImgToProductEvaluate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadImgToProductEvaluate(
-            @RequestPart("data") EvalueUserWithItemOrder evalueUserWithItemOrder,
+            @RequestPart("data") EvalueUserWithItemOrder req,
             @RequestPart("files") List<MultipartFile> files) {
 
-        EvaluateProduct evaluateProduct = new EvaluateProduct();
-        evaluateProduct.setOrderItemId(evalueUserWithItemOrder.getOrderItemId());
-        evaluateProduct.setProductAsin(evalueUserWithItemOrder.getProductAsin());
-        evaluateProduct.setComment(evalueUserWithItemOrder.getComment());
-        evaluateProduct.setRating(evalueUserWithItemOrder.getRating());
+        // ✅ 1 order item chỉ tạo 1 evaluate
+        if (evaluateProductRepository.existsByOrderItemId(req.getOrderItemId())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Order item này đã được đánh giá."));
+        }
 
-        // Optional: Lưu trước để có ID nếu cần
-        evaluateProduct = evaluateProductRepository.save(evaluateProduct);
-        orderServiceProxy.updateStatusEvaluate(evaluateProduct.getOrderItemId());
-        orderServiceProxy.updateEvaluateNumber(evalueUserWithItemOrder.getOrderItemId(), evalueUserWithItemOrder.getRating());
-        // Đọc bytes và filenames NGAY ĐÂY, trước khi gọi async
+        EvaluateProduct ev = new EvaluateProduct();
+        ev.setOrderItemId(req.getOrderItemId());
+        ev.setProductAsin(req.getProductAsin());
+        ev.setComment(req.getComment());
+        ev.setRating(req.getRating());
+        ev.setStatus(0); // PENDING để chờ seller duyệt
+        try { ev.setCreatedAt(LocalDateTime.now()); } catch (Exception ignore) {}
+
+        ev = evaluateProductRepository.save(ev);
+
+        // Giữ nguyên các callback sang OrderService của bạn
+        orderServiceProxy.updateStatusEvaluate(ev.getOrderItemId());
+        orderServiceProxy.updateEvaluateNumber(req.getOrderItemId(), req.getRating());
+
+        // Đọc bytes trước rồi upload async (giữ nguyên)
         List<byte[]> fileBytesList = new ArrayList<>();
         List<String> filenames = new ArrayList<>();
-        for (MultipartFile file : files) {
+        for (MultipartFile f : files) {
             try {
-                byte[] bytes = file.getBytes();  // Đọc sync, an toàn
-                fileBytesList.add(bytes);
-                filenames.add(file.getOriginalFilename());
+                fileBytesList.add(f.getBytes());
+                filenames.add(f.getOriginalFilename());
             } catch (IOException e) {
-                // Xử lý lỗi đọc ở đây, ví dụ: return error response nếu cần
-                System.err.println("❌ Lỗi đọc file trong controller: " + e.getMessage());
                 return ResponseEntity.badRequest().body(Map.of("error", "Lỗi đọc file: " + e.getMessage()));
             }
         }
-        asyncUploadService.uploadAndAppendImageUrls(evaluateProduct, fileBytesList, filenames);
-        return ResponseEntity.ok(Map.of("message", "Đánh giá đang được xử lý! Ảnh sẽ được upload trong background."));
-    }
+        asyncUploadService.uploadAndAppendImageUrls(ev, fileBytesList, filenames);
 
+        return ResponseEntity.ok(Map.of("message", "Đã nhận đánh giá, chờ duyệt!"));
+    }
 
     @InternalApi
     @PutMapping(value = "/internal/update-image/{imageId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -511,6 +518,10 @@ public class ProductController {
     public ResponseEntity<List<EvaluateResponse>> getEvaluateByAsinProduct(@RequestParam String asin) {
         return ResponseEntity.ok(productService.getEvaluateByProductAsin(asin));
     }
+    @GetMapping("/getAllEvaluateByOrderItemAndStatus/{asin}")
+    public List<EvaluateResponse> getPublicEvaluates(@PathVariable String asin) {
+        return productService.getEvaluatesPublicByAsin(asin);
+    }
     @GetMapping("/top-discounted")
     public List<ProductResponse> topDiscounted(
             @RequestParam(defaultValue = "5") int size,
@@ -561,6 +572,10 @@ public class ProductController {
             @RequestParam(value = "limit", defaultValue = "10") int limit
     ) {
         return productService.suggest(q, limit);
+    }
+    @PostMapping("/evaluates/summary")
+    public ResponseEntity<?> getEvaluateSummary(@RequestBody List<String> asins) {
+        return ResponseEntity.ok(productService.getEvaluateSummary(asins));
     }
 
 }

@@ -3,8 +3,10 @@ package com.kltnbe.productservice.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kltnbe.productservice.clients.OrderServiceProxy;
 import com.kltnbe.productservice.clients.SearchServiceProxy;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
+import com.kltnbe.productservice.clients.UserServiceProxy;
 import com.kltnbe.productservice.dtos.*;
 import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.EvaluateResponse;
@@ -59,6 +61,11 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private SearchServiceProxy searchServiceProxy;
     private EvaluateProductRepository evaluateProductRepository;
+    private UserServiceProxy userServiceProxy;
+    private OrderServiceProxy  orderServiceProxy;
+    private static final String DEFAULT_AVATAR =
+            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+
 
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
         Pageable pageable = PageRequest.of(productFileterAll.getPage(), productFileterAll.getSize());
@@ -811,11 +818,14 @@ validateShopOwnership(product.getStoreId(), authId);
 
     @Override
     public String actionStatusEvaluate(Long idEvaluate, int status) {
-        EvaluateProduct evaluateProduct = evaluateProductRepository.findById(idEvaluate).get();
-        evaluateProduct.setStatus(status);
-        evaluateProductRepository.save(evaluateProduct);
-        return "Đã chỉnh sửa trạng thái thành công ";
+        var ev = evaluateProductRepository.findById(idEvaluate).orElseThrow();
+        // chốt hợp lệ: 0,1,2
+        int safe = (status == 1) ? 1 : (status == 2 ? 2 : 0);
+        ev.setStatus(safe);
+        evaluateProductRepository.save(ev);
+        return "Đã chỉnh sửa trạng thái thành công";
     }
+
 
     @Override
     public List<EvaluateResponse> getEvaluateByProductAsin(String asin) {
@@ -898,4 +908,57 @@ validateShopOwnership(product.getStoreId(), authId);
                 ))
                 .toList();
     }
+    @Override
+    public List<EvaluateResponse> getEvaluatesPublicByAsin(String asin) {
+        var list = evaluateProductRepository
+                .findByProductAsinAndStatusOrderByCreatedAtDesc(asin, 1);
+
+        Map<Long, UserDTO> userCache = new HashMap<>();
+        return list.stream().map(e -> {
+            EvaluateResponse dto = new EvaluateResponse();
+            dto.setEvaluteId(e.getEvaluteId());
+            dto.setProductAsin(e.getProductAsin());
+            dto.setOrder_item_id(e.getOrderItemId());
+            dto.setRating(e.getRating());
+            dto.setComment(e.getComment());
+            dto.setImgEvaluate(e.getImgEvaluate());
+            dto.setCreatedAt(e.getCreatedAt());
+            dto.setCommentByEvaluate(e.getCommentByEvaluate());
+            dto.setStatus(e.getStatus());
+            try {
+                Long userId = orderServiceProxy.getUserIdByOrderItem(e.getOrderItemId());
+                if (userId != null) {
+                    UserDTO u = userCache.computeIfAbsent(userId, userServiceProxy::getUserInfoById);
+                    dto.setUsername(u != null && u.getUsername() != null ? u.getUsername() : "Ẩn danh");
+                    dto.setAvatar(u != null && u.getProfilePicture() != null && !u.getProfilePicture().isBlank()
+                            ? u.getProfilePicture()
+                            : DEFAULT_AVATAR);
+                } else {
+                    dto.setUsername("Ẩn danh");
+                    dto.setAvatar(DEFAULT_AVATAR);
+                }
+            } catch (Exception ex) {
+                dto.setUsername("Ẩn danh");
+                dto.setAvatar(DEFAULT_AVATAR);
+            }
+            return dto;
+        }).toList();
+    }
+    public long countApprovedReviews(String asin) {
+        return evaluateProductRepository.countByProductAsinAndStatus(asin, 1);
+    }
+    @Override
+    public Map<String, EvaluateSummaryDTO> getEvaluateSummary(List<String> asins) {
+        if (asins == null || asins.isEmpty()) return Map.of();
+        var rows = evaluateProductRepository.findSummaryByAsinIn(asins);
+        return rows.stream().collect(Collectors.toMap(
+                EvaluateProductRepository.EvaluateSummaryRow::getAsin,
+                r -> new EvaluateSummaryDTO(
+                        r.getReviewCount(),
+                        r.getAvgRating() == null ? 0d : Math.round(r.getAvgRating()*10.0)/10.0
+                )
+        ));
+    }
+
+
 }

@@ -25,4 +25,6 @@ public class EvaluateResponse {
     private LocalDateTime createdAt;
     private String commentByEvaluate;
     private int status;
+    private String username;
+    private String avatar;
 }

@@ -78,6 +78,14 @@ long countOrdersToday(@Param("storeId") Long storeId);
             @Param("endDate") Timestamp endDate,
             @Param("statuses") List<String> statuses,
             Pageable pageable);
+    @Query(value = """
+    SELECT mo.user_id
+    FROM order_items oi
+    JOIN orders o ON oi.order_id = o.order_id
+    JOIN master_orders mo ON o.master_order_id = mo.master_order_id
+    WHERE oi.order_item_id = :orderItemId
+    """, nativeQuery = true)
+    Long findUserIdByOrderItemId(@Param("orderItemId") Long orderItemId);
 
 
 

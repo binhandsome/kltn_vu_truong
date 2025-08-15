@@ -95,6 +95,10 @@ public class OrderController {
 
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/userIdByOrderItem")
+    public Long getUserIdByOrderItem(@RequestParam Long orderItemId) {
+        return orderService.getUserIdByOrderItem(orderItemId);
+    }
 
 //    @PutMapping("/updateMethodOrder")
 //    public ResponseEntity<String> updateMethodOrder(
