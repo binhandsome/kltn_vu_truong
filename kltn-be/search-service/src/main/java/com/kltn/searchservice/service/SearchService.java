@@ -56,5 +56,5 @@ public interface SearchService {
             int page, int size);
     // SearchService.java
     List<ProductDocument> getTopSellers(int size, Integer days, String statusesCsv, Long storeId) throws IOException;
-
+    List<ProductDocument> getProductsByAsins(List<String> asins);
 }

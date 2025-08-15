@@ -903,13 +903,13 @@ function ShopStandard({ products }) {
                         <span role="img" aria-label="shopping">🛍️</span>
                         Đi mua sắm cho bạn
                       </a>
-                      {/* <div style={{ padding: "20px" }}>
+                      <div style={{ padding: "20px" }}>
                         <h2>Upload ảnh tìm kiếm</h2>
                         <input type="file" accept="image/*" onChange={handleFileChange} />
                         <button onClick={handleUpload} style={{ marginLeft: "10px" }}>
                           Upload
                         </button>
-                      </div> */}
+                      </div>
 
                     </div>
                     <div className="filter-right-area">
@@ -1765,7 +1765,6 @@ function ShopStandard({ products }) {
                                         src={shopHeader?.avatar || "/assets/images/placeholder.png"}
                                         alt="shop avatar"
                                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                        onError={(e) => { e.currentTarget.src = "/assets/images/placeholder.png"; }}
                                       />
                                     </div>
                                     <div className="d-flex flex-column">

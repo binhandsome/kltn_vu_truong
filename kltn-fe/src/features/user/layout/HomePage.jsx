@@ -6,12 +6,16 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import WOW from 'wowjs';
 import 'mutation-observer';
+import { useNavigate } from "react-router-dom";
 
 function HomePage() {
   // ====== TOAST ======
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastType, setToastType] = useState('success'); // "success" | "error"
+  const [selectedFile, setSelectedFile] = useState(null);
+  const navigate = useNavigate();
+
   const triggerToast = (msg, type = 'success') => {
     setToastMessage(msg);
     setToastType(type);
@@ -158,7 +162,47 @@ const [selectedColor, setSelectedColor] = useState(null);
 const [selectedSize, setSelectedSize]   = useState(null);
 const [availableStock, setAvailableStock] = useState(null);
 const [priceDiscount, setPriceDiscount] = useState(0);
+  const [imagePreview, setImagePreview] = useState(null);
+      const [uploading, setUploading] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    userAddress: '',
+    gender: '',
+    dateOfBirth: '',
+    profilePicture: ''
+  });
+const handleImageChange = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    setImagePreview(reader.result);
+    setFormData(prev => ({
+      ...prev,
+      profilePicture: reader.result,
+      file // lưu lại để uploadImage dùng
+    }));
+  };
+  reader.readAsDataURL(file);
+};
+
+  const handleFileChange = (e) => {
+      const file = e.target.files?.[0];
+
+    setSelectedFile(e.target.files[0]);
+     if (!file) return;
+
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    setImagePreview(reader.result);
+  };
+  reader.readAsDataURL(file);
+  };
 // (tuỳ chọn) tags để hiển thị trong modal, không ảnh hưởng nơi khác
 const [tags, setTags] = useState({});
 // HomePage.js
@@ -361,7 +405,30 @@ const addCartFromModal = async (qty, { size, color }) => {
       } catch (_) {}
     }
   }, []);
-  // truyền sold_count
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      console.log("Vui lòng chọn ảnh");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    try {
+      const res = await axios.post("http://localhost:8088/api/search/search-image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Kết quả từ Spring Boot:", res.data);
+      const asinList = res.data;
+          navigate("/user/shop/ShopSideBar", { state: { asinList } });
+    } catch (err) {
+      console.error("Lỗi upload:", err);
+    }
+  };
+  useEffect(() => {
+    handleUpload(selectedFile);
+  }, [selectedFile])
+  
   const modalSoldCount = useMemo(() => {
     const asin = selectedProduct?.asin;
     if (!asin) return 0;
@@ -385,8 +452,78 @@ const addCartFromModal = async (qty, { size, color }) => {
         {/* Header (đã được xử lý trong App.js) */}
 <div className="page-content bg-light">
   <div className="main-slider-wrapper">
+    
     <div className="slider-inner">
+     <div className="avatar-upload d-flex align-items-center">
+  <div className="position-relative">
+    {/* Preview ảnh to hơn */}
+    <div
+      className="avatar-preview thumb"
+      style={{
+        width: 180,        // tăng chiều rộng
+        height: 180,       // tăng chiều cao
+        borderRadius: "12px",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        id="imagePreview"
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundImage: `url(${
+            imagePreview ||
+            "https://cdn-icons-png.freepik.com/512/3226/3226223.png"
+          })`,
+        }}
+      />
+    </div>
+
+    <div>
+      <div className="change-btn thumb-edit d-flex align-items-center flex-wrap">
+        <input
+          type="file"
+          className="form-control d-none"
+          id="imageUpload"
+          accept=".png, .jpg, .jpeg"
+          onChange={handleFileChange}
+        />
+        {/* Camera icon to hơn */}
+        <label
+          htmlFor="imageUpload"
+          className="btn btn-light ms-0"
+          style={{
+            padding: "12px 18px",       // nút to hơn
+            fontSize: "1.5rem",         // icon to hơn
+          }}
+        >
+          <i className="fa-solid fa-camera" />
+        </label>
+      </div>
+
+      {/* Chữ hướng dẫn */}
+      <div className="mt-2 text-center">
+        <span
+          style={{
+            fontSize: "1rem",
+            fontWeight: "500",
+            color: "#555",
+            lineHeight: 1.4,
+          }}
+        >
+          📷 Upload ảnh sản phẩm bạn cần tìm kiếm,
+          <br />
+          tôi sẽ gợi ý cho bạn ✨
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
     <div className="row">
+      
     <div className="col-lg-6">
                   <div className="slider-main">
                     {top5Products.map((p) => {
@@ -403,6 +540,7 @@ const addCartFromModal = async (qty, { size, color }) => {
 
                       return (
                         <div className="slick-slide" key={`main-${p.asin}`}>
+                          
                           <div className="content-info">
                             <h1 className="title">{p.nameProduct}</h1>
 
@@ -447,6 +585,7 @@ const addCartFromModal = async (qty, { size, color }) => {
                       );
                     })}
                   </div>
+                  
                 </div>
 
   <div className="col-lg-6">
@@ -461,9 +600,7 @@ const addCartFromModal = async (qty, { size, color }) => {
                                 src={imgUrl(p.thumbnail)}
                                 alt={p.nameProduct || `product-${idx + 1}`}
                                 loading="eager"
-                                onError={(e) => {
-                                  e.currentTarget.src = '/assets/images/placeholder.png';
-                                }}
+                    
                               />
                             </div>
                           </div>
@@ -1272,7 +1409,6 @@ const addCartFromModal = async (qty, { size, color }) => {
               <img
                 src={thumb}
                 alt={shortName}
-                onError={(e) => (e.currentTarget.src = "/assets/images/placeholder.png")}
               />
             </div>
 
@@ -1363,7 +1499,6 @@ const addCartFromModal = async (qty, { size, color }) => {
                           : "/assets/images/placeholder.png"
                       }
                       alt={shortTitle || "product"}
-                      onError={(e) => (e.currentTarget.src = "/assets/images/placeholder.png")}
                     />
                   </div>
                   <div className="dz-content">
@@ -1432,7 +1567,6 @@ const addCartFromModal = async (qty, { size, color }) => {
                             : "/assets/images/placeholder.png"
                         }
                         alt={shortTitle || "product"}
-                        onError={(e) => (e.currentTarget.src = "/assets/images/placeholder.png")}
                       />
                     </div>
                     <div className="dz-content">
@@ -1866,7 +2000,6 @@ const addCartFromModal = async (qty, { size, color }) => {
                         : "/assets/images/placeholder.png"
                     }
                     alt={p?.nameProduct || "product"}
-                    onError={(e) => (e.currentTarget.src = "/assets/images/placeholder.png")}
                   />
                 </div>
 

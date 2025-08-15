@@ -679,6 +679,53 @@ public class SearchServiceImpl implements SearchService {
 
         return result;
     }
+
+    @Override
+    public List<ProductDocument> getProductsByAsins(List<String> asins) {
+        if (asins == null || asins.isEmpty()) {
+            log.warn("No ASINs provided for search");
+            return Collections.emptyList();
+        }
+
+        // Làm sạch dữ liệu đầu vào
+        List<String> cleanedAsins = asins.stream()
+                .map(s -> s.replace("\"", "").trim())
+                .filter(s -> !s.isEmpty())
+                .toList();
+
+        if (cleanedAsins.isEmpty()) {
+            log.warn("Cleaned ASIN list is empty");
+            return Collections.emptyList();
+        }
+
+        log.debug("Querying Elasticsearch for ASINs: {}", cleanedAsins);
+
+        // Tạo truy vấn Elasticsearch
+        Query esQuery = Query.of(q -> q.bool(b -> {
+            b.filter(f -> f.terms(t -> t
+                    .field("asin")
+                    .terms(ts -> ts.value(cleanedAsins.stream().map(FieldValue::of).toList()))
+            ));
+            return b;
+        }));
+
+        org.springframework.data.elasticsearch.core.query.Query searchQuery = NativeQuery.builder()
+                .withQuery(esQuery)
+                .withMaxResults(1000)
+                .build();
+
+        try {
+            SearchHits<ProductDocument> hits = elasticsearchOperations.search(searchQuery, ProductDocument.class);
+            log.info("Found {} products for given ASINs", hits.getTotalHits());
+            return hits.getSearchHits().stream()
+                    .map(SearchHit::getContent)
+                    .toList();
+        } catch (Exception e) {
+            log.error("Error getting products for ASINs: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
     // map sort
     private List<SortOptions> sortOf(String sort) {
         return switch (sort == null ? "" : sort) {

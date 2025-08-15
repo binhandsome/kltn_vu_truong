@@ -115,6 +115,13 @@ public class SearchController {
     public Map<String, List<ProductDocument>> getRecommendByAsins(@RequestParam List<String> asins) {
         return searchService.getRecommendByAsins(asins);
     }
+    @GetMapping("/by-list-asin")
+    public ResponseEntity<List<ProductDocument>> getProductsByAsins(
+            @RequestParam List<String> asins) {
+        List<ProductDocument> products = searchService.getProductsByAsins(asins);
+        return ResponseEntity.ok(products);
+    }
+
     @GetMapping("/store")
     public ResponseEntity<?> searchByStoreIdAndStatus(
             @RequestParam Long storeId,
