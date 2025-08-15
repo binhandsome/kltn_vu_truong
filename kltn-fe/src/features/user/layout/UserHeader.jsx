@@ -445,10 +445,25 @@ const goToProduct = (asin) => {
   setSearchQuery('');
 };
 const goToSearchPage = () => {
-  if (!searchQuery.trim()) return;
-  navigate(`/user/shop/shopStandard?keyword=${encodeURIComponent(searchQuery.trim())}`);
+  const q = (searchQuery || '').trim();
+  if (!q) return;
+
+  // tắt gợi ý trước khi chuyển trang
   setShowSuggest(false);
+
+  const href = `/user/shop/shopStandard?${new URLSearchParams({ keyword: q })}`;
+
+  // Tạo thẻ <a> và click
+  const a = document.createElement('a');
+  a.href = href;                 // giống như ví dụ ProductDetail bạn đưa
+  a.rel = 'noopener noreferrer'; // optional
+  a.style.display = 'none';
+  document.body.appendChild(a);  // để chắc ăn trên Safari
+  a.click();
+  a.remove();
 };
+
+
 
 const onSearchKeyDown = (e) => {
   if (!showSuggest) {
@@ -951,11 +966,12 @@ useEffect(() => {
           : '/assets/user/images/no-image.jpg';
         return (
           <li key={p.asin}>
-            <button
+            <a
+                  href={`/user/productstructure/ProductDetail?asin=${p.asin}`}
+                >   <button
               type="button"
               className={`dropdown-item d-flex align-items-center ${active}`}
               onMouseEnter={() => setHighlight(idx)}
-              onClick={() => goToProduct(p.asin)}
               role="option"
               aria-selected={idx === highlight}
               style={{ gap: 10 }}
@@ -967,7 +983,8 @@ useEffect(() => {
    {formatUSD(p.productPrice)}
   </strong>
 )}
-            </button>
+            </button></a>
+         
           </li>
         );
       })}
@@ -1475,7 +1492,7 @@ readOnly
           <input
             type="checkbox"
             checked={selectedItemsCart.includes(item.asin)}
-            onClick={() => toggleSelectItemCart(item.asin)}
+            onChange={() => toggleSelectItemCart(item.asin)}
             style={{ marginRight: '50px' }}
           />
           <button

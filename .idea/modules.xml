@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/KLTNWEB.iml" filepath="$PROJECT_DIR$/.idea/KLTNWEB.iml" />
+      <module fileurl="file://$PROJECT_DIR$/kltn-be/review-service/review-service.iml" filepath="$PROJECT_DIR$/kltn-be/review-service/review-service.iml" />
     </modules>
   </component>
 </project>
