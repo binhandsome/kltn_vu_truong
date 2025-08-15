@@ -1,6 +1,8 @@
 package com.kltnbe.recommendservice.services;
 
 import com.kltnbe.recommendservice.Helpers.UserServiceProxy;
+import com.kltnbe.recommendservice.dtos.req.RecommendNewReq;
+import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
 import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import com.kltnbe.recommendservice.entities.UserAsinHistory;
@@ -10,12 +12,15 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.objenesis.strategy.BaseInstantiatorStrategy;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
 @Service
 @AllArgsConstructor
 public class RecommendServiceImpl implements RecommendService {
+    private final WebClient pythonWebClient;
 
     private final UserAsinHistoryRepository userAsinHistoryRepository;
     private final UserServiceProxy userServiceProxy;
@@ -66,4 +71,17 @@ public class RecommendServiceImpl implements RecommendService {
         String[] result = recommendAsin.split(",");
         return result;
     }
+
+    public RecommendResponse recommendNewProduct(RecommendNewReq req) {
+        // POST /recommend_new_product
+        Mono<RecommendResponse> mono = pythonWebClient.post()
+                .uri("/recommend_new_product")
+                .bodyValue(req)
+                .retrieve()
+                .bodyToMono(RecommendResponse.class);
+
+        // đồng bộ cho đơn giản; nếu thích async có thể trả về Mono<>
+        return mono.block();
+    }
+
 }
