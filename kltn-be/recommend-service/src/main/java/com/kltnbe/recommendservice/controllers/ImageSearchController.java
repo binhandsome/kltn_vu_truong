@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/search")
 @AllArgsConstructor
@@ -18,17 +20,18 @@ public class ImageSearchController {
     @PostMapping("/search-image")
     public ResponseEntity<?> searchImage(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "topk", defaultValue = "10") int topk,
+            @RequestParam(value = "topk", defaultValue = "30") int topk,
             @RequestParam(value = "userId", required = false) String userId
     ) throws Exception {
 
         SearchDtos.SearchResponse resp = service.searchByImage(file, userId, topk);
 
         // (tuỳ chọn) lấy metadata từ Elasticsearch theo ASIN
-        // List<String> asins = resp.results.stream().map(r -> r.asin).toList();
+         List<String> asins = resp.results.stream().map(r -> r.asin).toList();
+
         // List<ProductDoc> products = productSearchService.findByAsins(asins);
         // return ResponseEntity.ok(Map.of("hits", products, "scores", resp.results));
 
-        return ResponseEntity.ok(resp); // nếu chỉ muốn trả asin + score
+        return ResponseEntity.ok(asins); // nếu chỉ muốn trả asin + score
     }
 }

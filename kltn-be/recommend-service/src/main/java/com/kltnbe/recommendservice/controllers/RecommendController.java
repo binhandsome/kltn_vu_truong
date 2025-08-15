@@ -33,7 +33,8 @@ public class RecommendController {
         return recommendService.findRecommendByAsin(asin);
     }
     @GetMapping("findRecommendByAsins") // Hoặc POST nếu dùng body
-    public Map<String, String[]> findRecommendByAsins(@RequestParam List<String> asins) { // Hoặc @RequestBody
+    public Map<String, String[]> findRecommendByAsins(@RequestParam List<String> asins) {
+        System.out.println(asins + "listAsin");// Hoặc @RequestBody
         Map<String, String[]> result = new HashMap<>();
         for (String asin : asins) {
             String[] rec = recommendService.findRecommendByAsin(asin);

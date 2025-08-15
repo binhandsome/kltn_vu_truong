@@ -1765,7 +1765,6 @@ function ShopStandard({ products }) {
                                         src={shopHeader?.avatar || "/assets/images/placeholder.png"}
                                         alt="shop avatar"
                                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                        onError={(e) => { e.currentTarget.src = "/assets/images/placeholder.png"; }}
                                       />
                                     </div>
                                     <div className="d-flex flex-column">
