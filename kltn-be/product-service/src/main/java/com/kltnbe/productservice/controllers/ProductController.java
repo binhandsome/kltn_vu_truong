@@ -273,6 +273,7 @@ public class ProductController {
     public ResponseEntity<?> addSize(@RequestBody SizeRequest request,@RequestParam Long  authId) {
         return productService.addSize(request, authId);
     }
+
     @InternalApi
     @DeleteMapping("/internal/deleteSize")
     public ResponseEntity<?> deleteSize(@RequestParam Long sizeId,@RequestParam Long  authId) {

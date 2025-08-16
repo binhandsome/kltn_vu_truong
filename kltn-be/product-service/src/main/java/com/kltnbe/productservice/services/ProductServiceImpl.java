@@ -174,11 +174,25 @@ public class ProductServiceImpl implements ProductService {
                 recommendNewReq.setBrand(request.getNameBrand());
                 recommendNewReq.setCategories(request.getCategoryList());
                 recommendNewReq.setSalesRank(salesRank);
-                recommendNewReq.setTopk(100);
-                recommendServiceProxy.recommendNew(recommendNewReq);
+                recommendNewReq.setTopk(30);
+                ResponseEntity<RecommendResponse> response = recommendServiceProxy.recommendNew(recommendNewReq);
+                System.out.println(response + " response data"); // in ra thông tin ResponseEntity
+                System.out.println(response.getBody() + " response body data");
+                List<String> asinList = response.getBody().getRecommend_asins();
+                String asinStr = "\"" + String.join(",", asinList) + "\"";
+                System.out.println(asinStr + "data response");
+                RequestRecommend requestRecommend = new RequestRecommend();
+                requestRecommend.setAsin(asin);
+                requestRecommend.setRecommendAsin(asinStr);
+                float avgScore = (float) response.getBody()
+                        .getScores()
+                        .stream()
+                        .mapToDouble(Number::doubleValue)
+                        .average()
+                        .orElse(0.0);
+                requestRecommend.setAvg_similarity(avgScore);
+                recommendServiceProxy.saveAsinRecommend(requestRecommend);
             }
-
-
             Optional<Product> product1 = productRepository.findProductByAsin(product.getAsin());
             ProductDto productDto = new ProductDto();
             productDto.setProductId(product.getProductId());

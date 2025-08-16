@@ -3,6 +3,7 @@ package com.kltnbe.recommendservice.services;
 import com.kltnbe.recommendservice.Helpers.UserServiceProxy;
 import com.kltnbe.recommendservice.dtos.req.RecommendNewReq;
 import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
+import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
 import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import com.kltnbe.recommendservice.entities.UserAsinHistory;
@@ -82,6 +83,15 @@ public class RecommendServiceImpl implements RecommendService {
 
         // đồng bộ cho đơn giản; nếu thích async có thể trả về Mono<>
         return mono.block();
+    }
+
+    @Override
+    public void saveAsinRecommendation(RequestRecommend requestRecommend) {
+        AsinRecommendation asinRecommendation = new AsinRecommendation();
+        asinRecommendation.setAsin(requestRecommend.getAsin());
+        asinRecommendation.setRecommendAsin(requestRecommend.getRecommendAsin());
+        asinRecommendation.setAvg_similarity(requestRecommend.getAvg_similarity());
+        asinRecommendationRepository.save(asinRecommendation);
     }
 
 }
