@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.kltnbe.recommendservice.dtos.req.RecommendNewReq;
 import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
+import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
 import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import com.kltnbe.recommendservice.services.RecommendService;
@@ -57,5 +58,11 @@ public class RecommendController {
         } catch (Exception e) {
             e.printStackTrace();
         }        return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/saveAsinRecommend")
+    public ResponseEntity<?>  saveAsinRecommend(@RequestBody RequestRecommend requestRecommend) {
+        recommendService.saveAsinRecommendation(requestRecommend);
+        return ResponseEntity.ok("Saved successfully");
     }
 }

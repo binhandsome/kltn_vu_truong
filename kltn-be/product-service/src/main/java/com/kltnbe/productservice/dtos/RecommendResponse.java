@@ -27,4 +27,15 @@ public class RecommendResponse {
     public void setCount(Integer count) { this.count = count; }
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
+
+    @Override
+    public String toString() {
+        return "RecommendResponse{" +
+                "query=" + query +
+                ", recommend_asins=" + recommend_asins +
+                ", scores=" + scores +
+                ", count=" + count +
+                ", message='" + message + '\'' +
+                '}';
+    }
 }

@@ -2,6 +2,7 @@ package com.kltnbe.recommendservice.services;
 
 import com.kltnbe.recommendservice.dtos.req.RecommendNewReq;
 import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
+import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
 import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import org.springframework.http.ResponseEntity;
@@ -13,5 +14,6 @@ public interface RecommendService {
     ResponseEntity<?> saveUserAsinHistory(UserAsinHistoryRequest userAsinHistoryRequest);
     List<String> getAllAsinRecommend(Long idUser);
     String[] findRecommendByAsin(String asin);
-    public RecommendResponse recommendNewProduct(RecommendNewReq req);
+    RecommendResponse recommendNewProduct(RecommendNewReq req);
+    void saveAsinRecommendation(RequestRecommend requestRecommend);
 }
