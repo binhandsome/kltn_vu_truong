@@ -92,4 +92,5 @@ public class Product {
     @Column(name = "store_thum_title", columnDefinition = "JSON")
     private String storeThumTitle;
 
+    private Integer quantitySold;
 }

@@ -542,5 +542,9 @@ public class ProductController {
     public ResponseEntity<?> getEvaluateSummary(@RequestBody List<String> asins) {
         return ResponseEntity.ok(productService.getEvaluateSummary(asins));
     }
+    @GetMapping("/productListTop20")
+    public ResponseEntity<?> getProductListTop20() {
+        return ResponseEntity.ok(productService.listProductTop20());
+    }
 
 }

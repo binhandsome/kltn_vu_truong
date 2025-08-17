@@ -12,6 +12,7 @@ import com.kltnbe.productservice.dtos.*;
 import com.kltnbe.productservice.dtos.req.*;
 import com.kltnbe.productservice.dtos.res.EvaluateResponse;
 import com.kltnbe.productservice.dtos.res.ProductResponse;
+import com.kltnbe.productservice.dtos.res.ResponseProduct;
 import com.kltnbe.productservice.entities.*;
 import com.kltnbe.productservice.enums.ProductStatus;
 import com.kltnbe.productservice.repositories.*;
@@ -983,6 +984,29 @@ validateShopOwnership(product.getStoreId(), authId);
                 )
         ));
     }
+
+    @Override
+    public List<ResponseProduct> listProductTop20() {
+        return productRepository.findTop20ByOrderByQuantitySoldDesc()
+                .stream()
+                .map(p -> ResponseProduct.builder()
+                        .asin(p.getAsin())
+                        .percentDiscount(p.getPercentDiscount())
+                        .productId(p.getProductId())
+                        .productPrice(p.getProductPrice())
+                        .productStatus(p.getProductStatus().name())
+                        .productThumbnail(p.getProductThumbnail())
+                        .productTitle(p.getProductTitle())
+                        .productType(p.getProductType())
+                        .salesRank(p.getSalesRank())
+                        .soldCount(p.getQuantitySold())
+                        .stockQuantity(p.getStockQuantity())
+                        .storeId(p.getStoreId())
+                        .tags(p.getTags())
+                        .build())
+                .toList();
+    }
+
 
 
 }
