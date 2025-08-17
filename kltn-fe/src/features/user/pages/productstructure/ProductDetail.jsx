@@ -1253,8 +1253,14 @@ const normalizedEvaluates = useMemo(() => {
 											<div className="swiper-slide">
 												<div className="shop-card style-1">
 													<div className="dz-media">
-														<img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${relateProduct.productThumbnail}`} alt="img" />
-														<div className="shop-meta">
+ <img
+                                        src={
+                                          relateProduct.productThumbnail.startsWith('http')
+                                            ? relateProduct.productThumbnail
+                                            : relateProduct.productThumbnail.endsWith('.jpg')
+                                              ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${relateProduct.productThumbnail}`
+                                              : `/uploads/${relateProduct.productThumbnail}`
+                                        } />																<div className="shop-meta">
 															<a href="javascript:void(0);" className="btn btn-secondary btn-md btn-rounded" data-bs-toggle="modal" data-bs-target="#exampleModal">
 																<i className="fa-solid fa-eye d-md-none d-block"></i>
 																<span className="d-md-block d-none">Xem nhanh</span>

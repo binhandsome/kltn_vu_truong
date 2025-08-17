@@ -1,14 +1,14 @@
 @startuml
+!theme vibrant
 left to right direction
 
-(*) --> :Thu thập dữ liệu;
---> :Tiền xử lý dữ liệu;
---> :FastText embeddings;
---> :Tạo tập dữ liệu search & test;
--down-> :Xây FAISS index;
--left-> :Đánh giá mô hình;
--left-> :Trực quan hóa kết quả;
--left-> :Triển khai & theo dõi;
--left-> (*)
+actor "Sản phẩm\n(title, brand...)" as product
+rectangle "FastText\n(huấn luyện từ đầu)" as model
+rectangle "Vector Embedding\n(dim=100)" as embedding
+database "FAISS Index\n(IndexFlatIP hoặc ANN)" as faiss
+
+product -->> model : Encode / Tokenize
+model -->> embedding : Vector hóa
+embedding -->> faiss : Build Index
 
 @enduml

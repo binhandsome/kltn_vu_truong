@@ -54,16 +54,16 @@ function HomePage() {
   // ====== CATEGORIES (đếm salesRank/productType) ======
   const [salesRankCount, setSalesRankCount] = useState([]);
   const [productTypeCount, setProductTypeCount] = useState([]);
-const getAllCategories = async () => {
-  try {
-    const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
-    setSalesRankCount(response.data?.salesRankCount || {});
-    setProductTypeCount(response.data?.productTypeCount || {});
-    setTags(response.data?.tags || {}); // ✅ thêm dòng này
-  } catch (error) {
-    console.error('Không lấy được danh mục:', error);
-  }
-};
+  const getAllCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
+      setSalesRankCount(response.data?.salesRankCount || {});
+      setProductTypeCount(response.data?.productTypeCount || {});
+      setTags(response.data?.tags || {}); // ✅ thêm dòng này
+    } catch (error) {
+      console.error('Không lấy được danh mục:', error);
+    }
+  };
 
   useEffect(() => {
     getAllCategories();
@@ -108,8 +108,8 @@ const getAllCategories = async () => {
     file?.startsWith('http')
       ? file
       : file
-      ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_625,h_550/imgProduct/IMG/${file}`
-      : '/assets/images/placeholder.png';
+        ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_625,h_550/imgProduct/IMG/${file}`
+        : '/assets/images/placeholder.png';
 
   const img300 = (file) =>
     `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${file}`;
@@ -157,14 +157,14 @@ const getAllCategories = async () => {
   };
   // Xem nhanh chi tiet san pham
   const [selectedProduct, setSelectedProduct] = useState(null);
-const [quantity, setQuantity] = useState(1);
-const [selectedColor, setSelectedColor] = useState(null);
-const [selectedSize, setSelectedSize]   = useState(null);
-const [availableStock, setAvailableStock] = useState(null);
-const [priceDiscount, setPriceDiscount] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [availableStock, setAvailableStock] = useState(null);
+  const [priceDiscount, setPriceDiscount] = useState(0);
   const [imagePreview, setImagePreview] = useState(null);
-      const [uploading, setUploading] = useState(false);
-  
+  const [uploading, setUploading] = useState(false);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -175,191 +175,191 @@ const [priceDiscount, setPriceDiscount] = useState(0);
     dateOfBirth: '',
     profilePicture: ''
   });
-const handleImageChange = (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    setImagePreview(reader.result);
-    setFormData(prev => ({
-      ...prev,
-      profilePicture: reader.result,
-      file // lưu lại để uploadImage dùng
-    }));
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      setFormData(prev => ({
+        ...prev,
+        profilePicture: reader.result,
+        file // lưu lại để uploadImage dùng
+      }));
+    };
+    reader.readAsDataURL(file);
   };
-  reader.readAsDataURL(file);
-};
 
   const handleFileChange = (e) => {
-      const file = e.target.files?.[0];
+    const file = e.target.files?.[0];
 
     setSelectedFile(e.target.files[0]);
-     if (!file) return;
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    setImagePreview(reader.result);
-  };
-  reader.readAsDataURL(file);
-  };
-// (tuỳ chọn) tags để hiển thị trong modal, không ảnh hưởng nơi khác
-const [tags, setTags] = useState({});
-// HomePage.js
-const fetchProductDetail = async (asin) => {
-  try {
-    const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
-    const raw = res.data || {};
-
-    // Lấy bản trong danh sách hiện có để fallback (grid/home feed/top5)
-    const fromHome = homeAllProducts.find(p => p.asin === asin) || {};
-    const fromTop5 = top5Products.find(p => p.asin === asin) || {};
-
-    // ---- Chuẩn hoá field cho QuickView ----
-    const product = {
-      // Ưu tiên detail
-      ...raw,
-
-      // Tên & ảnh
-      productTitle:
-        raw.productTitle ?? raw.nameProduct ?? fromHome.productTitle ?? fromHome.nameProduct ?? fromTop5.nameProduct ?? "",
-      productThumbnail:
-        raw.productThumbnail ?? raw.thumbnail ?? fromHome.productThumbnail ?? fromHome.thumbnail ?? fromTop5.thumbnail ?? "",
-
-      // Giá & % giảm
-      productPrice:
-        raw.productPrice ?? raw.price ?? fromHome.productPrice ?? fromHome.price ?? fromTop5.price ?? 0,
-      percentDiscount:
-        raw.percentDiscount ?? raw.discountPercent ?? fromHome.percentDiscount ?? fromHome.discountPercent ?? fromTop5.discountPercent ?? 0,
-
-      // 🔥 SỐ ĐÃ BÁN – gộp từ mọi nguồn
-      soldCount:
-        Number(
-          raw.soldCount ??
-          raw.orderCount ??
-          raw.orders ??
-          fromHome.soldCount ??
-          fromHome.orderCount ??
-          fromHome.orders ??
-          fromTop5.soldCount ??
-          fromTop5.orderCount ??
-          fromTop5.orders ??
-          0
-        ) || 0,
-
-      // Tồn kho (nếu có)
-      stockQuantity: raw.stockQuantity ?? fromHome.stockQuantity ?? null,
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
     };
-
-    setSelectedProduct(product);
-    setSelectedColor(null);
-    setSelectedSize(null);
-    setQuantity(1);
-    setAvailableStock(product?.stockQuantity ?? null);
-
-    // (tuỳ chọn) nếu bạn vẫn dùng priceDiscount ở nơi khác
-    const d = Number(product.percentDiscount || 0);
-    const p = Number(product.productPrice || 0);
-    setPriceDiscount((p - (p * d / 100)).toFixed(2));
-
-    // mở modal
-    const modal = new window.bootstrap.Modal(document.getElementById('exampleModal'));
-    modal.show();
-  } catch (err) {
-    console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);
-  }
-};
-
-
-// ====== QUICK VIEW: tính tồn kho theo biến thể ======
-useEffect(() => {
-  if (!selectedProduct) return;
-
-  const requiresSize  = Array.isArray(selectedProduct?.sizes) && selectedProduct.sizes.length > 0;
-  const hasColorJson  = !!selectedProduct?.colorAsin;
-  let colors = [];
-  if (hasColorJson) {
-    try { colors = JSON.parse(selectedProduct.colorAsin) || []; } catch {}
-  }
-  const requiresColor = colors.length > 0;
-
-  const isFullySelected = (!requiresSize || selectedSize) && (!requiresColor || selectedColor);
-
-  if (!isFullySelected) {
-    setAvailableStock(selectedProduct?.stockQuantity ?? 0);
-    return;
-  }
-
-  (async () => {
+    reader.readAsDataURL(file);
+  };
+  // (tuỳ chọn) tags để hiển thị trong modal, không ảnh hưởng nơi khác
+  const [tags, setTags] = useState({});
+  // HomePage.js
+  const fetchProductDetail = async (asin) => {
     try {
-      let url = `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}`;
-      if (selectedSize)  url += `&sizeId=${selectedSize.sizeId ?? selectedSize.size_id ?? selectedSize.id}`;
-      if (selectedColor) url += `&colorId=${selectedColor.colorId ?? selectedColor.color_id ?? selectedColor.id}`;
+      const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+      const raw = res.data || {};
 
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("Failed to fetch variant stock");
-      const qty = await res.json();
-      setAvailableStock(qty);
-      setQuantity(q => Math.min(q, qty));
-    } catch (e) {
-      console.error("❌ Error fetching variant stock:", e);
-      setAvailableStock(null);
+      // Lấy bản trong danh sách hiện có để fallback (grid/home feed/top5)
+      const fromHome = homeAllProducts.find(p => p.asin === asin) || {};
+      const fromTop5 = top5Products.find(p => p.asin === asin) || {};
+
+      // ---- Chuẩn hoá field cho QuickView ----
+      const product = {
+        // Ưu tiên detail
+        ...raw,
+
+        // Tên & ảnh
+        productTitle:
+          raw.productTitle ?? raw.nameProduct ?? fromHome.productTitle ?? fromHome.nameProduct ?? fromTop5.nameProduct ?? "",
+        productThumbnail:
+          raw.productThumbnail ?? raw.thumbnail ?? fromHome.productThumbnail ?? fromHome.thumbnail ?? fromTop5.thumbnail ?? "",
+
+        // Giá & % giảm
+        productPrice:
+          raw.productPrice ?? raw.price ?? fromHome.productPrice ?? fromHome.price ?? fromTop5.price ?? 0,
+        percentDiscount:
+          raw.percentDiscount ?? raw.discountPercent ?? fromHome.percentDiscount ?? fromHome.discountPercent ?? fromTop5.discountPercent ?? 0,
+
+        // 🔥 SỐ ĐÃ BÁN – gộp từ mọi nguồn
+        soldCount:
+          Number(
+            raw.soldCount ??
+            raw.orderCount ??
+            raw.orders ??
+            fromHome.soldCount ??
+            fromHome.orderCount ??
+            fromHome.orders ??
+            fromTop5.soldCount ??
+            fromTop5.orderCount ??
+            fromTop5.orders ??
+            0
+          ) || 0,
+
+        // Tồn kho (nếu có)
+        stockQuantity: raw.stockQuantity ?? fromHome.stockQuantity ?? null,
+      };
+
+      setSelectedProduct(product);
+      setSelectedColor(null);
+      setSelectedSize(null);
+      setQuantity(1);
+      setAvailableStock(product?.stockQuantity ?? null);
+
+      // (tuỳ chọn) nếu bạn vẫn dùng priceDiscount ở nơi khác
+      const d = Number(product.percentDiscount || 0);
+      const p = Number(product.productPrice || 0);
+      setPriceDiscount((p - (p * d / 100)).toFixed(2));
+
+      // mở modal
+      const modal = new window.bootstrap.Modal(document.getElementById('exampleModal'));
+      modal.show();
+    } catch (err) {
+      console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);
     }
-  })();
-}, [selectedProduct, selectedSize, selectedColor]);
+  };
 
-// ====== QUICK VIEW: handler số lượng (đặt tên riêng) ======
-const handleModalQtyChange = (e) => {
-  let value = parseInt(e.target.value);
-  if (isNaN(value) || value < 1) value = 1;
-  if (availableStock !== null && value > availableStock) value = availableStock;
-  setQuantity(value);
-};
-// ====== QUICK VIEW: add cart có size/color ======
-const addCartFromModal = async (qty, { size, color }) => {
-  if (!selectedProduct) return;
-  const cartId = localStorage.getItem("cartId") || "";
-  const token  = localStorage.getItem("accessToken") || "";
 
-  // bắt buộc chọn nếu có biến thể
-  const needSize  = Array.isArray(selectedProduct?.sizes) && selectedProduct.sizes.length > 0;
-  const needColor = !!selectedProduct?.colorAsin && JSON.parse(selectedProduct.colorAsin || "[]").length > 0;
+  // ====== QUICK VIEW: tính tồn kho theo biến thể ======
+  useEffect(() => {
+    if (!selectedProduct) return;
 
-  if (needSize && !size)  return triggerToast("⚠️ Vui lòng chọn size.", "error");
-  if (needColor && !color) return triggerToast("⚠️ Vui lòng chọn màu.", "error");
-  if (availableStock === 0) return triggerToast("❌ Sản phẩm này đã hết hàng.", "error");
-  if (qty > (availableStock ?? Infinity)) return triggerToast(`⚠️ Chỉ còn ${availableStock} sản phẩm có sẵn.`, "error");
+    const requiresSize = Array.isArray(selectedProduct?.sizes) && selectedProduct.sizes.length > 0;
+    const hasColorJson = !!selectedProduct?.colorAsin;
+    let colors = [];
+    if (hasColorJson) {
+      try { colors = JSON.parse(selectedProduct.colorAsin) || []; } catch { }
+    }
+    const requiresColor = colors.length > 0;
 
-  try {
-    const payload = {
-      token,
-      asin: selectedProduct.asin,
-      quantity: qty,
-      price: parseFloat(
-        (Number(selectedProduct.productPrice || 0) * (1 - Number(selectedProduct.percentDiscount || 0)/100)).toFixed(2)
-      ),
-      cartId,
-      size: size?.sizeName || null,
-      nameColor: color?.name_color || null,
-      colorAsin: selectedProduct.colorAsin || "[]", // backend của bạn đang expect JSON string
-    };
+    const isFullySelected = (!requiresSize || selectedSize) && (!requiresColor || selectedColor);
 
-    const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
-    if (response.data.cartId) localStorage.setItem("cartId", response.data.cartId);
+    if (!isFullySelected) {
+      setAvailableStock(selectedProduct?.stockQuantity ?? 0);
+      return;
+    }
 
-    window.dispatchEvent(new Event("cartUpdated"));
-    triggerToast("✅ Thêm vào giỏ hàng thành công!", "success");
-  } catch (error) {
-    console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
-    triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
-  }
-};
+    (async () => {
+      try {
+        let url = `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}`;
+        if (selectedSize) url += `&sizeId=${selectedSize.sizeId ?? selectedSize.size_id ?? selectedSize.id}`;
+        if (selectedColor) url += `&colorId=${selectedColor.colorId ?? selectedColor.color_id ?? selectedColor.id}`;
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to fetch variant stock");
+        const qty = await res.json();
+        setAvailableStock(qty);
+        setQuantity(q => Math.min(q, qty));
+      } catch (e) {
+        console.error("❌ Error fetching variant stock:", e);
+        setAvailableStock(null);
+      }
+    })();
+  }, [selectedProduct, selectedSize, selectedColor]);
+
+  // ====== QUICK VIEW: handler số lượng (đặt tên riêng) ======
+  const handleModalQtyChange = (e) => {
+    let value = parseInt(e.target.value);
+    if (isNaN(value) || value < 1) value = 1;
+    if (availableStock !== null && value > availableStock) value = availableStock;
+    setQuantity(value);
+  };
+  // ====== QUICK VIEW: add cart có size/color ======
+  const addCartFromModal = async (qty, { size, color }) => {
+    if (!selectedProduct) return;
+    const cartId = localStorage.getItem("cartId") || "";
+    const token = localStorage.getItem("accessToken") || "";
+
+    // bắt buộc chọn nếu có biến thể
+    const needSize = Array.isArray(selectedProduct?.sizes) && selectedProduct.sizes.length > 0;
+    const needColor = !!selectedProduct?.colorAsin && JSON.parse(selectedProduct.colorAsin || "[]").length > 0;
+
+    if (needSize && !size) return triggerToast("⚠️ Vui lòng chọn size.", "error");
+    if (needColor && !color) return triggerToast("⚠️ Vui lòng chọn màu.", "error");
+    if (availableStock === 0) return triggerToast("❌ Sản phẩm này đã hết hàng.", "error");
+    if (qty > (availableStock ?? Infinity)) return triggerToast(`⚠️ Chỉ còn ${availableStock} sản phẩm có sẵn.`, "error");
+
+    try {
+      const payload = {
+        token,
+        asin: selectedProduct.asin,
+        quantity: qty,
+        price: parseFloat(
+          (Number(selectedProduct.productPrice || 0) * (1 - Number(selectedProduct.percentDiscount || 0) / 100)).toFixed(2)
+        ),
+        cartId,
+        size: size?.sizeName || null,
+        nameColor: color?.name_color || null,
+        colorAsin: selectedProduct.colorAsin || "[]", // backend của bạn đang expect JSON string
+      };
+
+      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      if (response.data.cartId) localStorage.setItem("cartId", response.data.cartId);
+
+      window.dispatchEvent(new Event("cartUpdated"));
+      triggerToast("✅ Thêm vào giỏ hàng thành công!", "success");
+    } catch (error) {
+      console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
+      triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
+    }
+  };
   // Xu li wishlist
   const [wishlistItems, setWishlistItems] = useState([]);
   const handleToggleWishlist = async (asin) => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-  
+
     const isInWishlist = wishlistItems.some((item) => item.asin === asin);
     try {
       if (isInWishlist) {
@@ -373,7 +373,7 @@ const addCartFromModal = async (qty, { size, color }) => {
         });
         triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
       }
-  
+
       const res = await axios.get("http://localhost:8083/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -402,7 +402,7 @@ const addCartFromModal = async (qty, { size, color }) => {
       try {
         window.jQuery('.filters li').off('click');        // gỡ toàn cục của theme
         window.jQuery('#hp-filter-list li').off('click'); // phòng trường hợp bind nhầm
-      } catch (_) {}
+      } catch (_) { }
     }
   }, []);
   const handleUpload = async () => {
@@ -410,38 +410,42 @@ const addCartFromModal = async (qty, { size, color }) => {
       console.log("Vui lòng chọn ảnh");
       return;
     }
+    const token = localStorage.getItem('accessToken');
     const formData = new FormData();
     formData.append("file", selectedFile);
     try {
       const res = await axios.post("http://localhost:8088/api/search/search-image", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+     headers: {
+  Authorization: `Bearer ${token}`,
+},
       });
       console.log("Kết quả từ Spring Boot:", res.data);
       const asinList = res.data;
-          navigate("/user/shop/ShopSideBar", { state: { asinList } });
+      navigate("/user/shop/ShopSideBar", { state: { asinList } });
     } catch (err) {
       console.error("Lỗi upload:", err);
     }
   };
-  useEffect(() => {
-    handleUpload(selectedFile);
-  }, [selectedFile])
-  
+ useEffect(() => {
+  if (selectedFile) {
+    handleUpload();
+  }
+}, [selectedFile]);
+
+
   const modalSoldCount = useMemo(() => {
     const asin = selectedProduct?.asin;
     if (!asin) return 0;
-  
+
     // 1) ưu tiên từ API chi tiết
     if (typeof selectedProduct?.soldCount === 'number') return selectedProduct.soldCount;
-  
+
     // 2) fallback từ các list hiện có
     const fromList =
       homeAllProducts.find?.(p => p.asin === asin) ||
       grid8.find?.(p => p.asin === asin) ||
       top5Products.find?.(p => p.asin === asin);
-  
+
     const sc = fromList?.soldCount ?? fromList?.orderCount ?? fromList?.orders;
     return Number(sc) || 0;
   }, [selectedProduct, homeAllProducts, grid8, top5Products]);
@@ -450,81 +454,80 @@ const addCartFromModal = async (qty, { size, color }) => {
       <div className="page-wraper">
 
         {/* Header (đã được xử lý trong App.js) */}
-<div className="page-content bg-light">
-  <div className="main-slider-wrapper">
-    
-    <div className="slider-inner">
-     <div className="avatar-upload d-flex align-items-center">
-  <div className="position-relative">
-    {/* Preview ảnh to hơn */}
-    <div
-      className="avatar-preview thumb"
-      style={{
-        width: 180,        // tăng chiều rộng
-        height: 180,       // tăng chiều cao
-        borderRadius: "12px",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        id="imagePreview"
-        style={{
-          width: "100%",
-          height: "100%",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundImage: `url(${
-            imagePreview ||
-            "https://cdn-icons-png.freepik.com/512/3226/3226223.png"
-          })`,
-        }}
-      />
-    </div>
+        <div className="page-content bg-light">
+          <div className="main-slider-wrapper">
 
-    <div>
-      <div className="change-btn thumb-edit d-flex align-items-center flex-wrap">
-        <input
-          type="file"
-          className="form-control d-none"
-          id="imageUpload"
-          accept=".png, .jpg, .jpeg"
-          onChange={handleFileChange}
-        />
-        {/* Camera icon to hơn */}
-        <label
-          htmlFor="imageUpload"
-          className="btn btn-light ms-0"
-          style={{
-            padding: "12px 18px",       // nút to hơn
-            fontSize: "1.5rem",         // icon to hơn
-          }}
-        >
-          <i className="fa-solid fa-camera" />
-        </label>
-      </div>
+            <div className="slider-inner">
+              <div className="avatar-upload d-flex align-items-center">
+                <div className="position-relative">
+                  {/* Preview ảnh to hơn */}
+                  <div
+                    className="avatar-preview thumb"
+                    style={{
+                      width: 180,        // tăng chiều rộng
+                      height: 180,       // tăng chiều cao
+                      borderRadius: "12px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      id="imagePreview"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundImage: `url(${imagePreview ||
+                          "https://cdn-icons-png.freepik.com/512/3226/3226223.png"
+                          })`,
+                      }}
+                    />
+                  </div>
 
-      {/* Chữ hướng dẫn */}
-      <div className="mt-2 text-center">
-        <span
-          style={{
-            fontSize: "1rem",
-            fontWeight: "500",
-            color: "#555",
-            lineHeight: 1.4,
-          }}
-        >
-          📷 Upload ảnh sản phẩm bạn cần tìm kiếm,
-          <br />
-          tôi sẽ gợi ý cho bạn ✨
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
+                  <div>
+                    <div className="change-btn thumb-edit d-flex align-items-center flex-wrap">
+                      <input
+                        type="file"
+                        className="form-control d-none"
+                        id="imageUpload"
+                        accept=".png, .jpg, .jpeg"
+                        onChange={handleFileChange}
+                      />
+                      {/* Camera icon to hơn */}
+                      <label
+                        htmlFor="imageUpload"
+                        className="btn btn-light ms-0"
+                        style={{
+                          padding: "12px 18px",       // nút to hơn
+                          fontSize: "1.5rem",         // icon to hơn
+                        }}
+                      >
+                        <i className="fa-solid fa-camera" />
+                      </label>
+                    </div>
 
-    <div className="row">
-      
-    <div className="col-lg-6">
+                    {/* Chữ hướng dẫn */}
+                    <div className="mt-2 text-center">
+                      <span
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "500",
+                          color: "#555",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        📷 Upload ảnh sản phẩm bạn cần tìm kiếm,
+                        <br />
+                        tôi sẽ gợi ý cho bạn ✨
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row">
+
+                <div className="col-lg-6">
                   <div className="slider-main">
                     {top5Products.map((p) => {
                       // chuẩn hoá object theo format các trang khác dùng
@@ -540,7 +543,7 @@ const addCartFromModal = async (qty, { size, color }) => {
 
                       return (
                         <div className="slick-slide" key={`main-${p.asin}`}>
-                          
+
                           <div className="content-info">
                             <h1 className="title">{p.nameProduct}</h1>
 
@@ -585,10 +588,10 @@ const addCartFromModal = async (qty, { size, color }) => {
                       );
                     })}
                   </div>
-                  
+
                 </div>
 
-  <div className="col-lg-6">
+                <div className="col-lg-6">
                   <div className="slider-thumbs">
                     {top5Products.length > 0 ? (
                       top5Products.map((p, idx) => (
@@ -600,7 +603,7 @@ const addCartFromModal = async (qty, { size, color }) => {
                                 src={imgUrl(p.thumbnail)}
                                 alt={p.nameProduct || `product-${idx + 1}`}
                                 loading="eager"
-                    
+
                               />
                             </div>
                           </div>
@@ -647,172 +650,148 @@ const addCartFromModal = async (qty, { size, color }) => {
                     )}
                   </div>
                 </div>
-</div>
-      <div
-        className="bottom-content align-items-end wow fadeInUp"
-        data-wow-delay="1.0s"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={76}
-          height={76}
-          viewBox="0 0 76 76"
-          fill="none"
-        >
-          <path
-            d="M52.6617 37.6496L58.7381 40.0325L75.0609 49.0874L66.6016 63.7422L49.9214 54.6872L45.1557 50.7554L46.1088 57.1892V75.18H28.952V57.1892L30.0243 50.5171L24.9011 54.6872L8.45924 63.7422L0 49.0874L16.3228 39.7942L22.3991 37.6496L16.3228 35.1475L0 26.2117L8.45924 11.557L25.1394 20.4928L30.0243 24.6629L28.952 18.3482V0H46.1088V18.3482L45.1557 24.4246L49.9214 20.4928L66.6016 11.557L75.0609 26.2117L58.7381 35.3858L52.6617 37.6496Z"
-            fill="black"
-          />
-        </svg>
-        <div>
-          <span className="sub-title">
-            {/* Summer Collection */}
-            Bộ sưu tập mùa hè</span>
-          <h4 className="title">
-            {/* Trendy and Classic for the New Season */}
-           Thời trang và cổ điển cho mùa mới</h4>
-        </div>
-      </div>
-      <svg
-        className="star-1"
-        xmlns="http://www.w3.org/2000/svg"
-        width={94}
-        height={94}
-        viewBox="0 0 94 94"
-        fill="none"
-      >
-        <path
-          d="M47 0L53.8701 30.4141L80.234 13.766L63.5859 40.1299L94 47L63.5859 53.8701L80.234 80.234L53.8701 63.5859L47 94L40.1299 63.5859L13.766 80.234L30.4141 53.8701L0 47L30.4141 40.1299L13.766 13.766L40.1299 30.4141L47 0Z"
-          fill="#FEEB9D"
-        />
-      </svg>
-      <svg
-        className="star-2"
-        xmlns="http://www.w3.org/2000/svg"
-        width={82}
-        height={94}
-        viewBox="0 0 82 94"
-        fill="none"
-      >
-        <path
-          d="M41 0L45.277 39.592L81.7032 23.5L49.554 47L81.7032 70.5L45.277 54.408L41 94L36.723 54.408L0.296806 70.5L32.446 47L0.296806 23.5L36.723 39.592L41 0Z"
-          fill="black"
-        />
-      </svg>
-      <a
-        className="animation-btn popup-youtube"
-        href="https://www.youtube.com/watch?v=YwYoyQ1JdpQ"
-      >
-        <div className="text-row word-rotate-box c-black">
-          <span className="word-rotate">
-            {/* More Collection Explore */}
-             Thêm bộ sưu tập Khám phá</span>
-          <i className="fa-solid fa-play text-dark badge__emoji" />
-        </div>
-      </a>
-    </div>
-  </div>
-  {/* Shop Section Start */}
-{/* === Featured Categories (4 items, click -> category page) === */}
-<section className="shop-section overflow-hidden">
-  <div className="container-fluid p-0">
-    <div className="row">
-      {/* LEFT: slider of category cards */}
-      <div className="col-lg-8 left-box">
-        <div className="swiper swiper-shop">
-          <div className="swiper-wrapper">
-            {(() => {
-              // 1) Chọn 4 loại từ productTypeCount, bỏ 2 loại ít hàng
-              const blocked = new Set(["Outerwear", "Bottoms"]);
-              const types = Object.keys(productTypeCount || {})
-                .filter(t => !blocked.has(t))
-                .slice(0, 4);
-
-              // 2) Icon gợi ý (PNG nền trong suốt). Có thể thay sau bằng Cloudinary của bạn.
-              const ICONS = {
-                Dresses:        "https://tse3.mm.bing.net/th/id/OIP.B3ZjrxhR4E1Qq0uIt39RBQHaHa?pid=Api",
-                Tops:           "https://tse4.mm.bing.net/th/id/OIP.jd4cctfhy6Vk6NJE40BKXQHaHa?r=0&pid=Api",
-                "Other Clothing":"https://tse2.mm.bing.net/th/id/OIP.KWTn7Z1Izoqb_DwVtGCMjgAAAA?pid=Api",
-                Other:          "https://tse1.mm.bing.net/th/id/OIP.vN_ZuUp72eAAnBpMUoHglAHaHa?pid=Api",
-              };
-              const imgFor = (type) => ICONS[type] || "/assets/images/placeholder.png";
-
-              return types.map((type, idx) => (
-                <div className="swiper-slide" key={type}>
-                  <div
-                    className="shop-box style-1 wow fadeInUp"
-                    data-wow-delay={`${0.2 + idx * 0.2}s`}
-                  >
-                    <div className="dz-media" style={{display:"flex",justifyContent:"center"}}>
-                      <img
-                        src={imgFor(type)}
-                        alt={type}
-                        style={{ width: 140, height: 140, objectFit: "contain" }}
-                      />
-                    </div>
-
-                    <h6 className="product-name" style={{ textAlign: "center" }}>
-                      <a
-                        href={`/user/shop/shopWithCategory?productType=${encodeURIComponent(type)}`}
-                      >
-                        {type}
-                      </a>
-                    </h6>
-                  </div>
+              </div>
+           
+              <svg
+                className="star-1"
+                xmlns="http://www.w3.org/2000/svg"
+                width={94}
+                height={94}
+                viewBox="0 0 94 94"
+                fill="none"
+              >
+                <path
+                  d="M47 0L53.8701 30.4141L80.234 13.766L63.5859 40.1299L94 47L63.5859 53.8701L80.234 80.234L53.8701 63.5859L47 94L40.1299 63.5859L13.766 80.234L30.4141 53.8701L0 47L30.4141 40.1299L13.766 13.766L40.1299 30.4141L47 0Z"
+                  fill="#FEEB9D"
+                />
+              </svg>
+              <svg
+                className="star-2"
+                xmlns="http://www.w3.org/2000/svg"
+                width={82}
+                height={94}
+                viewBox="0 0 82 94"
+                fill="none"
+              >
+                <path
+                  d="M41 0L45.277 39.592L81.7032 23.5L49.554 47L81.7032 70.5L45.277 54.408L41 94L36.723 54.408L0.296806 70.5L32.446 47L0.296806 23.5L36.723 39.592L41 0Z"
+                  fill="black"
+                />
+              </svg>
+              <a
+                className="animation-btn popup-youtube"
+                href="https://www.youtube.com/watch?v=YwYoyQ1JdpQ"
+              >
+                <div className="text-row word-rotate-box c-black">
+                  <span className="word-rotate">
+                    {/* More Collection Explore */}
+                    Thêm bộ sưu tập Khám phá</span>
+                  <i className="fa-solid fa-play text-dark badge__emoji" />
                 </div>
-              ));
-            })()}
-          </div>
-        </div>
-
-        {/* CTA dưới cùng (giữ nguyên) */}
-        <a className="icon-button" href="/user/shop/shopWithCategory">
-          <div className="text-row word-rotate-box c-black border-secondary">
-            <span className="word-rotate">Thêm bộ sưu tập Khám phá</span>
-            <svg className="badge__emoji" xmlns="http://www.w3.org/2000/svg" width={40} height={40} viewBox="0 0 35 35" fill="none">
-              <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="#000"/>
-            </svg>
-          </div>
-        </a>
-      </div>
-
-      {/* RIGHT: title + prev/next (theme swiper sẽ hook 2 nút này nếu có) */}
-      <div className="col-lg-4 right-box">
-        <div>
-          <h3 className="title wow fadeInUp" data-wow-delay="1.2s">Danh mục nổi bật</h3>
-          <p className="text wow fadeInUp" data-wow-delay="1.4s">
-            Khám phá những sản phẩm thịnh hành nhất tại Pixio.
-          </p>
-          <div className="pagination-align wow fadeInUp" data-wow-delay="1.6s">
-            <div className="shop-button-prev">
-              <svg xmlns="http://www.w3.org/2000/svg" width={35} height={35} viewBox="0 0 35 35" fill="none">
-                <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="white"/>
-              </svg>
-            </div>
-            <div className="shop-button-next">
-              <svg xmlns="http://www.w3.org/2000/svg" width={35} height={35} viewBox="0 0 35 35" fill="none">
-                <path d="M2.73549 16.9503H30.9186L24.2492 10.4669C23.7396 9.97176 24.4954 9.1837 25.0119 9.68289L32.6481 17.1063C32.8709 17.3092 32.8531 17.6755 32.648 17.8903L25.0118 25.3169C24.4979 25.81 23.7378 25.0367 24.2492 24.5328L30.921 18.0441H2.73549C2.03663 18.0375 2.00064 16.9636 2.73549 16.9503Z" fill="white"/>
-              </svg>
+              </a>
             </div>
           </div>
-        </div>
+          {/* Shop Section Start */}
+          {/* === Featured Categories (4 items, click -> category page) === */}
+          <section className="shop-section overflow-hidden">
+            <div className="container-fluid p-0">
+              <div className="row">
+                {/* LEFT: slider of category cards */}
+                <div className="col-lg-8 left-box">
+                  <div className="swiper swiper-shop">
+                    <div className="swiper-wrapper">
+                      {(() => {
+                        // 1) Chọn 4 loại từ productTypeCount, bỏ 2 loại ít hàng
+                        const blocked = new Set(["Outerwear", "Bottoms"]);
+                        const types = Object.keys(productTypeCount || {})
+                          .filter(t => !blocked.has(t))
+                          .slice(0, 4);
 
-        <a className="icon-button" href="/user/shop/shopWithCategory">
-          <div className="text-row word-rotate-box c-black border-white">
-            <span className="word-rotate">Thêm bộ sưu tập Khám phá</span>
-            <svg className="badge__emoji" xmlns="http://www.w3.org/2000/svg" width={40} height={40} viewBox="0 0 35 35" fill="none">
-              <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="white"/>
-            </svg>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+                        // 2) Icon gợi ý (PNG nền trong suốt). Có thể thay sau bằng Cloudinary của bạn.
+                        const ICONS = {
+                          Dresses: "https://tse3.mm.bing.net/th/id/OIP.B3ZjrxhR4E1Qq0uIt39RBQHaHa?pid=Api",
+                          Tops: "https://tse4.mm.bing.net/th/id/OIP.jd4cctfhy6Vk6NJE40BKXQHaHa?r=0&pid=Api",
+                          "Other Clothing": "https://tse2.mm.bing.net/th/id/OIP.KWTn7Z1Izoqb_DwVtGCMjgAAAA?pid=Api",
+                          Other: "https://tse1.mm.bing.net/th/id/OIP.vN_ZuUp72eAAnBpMUoHglAHaHa?pid=Api",
+                        };
+                        const imgFor = (type) => ICONS[type] || "/assets/images/placeholder.png";
 
-  {/* Shop Section End */}
-  {/* About Section Start */}
-  {/* <section className="content-inner overflow-hidden">
+                        return types.map((type, idx) => (
+                          <div className="swiper-slide" key={type}>
+                            <div
+                              className="shop-box style-1 wow fadeInUp"
+                              data-wow-delay={`${0.2 + idx * 0.2}s`}
+                            >
+                              <div className="dz-media" style={{ display: "flex", justifyContent: "center" }}>
+                                <img
+                                  src={imgFor(type)}
+                                  alt={type}
+                                  style={{ width: 140, height: 140, objectFit: "contain" }}
+                                />
+                              </div>
+
+                              <h6 className="product-name" style={{ textAlign: "center" }}>
+                                <a
+                                  href={`/user/shop/shopWithCategory?productType=${encodeURIComponent(type)}`}
+                                >
+                                  {type}
+                                </a>
+                              </h6>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* CTA dưới cùng (giữ nguyên) */}
+                  <a className="icon-button" href="/user/shop/shopWithCategory">
+                    <div className="text-row word-rotate-box c-black border-secondary">
+                      <span className="word-rotate">Thêm bộ sưu tập Khám phá</span>
+                      <svg className="badge__emoji" xmlns="http://www.w3.org/2000/svg" width={40} height={40} viewBox="0 0 35 35" fill="none">
+                        <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="#000" />
+                      </svg>
+                    </div>
+                  </a>
+                </div>
+
+                {/* RIGHT: title + prev/next (theme swiper sẽ hook 2 nút này nếu có) */}
+                <div className="col-lg-4 right-box">
+                  <div>
+                    <h3 className="title wow fadeInUp" data-wow-delay="1.2s">Danh mục nổi bật</h3>
+                    <p className="text wow fadeInUp" data-wow-delay="1.4s">
+                      Khám phá những sản phẩm thịnh hành nhất tại Pixio.
+                    </p>
+                    <div className="pagination-align wow fadeInUp" data-wow-delay="1.6s">
+                      <div className="shop-button-prev">
+                        <svg xmlns="http://www.w3.org/2000/svg" width={35} height={35} viewBox="0 0 35 35" fill="none">
+                          <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="white" />
+                        </svg>
+                      </div>
+                      <div className="shop-button-next">
+                        <svg xmlns="http://www.w3.org/2000/svg" width={35} height={35} viewBox="0 0 35 35" fill="none">
+                          <path d="M2.73549 16.9503H30.9186L24.2492 10.4669C23.7396 9.97176 24.4954 9.1837 25.0119 9.68289L32.6481 17.1063C32.8709 17.3092 32.8531 17.6755 32.648 17.8903L25.0118 25.3169C24.4979 25.81 23.7378 25.0367 24.2492 24.5328L30.921 18.0441H2.73549C2.03663 18.0375 2.00064 16.9636 2.73549 16.9503Z" fill="white" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <a className="icon-button" href="/user/shop/shopWithCategory">
+                    <div className="text-row word-rotate-box c-black border-white">
+                      <span className="word-rotate">Thêm bộ sưu tập Khám phá</span>
+                      <svg className="badge__emoji" xmlns="http://www.w3.org/2000/svg" width={40} height={40} viewBox="0 0 35 35" fill="none">
+                        <path d="M32.2645 16.9503H4.08145L10.7508 10.4669C11.2604 9.97176 10.5046 9.1837 9.98813 9.68289C9.98815 9.68286 2.35193 17.1063 2.35193 17.1063C2.12911 17.3092 2.14686 17.6755 2.35196 17.8903C2.35193 17.8903 9.98815 25.3169 9.98815 25.3169C10.5021 25.81 11.2622 25.0367 10.7508 24.5328C10.7508 24.5329 4.07897 18.0441 4.07897 18.0441H32.2645C32.9634 18.0375 32.9994 16.9636 32.2645 16.9503Z" fill="white" />
+                      </svg>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Shop Section End */}
+          {/* About Section Start */}
+          {/* <section className="content-inner overflow-hidden">
     <div className="container">
       <div className="row about-style1">
         <div className="col-lg-6 col-md-12 m-b30">
@@ -922,326 +901,119 @@ const addCartFromModal = async (qty, { size, color }) => {
       </div>
     </div>
   </section> */}
-  {/* About Section End */}
-  {/* Dz Silder Start */}
-  <section className="content-inner-3 overflow-hidden">
-    <div className="dz-features-wrapper overflow-hidden">
-    <ul className="dz-features text-wrapper">
-  {(() => {
-    const ranks = Object.keys(salesRankCount || {});
-    if (ranks.length === 0) return null;
+          {/* About Section End */}
+          {/* Dz Silder Start */}
+          <section className="content-inner-3 overflow-hidden">
+            <div className="dz-features-wrapper overflow-hidden">
+              <ul className="dz-features text-wrapper">
+                {(() => {
+                  const ranks = Object.keys(salesRankCount || {});
+                  if (ranks.length === 0) return null;
 
-    // nhân đôi danh sách để hiệu ứng slide liên tục
-    const loop = [...ranks, ...ranks];
+                  // nhân đôi danh sách để hiệu ứng slide liên tục
+                  const loop = [...ranks, ...ranks];
 
-    const Separator = () => (
-      <li className="item" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" width={61} height={60} viewBox="0 0 61 60" fill="none">
-          <path
-            opacity="0.3"
-            d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
-            fill="black"
-          />
-        </svg>
-      </li>
-    );
+                  const Separator = () => (
+                    <li className="item" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width={61} height={60} viewBox="0 0 61 60" fill="none">
+                        <path
+                          opacity="0.3"
+                          d="M29.302 -0.00499268L38.533 21.2005L60.3307 28.9297L39.1253 38.1607L31.396 59.9585L22.165 38.753L0.367297 31.0237L21.5728 21.7928L29.302 -0.00499268Z"
+                          fill="black"
+                        />
+                      </svg>
+                    </li>
+                  );
 
-    return loop.map((rank, i) => (
-      <React.Fragment key={`cat-run-${i}-${rank}`}>
-        <li className="item">
-          <h2 className="title">
-            <a
-              href={`/user/shop/shopWithCategory?salesRank=${encodeURIComponent(rank)}`}
-              style={{ color: "inherit", textDecoration: "none" }}
-            >
-              {rank}
-            </a>
-          </h2>
-        </li>
-        <Separator />
-      </React.Fragment>
-    ));
-  })()}
-</ul>
-
-    </div>
-  </section>
-  {/* Dz Silder End */}
-  {/* Products Section Start */}
-  <section className="content-inner">
-  <div className="container">
-    <div className=" row justify-content-md-between align-items-start">
-      <div className="col-lg-6 col-md-12">
-        <div
-          className="section-head style-1 m-b30  wow fadeInUp"
-          data-wow-delay="0.2s"
-        >
-          <div className="left-content">
-            <h2 className="title">Sản phẩm phổ biến nhất</h2>
-          </div>
-        </div>
-      </div>
-
-      <div className="col-lg-6 col-md-12">
-      <div
-  className="hp-filter-wrap clearfix style-1 align-items-center wow fadeInUp"
-  data-wow-delay="0.4s"
-  style={{ marginLeft: 0 }}
->
-  <ul
-    id="hp-filter-list"
-    className="hp-filters"   // <-- Đổi class, KHÔNG dùng 'filters'
-    style={{
-      display: "block",
-      whiteSpace: "nowrap",
-      overflowX: "auto",
-      overflowY: "hidden",
-      padding: "8px 10px",
-      margin: 0,
-      width: "100%",
-    }}
-  >
-    {(() => {
-      const pillBase = (active) => ({
-        display: "inline-block",
-        padding: "8px 14px",
-        borderRadius: "9999px",
-        border: "1px solid #000",
-        lineHeight: 1.1,
-        fontWeight: 600,
-        background: active ? "#000" : "#fff",
-        color: active ? "#fff" : "#000",
-        textDecoration: "none",
-        whiteSpace: "nowrap",
-        marginRight: "8px",
-        cursor: "pointer",
-      });
-
-      // Ẩn bớt type ít hàng nếu muốn:
-      const types = Object.keys(productTypeCount || {})
-        .filter(t => !["Outerwear", "Bottoms"].includes(t)); // bỏ 2 mục ít sản phẩm
-
-      return (
-        <>
-          {/* Tất cả */}
-          <li style={{ display: "inline-block", padding: 0, margin: 0, border: 0 }}>
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePickType("ALL")(e); }}
-              style={pillBase(selectedType === "ALL")}
-            >
-              Tất cả
-            </a>
-          </li>
-
-          {/* Các loại */}
-          {types.map((type) => (
-            <li key={type} style={{ display: "inline-block", padding: 0, margin: 0, border: 0 }}>
-              <a
-                href="#"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePickType(type)(e); }}
-                style={pillBase(selectedType === type)}
-              >
-                {type}
-              </a>
-            </li>
-          ))}
-        </>
-      );
-    })()}
-  </ul>
-</div>
-      </div>
-    </div>
-
-    {/* GRID 8 SẢN PHẨM */}
-    <div className="clearfix">
-                <ul
-                  id="hp-grid"
-                  key={selectedType}
-                  className="row g-xl-4 g-3"
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'stretch',
-                    margin: 0,
-                    padding: 0,
-                    listStyle: 'none',
-                  }}
-                >
-                  {grid8.map((p, idx) => {
-                    // ✨ Chuẩn hoá object khi add cart từ GRID: dùng GIÁ ĐÃ GIẢM
-                    const discounted = (
-                      Number(p.productPrice || 0) *
-                      (1 - Number(p.percentDiscount || 0) / 100)
-                    ).toFixed(2);
-                    const forCart = { ...p, productPrice: discounted };
-
-                    return (
-                      <li
-                        key={p.asin || p.productId || idx}
-                        className={`col-6 col-xl-3 col-lg-3 col-md-4 col-sm-6 wow fadeInUp`}
-                        data-wow-delay={`${0.2 + (idx % 8) * 0.2}s`}
-                        style={{
-                          position: 'static',
-                          listStyle: 'none',
-                        }}
-                      >
-                        <div className="shop-card" style={{ height: '100%' }}>
-                          <div className="dz-media" style={{ position: 'relative' }}>
-                            <img
-                              src={img300(p.productThumbnail)}
-                              alt={p.productTitle}
-                              style={{
-                                width: '100%',
-                                height: 'auto',
-                                display: 'block',
-                                objectFit: 'cover',
-                              }}
-                            />
-
-                            <div className="shop-meta">
-                              {/* Quick View */}
-                              <a
-                                href="#"
-                                className="btn btn-secondary btn-md btn-rounded"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModal"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                      e.stopPropagation();
-                                  fetchProductDetail(p.asin);
-                                }}
-                              >
-                                <i className="fa-solid fa-eye d-md-none d-block" />
-                                <span className="d-md-block d-none">Xem nhanh</span>
-                              </a>
-                              {/* Wishlist */}
-                              <div
-                                className="btn btn-primary meta-icon dz-wishicon"
-                                onClick={() => handleToggleWishlist && handleToggleWishlist(p.asin)}
-                                title="Yêu thích"
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <i
-                                  className={`icon feather ${
-                                    isProductInWishlist && isProductInWishlist(p.asin)
-                                      ? 'icon-heart-on'
-                                      : 'icon-heart'
-                                  }`}
-                                />
-                              </div>
-
-                              {/* Cart */}
-                              <div
-                                className="btn btn-primary meta-icon dz-carticon"
-                                onClick={() => addCartWithQuantity && addCartWithQuantity(1, forCart)}
-                                title="Thêm giỏ hàng"
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <i
-                                  className={`flaticon ${
-                                    isProductInCart && isProductInCart(p.asin)
-                                      ? 'flaticon-basket-on dz-heart-fill'
-                                      : 'flaticon-basket'
-                                  }`}
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="dz-content">
-                            <h5 className="title">
-                              <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{p.productTitle}</a>
-                            </h5>
-                            <h5 className="price">
-                              $
-                              {(
-                                Number(p.productPrice || 0) -
-                                (Number(p.productPrice || 0) * Number(p.percentDiscount || 0)) / 100
-                              ).toFixed(2)}
-                            </h5>
-                          </div>
-
-                          {(p.percentDiscount || 0) > 0 && (
-                            <div className="product-tag">
-                              <span className="badge">Giảm giá {p.percentDiscount}%</span>
-                            </div>
-                          )}
-                        </div>
+                  return loop.map((rank, i) => (
+                    <React.Fragment key={`cat-run-${i}-${rank}`}>
+                      <li className="item">
+                        <h2 className="title">
+                          <a
+                            href={`/user/shop/shopWithCategory?salesRank=${encodeURIComponent(rank)}`}
+                            style={{ color: "inherit", textDecoration: "none" }}
+                          >
+                            {rank}
+                          </a>
+                        </h2>
                       </li>
-                    );
-                  })}
-                </ul>
-              </div>
-  </div>
-</section>
+                      <Separator />
+                    </React.Fragment>
+                  ));
+                })()}
+              </ul>
 
-  {/* Products Section Start */}
-  {/* Collection Section Start */}
-  <section className="adv-area">
-    <div className="container-fluid px-0">
-      <div className="row product-style2 g-0">
-        <div className="col-lg-6 col-md-12 wow fadeInUp" data-wow-delay="0.1s">
-          <div className="product-box style-4">
-            <div
-              className="product-media"
-              style={{
-                backgroundImage: 'url("../../assets/user/images/shop/large/product1.png")'
-              }}
-            />
-            <div className="sale-box">
-              <div className="badge style-1 mb-1">
-                Giảm giá lên đến 50%
-                {/* Sale Up to 50% Off */}
-              </div>
-              <h2 className="sale-name">
-                Mùa hè<span>2023</span>
-              </h2>
-              <a
-                href="/user/shop/shopStandard"
-                className="btn btn-outline-secondary btn-lg text-uppercase"
-              >
-                {/* Shop Now */}
-                Mua ngay
-              </a>
             </div>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-12 wow fadeInUp" data-wow-delay="0.2s">
-          <div className="product-box style-4">
-            <div
-              className="product-media"
-              style={{
-                backgroundImage: 'url("../../assets/user/images/shop/large/product2.png")'
-              }}
-            />
-            <div className="product-content">
-              <div className="main-content">
-                <div className="badge style-1 mb-3">
-                Giảm giá lên đến 50%
-                  {/* Sale Up to 50% Off */}
+          </section>
+          {/* Dz Silder End */}
+          {/* Products Section Start */}
+
+
+          {/* Products Section Start */}
+          {/* Collection Section Start */}
+          <section className="adv-area">
+            <div className="container-fluid px-0">
+              <div className="row product-style2 g-0">
+                <div className="col-lg-6 col-md-12 wow fadeInUp" data-wow-delay="0.1s">
+                  <div className="product-box style-4">
+                    <div
+                      className="product-media"
+                      style={{
+                        backgroundImage: 'url("../../assets/user/images/shop/large/product1.png")'
+                      }}
+                    />
+                    <div className="sale-box">
+                      <div className="badge style-1 mb-1">
+                        Giảm giá lên đến 50%
+                        {/* Sale Up to 50% Off */}
+                      </div>
+                      <h2 className="sale-name">
+                        Mùa hè<span>2023</span>
+                      </h2>
+                      <a
+                        href="/user/shop/shopStandard"
+                        className="btn btn-outline-secondary btn-lg text-uppercase"
+                      >
+                        {/* Shop Now */}
+                        Mua ngay
+                      </a>
+                    </div>
                   </div>
-                <h2 className="product-name">
-                Bộ sưu tập mùa hè mới
-                  {/* New Summer Collection */}
-                  </h2>
+                </div>
+                <div className="col-lg-6 col-md-12 wow fadeInUp" data-wow-delay="0.2s">
+                  <div className="product-box style-4">
+                    <div
+                      className="product-media"
+                      style={{
+                        backgroundImage: 'url("../../assets/user/images/shop/large/product2.png")'
+                      }}
+                    />
+                    <div className="product-content">
+                      <div className="main-content">
+                        <div className="badge style-1 mb-3">
+                          Giảm giá lên đến 50%
+                          {/* Sale Up to 50% Off */}
+                        </div>
+                        <h2 className="product-name">
+                          Bộ sưu tập mùa hè mới
+                          {/* New Summer Collection */}
+                        </h2>
+                      </div>
+                      <a
+                        href="/user/shop/shopStandard"
+                        className="btn btn-secondary btn-lg text-uppercase"
+                      >
+                        Mua ngay
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <a
-                href="/user/shop/shopWithCategory"
-                className="btn btn-secondary btn-lg text-uppercase"
-              >
-                Mua ngay
-              </a>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  {/* Collection Section End */}
-  {/* About Section Start */}
-  {/* <section className="content-inner-2 overflow-hidden">
+          </section>
+          {/* Collection Section End */}
+          {/* About Section Start */}
+          {/* <section className="content-inner-2 overflow-hidden">
     <div className="container">
       <div className="row  align-items-xl-center align-items-start">
         <div className=" col-lg-5 col-md-12 m-b30 align-self-center">
@@ -1381,165 +1153,165 @@ const addCartFromModal = async (qty, { size, color }) => {
       </div>
     </div>
   </section> */}
-  {/* About Section End */}
-  {/* About Section */}
-  <section className="content-inner overflow-hidden p-b0">
-    <div className="container">
-      <div className="row ">
-      <div className="col-lg-6 col-md-12 align-self-center">
-  <div className="row">
-    {(top5Products.length ? top5Products.slice(0, 4) : []).map((p, i) => {
-      const delays = ["0.2s", "0.3s", "0.4s", "0.6s"]; // giữ như template
-      const off = Number(p.discountPercent || 0);
-      const priceNew = priceAfterDiscount(p.price, off);
-      const name = p?.nameProduct || "";
-      const shortName = name.length > 28 ? name.slice(0, 28).trim() + "…" : name;
+          {/* About Section End */}
+          {/* About Section */}
+          <section className="content-inner overflow-hidden p-b0">
+            <div className="container">
+              <div className="row ">
+                <div className="col-lg-6 col-md-12 align-self-center">
+                  <div className="row">
+                    {(top5Products.length ? top5Products.slice(0, 4) : []).map((p, i) => {
+                      const delays = ["0.2s", "0.3s", "0.4s", "0.6s"]; // giữ như template
+                      const off = Number(p.discountPercent || 0);
+                      const priceNew = priceAfterDiscount(p.price, off);
+                      const name = p?.nameProduct || "";
+                      const shortName = name.length > 28 ? name.slice(0, 28).trim() + "…" : name;
 
-      const thumb =
-        p?.thumbnail?.startsWith("http")
-          ? p.thumbnail
-          : p?.thumbnail
-          ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_600,h_600/imgProduct/IMG/${p.thumbnail}`
-          : "/assets/images/placeholder.png";
-
-      return (
-        <div className="col-lg-6 col-md-6 col-sm-6 m-b30" key={p.asin || i}>
-          <div className="shop-card style-3 wow fadeInUp" data-wow-delay={delays[i] || "0.2s"}>
-            <div className="dz-media">
-              <img
-                src={thumb}
-                alt={shortName}
-              />
-            </div>
-
-            <div className="dz-content">
-              <div>
-                <span className={`sale-title ${off ? "" : "text-success"}`}>
-                  {off ? `Up to ${off}% Off` : "Free delivery"}
-                </span>
-                <h6 className="title">
-                  <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortName}</a>
-                </h6>
-              </div>
-              <h6 className="price">
-                {money(priceNew)} {off > 0 && <del>{money(p.price)}</del>}
-              </h6>
-            </div>
-            <span className="sale-badge">
-              {off ? `${off}%` : "Sale"}
-              {off ? <br /> : <><br /></>}
-              Sale <img src="../../assets/user/images/star.png" alt="star" />
-            </span>
-          </div>
-        </div>
-      );
-    })}
-  </div>
-</div>
-
-        <div className="col-lg-6 col-md-12 m-b30">
-          <div className="about-box style-1  clearfix h-100 right">
-            <div className="dz-media h-100">
-              <img src="../../assets/user/images/about/pic1.jpg" alt="" />
-              <div className="media-contant">
-                <h2 className="title">
-                Tiết kiệm lớn cho các nhu yếu phẩm hàng ngày
-                </h2>
-                <h5 className="/user/shop/shopWithCategory">
-                Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
-                </h5>
-                <a href="/user/shop/shopStandard" className="btn btn-white btn-lg">
-                  Xem Tất Cả
-                </a>
-              </div>
-              <svg className="title animation-text" viewBox="0 0 1320 300">
-                <text x={0} y="">
-                  Tiết kiệm tuyệt vời
-                </text>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  {/* About Section */}
-  {/* Map Area Start*/}
-  <section className="content-inner-3 overflow-hidden" id="Maping">
-  <div className="container-fluid p-0">
-    <div className="row align-items-start">
-      {/* LEFT MAP + 3 cards */}
-      <div className="col-xl-7 col-lg-12 col-md-12">
-        <div className="map-area">
-          <img src="../../assets/user/images/map/map2.png" alt="image" />
-          <div className="map-line" id="map-line">
-            <img src="../../assets/user/images/map/map-line.png" alt="image" />
-          </div>
-
-          {/* các icon trang trí giữ nguyên */}
-          <div className="loction-b wow" data-wow-delay="0.2s">...svg...</div>
-          <div className="loction-center wow fadeInUp" data-wow-delay="1.0s">...svg...</div>
-          <div className="loction-a wow" data-wow-delay="1.2s">...svg...</div>
-
-          {/* ========== 3 ô nổi trên bản đồ: lấy top5Products[0..2] ========== */}
-          {top5Products.slice(0, 3).map((p, i) => {
-            const shortTitle =
-              p?.nameProduct ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..." : "";
-            const boxClass = ["area-box1", "area-box2", "area-box3"][i] || "area-box1";
-            return (
-              <div className={`${boxClass} wow`} data-wow-delay={`${1.4 + i * 0.2}s`} key={`mapbox-${p.asin || i}`}>
-                <div className="shop-card style-7">
-                  <div className="dz-media">
-                    <img
-                      src={
+                      const thumb =
                         p?.thumbnail?.startsWith("http")
                           ? p.thumbnail
                           : p?.thumbnail
-                          ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
-                          : "/assets/images/placeholder.png"
-                      }
-                      alt={shortTitle || "product"}
-                    />
+                            ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_600,h_600/imgProduct/IMG/${p.thumbnail}`
+                            : "/assets/images/placeholder.png";
+
+                      return (
+                        <div className="col-lg-6 col-md-6 col-sm-6 m-b30" key={p.asin || i}>
+                          <div className="shop-card style-3 wow fadeInUp" data-wow-delay={delays[i] || "0.2s"}>
+                            <div className="dz-media">
+                              <img
+                                src={thumb}
+                                alt={shortName}
+                              />
+                            </div>
+
+                            <div className="dz-content">
+                              <div>
+                                <span className={`sale-title ${off ? "" : "text-success"}`}>
+                                  {off ? `Up to ${off}% Off` : "Free delivery"}
+                                </span>
+                                <h6 className="title">
+                                  <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortName}</a>
+                                </h6>
+                              </div>
+                              <h6 className="price">
+                                {money(priceNew)} {off > 0 && <del>{money(p.price)}</del>}
+                              </h6>
+                            </div>
+                            <span className="sale-badge">
+                              {off ? `${off}%` : "Sale"}
+                              {off ? <br /> : <><br /></>}
+                              Sale <img src="../../assets/user/images/star.png" alt="star" />
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="dz-content">
-                    <h5 className="title">
-                      <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortTitle}</a>
-                    </h5>
-                    {Number(p.discountPercent || 0) > 0 && (
-                      <span className="sale-title">
-                        Giảm đến {Number(p.discountPercent)}%
-                      </span>
-                    )}
+                </div>
+
+                <div className="col-lg-6 col-md-12 m-b30">
+                  <div className="about-box style-1  clearfix h-100 right">
+                    <div className="dz-media h-100">
+                      <img src="../../assets/user/images/about/pic1.jpg" alt="" />
+                      <div className="media-contant">
+                        <h2 className="title">
+                          Tiết kiệm lớn cho các nhu yếu phẩm hàng ngày
+                        </h2>
+                        <h5 className="/user/shop/shopWithCategory">
+                          Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
+                        </h5>
+                        <a href="/user/shop/shopStandard" className="btn btn-white btn-lg">
+                          Xem Tất Cả
+                        </a>
+                      </div>
+                      <svg className="title animation-text" viewBox="0 0 1320 300">
+                        <text x={0} y="">
+                          Tiết kiệm tuyệt vời
+                        </text>
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            </div>
+          </section>
+          {/* About Section */}
+          {/* Map Area Start*/}
+          <section className="content-inner-3 overflow-hidden" id="Maping">
+            <div className="container-fluid p-0">
+              <div className="row align-items-start">
+                {/* LEFT MAP + 3 cards */}
+                <div className="col-xl-7 col-lg-12 col-md-12">
+                  <div className="map-area">
+                    <img src="../../assets/user/images/map/map2.png" alt="image" />
+                    <div className="map-line" id="map-line">
+                      <img src="../../assets/user/images/map/map-line.png" alt="image" />
+                    </div>
 
-      {/* RIGHT TITLE + SLIDER */}
-      <div className="col-xl-5 col-lg-12 col-md-12 custom-width">
-        <div
-          className="section-head style-1 wow fadeInUp d-lg-flex align-items-end justify-content-between"
-          data-wow-delay="0.1s"
-        >
-          <div className="left-content">
-            <h2 className="title">Khám phá những điểm đến hấp dẫn nhất gần khu vực của bạn</h2>
-            <p className="text-capitalize text-secondary m-0">
-              Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
-            </p>
-          </div>
-          <a
-            href="/user/shop/shopWithCategory"
-            className="text-secondary font-14 d-flex align-items-center gap-1 m-b15"
-          >
-            Xem tất cả <i className="icon feather icon-chevron-right font-18" />
-          </a>
-        </div>
+                    {/* các icon trang trí giữ nguyên */}
+                    <div className="loction-b wow" data-wow-delay="0.2s">...svg...</div>
+                    <div className="loction-center wow fadeInUp" data-wow-delay="1.0s">...svg...</div>
+                    <div className="loction-a wow" data-wow-delay="1.2s">...svg...</div>
 
-        {/* clamp tên 2 dòng để không vỡ form */}
-        <style>{`
+                    {/* ========== 3 ô nổi trên bản đồ: lấy top5Products[0..2] ========== */}
+                    {top5Products.slice(0, 3).map((p, i) => {
+                      const shortTitle =
+                        p?.nameProduct ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..." : "";
+                      const boxClass = ["area-box1", "area-box2", "area-box3"][i] || "area-box1";
+                      return (
+                        <div className={`${boxClass} wow`} data-wow-delay={`${1.4 + i * 0.2}s`} key={`mapbox-${p.asin || i}`}>
+                          <div className="shop-card style-7">
+                            <div className="dz-media">
+                              <img
+                                src={
+                                  p?.thumbnail?.startsWith("http")
+                                    ? p.thumbnail
+                                    : p?.thumbnail
+                                      ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
+                                      : "/assets/images/placeholder.png"
+                                }
+                                alt={shortTitle || "product"}
+                              />
+                            </div>
+                            <div className="dz-content">
+                              <h5 className="title">
+                                <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortTitle}</a>
+                              </h5>
+                              {Number(p.discountPercent || 0) > 0 && (
+                                <span className="sale-title">
+                                  Giảm đến {Number(p.discountPercent)}%
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* RIGHT TITLE + SLIDER */}
+                <div className="col-xl-5 col-lg-12 col-md-12 custom-width">
+                  <div
+                    className="section-head style-1 wow fadeInUp d-lg-flex align-items-end justify-content-between"
+                    data-wow-delay="0.1s"
+                  >
+                    <div className="left-content">
+                      <h2 className="title">Khám phá những điểm đến hấp dẫn nhất gần khu vực của bạn</h2>
+                      <p className="text-capitalize text-secondary m-0">
+                        Giảm giá tới 60% + Hoàn tiền lên tới 107 đô la
+                      </p>
+                    </div>
+                    <a
+                      href="/user/shop/shopWithCategory"
+                      className="text-secondary font-14 d-flex align-items-center gap-1 m-b15"
+                    >
+                      Xem tất cả <i className="icon feather icon-chevron-right font-18" />
+                    </a>
+                  </div>
+
+                  {/* clamp tên 2 dòng để không vỡ form */}
+                  <style>{`
           #Maping .shop-card.style-7 .title a{
             display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
             overflow:hidden;
@@ -1549,65 +1321,65 @@ const addCartFromModal = async (qty, { size, color }) => {
           }
         `}</style>
 
-        <div className="swiper swiper-shop2 swiper-visible">
-          <div className="swiper-wrapper">
-            {(top5Products.length ? top5Products : []).map((p, idx) => {
-              const shortTitle =
-                p?.nameProduct ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..." : "";
-              return (
-                <div className="swiper-slide wow fadeInUp" data-wow-delay={`${0.1 + idx * 0.1}s`} key={`slide-${p.asin || idx}`}>
-                  <div className="shop-card style-7">
-                    <div className="dz-media">
-                      <img
-                        src={
-                          p?.thumbnail?.startsWith("http")
-                            ? p.thumbnail
-                            : p?.thumbnail
-                            ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
-                            : "/assets/images/placeholder.png"
-                        }
-                        alt={shortTitle || "product"}
-                      />
-                    </div>
-                    <div className="dz-content">
-                      <h5 className="title">
-                        <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortTitle}</a>
-                      </h5>
-                      {Number(p.discountPercent || 0) > 0 && (
-                        <span className="sale-title">
-                          up to {Number(p.discountPercent)}% off
-                        </span>
-                      )}
+                  <div className="swiper swiper-shop2 swiper-visible">
+                    <div className="swiper-wrapper">
+                      {(top5Products.length ? top5Products : []).map((p, idx) => {
+                        const shortTitle =
+                          p?.nameProduct ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..." : "";
+                        return (
+                          <div className="swiper-slide wow fadeInUp" data-wow-delay={`${0.1 + idx * 0.1}s`} key={`slide-${p.asin || idx}`}>
+                            <div className="shop-card style-7">
+                              <div className="dz-media">
+                                <img
+                                  src={
+                                    p?.thumbnail?.startsWith("http")
+                                      ? p.thumbnail
+                                      : p?.thumbnail
+                                        ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
+                                        : "/assets/images/placeholder.png"
+                                  }
+                                  alt={shortTitle || "product"}
+                                />
+                              </div>
+                              <div className="dz-content">
+                                <h5 className="title">
+                                  <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{shortTitle}</a>
+                                </h5>
+                                {Number(p.discountPercent || 0) > 0 && (
+                                  <span className="sale-title">
+                                    up to {Number(p.discountPercent)}% off
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Fallback giữ form nếu chưa có dữ liệu */}
+                      {top5Products.length === 0 &&
+                        [3, 4, 5, 6, 3].map((n, i) => (
+                          <div className="swiper-slide wow fadeInUp" data-wow-delay={`${0.1 + i * 0.1}s`} key={`fallback-${i}`}>
+                            <div className="shop-card style-7">
+                              <div className="dz-media">
+                                <img src={`../../assets/user/images/shop/product/medium/${n}.png`} alt="image" />
+                              </div>
+                              <div className="dz-content">
+                                <h5 className="title"><a href="#">Loading...</a></h5>
+                                <span className="sale-title">up to 79% off</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+          </section>
 
-            {/* Fallback giữ form nếu chưa có dữ liệu */}
-            {top5Products.length === 0 &&
-              [3, 4, 5, 6, 3].map((n, i) => (
-                <div className="swiper-slide wow fadeInUp" data-wow-delay={`${0.1 + i * 0.1}s`} key={`fallback-${i}`}>
-                  <div className="shop-card style-7">
-                    <div className="dz-media">
-                      <img src={`../../assets/user/images/shop/product/medium/${n}.png`} alt="image" />
-                    </div>
-                    <div className="dz-content">
-                      <h5 className="title"><a href="#">Loading...</a></h5>
-                      <span className="sale-title">up to 79% off</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-  {/* Blockbuster deal Start */}
-  {/* <section className="content-inner-2 overflow-hidden">
+          {/* Blockbuster deal Start */}
+          {/* <section className="content-inner-2 overflow-hidden">
     <div className="container">
       <div
         className="section-head style-1 wow fadeInUp d-lg-flex justify-content-between"
@@ -1752,9 +1524,9 @@ const addCartFromModal = async (qty, { size, color }) => {
       </div>
     </div>
   </section> */}
-  {/* Blockbuster deal Start */}
-  {/* Offer Section Start */}
-  {/* <section className="content-inner-2">
+          {/* Blockbuster deal Start */}
+          {/* Offer Section Start */}
+          {/* <section className="content-inner-2">
     <div className="container">
       <div
         className="section-head style-1 wow fadeInUp d-flex justify-content-between m-b30"
@@ -1942,29 +1714,29 @@ const addCartFromModal = async (qty, { size, color }) => {
       </div>
     </div>
   </section> */}
-  {/* Product End */}
-  {/* Featured Section Start */}
-  <section className="content-inner overflow-hidden">
-  <div className="container">
-    <div
-      className="section-head style-1 wow fadeInUp d-flex justify-content-between"
-      data-wow-delay="0.2s"
-    >
-      <div className="left-content">
-        <h2 className="title">Ưu đãi bom tấn</h2>
-      </div>
+          {/* Product End */}
+          {/* Featured Section Start */}
+          <section className="content-inner overflow-hidden">
+            <div className="container">
+              <div
+                className="section-head style-1 wow fadeInUp d-flex justify-content-between"
+                data-wow-delay="0.2s"
+              >
+                <div className="left-content">
+                  <h2 className="title">Ưu đãi bom tấn</h2>
+                </div>
 
-      <a
-        href="/user/shop/shopWithCategory"
-        className="text-secondary font-14 d-flex align-items-center gap-1"
-      >
-        Xem Tất Cả
-        <i className="icon feather icon-chevron-right font-18" />
-      </a>
-    </div>
+                <a
+                  href="/user/shop/shopWithCategory"
+                  className="text-secondary font-14 d-flex align-items-center gap-1"
+                >
+                  Xem Tất Cả
+                  <i className="icon feather icon-chevron-right font-18" />
+                </a>
+              </div>
 
-    {/* style nhỏ để giữ form/size card giống template */}
-    <style>{`
+              {/* style nhỏ để giữ form/size card giống template */}
+              <style>{`
       .hp-featured-swiper .shop-card.style-4 { min-height: 150px; }
       .hp-featured-swiper .dz-media img {
         width: 120px; height: 120px; object-fit: cover; border-radius: 12px;
@@ -1977,89 +1749,89 @@ const addCartFromModal = async (qty, { size, color }) => {
       .hp-featured-swiper .price del { margin-left: 6px; opacity: .6; }
     `}</style>
 
-    <div className="swiper swiper-product2 swiper-visible hp-featured-swiper">
-      <div className="swiper-wrapper">
-        {top5Products.slice(0, 5).map((p, i) => {
-          const shortTitle =
-            p?.nameProduct
-              ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..."
-              : "";
+              <div className="swiper swiper-product2 swiper-visible hp-featured-swiper">
+                <div className="swiper-wrapper">
+                  {top5Products.slice(0, 5).map((p, i) => {
+                    const shortTitle =
+                      p?.nameProduct
+                        ? p.nameProduct.split(" ").slice(0, 2).join(" ") + "..."
+                        : "";
 
-          const after = (Number(p.price || 0) * (1 - Number(p.discountPercent || 0) / 100)).toFixed(2);
+                    const after = (Number(p.price || 0) * (1 - Number(p.discountPercent || 0) / 100)).toFixed(2);
 
-          return (
-            <div className="swiper-slide" key={p.asin || i}>
-              <div className="shop-card style-4 wow fadeInUp" data-wow-delay={`${0.4 + i * 0.2}s`}>
-                <div className="dz-media">
-                  <img
-                    src={
-                      p?.thumbnail?.startsWith("http")
-                        ? p.thumbnail
-                        : p?.thumbnail
-                        ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
-                        : "/assets/images/placeholder.png"
-                    }
-                    alt={p?.nameProduct || "product"}
-                  />
-                </div>
+                    return (
+                      <div className="swiper-slide" key={p.asin || i}>
+                        <div className="shop-card style-4 wow fadeInUp" data-wow-delay={`${0.4 + i * 0.2}s`}>
+                          <div className="dz-media">
+                            <img
+                              src={
+                                p?.thumbnail?.startsWith("http")
+                                  ? p.thumbnail
+                                  : p?.thumbnail
+                                    ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
+                                    : "/assets/images/placeholder.png"
+                              }
+                              alt={p?.nameProduct || "product"}
+                            />
+                          </div>
 
-                <div className="dz-content">
-                  <div>
-                    <h6 className="title">
-                      <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>
-                        {shortTitle}
-                      </a>
-                    </h6>
+                          <div className="dz-content">
+                            <div>
+                              <h6 className="title">
+                                <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>
+                                  {shortTitle}
+                                </a>
+                              </h6>
 
-                    {Number(p.discountPercent || 0) > 0 && (
-                      <span className="sale-title">Up to {p.discountPercent}% Off</span>
-                    )}
-                  </div>
+                              {Number(p.discountPercent || 0) > 0 && (
+                                <span className="sale-title">Up to {p.discountPercent}% Off</span>
+                              )}
+                            </div>
 
-                  <div className="d-flex align-items-center">
-                    <h6 className="price mb-0">
-                      ${after}
-                      {Number(p.discountPercent || 0) > 0 && <del>${Number(p.price || 0).toFixed(2)}</del>}
-                    </h6>
-                    <span className="review ms-2">
-                      <i className="fa-solid fa-star" /> (2k Review)
-                    </span>
-                  </div>
+                            <div className="d-flex align-items-center">
+                              <h6 className="price mb-0">
+                                ${after}
+                                {Number(p.discountPercent || 0) > 0 && <del>${Number(p.price || 0).toFixed(2)}</del>}
+                              </h6>
+                              <span className="review ms-2">
+                                <i className="fa-solid fa-star" /> (2k Review)
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* fallback giữ form nếu chưa có dữ liệu */}
+                  {top5Products.length === 0 &&
+                    [1, 2, 3, 4, 5].map((n, i) => (
+                      <div className="swiper-slide" key={`skeleton-${i}`}>
+                        <div className="shop-card style-4 wow fadeInUp" data-wow-delay={`${0.4 + i * 0.2}s`}>
+                          <div className="dz-media">
+                            <img src={`../../assets/user/images/shop/product/${((i % 3) + 1)}.png`} alt="image" />
+                          </div>
+                          <div className="dz-content">
+                            <div>
+                              <h6 className="title"><a href="#">Loading...</a></h6>
+                              <span className="sale-title">Up to 40% Off</span>
+                            </div>
+                            <div className="d-flex align-items-center">
+                              <h6 className="price">$80<del>$95</del></h6>
+                              <span className="review"><i className="fa-solid fa-star" />(2k Review)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
-          );
-        })}
+          </section>
 
-        {/* fallback giữ form nếu chưa có dữ liệu */}
-        {top5Products.length === 0 &&
-          [1, 2, 3, 4, 5].map((n, i) => (
-            <div className="swiper-slide" key={`skeleton-${i}`}>
-              <div className="shop-card style-4 wow fadeInUp" data-wow-delay={`${0.4 + i * 0.2}s`}>
-                <div className="dz-media">
-                  <img src={`../../assets/user/images/shop/product/${((i % 3) + 1)}.png`} alt="image" />
-                </div>
-                <div className="dz-content">
-                  <div>
-                    <h6 className="title"><a href="#">Loading...</a></h6>
-                    <span className="sale-title">Up to 40% Off</span>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    <h6 className="price">$80<del>$95</del></h6>
-                    <span className="review"><i className="fa-solid fa-star" />(2k Review)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-      </div>
-    </div>
-  </div>
-</section>
-
-  {/* Featured Section End */}
-  {/* About Section */}
-  {/* <section className="content-inner overflow-hidden p-b0">
+          {/* Featured Section End */}
+          {/* About Section */}
+          {/* <section className="content-inner overflow-hidden p-b0">
     <div className="container">
       <div className="row">
         <div className="col-lg-6 col-md-12 m-b30">
@@ -2185,9 +1957,9 @@ const addCartFromModal = async (qty, { size, color }) => {
       </div>
     </div>
   </section> */}
-  {/* About Section */}
-  {/* company-box Start */}
-  {/* <section className="content-inner-2">
+          {/* About Section */}
+          {/* company-box Start */}
+          {/* <section className="content-inner-2">
     <div className="container">
       <div
         className="section-head style-1 wow fadeInUp d-flex  justify-content-between"
@@ -2353,9 +2125,9 @@ const addCartFromModal = async (qty, { size, color }) => {
       </div>
     </div>
   </section> */}
-  {/* company-box End */}
-  {/* Blog Start */}
-  {/* <section className="content-inner-3 overflow-hidden p-b0">
+          {/* company-box End */}
+          {/* Blog Start */}
+          {/* <section className="content-inner-3 overflow-hidden p-b0">
     <div className="container">
       <div className="row justify-content-between align-items-center">
         <div className="col-lg-6 col-md-8 col-sm-12">
@@ -2805,48 +2577,48 @@ const addCartFromModal = async (qty, { size, color }) => {
       </div>
     </div>
   </section> */}
-  {/* Blog End */}
-  {/* collection-bx */}
-  <section className="collection-bx content-inner-3 overflow-hidden">
-    <div className="container">
-      <h2 className="title wow fadeInUp" data-wow-delay="0.2s">
-        Nâng cấp phong cách của bạn với bộ sưu tập hàng đầu của chúng tôi.
-        {/* Upgrade your style with our top-notch collection. */}
-      </h2>
-      <div className="text-center">
-        <a
-          href="/user/shop/shopWithCategory"
-          className="btn btn-secondary btn-lg wow fadeInUp m-b30"
-          data-wow-delay="0.4s"
-        >
-          Tất cả bộ sưu tập
-          {/* All Collections */}
-        </a>
-      </div>
-    </div>
-    <div className="collection1">
-      <img src="../../assets/user/images/collection/1.png" alt="" />
-    </div>
-    <div className="collection2">
-      <img src="../../assets/user/images/collection/2.png" alt="" />
-    </div>
-    <div className="collection3">
-      <img src="../../assets/user/images/collection/3.png" alt="" />
-    </div>
-    <div className="collection4">
-      <img src="../../assets/user/images/collection/4.png" alt="" />
-    </div>
-    <div className="collection5">
-      <img src="../../assets/user/images/collection/5.png" alt="" />
-    </div>
-  </section>
-  {/* collection-bx */}
-</div>
+          {/* Blog End */}
+          {/* collection-bx */}
+          <section className="collection-bx content-inner-3 overflow-hidden">
+            <div className="container">
+              <h2 className="title wow fadeInUp" data-wow-delay="0.2s">
+                Nâng cấp phong cách của bạn với bộ sưu tập hàng đầu của chúng tôi.
+                {/* Upgrade your style with our top-notch collection. */}
+              </h2>
+              <div className="text-center">
+                <a
+                  href="/user/shop/shopStandard"
+                  className="btn btn-secondary btn-lg wow fadeInUp m-b30"
+                  data-wow-delay="0.4s"
+                >
+                  Tất cả bộ sưu tập
+                  {/* All Collections */}
+                </a>
+              </div>
+            </div>
+            <div className="collection1">
+              <img src="../../assets/user/images/collection/1.png" alt="" />
+            </div>
+            <div className="collection2">
+              <img src="../../assets/user/images/collection/2.png" alt="" />
+            </div>
+            <div className="collection3">
+              <img src="../../assets/user/images/collection/3.png" alt="" />
+            </div>
+            <div className="collection4">
+              <img src="../../assets/user/images/collection/4.png" alt="" />
+            </div>
+            <div className="collection5">
+              <img src="../../assets/user/images/collection/5.png" alt="" />
+            </div>
+          </section>
+          {/* collection-bx */}
+        </div>
 
 
         {/* Footer (đã được xử lý trong App.js) */}
-         <ScrollTopButton/>
-         <QuickViewModal
+        <ScrollTopButton />
+        <QuickViewModal
           product={selectedProduct}
           quantity={quantity}
           setQuantity={setQuantity}
@@ -2863,20 +2635,20 @@ const addCartFromModal = async (qty, { size, color }) => {
           requireSelection
         />
         {showToast && (
-  <div style={{
-    position: 'fixed',
-    top: '20px',
-    right: '20px',
-    zIndex: 9999,
-    padding: '12px 20px',
-    backgroundColor: '#4caf50', // xanh lá cho thành công
-    color: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-  }}>
-    {toastMessage}
-  </div>
-)}
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            zIndex: 9999,
+            padding: '12px 20px',
+            backgroundColor: '#4caf50', // xanh lá cho thành công
+            color: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+          }}>
+            {toastMessage}
+          </div>
+        )}
       </div>
     </>
   );

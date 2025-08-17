@@ -18,7 +18,7 @@ const AllProduct = () => {
 	const [currentPage, setCurrentPage] = useState(0);
 	const [salesRankCount, setSalesRankCount] = useState([]);
 	const [productTypeCount, setProductTypeCount] = useState([]);
-	const [tags, setTags] = useState([]);
+  const [tags, setTags] = useState(['Women', 'Men', 'Boy', 'Unisex', 'Girl']);
 	const [keyword, setKeyword] = useState("");
 	const [inputValue, setInputValue] = useState("");
 	const [selectedDiscounts, setSelectedDiscounts] = useState([]);
@@ -113,7 +113,6 @@ const AllProduct = () => {
 			const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
 			setSalesRankCount(response.data.salesRankCount);
 			setProductTypeCount(response.data.productTypeCount);
-			setTags(response.data.tags);
 		} catch (error) {
 			console.error('Không lấy được danh mục:', error);
 			
@@ -299,48 +298,48 @@ const AllProduct = () => {
 								</div>
 
 							</div>
-							<div className="widget widget_tag_cloud" >
-								<h6 className="widget-title">Tags</h6>
-								<div className="tagcloud">
-									{Object.entries(tags).length > 0 ? (
-										Object.entries(tags).map(([type, count]) => (
-											<span
-												key={type}
-												onClick={() => handleTagToggle(type)}
-												onMouseEnter={(e) => {
-													if (!selectedTags.includes(type)) {
-														e.currentTarget.style.backgroundColor = '#000';
-														e.currentTarget.style.color = '#fff';
-													}
-												}}
-												onMouseLeave={(e) => {
-													if (!selectedTags.includes(type)) {
-														e.currentTarget.style.backgroundColor = '#fff';
-														e.currentTarget.style.color = '#000';
-													}
-												}}
-												style={{
-													cursor: 'pointer',
-													padding: '5px 14px',
-													margin: '5px',
-													border: '1px solid #000',
-													borderRadius: '12px',
-													display: 'inline-block',
-													backgroundColor: selectedTags.includes(type) ? '#000' : '#fff',
-													color: selectedTags.includes(type) ? '#fff' : '#000',
-													transition: 'all 0.2s ease',
-													fontSize: '13px'
-												}}
-											>
-												{type}
-											</span>
+					<div className="widget widget_tag_cloud">
+  <h6 className="widget-title">Tags</h6>
+  <div className="tagcloud">
+    {Array.isArray(tags) && tags.length > 0 ? (
+      tags.map((tag) => (
+        <span
+          key={tag}
+          onClick={() => handleTagToggle(tag)}
+          onMouseEnter={(e) => {
+            if (!selectedTags.includes(tag)) {
+              e.currentTarget.style.backgroundColor = '#000';
+              e.currentTarget.style.color = '#fff';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!selectedTags.includes(tag)) {
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.color = '#000';
+            }
+          }}
+          style={{
+            cursor: 'pointer',
+            padding: '5px 14px',
+            margin: '5px',
+            border: '1px solid #000',
+            borderRadius: '12px',
+            display: 'inline-block',
+            backgroundColor: selectedTags.includes(tag) ? '#000' : '#fff',
+            color: selectedTags.includes(tag) ? '#fff' : '#000',
+            transition: 'all 0.2s ease',
+            fontSize: '13px',
+          }}
+        >
+          {tag}
+        </span>
+      ))
+    ) : (
+      <p>Đang tải tags...</p>
+    )}
+  </div>
+</div>
 
-										))
-									) : (
-										<p>Đang tải tags...</p>
-									)}
-								</div>
-							</div>
 
 							<div className="int-sidebar-box">
 								{/* Filter Price */}

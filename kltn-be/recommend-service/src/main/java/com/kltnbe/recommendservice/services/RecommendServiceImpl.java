@@ -6,8 +6,10 @@ import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
 import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
 import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
+import com.kltnbe.recommendservice.entities.SaveHistorySearchImage;
 import com.kltnbe.recommendservice.entities.UserAsinHistory;
 import com.kltnbe.recommendservice.repositories.AsinRecommendationRepository;
+import com.kltnbe.recommendservice.repositories.SaveHistorySearchImageRepository;
 import com.kltnbe.recommendservice.repositories.UserAsinHistoryRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,7 @@ public class RecommendServiceImpl implements RecommendService {
     private final UserAsinHistoryRepository userAsinHistoryRepository;
     private final UserServiceProxy userServiceProxy;
     private final AsinRecommendationRepository asinRecommendationRepository;
-
+    private final SaveHistorySearchImageRepository  saveHistorySearchImageRepository;
     @Override
     public ResponseEntity<?> saveUserAsinHistory(UserAsinHistoryRequest request) {
         Long idUser = userServiceProxy.findUserIdByAccessToken(request.getAccessToken());
@@ -52,8 +54,10 @@ public class RecommendServiceImpl implements RecommendService {
         for (AsinRecommendation recommendation : recommendations){
             if (recommendation.getRecommendAsin() != null) {
                 String[] asins = recommendation.getRecommendAsin().split(",");
+                System.out.println(Arrays.toString(asins) + "test Asin");
                 for (String asin : asins) {
                     String trimmed = asin.trim();
+                    System.out.println(trimmed + "trimmed la");
                     if (!trimmed.isEmpty()) {
                         asinSet.add(trimmed);
                     }
@@ -66,6 +70,35 @@ public class RecommendServiceImpl implements RecommendService {
         Collections.shuffle(result);
         return result;
     }
+    @Override
+    public List<String> getAllAsinRecommendHisTory(Long authId) {
+        List<SaveHistorySearchImage> saveHistorySearchImages = saveHistorySearchImageRepository.findTop10ByAuthIdOrderByCreatedAtDesc(authId);
+        Set<String> asinSet = new HashSet<>();
+        for (SaveHistorySearchImage recommendation : saveHistorySearchImages){
+            if (recommendation.getRecommendAsins() != null) {
+                String[] asins = recommendation.getRecommendAsins().split(",");
+                System.out.println(Arrays.toString(asins) + "test Asin");
+                for (String asin : asins) {
+                    String trimmed = asin.trim();
+                    System.out.println(trimmed + "trimmed la");
+                    if (!trimmed.isEmpty()) {
+                        asinSet.add(trimmed);
+                    }
+                }
+            }
+        }
+        System.out.print("set cua tao la" + asinSet);
+        List<String> result = new ArrayList<>(asinSet);
+        System.out.print("result la" + result);
+        Collections.shuffle(result);
+        return result;
+    }
+
+    @Override
+    public String saveHistoryUserEvaluate(Long authId, List<String> asin) {
+        return "";
+    }
+
     public String[] findRecommendByAsin(String asin) {
         AsinRecommendation recommendations = asinRecommendationRepository.findByAsin(asin);
         String recommendAsin = recommendations.getRecommendAsin();

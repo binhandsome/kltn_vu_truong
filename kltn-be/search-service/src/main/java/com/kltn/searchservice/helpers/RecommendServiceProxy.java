@@ -17,4 +17,6 @@ public interface RecommendServiceProxy {
     String[] findRecommendByAsin(@RequestParam String asin);
     @GetMapping("/api/recommend/findRecommendByAsins") // Sử dụng POST để gửi list
     Map<String, String[]> findRecommendByAsins(@RequestParam List<String> asins);
+    @GetMapping("/api/recommend/getAllRecommendAsinsHistory")
+    List<String> getAllRecommendByUserId(@RequestParam Long authId);
 }

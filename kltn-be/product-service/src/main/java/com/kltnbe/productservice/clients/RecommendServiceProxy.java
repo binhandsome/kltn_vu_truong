@@ -15,5 +15,4 @@ public interface RecommendServiceProxy {
     ResponseEntity<RecommendResponse> recommendNew(@RequestBody RecommendNewReq req);
     @PostMapping("/api/recommend/saveAsinRecommend")
     void saveAsinRecommend(@RequestBody RequestRecommend requestRecommend);
-
 }

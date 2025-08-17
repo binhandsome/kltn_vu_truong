@@ -22,8 +22,6 @@ public class ProductReviewController {
     private final ProductReviewService reviewService;
     private final ProductReviewServiceImpl productReviewServiceImpl;
 
-    // Tạo review gốc bởi user
-    // Vẫn OK, giữ nguyên
     @PostMapping("/create")
     public ResponseEntity<ReviewResponse> createReview(@RequestBody ReviewRequest request) {
         request.setIsSellerReply(false);

@@ -15,7 +15,11 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>,JpaSpecificationExecutor<Product> {
-
+    interface GroupThumbRow {
+        String getGroupLabel();
+        String getProductThumbnail();
+        long getCount();
+    }
 //    @Query("SELECT p FROM Product p WHERE LOWER(p.productTitle) LIKE LOWER(CONCAT('%', :keyword, '%'))")
 //    Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
     Page<Product> findAll(Pageable pageable);
@@ -26,6 +30,58 @@ public interface ProductRepository extends JpaRepository<Product, Long>,JpaSpeci
     List<String> findAllDistinctSalesRanks();
     @Query("SELECT DISTINCT COALESCE(p.productType, 'Other') FROM Product p")
     List<String> findAllDistinctProductTypes();
+    // ProductType cũng gom luôn count + random thumbnail
+    interface ProductTypeCategory {
+        String getGroupLabel();
+        Long getCount();
+        String getThumbnail();
+    }
+
+    @Query(value = """
+        SELECT group_label AS groupLabel,
+               cnt AS count,
+               product_thumbnail AS thumbnail
+        FROM (
+            SELECT
+              COALESCE(p.product_type,'Other') AS group_label,
+              COUNT(*) OVER (PARTITION BY COALESCE(p.product_type,'Other')) AS cnt,
+              p.product_thumbnail,
+              ROW_NUMBER() OVER (
+                  PARTITION BY COALESCE(p.product_type,'Other')
+                  ORDER BY RAND()
+              ) AS rn
+            FROM products p
+            WHERE p.product_thumbnail IS NOT NULL
+        ) t
+        WHERE rn = 1
+        """, nativeQuery = true)
+    List<ProductTypeCategory> findProductTypeCategories();
+    // Projection interface để map kết quả
+    interface SalesRankCategory {
+        String getGroupLabel();
+        Long getCount();
+        String getThumbnail();
+    }
+
+    @Query(value = """
+        SELECT group_label AS groupLabel,
+               cnt AS count,
+               product_thumbnail AS thumbnail
+        FROM (
+            SELECT
+              COALESCE(p.sales_rank,'Other') AS group_label,
+              COUNT(*) OVER (PARTITION BY COALESCE(p.sales_rank,'Other')) AS cnt,
+              p.product_thumbnail,
+              ROW_NUMBER() OVER (
+                  PARTITION BY COALESCE(p.sales_rank,'Other')
+                  ORDER BY RAND()
+              ) AS rn
+            FROM products p
+            WHERE p.product_thumbnail IS NOT NULL
+        ) t
+        WHERE rn = 1
+        """, nativeQuery = true)
+    List<SalesRankCategory> findSalesRankCategories();
     @Query("SELECT p.productThumbnail FROM Product p " +
             "WHERE COALESCE(p.salesRank, 'Other') = :salesRank " +
             "AND p.productThumbnail IS NOT NULL " +

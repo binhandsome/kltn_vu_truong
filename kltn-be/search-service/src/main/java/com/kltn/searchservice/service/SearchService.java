@@ -34,7 +34,8 @@ public interface SearchService {
                                          BigDecimal minPrice,
                                          BigDecimal maxPrice,
                                          List<String> tags,
-                                         Pageable pageable
+                                         Pageable pageable,
+                                         Long authId
     );
 
     Page<ProductDocument> searchProductRecommend(RequestRecommend request);
