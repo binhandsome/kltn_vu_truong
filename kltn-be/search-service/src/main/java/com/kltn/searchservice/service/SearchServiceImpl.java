@@ -303,41 +303,61 @@ public class SearchServiceImpl implements SearchService {
             Pageable pageable,
             Long authId
     ) {
-        // 0) Lấy rec CHỈ khi có authId, không chặn search nếu lỗi
-        List<String> listAsinsRecommend = Collections.emptyList();
+        long offset = pageable.getOffset();
+        int size = pageable.getPageSize();
+
+        // 1) Lấy danh sách recommend (chỉ khi có authId)
+        List<ProductDocument> listProductRecommend = Collections.emptyList();
+        Set<Long> recommendProductIds = new HashSet<>();
+
         if (authId != null) {
             try {
-                listAsinsRecommend = Optional.ofNullable(
-                        recommendServiceProxy.getListHistoryEvaluate(authId)
-                ).orElse(Collections.emptyList());
-            } catch (Exception ex) {
-                log.warn("getListHistoryEvaluate failed (authId={}): {}", authId, ex.getMessage());
-                listAsinsRecommend = Collections.emptyList();
+                List<String> listAsinsRecommend = recommendServiceProxy.getListHistoryEvaluate(authId);
+                if (listAsinsRecommend != null && !listAsinsRecommend.isEmpty()) {
+                    listProductRecommend = getProductsByAsins(listAsinsRecommend);
+                    if (listProductRecommend != null) {
+                        // Lọc chỉ lấy sản phẩm active và lưu productId để tránh trùng lặp
+                        listProductRecommend = listProductRecommend.stream()
+                                .filter(product -> product != null
+                                        && product.getProductId() != null
+                                        && "active".equalsIgnoreCase(product.getProductStatus()))
+                                .collect(Collectors.toList());
+
+                        recommendProductIds = listProductRecommend.stream()
+                                .map(ProductDocument::getProductId)
+                                .collect(Collectors.toSet());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error getting recommendations for authId: " + authId, e);
+                listProductRecommend = Collections.emptyList();
             }
         }
 
-        List<ProductDocument> listProductRecommend = getProductsByAsins(listAsinsRecommend);
-
-        // 1) Flags filter
+        // 2) Kiểm tra có filter hay không
         boolean hasKeyword = (keyword != null && !keyword.trim().isEmpty());
-        boolean hasTags    = (tags != null && !tags.isEmpty());
-        boolean hasPrice   =
-                (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0) ||
-                        (maxPrice != null && maxPrice.compareTo(BigDecimal.ZERO) > 0);
+        boolean hasTags = (tags != null && !tags.isEmpty());
+        boolean hasPrice = (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0);
+        boolean hasSearch = hasKeyword || hasTags || hasPrice;
 
-        // 2) Build ES query
+        // 3) Build Elasticsearch query
         Query esQuery = Query.of(q -> q.bool(b -> {
             if (hasKeyword) {
                 String loweredKeyword = keyword.toLowerCase();
                 b.must(m -> m.bool(inner -> inner
                         .should(s -> s.match(match -> match
-                                .field("productTitle").query(keyword).fuzziness("AUTO")
+                                .field("productTitle")
+                                .query(keyword)
+                                .fuzziness("AUTO")
                         ))
                         .should(s -> s.queryString(qs -> qs
-                                .defaultField("productTitle").query("*" + loweredKeyword + "*")
+                                .defaultField("productTitle")
+                                .query("*" + loweredKeyword + "*")
                         ))
                         .should(s -> s.multiMatch(mm -> mm
-                                .fields("productTitle").query(keyword).fuzziness("AUTO")
+                                .fields("productTitle")
+                                .query(keyword)
+                                .fuzziness("AUTO")
                         ))
                         .minimumShouldMatch("1")
                 ));
@@ -346,8 +366,12 @@ public class SearchServiceImpl implements SearchService {
             if (hasPrice) {
                 b.filter(f -> f.range(r -> {
                     r.field("productPrice");
-                    if (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0) r.gte(JsonData.of(minPrice));
-                    if (maxPrice != null && maxPrice.compareTo(BigDecimal.ZERO) > 0) r.lte(JsonData.of(maxPrice));
+                    if (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0) {
+                        r.gte(JsonData.of(minPrice));
+                    }
+                    if (maxPrice != null && maxPrice.compareTo(BigDecimal.ZERO) > 0) {
+                        r.lte(JsonData.of(maxPrice));
+                    }
                     return r;
                 }));
             }
@@ -355,207 +379,238 @@ public class SearchServiceImpl implements SearchService {
             if (hasTags) {
                 b.filter(f -> f.terms(t -> t
                         .field("tags.keyword")
-                        .terms(ts -> ts.value(tags.stream()
-                                .filter(Objects::nonNull)
-                                .map(FieldValue::of)
-                                .toList()))
+                        .terms(ts -> ts.value(
+                                tags.stream()
+                                        .filter(Objects::nonNull)
+                                        .map(FieldValue::of)
+                                        .toList()))
                 ));
             }
 
-            // ACTIVE (an toàn case)
-            b.filter(f -> f.terms(t -> t
+            // Filter chỉ lấy sản phẩm active
+            b.filter(f -> f.term(t -> t
                     .field("productStatus.keyword")
-                    .terms(ts -> ts.value(List.of(FieldValue.of("ACTIVE"), FieldValue.of("active"))))
+                    .value("active")
             ));
 
             return b;
         }));
 
-        // 3) Sort: productId desc (script cũ)
+        // 4) Sort script
         SortOptions scriptSort = SortOptions.of(s -> s
                 .script(ss -> ss
                         .type(ScriptSortType.Number)
                         .order(SortOrder.Desc)
-                        .script(Script.of(sc -> sc.inline(in -> in
-                                .source("Long.parseLong(doc['productId'].value)")
-                                .lang("painless")
-                        )))
+                        .script(Script.of(sc -> sc
+                                .inline(in -> in
+                                        .source("Long.parseLong(doc['productId'].value)")
+                                        .lang("painless")
+                                )
+                        ))
                 )
         );
 
-        // 4) Chuẩn bị rec (dedup theo productId, chỉ ACTIVE)
-        List<ProductDocument> recDocsOrdered;
-        LinkedHashSet<Long> recPidSet = new LinkedHashSet<>();
-        boolean canInjectRec = (authId != null) && listProductRecommend != null && !listProductRecommend.isEmpty();
-
-        if (canInjectRec) {
-            recDocsOrdered = new ArrayList<>();
-            for (ProductDocument d : listProductRecommend) {
-                if (d == null) continue;
-                String st = d.getProductStatus();
-                if (st != null && !"active".equalsIgnoreCase(st)) continue;
-                Long pid = d.getProductId();
-                if (pid == null) continue;
-                if (recPidSet.add(pid)) recDocsOrdered.add(d);
-            }
-        } else {
-            recDocsOrdered = Collections.emptyList();
-        }
-
-        long offset = pageable.getOffset();
-        int  size   = pageable.getPageSize();
-
+        List<ProductDocument> filteredRecommend = null;
         try {
-            // 5) ES pageable: luôn tính theo offset - recCount để hỗn hợp (rec ∪ ES) phân trang đúng trên mọi trang
-            Pageable esPageable;
-            if (canInjectRec && !recDocsOrdered.isEmpty()) {
-                int recCount = recDocsOrdered.size();
-                int neededStart = (int) Math.max(0, offset - recCount);
-                int basePageIdx = neededStart / size;
-                int extraToSkip = neededStart - basePageIdx * size;
+            // 5) Xử lý khi không có recommend - chỉ lấy từ ES
+            if (listProductRecommend.isEmpty()) {
+                var springQuery = NativeQuery.builder()
+                        .withQuery(esQuery)
+                        .withPageable(pageable)
+                        .withSort(scriptSort)
+                        .build();
 
-                // fetch dư để bù phần skip + phần có thể trùng với rec
-                int fetchSize = Math.min(1000, size + extraToSkip + Math.min(recCount, size));
-                esPageable = PageRequest.of(basePageIdx, Math.max(size, fetchSize));
-            } else {
-                esPageable = pageable;
-            }
+                SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
+                List<ProductDocument> results = hits.getSearchHits()
+                        .stream()
+                        .map(SearchHit::getContent)
+                        .toList();
 
-            // 6) Query ES
-            var springQuery = NativeQuery.builder()
-                    .withQuery(esQuery)
-                    .withPageable(esPageable)
-                    .withSort(scriptSort)
-                    .build();
-
-            SearchHits<ProductDocument> hits =
-                    elasticsearchOperations.search(springQuery, ProductDocument.class);
-            List<ProductDocument> esFetched = hits.getSearchHits()
-                    .stream().map(SearchHit::getContent).toList();
-
-            // 7) Nếu không inject -> ES thuần
-            if (!canInjectRec || recDocsOrdered.isEmpty()) {
-                List<ProductDocument> results = new ArrayList<>(esFetched);
-                enrichSoldCount(results);
                 return new PageImpl<>(results, pageable, hits.getTotalHits());
             }
 
-            // 8) Trộn rec vào đầu danh sách theo cửa sổ phân trang hiện tại
-            int recCount = recDocsOrdered.size();
-            long end = offset + size;
+            // 6) Trường hợp có recommend (bất kể có search hay không)
+            // Lọc recommend theo search criteria nếu có
+            filteredRecommend = listProductRecommend;
+            if (hasSearch) {
+                filteredRecommend = listProductRecommend.stream()
+                        .filter(product -> matchesSearchCriteria(product, keyword, minPrice, maxPrice, tags))
+                        .collect(Collectors.toList());
 
-            int recFrom = (int) Math.max(0, Math.min(offset, recCount));
-            int recTo   = (int) Math.max(0, Math.min(end, recCount));
-            List<ProductDocument> recPart = recFrom < recTo
-                    ? recDocsOrdered.subList(recFrom, recTo)
-                    : Collections.emptyList();
+                // Cập nhật lại recommendProductIds
+                recommendProductIds = filteredRecommend.stream()
+                        .map(ProductDocument::getProductId)
+                        .collect(Collectors.toSet());
+            }
+            int recommendSize = filteredRecommend.size();
 
-            int remaining = size - recPart.size();
+            // Tính toán cần lấy bao nhiều từ recommend và ES
+            List<ProductDocument> pageContent = new ArrayList<>();
 
-            // Bỏ qua phần ES tương ứng với (offset - recCount); loại trùng với rec
-            int esSkip = (int) Math.max(0, offset - recCount);
-            List<ProductDocument> esPart = new ArrayList<>(remaining);
-            for (ProductDocument d : esFetched) {
-                Long pid = d.getProductId();
-                if (pid != null && recPidSet.contains(pid)) continue; // loại trùng
-                if (esSkip > 0) { esSkip--; continue; }
-                esPart.add(d);
-                if (esPart.size() >= remaining) break;
+            // Lấy recommend cho trang hiện tại
+            if (offset < recommendSize) {
+                int recommendStart = (int) offset;
+                int recommendEnd = (int) Math.min(offset + size, recommendSize);
+                pageContent.addAll(filteredRecommend.subList(recommendStart, recommendEnd));
             }
 
-            List<ProductDocument> pageContent = new ArrayList<>(size);
-            pageContent.addAll(recPart);
-            pageContent.addAll(esPart);
-            if (pageContent.size() > size) {
-                pageContent = pageContent.subList(0, size);
-            }
-            enrichSoldCount(pageContent);
+            // Nếu chưa đủ size, lấy thêm từ ES (loại trừ những sản phẩm đã có trong recommend)
+            int remaining = size - pageContent.size();
+            if (remaining > 0) {
+                // Tính offset cho ES
+                long esOffset = Math.max(0, offset - recommendSize);
 
-            // 9) Tính total của hợp (ES ∪ rec) theo truy vấn hiện tại (để phân trang chính xác trên toàn bộ trang)
-            long esTotal = hits.getTotalHits();
-            long recUnique = recPidSet.size();
+                // Để đảm bảo có đủ dữ liệu sau khi loại bỏ trùng lặp, lấy nhiều hơn một chút
+                int fetchSize = remaining * 2; // Lấy gấp đôi để đề phòng trường hợp bị loại nhiều
+                Pageable esPageable = PageRequest.of((int) (esOffset / size), Math.max(fetchSize, size));
 
-            long recPresentInEs = 0L;
-            if (!recPidSet.isEmpty()) {
-                Query recTerms = Query.of(q -> q.terms(t -> t
-                        .field("productId")
-                        .terms(ts -> ts.value(recPidSet.stream().map(FieldValue::of).toList()))
-                ));
-
-                // Đếm số rec nằm trong ES theo TRUY VẤN HIỆN TẠI (đã gồm ACTIVE, keyword/tags/price)
-                NativeQuery countNative = NativeQuery.builder()
-                        .withQuery(esQuery)     // giữ nguyên truy vấn hiện tại
-                        .withFilter(recTerms)   // thêm filter: productId ∈ rec
+                var springQuery = NativeQuery.builder()
+                        .withQuery(esQuery)
+                        .withPageable(esPageable)
+                        .withSort(scriptSort)
                         .build();
 
-                recPresentInEs = elasticsearchOperations.count(countNative, ProductDocument.class);
+                SearchHits<ProductDocument> hits = elasticsearchOperations.search(springQuery, ProductDocument.class);
+                Set<Long> finalRecommendProductIds = recommendProductIds;
+                List<ProductDocument> esResults = hits.getSearchHits()
+                        .stream()
+                        .map(SearchHit::getContent)
+                        .filter(product -> !finalRecommendProductIds.contains(product.getProductId())) // Loại bỏ trùng lặp
+                        .skip(esOffset % size) // Skip đến vị trí chính xác
+                        .limit(remaining) // Chỉ lấy số lượng cần thiết
+                        .toList();
+
+                pageContent.addAll(esResults);
             }
 
-            long unionTotal = esTotal + Math.max(0, recUnique - recPresentInEs);
+            // 7) Tính tổng số sản phẩm để phân trang đúng
+            long totalRecommend = recommendSize;
 
-            return new PageImpl<>(pageContent, pageable, unionTotal);
+            // Đếm tổng số sản phẩm trong ES (không trùng với recommend)
+            Set<Long> finalRecommendProductIds1 = recommendProductIds;
+            Query countQuery = Query.of(q -> q.bool(b -> {
+                b.filter(f -> f.term(t -> t
+                        .field("productStatus.keyword")
+                        .value("active")
+                ));
+
+                // Loại trừ các sản phẩm đã có trong recommend
+                if (!finalRecommendProductIds1.isEmpty()) {
+                    b.mustNot(mn -> mn.terms(t -> t
+                            .field("productId")
+                            .terms(ts -> ts.value(
+                                    finalRecommendProductIds1.stream()
+                                            .map(FieldValue::of)
+                                            .toList()
+                            ))
+                    ));
+                }
+
+                return b;
+            }));
+
+            NativeQuery countNative = NativeQuery.builder().withQuery(countQuery).build();
+            long totalEs = elasticsearchOperations.count(countNative, ProductDocument.class);
+
+            long totalElements = totalRecommend + totalEs;
+
+            return new PageImpl<>(pageContent, pageable, totalElements);
 
         } catch (Exception e) {
             log.error("Error executing Elasticsearch query", e);
+
+            // Fallback: chỉ trả về recommend nếu có lỗi ES
+            if (!filteredRecommend.isEmpty() && offset < filteredRecommend.size()) {
+                int start = (int) Math.max(0, offset);
+                int end = (int) Math.min(offset + size, filteredRecommend.size());
+                List<ProductDocument> fallbackContent = filteredRecommend.subList(start, end);
+                return new PageImpl<>(fallbackContent, pageable, filteredRecommend.size());
+            }
+
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
     }
 
+    /**
+     * Helper method để kiểm tra sản phẩm có thỏa mãn search criteria không
+     */
+    private boolean matchesSearchCriteria(ProductDocument product, String keyword,
+                                          BigDecimal minPrice, BigDecimal maxPrice, List<String> tags) {
+        // Kiểm tra keyword
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String productTitle = product.getProductTitle();
+            if (productTitle == null || !productTitle.toLowerCase().contains(keyword.toLowerCase())) {
+                return false;
+            }
+        }
 
-    // KHÔNG đổi sort, KHÔNG thêm class
-    private void enrichSoldCount(List<ProductDocument> docs) {
-        List<Long> ids = docs.stream()
-                .map(ProductDocument::getProductId)
-                .filter(Objects::nonNull)
-                .toList();
+        // Kiểm tra price range
+        if (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal productPrice = product.getProductPrice();
+            if (productPrice == null || productPrice.compareTo(minPrice) < 0) {
+                return false;
+            }
+        }
 
-        Map<Long, Long> soldMap = Collections.emptyMap();
-        if (!ids.isEmpty()) {
-            try {
-                String csv = ids.stream().map(String::valueOf).collect(Collectors.joining(","));
-                String statusesCsv = "delivered,shipped,packed";
-                Map<String, Long> raw = orderServiceProxy.getSoldCounts(csv, null, statusesCsv);
+        if (maxPrice != null && maxPrice.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal productPrice = product.getProductPrice();
+            if (productPrice == null || productPrice.compareTo(maxPrice) > 0) {
+                return false;
+            }
+        }
 
-                Map<Long, Long> converted = new HashMap<>();
-                if (raw != null) {
-                    for (Map.Entry<String, Long> e : raw.entrySet()) {
-                        try {
-                            converted.put(Long.valueOf(e.getKey()), e.getValue() == null ? 0L : e.getValue());
-                        } catch (NumberFormatException ignore) {}
-                    }
+        // Kiểm tra tags
+        if (tags != null && !tags.isEmpty()) {
+            List<String> productTags = Collections.singletonList(product.getTags());
+            if (productTags == null || productTags.isEmpty()) {
+                return false;
+            }
+
+            // Kiểm tra có ít nhất 1 tag trùng khớp
+            boolean hasMatchingTag = false;
+            for (String searchTag : tags) {
+                if (searchTag != null && productTags.contains(searchTag)) {
+                    hasMatchingTag = true;
+                    break;
                 }
-                soldMap = converted;
-            } catch (Exception ignore) {
-                soldMap = Collections.emptyMap();
+            }
+            if (!hasMatchingTag) {
+                return false;
             }
         }
 
-        for (ProductDocument doc : docs) {
-            Long pid = doc.getProductId();
-            if (pid != null) {
-                doc.setSoldCount(soldMap.getOrDefault(pid, 0L));
-            }
-        }
+        return true;
     }
+
 
 
     @Override
     public Page<ProductDocument> searchProductRecommend(RequestRecommend request) {
         log.info("🔐 Bắt đầu tìm kiếm sản phẩm đề xuất cho accessToken = {}", request.getAccessToken());
+
+        // 1. Lấy ID người dùng từ accessToken
         Long idUser = userServiceProxy.findUserIdByAccessToken(request.getAccessToken());
         log.info("👤 ID người dùng lấy được: {}", idUser);
+
+        // 2. Gọi sang recommend-service để lấy danh sách asin
         List<String> asinList = recommendServiceProxy.getAllRecommendByUser(idUser);
         log.info("📦 Danh sách ASIN ban đầu từ recommend-service: {}", asinList);
+
+        // 3. Làm sạch ASIN (nếu cần)
         List<String> cleanedAsinList = asinList.stream()
                 .flatMap(asin -> Arrays.stream(asin.replaceAll("\"", "").split(",")))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
         log.info("✅ Danh sách ASIN sau khi làm sạch: {}", cleanedAsinList);
+
+        // 4. Nếu danh sách trống → trả về rỗng
         if (cleanedAsinList.isEmpty()) {
             log.warn("⚠️ Không có sản phẩm nào để recommend cho userId {}", idUser);
             return new PageImpl<>(Collections.emptyList(), PageRequest.of(request.getPage(), request.getSize()), 0);
         }
+
+        // 5. Tạo Elasticsearch query
         Query esQuery = Query.of(q -> q.bool(b ->
                 b.filter(f -> f.terms(t -> t
                         .field("asin")

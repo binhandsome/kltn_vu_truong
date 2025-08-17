@@ -7,6 +7,7 @@ import com.kltnbe.productservice.dtos.req.ProductRequestDTO;
 import com.kltnbe.productservice.dtos.req.SizeRequest;
 import com.kltnbe.productservice.dtos.res.EvaluateResponse;
 import com.kltnbe.productservice.dtos.res.ProductResponse;
+import com.kltnbe.productservice.dtos.res.ResponseProduct;
 import com.kltnbe.productservice.entities.Color;
 import com.kltnbe.productservice.entities.MoreProductInfo;
 import com.kltnbe.productservice.entities.Product;
@@ -78,4 +79,5 @@ Page<ProductResponse> searchProductsByStore(Long storeId, StoreProductFilter fil
     List<ProductSuggestionDto> suggest(String q, int limit);
     List<EvaluateResponse> getEvaluatesPublicByAsin(String asin);
     Map<String, EvaluateSummaryDTO> getEvaluateSummary(List<String> asins);
+    List<ResponseProduct> listProductTop20();
 }

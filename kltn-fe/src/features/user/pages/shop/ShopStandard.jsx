@@ -75,39 +75,20 @@ function ShopStandard({ products }) {
     }
   };
   const API_SEARCH = process.env.REACT_APP_API_SEARCH || "http://localhost:8085";
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data } = await axios.get(`${API_SEARCH}/api/search/top-sellers`, {
-          params: {
-            size: 20,
-            statuses: 'delivered,shipped,packed',
-          }
-        });
-        if (!cancelled) {
-          setBestSellers(Array.isArray(data) ? data : []);
-          setBestIndex(0);
-        }
-      } catch (e) {
-        if (!cancelled) setBestSellers([]);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
-  // ===== Fallback (chỉ dùng khi API không trả được gì)
-  useEffect(() => {
-    if (bestSellers.length === 0 && product?.length) {
-      const top = [...product]
-        .filter(p => p && (p.soldCount ?? 0) >= 0)
-        .sort((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
-        .slice(0, 20);
-      setBestSellers(top);
-      setBestIndex(0);
+
+useEffect(() => {
+  const getListTop20Product = async () => {
+    try {
+      const reponse = await axios.get("http://localhost:8083/api/products/productListTop20" , {
+      })
+      setBestSellers(reponse.data);
+    }catch(error) {
+      console.log(error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product, bestSellers.length]);
+  }
+  getListTop20Product();
+},[])
 
   // ===== Card tái dùng
   const renderProductCard = (p) => {
@@ -1113,7 +1094,10 @@ function ShopStandard({ products }) {
                         <button
                           type="button"
                           className="btn btn-light shadow-sm position-absolute"
-                          style={{ left: 8, top: '50%', transform: 'translateY(-50%)', borderRadius: '50%' }}
+                          style={{ backgroundColor: 'gray',left: 8, top: '50%', transform: 'translateY(-50%)', borderRadius: '50%',    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    padding: 0 }}
                           onClick={() => setBestIndex(i => Math.max(0, i - 1))}
                           disabled={bestIndex <= 0}
                           aria-label="Prev"
@@ -1127,7 +1111,10 @@ function ShopStandard({ products }) {
                         <button
                           type="button"
                           className="btn btn-light shadow-sm position-absolute"
-                          style={{ right: 8, top: '50%', transform: 'translateY(-50%)', borderRadius: '50%' }}
+                          style={{backgroundColor: 'gray', right: 8, top: '50%', transform: 'translateY(-50%)', borderRadius: '50%',    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    padding: 0 }}
                           onClick={() => setBestIndex(i =>
                             Math.min(i + 1, Math.max(0, bestSellers.length - bestVisible))
                           )}

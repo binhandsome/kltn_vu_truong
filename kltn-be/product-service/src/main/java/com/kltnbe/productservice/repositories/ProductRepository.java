@@ -192,4 +192,7 @@ List<CategoryCountDTO> countProductTypeByStore(@Param("storeId") Long storeId);
         """, nativeQuery = true)
     List<ProductSuggestionProjection> searchFullText(@Param("q") String booleanModeQuery,
                                                      @Param("limit") int limit);
+    List<Product> findTop20ByOrderByQuantitySoldDesc();
+
+
 }
