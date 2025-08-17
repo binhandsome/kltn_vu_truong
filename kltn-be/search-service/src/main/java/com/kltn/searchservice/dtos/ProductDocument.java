@@ -13,18 +13,14 @@ import java.math.BigDecimal;
 public class ProductDocument {
 
     @Id
-    @Field(type = FieldType.Long)
+    @Field(type = FieldType.Long, name = "productId")
     private Long productId;
-
     @Field(type = FieldType.Keyword)
     private String asin;
-
     @Field(type = FieldType.Text)
     private String productTitle;
-
     @Field(type = FieldType.Text)
     private String description;
-
     @Field(type = FieldType.Double)
     private BigDecimal productPrice;
     private String productThumbnail;

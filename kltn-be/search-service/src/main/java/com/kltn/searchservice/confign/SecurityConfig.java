@@ -31,7 +31,6 @@ public class SecurityConfig {
 //                        .requestMatchers("/api/auth/checkUsernameExists").hasRole("USER") // Sửa cú pháp, thêm /
                                 .requestMatchers("/api/search/searchAdvanceAdmin").hasRole("ADMIN")
                                 .requestMatchers("/api/search/**").permitAll()
-                        // Endpoint công khai.anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

@@ -16,4 +16,7 @@ public interface RecommendService {
     String[] findRecommendByAsin(String asin);
     RecommendResponse recommendNewProduct(RecommendNewReq req);
     void saveAsinRecommendation(RequestRecommend requestRecommend);
+    List<String> getAllAsinRecommendHisTory(Long authId);
+    String saveHistoryUserEvaluate(Long authId, String asin);
+    List<String> getAllHistoryUserEvaluate(Long authId);
 }

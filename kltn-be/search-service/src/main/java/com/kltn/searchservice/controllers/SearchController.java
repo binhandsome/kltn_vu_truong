@@ -78,9 +78,10 @@ public class SearchController {
         }
     }
     @GetMapping("/searchAdvance")
-    public ResponseEntity<SearchResponse<ProductDocument>> searchProductAdvance(@RequestParam(required = false) String keyword, @RequestParam(required = false) BigDecimal minPrice, @RequestParam(required = false) BigDecimal maxPrice,@RequestParam(required = false) List<String> tags,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+    public ResponseEntity<SearchResponse<ProductDocument>> searchProductAdvance(@RequestParam(required = false) String keyword, @RequestParam(required = false) BigDecimal minPrice, @RequestParam(required = false) BigDecimal maxPrice,@RequestParam(required = false) List<String> tags,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @AuthenticationPrincipal CustomUserDetails customUserDetails){
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDocument> resultPage = searchService.searchAdvanced(keyword,minPrice, maxPrice,tags,pageable);
+        Long authId = (customUserDetails != null ? customUserDetails.getAuthId() : null );
+        Page<ProductDocument> resultPage = searchService.searchAdvanced(keyword,minPrice, maxPrice,tags,pageable, authId);
         SearchResponse<ProductDocument> response = new SearchResponse<>();
         response.setContent(resultPage.getContent());
         response.setPageNumber(resultPage.getNumber());

@@ -8,8 +8,10 @@ import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
 import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import com.kltnbe.recommendservice.services.RecommendService;
+import com.kltnbe.security.utils.CustomUserDetails;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -29,6 +31,16 @@ public class RecommendController {
     List<String> getAllRecommendByUser(Long idUser) {
         return recommendService.getAllAsinRecommend(idUser);
     }
+    @GetMapping("/getAllRecommendAsinsHistoryUser")
+    List<String> getAllRecommendByUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long authId = customUserDetails.getAuthId();
+        return recommendService.getAllAsinRecommendHisTory(authId);
+    }
+    @GetMapping("/getAllRecommendAsinsHistory")
+    List<String> getAllRecommendByUserId(@RequestParam Long authId) {
+        return recommendService.getAllAsinRecommendHisTory(authId);
+    }
+
     @GetMapping("/findRecommendByAsin")
    String[] findRecommendByAsin(String asin) {
         return recommendService.findRecommendByAsin(asin);
@@ -64,5 +76,13 @@ public class RecommendController {
     public ResponseEntity<?>  saveAsinRecommend(@RequestBody RequestRecommend requestRecommend) {
         recommendService.saveAsinRecommendation(requestRecommend);
         return ResponseEntity.ok("Saved successfully");
+    }
+    @GetMapping("/saveHistoryEvaluate")
+    public ResponseEntity<?>  saveHistoryEvaluate(@RequestParam Long authId, @RequestParam String asin) {
+        return ResponseEntity.ok(recommendService.saveHistoryUserEvaluate(authId, asin));
+    }
+    @GetMapping("/getListHistoryEvaluate")
+    public List<String> getListHistoryEvaluate(@RequestParam Long authId) {
+        return recommendService.getAllHistoryUserEvaluate(authId);
     }
 }

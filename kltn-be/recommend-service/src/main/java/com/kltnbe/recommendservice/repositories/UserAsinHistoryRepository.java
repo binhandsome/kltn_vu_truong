@@ -8,4 +8,5 @@ import java.util.List;
 public interface UserAsinHistoryRepository extends JpaRepository<UserAsinHistory, Long> {
     boolean existsByUserIdAndAsin(Long userId, String asin);
     List<UserAsinHistory> findTop10ByUserIdOrderByCreatedAtDesc(Long userId);
+
 }

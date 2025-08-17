@@ -24,7 +24,7 @@ function ShopStandard({ products }) {
   const [listCart, setListCart] = useState([]);
   const [salesRankCount, setSalesRankCount] = useState([]);
   const [productTypeCount, setProductTypeCount] = useState([]);
-  const [tags, setTags] = useState([]);
+  const [tags, setTags] = useState(['Women', 'Men', 'Boy', 'Unisex', 'Girl']);
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -291,6 +291,7 @@ function ShopStandard({ products }) {
   const fetchProductsData = useCallback(
     async (page, size, searchTerm = '', minPrice = null, maxPrice = null, tags = []) => {
       setLoading(true);
+      const token = localStorage.getItem("accessToken");
       try {
         const params = {
           page,
@@ -310,9 +311,11 @@ function ShopStandard({ products }) {
         if (tags.length > 0) {
           params.tags = tags.join(',');
         }
-
         const response = await axios.get('http://localhost:8085/api/search/searchAdvance', {
           params,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
 
         console.log('🔍 Input:', { searchTerm, minPrice, maxPrice, tags });
@@ -360,7 +363,6 @@ function ShopStandard({ products }) {
       const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
       setSalesRankCount(response.data.salesRankCount);
       setProductTypeCount(response.data.productTypeCount);
-      setTags(response.data.tags);
     } catch (error) {
       console.error('Không lấy được danh mục:', error);
     }
@@ -829,20 +831,22 @@ function ShopStandard({ products }) {
                         {/* Tag Cloud */}
                         <div className="widget widget_tag_cloud" >
                           <h6 className="widget-title">Tags</h6>
-                          <div className="tagcloud">
-                            {Object.entries(tags).length > 0 ? (
-                              Object.entries(tags).map(([type, count]) => (
+                          {tags.length > 0 ? (
+                            tags.map((tag) => {
+                              const isSelected = selectedTags.includes(tag);
+
+                              return (
                                 <span
-                                  key={type}
-                                  onClick={() => handleTagToggle(type)}
+                                  key={tag}
+                                  onClick={() => handleTagToggle(tag)}
                                   onMouseEnter={(e) => {
-                                    if (!selectedTags.includes(type)) {
+                                    if (!isSelected) {
                                       e.currentTarget.style.backgroundColor = '#000';
                                       e.currentTarget.style.color = '#fff';
                                     }
                                   }}
                                   onMouseLeave={(e) => {
-                                    if (!selectedTags.includes(type)) {
+                                    if (!isSelected) {
                                       e.currentTarget.style.backgroundColor = '#fff';
                                       e.currentTarget.style.color = '#000';
                                     }
@@ -854,19 +858,19 @@ function ShopStandard({ products }) {
                                     border: '1px solid #000',
                                     borderRadius: '12px',
                                     display: 'inline-block',
-                                    backgroundColor: selectedTags.includes(type) ? '#000' : '#fff',
-                                    color: selectedTags.includes(type) ? '#fff' : '#000',
+                                    backgroundColor: isSelected ? '#000' : '#fff',
+                                    color: isSelected ? '#fff' : '#000',
                                     transition: 'all 0.2s ease',
                                   }}
                                 >
-                                  {type}
+                                  {tag}
                                 </span>
+                              );
+                            })
+                          ) : (
+                            <p>Đang tải tags...</p>
+                          )}
 
-                              ))
-                            ) : (
-                              <p>Đang tải tags...</p>
-                            )}
-                          </div>
                         </div>
                         <a
                           href="#"
@@ -1385,8 +1389,8 @@ function ShopStandard({ products }) {
                                       >
                                         <i
                                           className={`icon feather ${isProductInWishlist(product.asin)
-                                              ? 'icon-heart-on'
-                                              : 'icon-heart'
+                                            ? 'icon-heart-on'
+                                            : 'icon-heart'
                                             }`}
                                           style={{
                                             fontSize: '20px',
@@ -1469,9 +1473,13 @@ function ShopStandard({ products }) {
                                 <div className="shop-card style-1">
                                   <div className="dz-media">
                                     <img
-                                      src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${product.productThumbnail}`}
-                                      alt={product.productTitle}
-                                    />
+                                      src={
+                                        product.productThumbnail.startsWith('http')
+                                          ? product.productThumbnail
+                                          : product.productThumbnail.endsWith('.jpg')
+                                            ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${product.productThumbnail}`
+                                            : `/uploads/${product.productThumbnail}`
+                                      } />
                                     <div className="shop-meta">
                                       {/* ✅ Quick View mở modal thủ công, tránh lỗi backdrop */}
                                       <div
@@ -1521,8 +1529,8 @@ function ShopStandard({ products }) {
                                         >
                                           <i
                                             className={`icon feather ${isProductInWishlist(product.asin)
-                                                ? 'icon-heart-on'
-                                                : 'icon-heart'
+                                              ? 'icon-heart-on'
+                                              : 'icon-heart'
                                               }`}
                                             style={{
                                               fontSize: '20px',
@@ -1682,8 +1690,14 @@ function ShopStandard({ products }) {
                                       >
                                         <i className="feather icon-maximize dz-maximize top-right" />
                                       </a>
-                                      <img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`} alt="image" />
-                                    </div>
+                                      <img
+                                        src={
+                                          selectedProduct.productThumbnail.startsWith('http')
+                                            ? selectedProduct.productThumbnail
+                                            : selectedProduct.productThumbnail.endsWith('.jpg')
+                                              ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`
+                                              : `/uploads/${selectedProduct.productThumbnail}`
+                                        } />				                                    </div>
                                   </div>
                                 )}
                               </div>
@@ -1692,10 +1706,14 @@ function ShopStandard({ products }) {
                               <div className="swiper-wrapper">
                                 {selectedProduct !== null && (
                                   <div className="swiper-slide">
-                                    <img
-                                      src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${selectedProduct.productThumbnail}`}
-                                      alt="image"
-                                    />
+                                     <img
+                                        src={
+                                          selectedProduct.productThumbnail.startsWith('http')
+                                            ? selectedProduct.productThumbnail
+                                            : selectedProduct.productThumbnail.endsWith('.jpg')
+                                              ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`
+                                              : `/uploads/${selectedProduct.productThumbnail}`
+                                        } />				 
                                   </div>
                                 )}
                               </div>

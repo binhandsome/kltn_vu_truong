@@ -373,7 +373,6 @@ try {
   }, [selectedProduct, quantity]);
 
   useEffect(() => {
-    getAllCategories();
     fetchWishlist();
     getCartProduct();
 
@@ -710,40 +709,7 @@ const StarRating = ({ value = 0 }) => (
           <h4 className="mb-3">Danh mục</h4>
           <div className="row">
   <div className="col-xl-12">
-    <div className="swiper category-swiper">
-      <div className="swiper-wrapper">
-        {salesRankCategories.length > 0 ? (
-          salesRankCategories.map((item) => (
-            <div className="swiper-slide" key={item.category}>
-              <a
-                href={`/user/shop/shopWithCategory?salesRank=${encodeURIComponent(item.category)}`}
-                className="text-center d-block"
-              >
-                <div className="p-2">
-                  <img
-                    src={
-                      item.thumbnail
-                        ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_100,h_100,c_fill/imgProduct/IMG/${item.thumbnail}`
-                        : `https://via.placeholder.com/100x100?text=${encodeURIComponent(item.category)}`
-                    }
-                    alt={item.category}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/100x100?text=No+Image';
-                    }}
-                    className="img-fluid rounded-circle mb-2"
-                    style={{ width: '80px', height: '80px', objectFit: 'cover' }}
-                  />
-                  <div className="small fw-medium text-dark">{item.category}</div>
-                </div>
-              </a>
-            </div>
-          ))
-        ) : (
-          <p className="px-3">Không có danh mục nào để hiển thị.</p>
-        )}
-      </div>
-    </div>
+
   </div>
 </div>
 
@@ -1504,7 +1470,6 @@ const StarRating = ({ value = 0 }) => (
             src={shopHeader?.avatar || "/assets/images/placeholder.png"}
             alt="shop avatar"
             style={{ width:"100%", height:"100%", objectFit:"cover" }}
-            onError={(e)=>{ e.currentTarget.src="/assets/images/placeholder.png"; }}
           />
         </div>
         <div className="d-flex flex-column">
