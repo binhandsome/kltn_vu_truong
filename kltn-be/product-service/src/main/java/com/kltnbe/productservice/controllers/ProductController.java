@@ -2,6 +2,7 @@ package com.kltnbe.productservice.controllers;
 
 
 import com.kltnbe.productservice.clients.OrderServiceProxy;
+import com.kltnbe.productservice.clients.RecommendServiceProxy;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import com.kltnbe.productservice.clients.UploadServiceProxy;
 import com.kltnbe.productservice.dtos.*;
@@ -13,6 +14,7 @@ import com.kltnbe.productservice.repositories.*;
 import com.kltnbe.productservice.services.AsyncUploadService;
 import com.kltnbe.productservice.services.ProductService;
 import com.kltnbe.productservice.services.ProductVariantService;
+import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,6 +59,8 @@ public class ProductController {
     private final EvaluateProductRepository evaluateProductRepository;
     @Autowired
     private OrderServiceProxy orderServiceProxy;
+    @Autowired
+    private RecommendServiceProxy recommendServiceProxy;
 
     @GetMapping("/getAllProduct")
     public Page<Product> getAllProducts(ProductFileterAll productFileterAll) {
@@ -287,40 +292,42 @@ public class ProductController {
     @PostMapping(value = "/uploadImgToProductEvaluate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadImgToProductEvaluate(
             @RequestPart("data") EvalueUserWithItemOrder req,
-            @RequestPart("files") List<MultipartFile> files) {
-
-        // ✅ 1 order item chỉ tạo 1 evaluate
+             @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         if (evaluateProductRepository.existsByOrderItemId(req.getOrderItemId())) {
             return ResponseEntity.badRequest().body(Map.of("message", "Order item này đã được đánh giá."));
         }
-
+        Long authId = userDetails.getAuthId();
         EvaluateProduct ev = new EvaluateProduct();
         ev.setOrderItemId(req.getOrderItemId());
         ev.setProductAsin(req.getProductAsin());
         ev.setComment(req.getComment());
         ev.setRating(req.getRating());
-        ev.setStatus(0); // PENDING để chờ seller duyệt
-        try { ev.setCreatedAt(LocalDateTime.now()); } catch (Exception ignore) {}
-
+        ev.setStatus(0);
+        try {
+            ev.setCreatedAt(LocalDateTime.now());
+        } catch (Exception ignore) {}
         ev = evaluateProductRepository.save(ev);
-
-        // Giữ nguyên các callback sang OrderService của bạn
         orderServiceProxy.updateStatusEvaluate(ev.getOrderItemId());
         orderServiceProxy.updateEvaluateNumber(req.getOrderItemId(), req.getRating());
-
-        // Đọc bytes trước rồi upload async (giữ nguyên)
+        if (req.getRating() > 3) {
+            recommendServiceProxy.saveHistoryEvaluate(authId, req.getProductAsin());
+        }
         List<byte[]> fileBytesList = new ArrayList<>();
         List<String> filenames = new ArrayList<>();
-        for (MultipartFile f : files) {
-            try {
-                fileBytesList.add(f.getBytes());
-                filenames.add(f.getOriginalFilename());
-            } catch (IOException e) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Lỗi đọc file: " + e.getMessage()));
-            }
-        }
-        asyncUploadService.uploadAndAppendImageUrls(ev, fileBytesList, filenames);
 
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile f : files) {
+                try {
+                    fileBytesList.add(f.getBytes());
+                    filenames.add(f.getOriginalFilename());
+                } catch (IOException e) {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("error", "Lỗi đọc file: " + e.getMessage()));
+                }
+            }
+            asyncUploadService.uploadAndAppendImageUrls(ev, fileBytesList, filenames);
+        }
         return ResponseEntity.ok(Map.of("message", "Đã nhận đánh giá, chờ duyệt!"));
     }
 

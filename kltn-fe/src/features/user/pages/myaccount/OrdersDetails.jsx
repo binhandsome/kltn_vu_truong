@@ -2,8 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
-import QuickViewModal from '../../components/home/QuickViewModal';
-import ScrollTopButton from '../../layout/ScrollTopButton';
 import { Link } from 'react-router-dom';
 import { getOrderDetails } from '../../apiService/orderService';
 import { getUserProfileById } from '../../apiService/userService';
@@ -62,6 +60,11 @@ function OrdersDetails() {
 	const [selectedProduct, setSelectedProduct] = useState(null);
 	const [comment, setComment] = useState("");
 	const [rating, setRating] = useState(0);
+	  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 	const [images, setImages] = useState([]);
 	const [priceDiscount, setPriceDiscount] = useState(0);
 const { state } = useLocation();
@@ -372,6 +375,7 @@ const getMyOrderDetail = async () => {
 };
 
 const addEvaluate = async () => {
+  const token = localStorage.getItem('accessToken');
   try {
     const formData = new FormData();
     const data = {
@@ -380,33 +384,44 @@ const addEvaluate = async () => {
       comment,
       rating,
     };
-    formData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(data)], { type: "application/json" })
+    );
 
-    images.forEach((file) => {
-      formData.append("files", file);
-    });
+    // ✅ chỉ append nếu có ảnh
+    if (images && images.length > 0) {
+      images.forEach((file) => {
+        formData.append("files", file);
+      });
+    }
 
-    const response = await axios.post("http://localhost:8083/api/products/uploadImgToProductEvaluate", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await axios.post(
+      "http://localhost:8083/api/products/uploadImgToProductEvaluate",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     console.log("✅ Success:", response.data);
     setToastMessage("Đã đánh giá thành công");
     setShowToast(true);
-    setComment('');
+    setComment("");
     setRating(0);
     setImages([]);
     setPreviewImages([]);
-  handleCloseEvaluate();
-
-  getMyOrderDetail();
- } catch (error) {
+    handleCloseEvaluate();
+    getMyOrderDetail();
+  } catch (error) {
     console.error("Error submitting evaluation:", error);
     alert("Failed to submit evaluation. Please try again.");
   }
 };
+
 
 const handleSubmit = (e) => {
   e.preventDefault();
@@ -902,8 +917,7 @@ const CHILD_STATUS_LABELS = {
 												</div>
 											</div>
 											<div className="content-btn m-b15">
-												{/* <a  className="btn btn-secondary me-xl-3 me-2 m-b15 btnhover20" onClick={() => handleOpen(order)}>Sửa Địa Chỉ</a> */}
-												{/* <a href="product-default.html" className="btn btn-outline-secondary m-b15 me-xl-3 me-2 btnhover20">Trả Đơn Hàng</a> */}
+											
 												{orderStore.status === "failed" ? (
 													<button
 														onClick={() => handleReorder(orderStore.orderItemResponses)}
@@ -977,7 +991,7 @@ const CHILD_STATUS_LABELS = {
 																				{isActive && <span className="arrow-indicator">➤</span>}
 																			</div>
 																			<div className="timeline-box">
-																				<a className="timeline-panel" href="javascript:void(0);">
+																				<a className="timeline-panel" href="">
 																					<h6 className="mb-0">
 																						{item.label}{" "}
 																						{isActive && (
@@ -1112,115 +1126,7 @@ const CHILD_STATUS_LABELS = {
 															<span>Order Total</span>
 															<h6>${orderStore.discountedSubtotal}</h6>
 														</div>
-{loading ? (
-  <p>Đang tải gợi ý...</p>
-) : (
-  (() => {
-    // 1. Lọc orderItemResponses theo điều kiện evaluateNumber & isEvaluate
-    const filteredItems = (orderStore?.orderItemResponses || []).filter(
-      item =>
-        (item.evaluateNumber === 4 || item.evaluateNumber === 5) &&
-        item.isEvaluate === 1
-    );
 
-    // 2. Lấy danh sách asin từ item đã lọc
-    const uniqueAsins = [...new Set(filteredItems.map(item => item.asin))];
-
-    const allProducts = [];
-    const seenProducts = new Set();
-
-    // 3. Ghép gợi ý theo asin đã lọc
-    uniqueAsins.forEach(asin => {
-      if (recommendations[asin]) {
-        recommendations[asin].forEach(product => {
-          if (!seenProducts.has(product.asin)) {
-            seenProducts.add(product.asin);
-            allProducts.push(product);
-          }
-        });
-      }
-    });
-
-    // 4. Lấy top 10
-    const topProducts = allProducts.slice(0, 10);
-
-    return topProducts.length > 0 ? (
-      <div className="mb-4">
-        <h6>Top 10 sản phẩm mua cùng</h6>
-        <Swiper
-          modules={[Navigation, Pagination]}
-          spaceBetween={20}
-          slidesPerView={5}
-          navigation
-          pagination={{ clickable: true }}
-          breakpoints={{
-            320: { slidesPerView: 2, spaceBetween: 10 },
-            768: { slidesPerView: 3, spaceBetween: 15 },
-            1024: { slidesPerView: 5, spaceBetween: 20 },
-          }}
-        >
-          {topProducts.map((product, idx) => (
-            <SwiperSlide key={idx}>
-              <div className="shop-card style-1">
-                <div className="dz-media">
-                  <img
-                    src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_400,h_400/imgProduct/IMG/${product.productThumbnail}`}
-                    alt="image"
-                  />
-                  <div className="shop-meta">
-                    <div
-                      className="btn btn-secondary btn-md btn-rounded"
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setTimeout(() => {
-                          const modal = new window.bootstrap.Modal(
-                            document.getElementById('exampleModal')
-                          );
-                          modal.show();
-                        }, 100);
-                      }}
-                    >
-                      <i className="fa-solid fa-eye d-md-none d-block" />
-                      <span className="d-md-block d-none">Quick View</span>
-                    </div>
-                    <div className="btn btn-primary meta-icon dz-wishicon">
-                      <i className="icon feather icon-heart dz-heart" />
-                      <i className="icon feather icon-heart-on dz-heart-fill" />
-                    </div>
-                    <div className="btn btn-primary meta-icon dz-carticon">
-                      <i className="flaticon flaticon-basket" />
-                      <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                    </div>
-                  </div>
-                </div>
-                <div className="dz-content">
-                  <h5 className="title">
-                    <a href={`/user/productstructure/ProductDetail?asin=${product.asin}`}>
-                      {product.productTitle}
-                    </a>
-                  </h5>
-                  <h5 className="price">
-                    $
-                    {(
-                      product.productPrice -
-                      (product.productPrice * (product.percentDiscount / 100))
-                    ).toFixed(2)}
-                  </h5>
-                </div>
-                <div className="product-tag">
-                  <span className="badge">Get {product.percentDiscount}% Off</span>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
-    ) : (
-      <p>Không có gợi ý nào.</p>
-    );
-  })()
-)}
 								</div>
 													{/* Thêm tab-pane mới cho Gợi Ý Sau Mua */}
 													<div
@@ -1420,7 +1326,7 @@ const CHILD_STATUS_LABELS = {
 																			</li>
 																		</ul>
 																		<span className="text-secondary me-2">4.7 Rating</span>
-																		<a href="javascript:void(0);">(5 customer reviews)</a>
+																		<a href="">(5 customer reviews)</a>
 																	</div>
 																</div>
 															</div>
@@ -1595,9 +1501,7 @@ const CHILD_STATUS_LABELS = {
 				</div>
 
 
-				{/* Footer (đã được xử lý trong App.js) */}
-				<ScrollTopButton />
-				<QuickViewModal />
+
 				{showToast && (
 					<div style={{
 						position: 'fixed',

@@ -6,10 +6,12 @@ import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
 import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
 import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
+import com.kltnbe.recommendservice.entities.SaveHistoryEvaluate;
 import com.kltnbe.recommendservice.entities.SaveHistorySearchImage;
 import com.kltnbe.recommendservice.entities.UserAsinHistory;
 import com.kltnbe.recommendservice.repositories.AsinRecommendationRepository;
 import com.kltnbe.recommendservice.repositories.SaveHistorySearchImageRepository;
+import com.kltnbe.recommendservice.repositories.SaveHistoryUserEvaluateRepository;
 import com.kltnbe.recommendservice.repositories.UserAsinHistoryRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,7 @@ public class RecommendServiceImpl implements RecommendService {
     private final UserServiceProxy userServiceProxy;
     private final AsinRecommendationRepository asinRecommendationRepository;
     private final SaveHistorySearchImageRepository  saveHistorySearchImageRepository;
+    private final SaveHistoryUserEvaluateRepository saveHistoryUserEvaluateRepository;
     @Override
     public ResponseEntity<?> saveUserAsinHistory(UserAsinHistoryRequest request) {
         Long idUser = userServiceProxy.findUserIdByAccessToken(request.getAccessToken());
@@ -95,8 +98,42 @@ public class RecommendServiceImpl implements RecommendService {
     }
 
     @Override
-    public String saveHistoryUserEvaluate(Long authId, List<String> asin) {
-        return "";
+    public String saveHistoryUserEvaluate(Long authId, String asin) {
+        SaveHistoryEvaluate saveHistoryEvaluate = new  SaveHistoryEvaluate();
+        saveHistoryEvaluate.setAsin(asin);
+        saveHistoryEvaluate.setAuthId(authId);
+        saveHistoryUserEvaluateRepository.save(saveHistoryEvaluate);
+        return "Thanh cong";
+    }
+
+    @Override
+    public List<String> getAllHistoryUserEvaluate(Long authId) {
+       List<SaveHistoryEvaluate> saveHistoryEvaluates = saveHistoryUserEvaluateRepository.findTop5ByAuthIdOrderByCreatedAtDesc(authId);
+       List<String> asinList = new ArrayList<>();
+       for (SaveHistoryEvaluate saveHistoryEvaluate : saveHistoryEvaluates){
+           asinList.add(saveHistoryEvaluate.getAsin());
+       }
+        List<AsinRecommendation> recommendations = asinRecommendationRepository.findByAsinIn(asinList);
+        System.out.print("list ngu si" + recommendations);
+        Set<String> asinSet = new HashSet<>();
+        for (AsinRecommendation recommendation : recommendations){
+            if (recommendation.getRecommendAsin() != null) {
+                String[] asins = recommendation.getRecommendAsin().split(",");
+                System.out.println(Arrays.toString(asins) + "test Asin");
+                for (String asin : asins) {
+                    String trimmed = asin.trim();
+                    System.out.println(trimmed + "trimmed la");
+                    if (!trimmed.isEmpty()) {
+                        asinSet.add(trimmed);
+                    }
+                }
+            }
+        }
+        System.out.print("set cua tao la" + asinSet);
+        List<String> result = new ArrayList<>(asinSet);
+        System.out.print("result la" + result);
+        Collections.shuffle(result);
+        return result;
     }
 
     public String[] findRecommendByAsin(String asin) {
@@ -105,7 +142,6 @@ public class RecommendServiceImpl implements RecommendService {
         String[] result = recommendAsin.split(",");
         return result;
     }
-
     public RecommendResponse recommendNewProduct(RecommendNewReq req) {
         // POST /recommend_new_product
         Mono<RecommendResponse> mono = pythonWebClient.post()

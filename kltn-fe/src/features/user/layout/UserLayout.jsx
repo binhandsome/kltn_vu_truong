@@ -1,16 +1,10 @@
-// src/layout/UserLayout.jsx
 import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
-
 import UserHeader from './UserHeader';
 import UserFooter from './UserFooter';
+import 'mutation-observer';
 
-// ===========================
-// UserLayout.jsx — hardened
-// ===========================
-
-// ---- CSS assets ----
 const cssFiles = [
   '/assets/user/icons/feather/css/iconfont.css',
   '/assets/user/icons/fontawesome/css/all.min.css',
@@ -31,255 +25,129 @@ const cssFiles = [
   '/assets/user/css/custom-fix.css',
 ];
 
-// ---- JS assets (order matters) ----
 const jsFiles = [
-  // Core
   '/assets/user/js/jquery.min.js',
-  '/assets/user/vendor/bootstrap/dist/js/bootstrap.bundle.min.js',
-
-  // Vendors
   '/assets/user/vendor/wow/wow.min.js',
+  '/assets/user/vendor/bootstrap/dist/js/bootstrap.bundle.min.js',
+  '/assets/user/vendor/bootstrap-select/dist/js/bootstrap-select.min.js',
+  '/assets/user/vendor/bootstrap-touchspin/bootstrap-touchspin.js',
+  '/assets/user/vendor/swiper/swiper-bundle.min.js',
+  '/assets/user/vendor/magnific-popup/magnific-popup.js',
   '/assets/user/vendor/imagesloaded/imagesloaded.js',
   '/assets/user/vendor/masonry/masonry-4.2.2.js',
   '/assets/user/vendor/masonry/isotope.pkgd.min.js',
-  '/assets/user/vendor/bootstrap-select/dist/js/bootstrap-select.min.js',
-  '/assets/user/vendor/swiper/swiper-bundle.min.js',
-  '/assets/user/vendor/magnific-popup/magnific-popup.js',
-  '/assets/user/vendor/slick/slick.min.js',
-  '/assets/user/vendor/lightgallery/dist/lightgallery.min.js',
-  '/assets/user/vendor/lightgallery/dist/plugins/thumbnail/lg-thumbnail.min.js',
-  '/assets/user/vendor/lightgallery/dist/plugins/zoom/lg-zoom.min.js',
   '/assets/user/vendor/countdown/jquery.countdown.js',
   '/assets/user/vendor/counter/waypoints-min.js',
   '/assets/user/vendor/counter/counterup.min.js',
   '/assets/user/vendor/wnumb/wNumb.js',
   '/assets/user/vendor/nouislider/nouislider.min.js',
-
-  // Charts
+  '/assets/user/vendor/slick/slick.min.js',
+  // Use CDN for UMD version to define global lightGallery and plugins
+  '/assets/user/vendor/lightgallery/dist/lightgallery.min.js',
+  '/assets/user/vendor/lightgallery/dist/plugins/thumbnail/lg-thumbnail.min.js',
+  '/assets/user/vendor/lightgallery/dist/plugins/zoom/lg-zoom.min.js',
   'https://cdn.jsdelivr.net/npm/apexcharts',
-
-  // Theme core scripts (KHÔI PHỤC để giữ đúng kích thước/behavior gốc)
   '/assets/user/js/dz.carousel.js',
   '/assets/user/js/dz.ajax.js',
-
-  // Custom theme
   '/assets/user/js/custom.min.js',
   '/assets/user/js/dashbord-account.js',
 ];
 
-// ---- One-time loaders ----
-const loadedCSS = new Set();
-const loadedJS = new Map(); // src -> Promise<void>
-
-function loadCSSOnce(href) {
-  if (typeof document === 'undefined') return;
-  if (loadedCSS.has(href)) return;
-  if (!document.querySelector(`link[rel="stylesheet"][href="${href}"]`)) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
-  }
-  loadedCSS.add(href);
-}
-
-function loadScriptOnce(src) {
-  if (typeof document === 'undefined') return Promise.resolve();
-  if (loadedJS.has(src)) return loadedJS.get(src);
-
-  const existing = document.querySelector(`script[src="${src}"]`);
-  if (existing) {
-    const p = new Promise((resolve) => {
-      if (existing.dataset.__loaded === '1') resolve();
-      else existing.addEventListener('load', () => resolve(), { once: true });
-    });
-    loadedJS.set(src, p);
-    return p;
-  }
-
-  const p = new Promise((resolve) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.async = false; // giữ thứ tự
-    s.defer = false;
-    s.dataset.__loaded = '0';
-    s.addEventListener('load', () => {
-      s.dataset.__loaded = '1';
-      resolve();
-    }, { once: true });
-    s.addEventListener('error', (err) => {
-      console.warn('[UserLayout] Failed to load script:', src, err);
-      resolve(); // không chặn flow
-    }, { once: true });
-    document.body.appendChild(s);
-  });
-  loadedJS.set(src, p);
-  return p;
-}
-
-// ---- Bootstrap patches ----
-function patchBootstrapOnce() {
-  if (typeof window === 'undefined' || !window.bootstrap) return;
-
-  // 1) Guard SelectorEngine.findOne (fix Illegal invocation)
-  try {
-    const SE = window.bootstrap.SelectorEngine;
-    if (SE && !SE.__patched) {
-      const origFindOne = SE.findOne.bind(SE);
-      SE.findOne = function (selector, root) {
-        if (!root || !(root.nodeType === 1 || root.nodeType === 9)) root = document;
-        try { return origFindOne(selector, root); } catch (e) {
-          console.warn('[BS patch] findOne crashed:', selector, e);
-          return null;
-        }
-      };
-      SE.__patched = true;
-      requestAnimationFrame(() => {
-        document.querySelectorAll('[data-bs-target]').forEach((el) => {
-          const sel = el.getAttribute('data-bs-target');
-          try {
-            if (!sel || !document.querySelector(sel)) {
-              console.warn('[BS check] Bad data-bs-target:', sel, el);
-            }
-          } catch {
-            console.warn('[BS check] Invalid selector in data-bs-target:', sel, el);
-          }
-        });
-      });
-    }
-  } catch (e) {
-    console.warn('[UserLayout] SelectorEngine patch failed', e);
-  }
-
-  // 2) Guard Modal backdrop (fix QuickView lỗi 'backdrop' undefined)
-  try {
-    const M = window.bootstrap.Modal;
-    if (M && !M.__patchedBackdrop) {
-      const _init = M.prototype._initializeBackdrop;
-      M.prototype._initializeBackdrop = function (...args) {
-        this._config = this._config || {};
-        if (typeof this._config.backdrop === 'undefined') this._config.backdrop = true;
-        return _init ? _init.apply(this, args) : undefined;
-      };
-      const _show = M.prototype.show;
-      M.prototype.show = function (...args) {
-        if (!this._element || !(this._element instanceof Element)) {
-          console.warn('[BS patch] Modal.show with invalid element -> skip');
-          return;
-        }
-        this._config = this._config || { backdrop: true };
-        return _show.apply(this, args);
-      };
-      M.__patchedBackdrop = true;
-    }
-  } catch (e) {
-    console.warn('[UserLayout] Modal backdrop patch failed', e);
-  }
-}
-
-// ---- Swiper helpers ----
-function safeInitSwiper(selector, options) {
-  if (typeof window === 'undefined' || !window.Swiper) return null;
-  const el = document.querySelector(selector);
-  if (!el) return null;
-
-  if (el.swiper && !el.swiper.destroyed) {
-    try { el.swiper.destroy(true, true); } catch {}
-    el.swiper = null;
-  }
-
-  let clean = { ...options };
-  if (clean?.pagination?.el && !document.querySelector(clean.pagination.el)) {
-    clean = { ...clean }; delete clean.pagination;
-  }
-  if (clean?.navigation) {
-    const { nextEl, prevEl } = clean.navigation;
-    if (!document.querySelector(nextEl) || !document.querySelector(prevEl)) {
-      clean = { ...clean }; delete clean.navigation;
-    }
-  }
-  if (clean?.thumbs && !clean?.thumbs?.swiper) {
-    clean = { ...clean }; delete clean.thumbs;
-  }
-
-  try {
-    const inst = new window.Swiper(el, clean);
-    el.swiper = inst;
-    return inst;
-  } catch (e) {
-    console.warn('[UserLayout] Swiper init failed for', selector, e);
-    return null;
-  }
-}
-
-function destroyAllSwipers(root = document) {
-  if (typeof document === 'undefined') return;
-  root.querySelectorAll('.swiper').forEach((el) => {
-    if (el.swiper && !el.swiper.destroyed) {
-      try { el.swiper.destroy(true, true); } catch {}
-    }
-    el.swiper = null;
-  });
-}
-
-const tick = () => new Promise((r) => requestAnimationFrame(() => r()));
-
-export default function UserLayout() {
+const UserLayout = () => {
   const location = useLocation();
-  const bootedRef = useRef(false);
-  const inittingRef = useRef(false);
+  const isInitializing = useRef(false);
 
-  // CSS once
-  useEffect(() => { cssFiles.forEach(loadCSSOnce); }, []);
-
+  // Inject CSS once
   useEffect(() => {
-    let cancelled = false;
-
-    const ensureAssets = async () => {
-      if (!bootedRef.current) {
-        for (const src of jsFiles) {
-          // eslint-disable-next-line no-await-in-loop
-          await loadScriptOnce(src);
-          if (src.includes('bootstrap.bundle.min.js')) patchBootstrapOnce();
-        }
-        bootedRef.current = true;
-      } else {
-        patchBootstrapOnce();
+    cssFiles.forEach((href) => {
+      if (!document.querySelector(`link[href="${href}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
       }
+    });
+
+    return () => {
+      // Optional: Cleanup CSS on layout unmount
+      // cssFiles.forEach((href) => {
+      //   const el = document.querySelector(`link[href="${href}"]`);
+      //   if (el) el.remove();
+      // });
+    };
+  }, []);
+
+  // Load JS and initialize Swiper on route change
+  useEffect(() => {
+    const loadScript = (src) =>
+      new Promise((resolve) => {
+        if (document.querySelector(`script[src="${src}"]`)) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = false;
+        script.onload = resolve;
+        script.onerror = (err) => {
+          console.warn(`Failed to load script: ${src}`, err);
+          resolve();
+        };
+        document.body.appendChild(script);
+      });
+
+    const initSwiper = (selector, options) => {
+      if (!window.Swiper) {
+        return null;
+      }
+      const element = document.querySelector(selector);
+      if (!element) {
+        return null;
+      }
+      // Prevent reinitialization if already valid
+      if (element.swiper && typeof element.swiper.destroy === 'function') {
+        return element.swiper;
+      }
+
+      // Dynamically remove pagination config if el doesn't exist
+      if (options.pagination && options.pagination.el) {
+        if (!document.querySelector(options.pagination.el)) {
+          delete options.pagination;
+        }
+      }
+
+      // Dynamically remove navigation config if nextEl or prevEl doesn't exist
+      if (options.navigation) {
+        const next = document.querySelector(options.navigation.nextEl);
+        const prev = document.querySelector(options.navigation.prevEl);
+        if (!next || !prev) {
+          delete options.navigation;
+        }
+      }
+
+      // Dynamically remove thumbs if swiper is null (though already handled in calls)
+      if (options.thumbs && options.thumbs.swiper === null) {
+        delete options.thumbs;
+      }
+
+      const swiperInstance = new window.Swiper(element, options);
+      element.swiper = swiperInstance;
+      return swiperInstance;
     };
 
-    const initCarousels = () => {
-      if (cancelled || inittingRef.current) return;
-      inittingRef.current = true;
+    const loadScriptsAndInitSwiper = async () => {
+      if (isInitializing.current) {
+        return;
+      }
+      isInitializing.current = true;
 
-      // Chỉ init các Swiper nếu có (không đụng Slick của theme)
-      const thumbCfg = {
+      for (const src of jsFiles) {
+        await loadScript(src);
+      }
+
+      // Removed unnecessary setTimeout; useEffect runs after DOM render
+      // Initialize .category-swiper if present
+      initSwiper('.category-swiper', {
         slidesPerView: 4,
-        spaceBetween: 8,
-        direction: 'horizontal',
-        loop: false,
-        freeMode: true,
-        watchSlidesProgress: true,
-        breakpoints: {
-          576: { slidesPerView: 2 },
-          768: { slidesPerView: 3 },
-          992: { slidesPerView: 4 },
-          1200: { slidesPerView: 5 },
-          1500: { slidesPerView: 6 },
-          2000: { slidesPerView: 7 },
-        },
-      };
-      const mainCfg = {
-        slidesPerView: 1,
-        spaceBetween: 10,
-        loop: false,
-        pagination: { el: '.swiper-pagination', clickable: true },
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-      };
-
-      // Category sliders (nếu dùng Swiper)
-      safeInitSwiper('.category-swiper', {
-        slidesPerView: 4, spaceBetween: 30, loop: false,
+        spaceBetween: 30,
+        loop: true,
         autoplay: { delay: 2000, disableOnInteraction: false },
         pagination: { el: '.swiper-pagination', clickable: true },
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
@@ -293,8 +161,54 @@ export default function UserLayout() {
         },
       });
 
-      safeInitSwiper('.category-swiper2', {
-        slidesPerView: 3, spaceBetween: 20, loop: false,
+      // Thumb config (horizontal to avoid stacking)
+      const thumbConfig = {
+        slidesPerView: 4,
+        spaceBetween: -8, // Assuming this is intentional for overlap; adjust if needed
+        direction: 'horizontal',
+        loop: true,
+        freeMode: true,
+        watchSlidesProgress: true,
+        breakpoints: {
+          576: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          992: { slidesPerView: 4 },
+          1200: { slidesPerView: 5 },
+          1500: { slidesPerView: 6 },
+          2000: { slidesPerView: 7 },
+        },
+      };
+
+      const mainConfig = {
+        slidesPerView: 1,
+        spaceBetween: 10,
+        loop: true,
+        zoomedSlideClass: 'swiper-slide-zoomed',
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+      };
+
+      // Product Gallery Thumb and Main
+      // Initialize main even if thumb is missing, but without thumbs
+      const productThumb = initSwiper('.product-gallery-swiper.thumb-swiper-lg', thumbConfig);
+      initSwiper('.product-gallery-swiper2', {
+        ...mainConfig,
+        thumbs: productThumb ? { swiper: productThumb } : undefined,
+      });
+
+      // Quick Modal Thumb and Main
+      // Initialize main even if thumb is missing, but without thumbs
+      const quickThumb = initSwiper('.quick-modal-swiper.thumb-swiper-lg', thumbConfig);
+      initSwiper('.quick-modal-swiper2', {
+        ...mainConfig,
+        thumbs: quickThumb ? { swiper: quickThumb } : undefined,
+      });
+
+      // Category Swiper 2
+      initSwiper('.category-swiper2', {
+        slidesPerView: 3,
+        spaceBetween: 20,
+        loop: true,
         autoplay: { delay: 3000, disableOnInteraction: false },
         pagination: { el: '.swiper-pagination', clickable: true },
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
@@ -306,43 +220,36 @@ export default function UserLayout() {
         },
       });
 
-      // Product gallery page
-      const productThumb = safeInitSwiper('.product-gallery-swiper.thumb-swiper-lg', thumbCfg);
-      safeInitSwiper('.product-gallery-swiper2', {
-        ...mainCfg,
-        ...(productThumb ? { thumbs: { swiper: productThumb } } : {}),
+      // Swiper Four (likely related products carousel)
+      initSwiper('.swiper-four', {
+        slidesPerView: 2,
+        spaceBetween: 15,
+        loop: true,
+        autoplay: { delay: 2500, disableOnInteraction: false },
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        breakpoints: {
+          576: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          992: { slidesPerView: 4 },
+        },
       });
 
-      // Quick modal gallery (nếu modal đã render)
-      const quickThumb = safeInitSwiper('.quick-modal-swiper.thumb-swiper-lg', thumbCfg);
-      safeInitSwiper('.quick-modal-swiper2', {
-        ...mainCfg,
-        ...(quickThumb ? { thumbs: { swiper: quickThumb } } : {}),
-      });
-
-      inittingRef.current = false;
+      isInitializing.current = false;
     };
 
-    const run = async () => {
-      await ensureAssets();
-      if (cancelled) return;
-
-      await tick(); // đợi DOM Outlet
-
-      // Swiper: dọn trước rồi init lại theo DOM hiện tại
-      destroyAllSwipers(document);
-      initCarousels();
-
-      // KHÔNG init Slick ở đây -> để dz.carousel.js của theme làm,
-      // nhờ vậy kích thước & hiệu ứng y như bản gốc.
-    };
-
-    run();
+    loadScriptsAndInitSwiper();
 
     return () => {
-      cancelled = true;
-      destroyAllSwipers(document);
-      inittingRef.current = false;
+      document.querySelectorAll('.swiper').forEach((el) => {
+        if (el.swiper && typeof el.swiper.destroy === 'function') {
+          el.swiper.destroy(true, true);
+          el.swiper = null;
+        } else if (el.swiper) {
+          el.swiper = null;
+        }
+      });
+      isInitializing.current = false;
     };
   }, [location.pathname]);
 
@@ -362,4 +269,6 @@ export default function UserLayout() {
       <UserFooter />
     </HelmetProvider>
   );
-}
+};
+
+export default UserLayout;

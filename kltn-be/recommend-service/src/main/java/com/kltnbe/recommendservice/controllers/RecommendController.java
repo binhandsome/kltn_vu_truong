@@ -77,4 +77,12 @@ public class RecommendController {
         recommendService.saveAsinRecommendation(requestRecommend);
         return ResponseEntity.ok("Saved successfully");
     }
+    @GetMapping("/saveHistoryEvaluate")
+    public ResponseEntity<?>  saveHistoryEvaluate(@RequestParam Long authId, @RequestParam String asin) {
+        return ResponseEntity.ok(recommendService.saveHistoryUserEvaluate(authId, asin));
+    }
+    @GetMapping("/getListHistoryEvaluate")
+    public List<String> getListHistoryEvaluate(@RequestParam Long authId) {
+        return recommendService.getAllHistoryUserEvaluate(authId);
+    }
 }

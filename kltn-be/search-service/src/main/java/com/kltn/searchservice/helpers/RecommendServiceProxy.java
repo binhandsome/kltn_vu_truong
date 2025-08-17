@@ -19,4 +19,6 @@ public interface RecommendServiceProxy {
     Map<String, String[]> findRecommendByAsins(@RequestParam List<String> asins);
     @GetMapping("/api/recommend/getAllRecommendAsinsHistory")
     List<String> getAllRecommendByUserId(@RequestParam Long authId);
+    @GetMapping("/api/recommend/getListHistoryEvaluate")
+    List<String> getListHistoryEvaluate(@RequestParam Long authId);
 }

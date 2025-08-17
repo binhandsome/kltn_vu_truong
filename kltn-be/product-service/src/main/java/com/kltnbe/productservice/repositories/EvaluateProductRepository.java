@@ -19,7 +19,6 @@ public interface EvaluateProductRepository extends JpaRepository<EvaluateProduct
         Long getReviewCount();
         Double getAvgRating();
     }
-
     @Query("""
       select e.productAsin as asin,
              count(e.evaluteId) as reviewCount,
@@ -29,5 +28,4 @@ public interface EvaluateProductRepository extends JpaRepository<EvaluateProduct
       group by e.productAsin
     """)
     List<EvaluateSummaryRow> findSummaryByAsinIn(@Param("asins") List<String> asins);
-
 }

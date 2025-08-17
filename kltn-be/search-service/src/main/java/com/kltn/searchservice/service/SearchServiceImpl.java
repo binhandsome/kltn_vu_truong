@@ -303,35 +303,41 @@ public class SearchServiceImpl implements SearchService {
             Pageable pageable,
             Long authId
     ) {
-        // 1) Recommend (có thể rỗng)
-        List<String> listAsinsRecommend = recommendServiceProxy.getAllRecommendByUserId(authId);
+        // 0) Lấy rec CHỈ khi có authId, không chặn search nếu lỗi
+        List<String> listAsinsRecommend = Collections.emptyList();
+        if (authId != null) {
+            try {
+                listAsinsRecommend = Optional.ofNullable(
+                        recommendServiceProxy.getListHistoryEvaluate(authId)
+                ).orElse(Collections.emptyList());
+            } catch (Exception ex) {
+                log.warn("getListHistoryEvaluate failed (authId={}): {}", authId, ex.getMessage());
+                listAsinsRecommend = Collections.emptyList();
+            }
+        }
+
         List<ProductDocument> listProductRecommend = getProductsByAsins(listAsinsRecommend);
 
-        // 2) Flags filter
+        // 1) Flags filter
         boolean hasKeyword = (keyword != null && !keyword.trim().isEmpty());
-        boolean hasTags = (tags != null && !tags.isEmpty());
-        boolean hasPrice = (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0);
+        boolean hasTags    = (tags != null && !tags.isEmpty());
+        boolean hasPrice   =
+                (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0) ||
+                        (maxPrice != null && maxPrice.compareTo(BigDecimal.ZERO) > 0);
 
-        boolean hasSearch = hasKeyword || hasTags || hasPrice;
-
-        // 3) Build ES query (giữ logic cũ, sửa ACTIVE)
+        // 2) Build ES query
         Query esQuery = Query.of(q -> q.bool(b -> {
             if (hasKeyword) {
                 String loweredKeyword = keyword.toLowerCase();
                 b.must(m -> m.bool(inner -> inner
                         .should(s -> s.match(match -> match
-                                .field("productTitle")
-                                .query(keyword)
-                                .fuzziness("AUTO")
+                                .field("productTitle").query(keyword).fuzziness("AUTO")
                         ))
                         .should(s -> s.queryString(qs -> qs
-                                .defaultField("productTitle")
-                                .query("*" + loweredKeyword + "*")
+                                .defaultField("productTitle").query("*" + loweredKeyword + "*")
                         ))
                         .should(s -> s.multiMatch(mm -> mm
-                                .fields("productTitle")
-                                .query(keyword)
-                                .fuzziness("AUTO")
+                                .fields("productTitle").query(keyword).fuzziness("AUTO")
                         ))
                         .minimumShouldMatch("1")
                 ));
@@ -349,40 +355,40 @@ public class SearchServiceImpl implements SearchService {
             if (hasTags) {
                 b.filter(f -> f.terms(t -> t
                         .field("tags.keyword")
-                        .terms(ts -> ts.value(
-                                tags.stream()
-                                        .filter(Objects::nonNull)
-                                        .map(FieldValue::of)
-                                        .toList()))
+                        .terms(ts -> ts.value(tags.stream()
+                                .filter(Objects::nonNull)
+                                .map(FieldValue::of)
+                                .toList()))
                 ));
             }
 
-            // 🔒 Đồng bộ ACTIVE (viết hoa) với index
-            b.filter(f -> f.term(t -> t
+            // ACTIVE (an toàn case)
+            b.filter(f -> f.terms(t -> t
                     .field("productStatus.keyword")
-                    .value("active")
+                    .terms(ts -> ts.value(List.of(FieldValue.of("ACTIVE"), FieldValue.of("active"))))
             ));
+
             return b;
         }));
 
-        // 4) GIỮ NGUYÊN sort script
+        // 3) Sort: productId desc (script cũ)
         SortOptions scriptSort = SortOptions.of(s -> s
                 .script(ss -> ss
                         .type(ScriptSortType.Number)
                         .order(SortOrder.Desc)
-                        .script(Script.of(sc -> sc
-                                .inline(in -> in
-                                        .source("Long.parseLong(doc['productId'].value)")
-                                        .lang("painless")
-                                )
-                        ))
+                        .script(Script.of(sc -> sc.inline(in -> in
+                                .source("Long.parseLong(doc['productId'].value)")
+                                .lang("painless")
+                        )))
                 )
         );
 
-        // 5) Chuẩn bị danh sách rec (dedup theo productId, chỉ giữ ACTIVE – case-insensitive)
+        // 4) Chuẩn bị rec (dedup theo productId, chỉ ACTIVE)
         List<ProductDocument> recDocsOrdered;
         LinkedHashSet<Long> recPidSet = new LinkedHashSet<>();
-        if (!hasSearch && listProductRecommend != null) {
+        boolean canInjectRec = (authId != null) && listProductRecommend != null && !listProductRecommend.isEmpty();
+
+        if (canInjectRec) {
             recDocsOrdered = new ArrayList<>();
             for (ProductDocument d : listProductRecommend) {
                 if (d == null) continue;
@@ -397,23 +403,25 @@ public class SearchServiceImpl implements SearchService {
         }
 
         long offset = pageable.getOffset();
-        int size = pageable.getPageSize();
+        int  size   = pageable.getPageSize();
 
         try {
-            // 6) Pageable cho ES khi có rec: tính “lùi” theo số rec
+            // 5) ES pageable: luôn tính theo offset - recCount để hỗn hợp (rec ∪ ES) phân trang đúng trên mọi trang
             Pageable esPageable;
-            if (!hasSearch && !recDocsOrdered.isEmpty()) {
+            if (canInjectRec && !recDocsOrdered.isEmpty()) {
                 int recCount = recDocsOrdered.size();
                 int neededStart = (int) Math.max(0, offset - recCount);
                 int basePageIdx = neededStart / size;
                 int extraToSkip = neededStart - basePageIdx * size;
-                int fetchSize = Math.min(1000, size + extraToSkip + Math.min(recCount, size)); // dư để bù skip & dedup
+
+                // fetch dư để bù phần skip + phần có thể trùng với rec
+                int fetchSize = Math.min(1000, size + extraToSkip + Math.min(recCount, size));
                 esPageable = PageRequest.of(basePageIdx, Math.max(size, fetchSize));
             } else {
                 esPageable = pageable;
             }
 
-            // 7) Bắn ES
+            // 6) Query ES
             var springQuery = NativeQuery.builder()
                     .withQuery(esQuery)
                     .withPageable(esPageable)
@@ -423,30 +431,28 @@ public class SearchServiceImpl implements SearchService {
             SearchHits<ProductDocument> hits =
                     elasticsearchOperations.search(springQuery, ProductDocument.class);
             List<ProductDocument> esFetched = hits.getSearchHits()
-                    .stream()
-                    .map(SearchHit::getContent)
-                    .toList();
+                    .stream().map(SearchHit::getContent).toList();
 
-            // 8) Nếu đang search (hoặc không có rec) → trả ES thuần
-            if (hasSearch || recDocsOrdered.isEmpty()) {
+            // 7) Nếu không inject -> ES thuần
+            if (!canInjectRec || recDocsOrdered.isEmpty()) {
                 List<ProductDocument> results = new ArrayList<>(esFetched);
                 enrichSoldCount(results);
                 return new PageImpl<>(results, pageable, hits.getTotalHits());
             }
 
-            // 9) Trộn rec vào đầu danh sách (trang hiện tại)
+            // 8) Trộn rec vào đầu danh sách theo cửa sổ phân trang hiện tại
             int recCount = recDocsOrdered.size();
             long end = offset + size;
 
             int recFrom = (int) Math.max(0, Math.min(offset, recCount));
-            int recTo = (int) Math.max(0, Math.min(end, recCount));
+            int recTo   = (int) Math.max(0, Math.min(end, recCount));
             List<ProductDocument> recPart = recFrom < recTo
                     ? recDocsOrdered.subList(recFrom, recTo)
                     : Collections.emptyList();
 
             int remaining = size - recPart.size();
 
-            // Bỏ qua phần ES tương ứng với (offset - recCount), loại trùng với rec
+            // Bỏ qua phần ES tương ứng với (offset - recCount); loại trùng với rec
             int esSkip = (int) Math.max(0, offset - recCount);
             List<ProductDocument> esPart = new ArrayList<>(remaining);
             for (ProductDocument d : esFetched) {
@@ -460,13 +466,12 @@ public class SearchServiceImpl implements SearchService {
             List<ProductDocument> pageContent = new ArrayList<>(size);
             pageContent.addAll(recPart);
             pageContent.addAll(esPart);
-
             if (pageContent.size() > size) {
                 pageContent = pageContent.subList(0, size);
             }
             enrichSoldCount(pageContent);
 
-            // 11) Tính total của hợp (ES ∪ rec) để phân trang đúng
+            // 9) Tính total của hợp (ES ∪ rec) theo truy vấn hiện tại (để phân trang chính xác trên toàn bộ trang)
             long esTotal = hits.getTotalHits();
             long recUnique = recPidSet.size();
 
@@ -474,23 +479,20 @@ public class SearchServiceImpl implements SearchService {
             if (!recPidSet.isEmpty()) {
                 Query recTerms = Query.of(q -> q.terms(t -> t
                         .field("productId")
-                        .terms(ts -> ts.value(
-                                recPidSet.stream().map(FieldValue::of).toList()
-                        ))
+                        .terms(ts -> ts.value(recPidSet.stream().map(FieldValue::of).toList()))
                 ));
-                Query activeTerm = Query.of(q -> q.term(t -> t
-                        .field("productStatus.keyword")
-                        .value("active")
-                ));
-                Query countQuery = Query.of(q -> q.bool(b -> b
-                        .filter(recTerms)
-                        .filter(activeTerm)
-                ));
-                NativeQuery countNative = NativeQuery.builder().withQuery(countQuery).build();
+
+                // Đếm số rec nằm trong ES theo TRUY VẤN HIỆN TẠI (đã gồm ACTIVE, keyword/tags/price)
+                NativeQuery countNative = NativeQuery.builder()
+                        .withQuery(esQuery)     // giữ nguyên truy vấn hiện tại
+                        .withFilter(recTerms)   // thêm filter: productId ∈ rec
+                        .build();
+
                 recPresentInEs = elasticsearchOperations.count(countNative, ProductDocument.class);
             }
 
             long unionTotal = esTotal + Math.max(0, recUnique - recPresentInEs);
+
             return new PageImpl<>(pageContent, pageable, unionTotal);
 
         } catch (Exception e) {
@@ -498,6 +500,7 @@ public class SearchServiceImpl implements SearchService {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
     }
+
 
     // KHÔNG đổi sort, KHÔNG thêm class
     private void enrichSoldCount(List<ProductDocument> docs) {
