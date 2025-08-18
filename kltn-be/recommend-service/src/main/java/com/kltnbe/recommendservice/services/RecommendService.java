@@ -1,9 +1,6 @@
 package com.kltnbe.recommendservice.services;
 
-import com.kltnbe.recommendservice.dtos.req.RecommendNewReq;
-import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
-import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
-import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
+import com.kltnbe.recommendservice.dtos.req.*;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,4 +16,7 @@ public interface RecommendService {
     List<String> getAllAsinRecommendHisTory(Long authId);
     String saveHistoryUserEvaluate(Long authId, String asin);
     List<String> getAllHistoryUserEvaluate(Long authId);
+    ExportMetaReponse export_meta();
+    String runBuildOffline(RunBuildOfflineRequest runBuildOfflineRequest);
+    void importRecommendations();
 }

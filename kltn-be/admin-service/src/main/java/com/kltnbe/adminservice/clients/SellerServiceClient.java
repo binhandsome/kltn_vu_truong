@@ -1,6 +1,8 @@
 package com.kltnbe.adminservice.clients;
 
 import com.kltnbe.adminservice.dtos.AuthenticationDTO;
+import com.kltnbe.adminservice.dtos.ExportMetaReponse;
+import com.kltnbe.adminservice.dtos.RunBuildOfflineRequest;
 import com.kltnbe.adminservice.dtos.req.ShopEditRequestDTO;
 import com.kltnbe.adminservice.dtos.res.ShopResponseDTO;
 import com.kltnbe.security.utils.FeignInternalAuthConfig;
@@ -53,4 +55,5 @@ public interface SellerServiceClient {
     ResponseEntity<List<String>> getUrlCcd(@RequestParam Long shopId);
     @GetMapping("/api/seller/internal/get-url-cccd-user")
     ResponseEntity<List<String>> getUrlCccd(@RequestParam Long userId);
+
 }
