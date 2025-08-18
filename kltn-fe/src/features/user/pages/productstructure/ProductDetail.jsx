@@ -1,5 +1,5 @@
 // src/pages/common/HomePage.js
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo,useRef  } from 'react';
 import QuickViewModal from '../../components/home/QuickViewModal';
 import ScrollTopButton from '../../layout/ScrollTopButton';
 import WOW from 'wowjs';
@@ -31,15 +31,110 @@ function ProductDetail() {
 	const originalPrice = products.productPrice || 0;
 	const discount = products.percentDiscount || 0;
 	const discountedPrice = originalPrice - (originalPrice * discount / 100);
-	
+	const [selectIdColor, setSelectIdColor] = useState();
+useEffect(() => {
+  // Delay để đảm bảo DOM đã render xong
+  const timer = setTimeout(() => {
+    // Destroy existing swipers
+    const mainSwiper = document.querySelector('.product-gallery-swiper2');
+    const thumbSwiper = document.querySelector('.thumb-swiper-lg');
+    
+    if (mainSwiper && mainSwiper.swiper) {
+      mainSwiper.swiper.destroy(true, true);
+    }
+    
+    if (thumbSwiper && thumbSwiper.swiper) {
+      thumbSwiper.swiper.destroy(true, true);
+    }
+    
+    // Destroy lightgallery nếu có
+    const lgContainer = document.getElementById('lightgallery');
+    if (lgContainer && lgContainer.lgData) {
+      lgContainer.lgData.destroy(true);
+    }
+    
+    // Re-initialize sau khi destroy
+    setTimeout(() => {
+      // Kiểm tra element tồn tại trước khi init
+      const mainSwiperEl = document.querySelector('.product-gallery-swiper2');
+      const thumbSwiperEl = document.querySelector('.thumb-swiper-lg');
+      
+      // Kiểm tra có slide nào không
+      const mainSlides = document.querySelectorAll('.product-gallery-swiper2 .swiper-slide');
+      const thumbSlides = document.querySelectorAll('.thumb-swiper-lg .swiper-slide');
+      
+      if (mainSwiperEl && mainSlides.length > 0 && window.Swiper) {
+        try {
+          // Thumb swiper trước (để main swiper có thể link)
+          let thumbSwiperInstance = null;
+          if (thumbSwiperEl && thumbSlides.length > 0) {
+            thumbSwiperInstance = new window.Swiper(thumbSwiperEl, {
+              spaceBetween: 10,
+              slidesPerView: Math.min(4, thumbSlides.length), // Không vượt quá số slide thực tế
+              direction: 'vertical',
+              freeMode: true,
+              watchSlidesProgress: true,
+              breakpoints: {
+                768: {
+                  direction: 'horizontal',
+                  slidesPerView: Math.min(4, thumbSlides.length),
+                }
+              }
+            });
+          }
+          
+          // Main swiper
+          const mainSwiperInstance = new window.Swiper(mainSwiperEl, {
+            spaceBetween: 10,
+            loop: false,
+            navigation: {
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev',
+            },
+            thumbs: thumbSwiperInstance ? {
+              swiper: thumbSwiperInstance
+            } : {}
+          });
+          
+        } catch (error) {
+          console.error('Swiper initialization error:', error);
+        }
+      }
+      
+      // Re-initialize lightgallery
+      setTimeout(() => {
+        const lgEl = document.getElementById('lightgallery');
+        const lgItems = document.querySelectorAll('#lightgallery .lg-item');
+        
+        if (lgEl && lgItems.length > 0 && window.lightGallery) {
+          try {
+            window.lightGallery(lgEl, {
+              selector: '.lg-item',
+              thumbnail: true,
+              zoom: true,
+              download: false
+            });
+          } catch (error) {
+            console.error('LightGallery initialization error:', error);
+          }
+        }
+      }, 50);
+      
+    }, 100);
+    
+  }, 200); // Tăng delay lên 200ms
 
+  return () => clearTimeout(timer);
+}, [selectIdColor]);
+	useEffect(() => {
+		console.log('product image', products);
+		console.log('colorId', selectIdColor);
+	})
 	const showToastMsg = (msg) => {
 		setToastMessage(msg);
 		setShowToast(true);
 		setTimeout(() => setShowToast(false), 2000);
 	};
-
-	// ✅ Load sản phẩm liên quan
 	useEffect(() => {
 		const getRecommendByAsin = async () => {
 			try {
@@ -67,29 +162,29 @@ function ProductDetail() {
 	useEffect(() => {
 		const accessToken = localStorage.getItem('accessToken');
 		if (!accessToken) return;
-	
+
 		setToken(accessToken); // ✅ Gán vào state
-	
+
 		axios.get('http://localhost:8081/api/auth/me', {
 			headers: { Authorization: `Bearer ${accessToken}` }
 		})
-		.then(res => {
-			const data = res.data;
-			const userData = {
-				userId: data.userId || data.id,
-				username: data.username,
-				avatar: data.profilePicture || ''
-			};
-			setUser(userData);
-	
-			localStorage.setItem('userId', userData.userId);
-			localStorage.setItem('username', userData.username);
-			localStorage.setItem('avatar', userData.avatar);
-		})
-		.catch(err => {
-			console.error("Không lấy được user từ /me:", err);
-			setUser(null);
-		});
+			.then(res => {
+				const data = res.data;
+				const userData = {
+					userId: data.userId || data.id,
+					username: data.username,
+					avatar: data.profilePicture || ''
+				};
+				setUser(userData);
+
+				localStorage.setItem('userId', userData.userId);
+				localStorage.setItem('username', userData.username);
+				localStorage.setItem('avatar', userData.avatar);
+			})
+			.catch(err => {
+				console.error("Không lấy được user từ /me:", err);
+				setUser(null);
+			});
 	}, []);
 
 	const fetchReviews = async () => {
@@ -297,12 +392,12 @@ function ProductDetail() {
 	};
 	const handleDeleteReview = async (reviewId) => {
 		if (!window.confirm("Bạn chắc chắn muốn xoá bình luận này?")) return;
-	
+
 		if (!user?.userId || !token) {
 			alert("Vui lòng đăng nhập để xoá bình luận.");
 			return;
 		}
-	
+
 		try {
 			await axios.delete(`http://localhost:8083/api/reviews/${reviewId}/user`, {
 				params: { authId: user.userId },
@@ -321,12 +416,12 @@ function ProductDetail() {
 			alert("Nội dung không được để trống.");
 			return;
 		}
-	
+
 		if (!user?.userId || !token) {
 			alert("Vui lòng đăng nhập để cập nhật bình luận.");
 			return;
 		}
-	
+
 		try {
 			await axios.put(
 				`http://localhost:8083/api/reviews/${reviewId}`,
@@ -341,7 +436,7 @@ function ProductDetail() {
 					headers: { Authorization: `Bearer ${token}` },
 				}
 			);
-	
+
 			setReviews((prev) =>
 				prev.map((r) =>
 					r.reviewId === reviewId
@@ -355,7 +450,7 @@ function ProductDetail() {
 			alert("Không thể cập nhật. Kiểm tra quyền hoặc thử lại.");
 		}
 	};
-	
+
 
 	// ✅ Parse colorAsin
 	const colorAsinArray = useMemo(() => {
@@ -420,44 +515,44 @@ function ProductDetail() {
 	}, []);
 	// Evaluate
 	// ⬇️ thêm state
-const [evaluates, setEvaluates] = useState([]);
+	const [evaluates, setEvaluates] = useState([]);
 
-// ⬇️ fetch evaluate public theo asin (status=1 đã xử lý ở BE)
-useEffect(() => {
-  if (!asin) return;
-  axios
-    .get(`http://localhost:8083/api/products/getAllEvaluateByOrderItemAndStatus/${asin}`)
-    .then((res) => setEvaluates(res.data || []))
-    .catch((err) => console.error("Lỗi khi fetch evaluates:", err));
-}, [asin]);
-const ratingStats = useMemo(() => {
-	const ratings = (evaluates || [])
-	  .map(e => Number(e.rating) || 0)
-	  .filter(n => n > 0);
-	const count = ratings.length;
-	const avg = count ? ratings.reduce((a, b) => a + b, 0) / count : 0;
-	return { avg, count };
-  }, [evaluates]);
+	// ⬇️ fetch evaluate public theo asin (status=1 đã xử lý ở BE)
+	useEffect(() => {
+		if (!asin) return;
+		axios
+			.get(`http://localhost:8083/api/products/getAllEvaluateByOrderItemAndStatus/${asin}`)
+			.then((res) => setEvaluates(res.data || []))
+			.catch((err) => console.error("Lỗi khi fetch evaluates:", err));
+	}, [asin]);
+	const ratingStats = useMemo(() => {
+		const ratings = (evaluates || [])
+			.map(e => Number(e.rating) || 0)
+			.filter(n => n > 0);
+		const count = ratings.length;
+		const avg = count ? ratings.reduce((a, b) => a + b, 0) / count : 0;
+		return { avg, count };
+	}, [evaluates]);
 
-// ⬇️ chuẩn hoá dữ liệu để render (parse ảnh, fallback avatar/username)
-const normalizedEvaluates = useMemo(() => {
-  const parseImgs = (v) => {
-    try {
-      if (!v) return [];
-      return Array.isArray(v) ? v : JSON.parse(v);
-    } catch { return []; }
-  };
-  return (evaluates || []).map((e) => ({
-    id: e.evaluteId ?? e.id,
-    username: e.username ?? "Ẩn danh",
-    avatar: e.avatar ?? "/assets/user/images/default-avatar.png",
-    rating: e.rating ?? 0,
-    comment: e.comment ?? "",
-    sellerReply: e.commentByEvaluate ?? null, // seller rep (nếu có)
-    createdAt: e.createdAt ?? null,
-    images: parseImgs(e.imgEvaluate),
-  }));
-}, [evaluates]);
+	// ⬇️ chuẩn hoá dữ liệu để render (parse ảnh, fallback avatar/username)
+	const normalizedEvaluates = useMemo(() => {
+		const parseImgs = (v) => {
+			try {
+				if (!v) return [];
+				return Array.isArray(v) ? v : JSON.parse(v);
+			} catch { return []; }
+		};
+		return (evaluates || []).map((e) => ({
+			id: e.evaluteId ?? e.id,
+			username: e.username ?? "Ẩn danh",
+			avatar: e.avatar ?? "/assets/user/images/default-avatar.png",
+			rating: e.rating ?? 0,
+			comment: e.comment ?? "",
+			sellerReply: e.commentByEvaluate ?? null, // seller rep (nếu có)
+			createdAt: e.createdAt ?? null,
+			images: parseImgs(e.imgEvaluate),
+		}));
+	}, [evaluates]);
 	return (
 		<>
 
@@ -485,7 +580,8 @@ const normalizedEvaluates = useMemo(() => {
 									<div className="swiper-btn-center-lr">
 										<div className="swiper product-gallery-swiper2">
 											<div className="swiper-wrapper" id="lightgallery">
-												{products.images && products.images.length > 0 ? (
+												{products.images && products.images.length === 1 && products.image?.colorId == null ? (
+													// Trường hợp chỉ có 1 ảnh, không có colorId
 													products.images.map((image, index) => (
 														<div className="swiper-slide" key={index}>
 															<div className="dz-media DZoomImage rounded">
@@ -506,95 +602,80 @@ const normalizedEvaluates = useMemo(() => {
 														</div>
 													))
 												) : (
-													<p>No images available</p>
-												)}
-												{products.images && products.images.length > 0 ? (
-													products.images.map((image, index) => (
-														<div className="swiper-slide" key={index}>
-															<div className="dz-media DZoomImage rounded">
-																<a
-																	className="mfp-link lg-item"
-																	href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
-																	data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
-																>
-																	<i className="feather icon-maximize dz-maximize top-right"></i>
-																</a>
-																<img
-																	style={{ width: '80%', height: '80%' }}
-																	src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}` || '/default-image.jpg'}
-																	alt="img"
-																	loading="lazy"
-																/>
-															</div>
-														</div>
-													))
-												) : (
-													<p>No images available</p>
-												)}						{products.images && products.images.length > 0 ? (
-													products.images.map((image, index) => (
-														<div className="swiper-slide" key={index}>
-															<div className="dz-media DZoomImage rounded">
-																<a
-																	className="mfp-link lg-item"
-																	href={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
-																	data-src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}`}
-																>
-																	<i className="feather icon-maximize dz-maximize top-right"></i>
-																</a>
-																<img
-																	style={{ width: '80%', height: '80%' }}
-																	src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_500,h_500/imgProduct/IMG/${image.imageData}` || '/default-image.jpg'}
-																	alt="img"
-																	loading="lazy"
-																/>
-															</div>
-														</div>
-													))
-												) : (
-													<p>No images available</p>
+													// Có nhiều ảnh
+													products?.images?.map((image, index) => {
+														// Nếu chưa chọn màu => render tất cả
+														if (selectIdColor == null) {
+															return (
+																<div className="swiper-slide" key={index}>
+																	<div className="dz-media DZoomImage rounded">
+																		<a className="mfp-link lg-item" href={image.imageData} data-src={image.imageData}>
+																			<i className="feather icon-maximize dz-maximize top-right"></i>
+																		</a>
+																		<img
+																			style={{ width: '80%', height: '80%' }}
+																			src={image.imageData}
+																			alt="img"
+																			loading="lazy"
+																		/>
+																	</div>
+																</div>
+															);
+														}
+														// Nếu đã chọn màu => chỉ render đúng màu
+														if (image.colorId == selectIdColor) {
+															return (
+																<div className="swiper-slide" key={index}>
+																	<div className="dz-media DZoomImage rounded">
+																		<a className="mfp-link lg-item" href={image.imageData} data-src={image.imageData}>
+																			<i className="feather icon-maximize dz-maximize top-right"></i>
+																		</a>
+																		<img
+																			style={{ width: '80%', height: '80%' }}
+																			src={image.imageData}
+																			alt="img"
+																			loading="lazy"
+																		/>
+																	</div>
+																</div>
+															);
+														}
+														// Không khớp màu thì bỏ qua
+														return null;
+													})
 												)}
 											</div>
+
 										</div>
 										<div className="swiper product-gallery-swiper thumb-swiper-lg swiper-vertical">
 											<div className="swiper-wrapper">
-												{products.images && products.images.length > 0 ? (
+												{products.images && products.images.length == 1 && products.image?.colorId == null ? (
 													products.images.map((image, index) => (
 														<div className="swiper-slide" key={index}>
-															<img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`} alt="img" />
-
+															<img
+																src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`}
+																alt="img"
+															/>
 														</div>
 													))
 												) : (
-													<p>
-														Không có hình ảnh nào
-														{/* No images available */}
-													</p>
-
-												)}
-												{products.images && products.images.length > 0 ? (
-													products.images.map((image, index) => (
-														<div className="swiper-slide" key={index}>
-															<img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`} alt="img" />
-
-														</div>
-													))
-												) : (
-													<p>Không có hình ảnh nào
-														{/* No images available */}
-													</p>
-
-												)}	{products.images && products.images.length > 0 ? (
-													products.images.map((image, index) => (
-														<div className="swiper-slide" key={index}>
-															<img src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_60,h_60/imgProduct/IMG/${image.imageData}`} alt="img" />
-
-														</div>
-													))
-												) : (
-													<p>Không có hình ảnh nào
-														{/* No images available */}
-													</p>
-
+													products?.images?.map((image, index) => {
+														if (selectIdColor == null) {
+															return (
+																<div className="swiper-slide" key={index}>
+																	<img src={image.imageData} alt="img" />
+																</div>
+															);
+														}
+														if (image.colorId == selectIdColor) {
+															return (
+																<div className="swiper-slide" key={index}>
+																	<img src={image.imageData} alt="img" />
+																</div>
+															);
+														}
+														return null;
+													})
 												)}
 											</div>
 										</div>
@@ -609,30 +690,30 @@ const normalizedEvaluates = useMemo(() => {
 												<span className="badge bg-purple mb-2">SALE {products.percentDiscount}% Off</span>
 												<h4 className="title mb-1">{products.productTitle}</h4>
 												<div className="review-num d-flex align-items-center">
-  <ul className="dz-rating me-2">
-    {Array.from({ length: 5 }).map((_, i) => {
-      const active = i < Math.round(ratingStats.avg || 0); // làm tròn để tô sao
-      return (
-        <li key={i}>
-          <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z"
-              fill={active ? "#FF8A00" : "#5E626F"}
-              opacity={active ? "1" : "0.2"}
-            />
-          </svg>
-        </li>
-      );
-    })}
-  </ul>
+													<ul className="dz-rating me-2">
+														{Array.from({ length: 5 }).map((_, i) => {
+															const active = i < Math.round(ratingStats.avg || 0); // làm tròn để tô sao
+															return (
+																<li key={i}>
+																	<svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+																		<path
+																			d="M6.74805 0.234375L8.72301 4.51608L13.4054 5.07126L9.9436 8.27267L10.8625 12.8975L6.74805 10.5944L2.63355 12.8975L3.5525 8.27267L0.090651 5.07126L4.77309 4.51608L6.74805 0.234375Z"
+																			fill={active ? "#FF8A00" : "#5E626F"}
+																			opacity={active ? "1" : "0.2"}
+																		/>
+																	</svg>
+																</li>
+															);
+														})}
+													</ul>
 
-  <span className="text-secondary me-2">
-    {(ratingStats.count ? ratingStats.avg.toFixed(1) : "0.0")} sao
-  </span>
+													<span className="text-secondary me-2">
+														{(ratingStats.count ? ratingStats.avg.toFixed(1) : "0.0")} sao
+													</span>
 
-  {/* Link sang tab Evaluate */}
-  <a href="#evaluate-tab-pane">({ratingStats.count} người đánh giá)</a>
-</div>
+													{/* Link sang tab Evaluate */}
+													<a href="#evaluate-tab-pane">({ratingStats.count} người đánh giá)</a>
+												</div>
 
 											</div>
 										</div>
@@ -740,7 +821,12 @@ const normalizedEvaluates = useMemo(() => {
 																	id={`radioColor-${index}`}
 																	value={item.name_color}
 																	checked={selectedColor === item.name_color}
-																	onChange={() => setSelectedColor(item.name_color)}
+																	onChange={() => {
+																		setSelectedColor(item.name_color);
+																		setSelectIdColor(item.color_id);
+																		
+																	}}
+
 																/>
 																<span></span>
 															</div>
@@ -822,19 +908,19 @@ const normalizedEvaluates = useMemo(() => {
 										<button className="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Comments ({reviews.length})</button>
 									</li>
 									<li className="nav-item" role="presentation">
-  <button
-    className="nav-link"
-    id="evaluate-tab"
-    data-bs-toggle="tab"
-    data-bs-target="#evaluate-tab-pane"
-    type="button"
-    role="tab"
-    aria-controls="evaluate-tab-pane"
-    aria-selected="false"
-  >
-    Evaluate ({normalizedEvaluates.length})
-  </button>
-</li>
+										<button
+											className="nav-link"
+											id="evaluate-tab"
+											data-bs-toggle="tab"
+											data-bs-target="#evaluate-tab-pane"
+											type="button"
+											role="tab"
+											aria-controls="evaluate-tab-pane"
+											aria-selected="false"
+										>
+											Evaluate ({normalizedEvaluates.length})
+										</button>
+									</li>
 								</ul>
 								<div className="tab-content" id="myTabContent">
 									<div className="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
@@ -936,295 +1022,295 @@ const normalizedEvaluates = useMemo(() => {
 										</div>
 									</div>
 									<div className="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabIndex="0">
-  <div className="clear" id="comment-list">
-    <div className="post-comments comments-area style-1 clearfix">
-      <h4 className="comments-title mb-2">
-        Bình luận ({reviews.filter((r) => !r.parentId).length})
-      </h4>
-      <p className="text-muted mb-4">
-        Chia sẻ cảm nhận thực tế của người dùng về sản phẩm.
-      </p>
+										<div className="clear" id="comment-list">
+											<div className="post-comments comments-area style-1 clearfix">
+												<h4 className="comments-title mb-2">
+													Bình luận ({reviews.filter((r) => !r.parentId).length})
+												</h4>
+												<p className="text-muted mb-4">
+													Chia sẻ cảm nhận thực tế của người dùng về sản phẩm.
+												</p>
 
-      <div id="comment">
-        <ol className="comment-list list-unstyled">
-          {reviews.filter((r) => !r.parentId).length === 0 && (
-            <div className="text-muted mb-3">
-              Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!
-            </div>
-          )}
+												<div id="comment">
+													<ol className="comment-list list-unstyled">
+														{reviews.filter((r) => !r.parentId).length === 0 && (
+															<div className="text-muted mb-3">
+																Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!
+															</div>
+														)}
 
-          {reviews.filter((r) => !r.parentId).map((parent) => (
-            <li className="comment mb-4 border-bottom pb-3" key={parent.reviewId}>
-              <div className="d-flex align-items-start">
-                <img
-                  src={parent.avatar || "/assets/user/images/default-avatar.png"}
-                  alt="avatar"
-                  className="rounded-circle me-3"
-                  style={{ width: "45px", height: "45px", objectFit: "cover" }}
-                />
-                <div className="flex-grow-1">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <strong>{parent.username}</strong>
-                    <small className="text-muted">
-                      🕒 {new Date(parent.createdAt).toLocaleString("vi-VN")}
-                    </small>
-                  </div>
-                  <div className="text-warning mb-1">
-                    {Array.from({ length: parent.rating || 0 }, (_, i) => (
-                      <i key={i} className="fas fa-star" />
-                    ))}
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <p className="mb-1">{parent.comment}</p>
-                    {user?.userId === parent.userId && (
-                      <div className="d-flex gap-1 ms-2">
-                        <button
-                          className="btn btn-sm btn-light border"
-                          title="Chỉnh sửa"
-                          onClick={() => {
-							setEditingReviewId(parent.reviewId);
-							setEditText(parent.comment);
-							setEditRating(parent.rating);
-						  }}
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          className="btn btn-sm btn-light border text-danger"
-                          title="Xoá"
-                          onClick={() => handleDeleteReview(parent.reviewId)}
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    )}
-                  </div>
+														{reviews.filter((r) => !r.parentId).map((parent) => (
+															<li className="comment mb-4 border-bottom pb-3" key={parent.reviewId}>
+																<div className="d-flex align-items-start">
+																	<img
+																		src={parent.avatar || "/assets/user/images/default-avatar.png"}
+																		alt="avatar"
+																		className="rounded-circle me-3"
+																		style={{ width: "45px", height: "45px", objectFit: "cover" }}
+																	/>
+																	<div className="flex-grow-1">
+																		<div className="d-flex justify-content-between align-items-center">
+																			<strong>{parent.username}</strong>
+																			<small className="text-muted">
+																				🕒 {new Date(parent.createdAt).toLocaleString("vi-VN")}
+																			</small>
+																		</div>
+																		<div className="text-warning mb-1">
+																			{Array.from({ length: parent.rating || 0 }, (_, i) => (
+																				<i key={i} className="fas fa-star" />
+																			))}
+																		</div>
+																		<div className="d-flex justify-content-between">
+																			<p className="mb-1">{parent.comment}</p>
+																			{user?.userId === parent.userId && (
+																				<div className="d-flex gap-1 ms-2">
+																					<button
+																						className="btn btn-sm btn-light border"
+																						title="Chỉnh sửa"
+																						onClick={() => {
+																							setEditingReviewId(parent.reviewId);
+																							setEditText(parent.comment);
+																							setEditRating(parent.rating);
+																						}}
+																					>
+																						✏️
+																					</button>
+																					<button
+																						className="btn btn-sm btn-light border text-danger"
+																						title="Xoá"
+																						onClick={() => handleDeleteReview(parent.reviewId)}
+																					>
+																						🗑
+																					</button>
+																				</div>
+																			)}
+																		</div>
 
-                  {editingReviewId === parent.reviewId && (
-  <div className="mt-2">
-    <textarea
-      className="form-control mb-2"
-      value={editText}
-      onChange={(e) => setEditText(e.target.value)}
-      rows={2}
-    />
-    
-    {/* ⭐ THÊM VÀO: sửa rating */}
-    <div className="d-flex align-items-center gap-2 mb-2">
-      <span className="text-secondary">Đánh giá:</span>
-      <div className="d-flex gap-1">
-        {[1, 2, 3, 4, 5].map((value) => (
-          <i
-            key={value}
-            className={`fas fa-star ${editRating >= value ? 'text-warning' : 'text-muted'}`}
-            onClick={() => setEditRating(value)}
-            style={{ cursor: 'pointer' }}
-          />
-        ))}
-      </div>
-    </div>
+																		{editingReviewId === parent.reviewId && (
+																			<div className="mt-2">
+																				<textarea
+																					className="form-control mb-2"
+																					value={editText}
+																					onChange={(e) => setEditText(e.target.value)}
+																					rows={2}
+																				/>
 
-    <div className="d-flex gap-2">
-      <button
-        className="btn btn-sm btn-primary"
-        onClick={() => handleUpdateReview(parent.reviewId)}
-      >
-        💾 Lưu
-      </button>
-      <button
-        className="btn btn-sm btn-secondary"
-        onClick={() => setEditingReviewId(null)}
-      >
-        ✖ Hủy
-      </button>
-    </div>
-  </div>
-)}
+																				{/* ⭐ THÊM VÀO: sửa rating */}
+																				<div className="d-flex align-items-center gap-2 mb-2">
+																					<span className="text-secondary">Đánh giá:</span>
+																					<div className="d-flex gap-1">
+																						{[1, 2, 3, 4, 5].map((value) => (
+																							<i
+																								key={value}
+																								className={`fas fa-star ${editRating >= value ? 'text-warning' : 'text-muted'}`}
+																								onClick={() => setEditRating(value)}
+																								style={{ cursor: 'pointer' }}
+																							/>
+																						))}
+																					</div>
+																				</div>
 
-                </div>
-              </div>
+																				<div className="d-flex gap-2">
+																					<button
+																						className="btn btn-sm btn-primary"
+																						onClick={() => handleUpdateReview(parent.reviewId)}
+																					>
+																						💾 Lưu
+																					</button>
+																					<button
+																						className="btn btn-sm btn-secondary"
+																						onClick={() => setEditingReviewId(null)}
+																					>
+																						✖ Hủy
+																					</button>
+																				</div>
+																			</div>
+																		)}
 
-              {/* Seller reply nếu có */}
-              {parent.sellerReply && (
-                <div className="ms-5 mt-3">
-                  <div className="d-flex align-items-start">
-                    <img
-                      src={parent.sellerReply.avatar || "/assets/user/images/default-avatar.png"}
-                      alt="/"
-                      className="rounded-circle me-3"
-                      style={{ width: "35px", height: "35px", objectFit: "cover" }}
-                    />
-                    <div>
-                      <span className="badge bg-secondary mb-1">Cửa hàng</span>
-                      <div className="small text-muted">Phản hồi chính thức:</div>
-                      <p className="mb-0">{parent.sellerReply.comment}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </li>
-          ))}
-        </ol>
-      </div>
+																	</div>
+																</div>
 
-      {/* Form đánh giá */}
-      <div className="default-form comment-respond style-1 mt-4" id="respond">
-        <h4 className="comment-reply-title mb-2">Đánh giá sản phẩm</h4>
-        <p className="text-muted mb-3">Chia sẻ trải nghiệm của bạn về sản phẩm.</p>
+																{/* Seller reply nếu có */}
+																{parent.sellerReply && (
+																	<div className="ms-5 mt-3">
+																		<div className="d-flex align-items-start">
+																			<img
+																				src={parent.sellerReply.avatar || "/assets/user/images/default-avatar.png"}
+																				alt="/"
+																				className="rounded-circle me-3"
+																				style={{ width: "35px", height: "35px", objectFit: "cover" }}
+																			/>
+																			<div>
+																				<span className="badge bg-secondary mb-1">Cửa hàng</span>
+																				<div className="small text-muted">Phản hồi chính thức:</div>
+																				<p className="mb-0">{parent.sellerReply.comment}</p>
+																			</div>
+																		</div>
+																	</div>
+																)}
+															</li>
+														))}
+													</ol>
+												</div>
 
-        <div className="comment-form-rating d-flex align-items-center mb-3">
-          <label className="me-2 text-secondary mb-0">Đánh giá của bạn:</label>
-          <div className="rating-widget">
-            <div className="rating-stars">
-              <ul id="stars" className="list-inline mb-0">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <li
-                    key={value}
-                    className={`list-inline-item star ${rating >= value ? "selected" : ""}`}
-                    onClick={() => setRating(value)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <i className="fas fa-star fa-fw"></i>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
+												{/* Form đánh giá */}
+												<div className="default-form comment-respond style-1 mt-4" id="respond">
+													<h4 className="comment-reply-title mb-2">Đánh giá sản phẩm</h4>
+													<p className="text-muted mb-3">Chia sẻ trải nghiệm của bạn về sản phẩm.</p>
 
-        <div>
-          {user ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmitReview();
-              }}
-              className="comment-form"
-              noValidate
-            >
-              <input type="text" value={user.username} readOnly className="form-control mb-2" />
-              <textarea
-                className="form-control mb-2"
-                placeholder="Nhập đánh giá của bạn"
-                value={newReview}
-                onChange={(e) => setNewReview(e.target.value)}
-                required
-                rows="3"
-              />
-              <button type="submit" className="btn btn-secondary">
-                Gửi ngay
-              </button>
-            </form>
-          ) : (
-            <p className="text-danger">
-              Vui lòng <a href="/user/auth/login">Đăng nhập</a> để đăng bài đánh giá.
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<div
-  className="tab-pane fade"
-  id="evaluate-tab-pane"
-  role="tabpanel"
-  aria-labelledby="evaluate-tab"
-  tabIndex="0"
->
-  <div className="clear" id="evaluate-list">
-    <div className="post-comments comments-area style-1 clearfix">
-      <h4 className="comments-title mb-2">
-        Evaluate ({normalizedEvaluates.length})
-      </h4>
-      <p className="text-muted mb-4">
-        Các đánh giá đã duyệt cho sản phẩm.
-      </p>
+													<div className="comment-form-rating d-flex align-items-center mb-3">
+														<label className="me-2 text-secondary mb-0">Đánh giá của bạn:</label>
+														<div className="rating-widget">
+															<div className="rating-stars">
+																<ul id="stars" className="list-inline mb-0">
+																	{[1, 2, 3, 4, 5].map((value) => (
+																		<li
+																			key={value}
+																			className={`list-inline-item star ${rating >= value ? "selected" : ""}`}
+																			onClick={() => setRating(value)}
+																			style={{ cursor: "pointer" }}
+																		>
+																			<i className="fas fa-star fa-fw"></i>
+																		</li>
+																	))}
+																</ul>
+															</div>
+														</div>
+													</div>
 
-      <div id="evaluate">
-        <ol className="comment-list list-unstyled">
-          {normalizedEvaluates.length === 0 && (
-            <div className="text-muted mb-3">
-              Chưa có đánh giá nào được duyệt.
-            </div>
-          )}
+													<div>
+														{user ? (
+															<form
+																onSubmit={(e) => {
+																	e.preventDefault();
+																	handleSubmitReview();
+																}}
+																className="comment-form"
+																noValidate
+															>
+																<input type="text" value={user.username} readOnly className="form-control mb-2" />
+																<textarea
+																	className="form-control mb-2"
+																	placeholder="Nhập đánh giá của bạn"
+																	value={newReview}
+																	onChange={(e) => setNewReview(e.target.value)}
+																	required
+																	rows="3"
+																/>
+																<button type="submit" className="btn btn-secondary">
+																	Gửi ngay
+																</button>
+															</form>
+														) : (
+															<p className="text-danger">
+																Vui lòng <a href="/user/auth/login">Đăng nhập</a> để đăng bài đánh giá.
+															</p>
+														)}
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div
+										className="tab-pane fade"
+										id="evaluate-tab-pane"
+										role="tabpanel"
+										aria-labelledby="evaluate-tab"
+										tabIndex="0"
+									>
+										<div className="clear" id="evaluate-list">
+											<div className="post-comments comments-area style-1 clearfix">
+												<h4 className="comments-title mb-2">
+													Evaluate ({normalizedEvaluates.length})
+												</h4>
+												<p className="text-muted mb-4">
+													Các đánh giá đã duyệt cho sản phẩm.
+												</p>
 
-          {normalizedEvaluates.map((item) => (
-            <li className="comment mb-4 border-bottom pb-3" key={item.id}>
-              <div className="d-flex align-items-start">
-                <img
-                  src={item.avatar}
-                  alt="avatar"
-                  className="rounded-circle me-3"
-                  style={{ width: "45px", height: "45px", objectFit: "cover" }}
-                />
-                <div className="flex-grow-1">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <strong>{item.username}</strong>
-                    {item.createdAt && (
-                      <small className="text-muted">
-                        🕒 {new Date(item.createdAt).toLocaleString("vi-VN")}
-                      </small>
-                    )}
-                  </div>
+												<div id="evaluate">
+													<ol className="comment-list list-unstyled">
+														{normalizedEvaluates.length === 0 && (
+															<div className="text-muted mb-3">
+																Chưa có đánh giá nào được duyệt.
+															</div>
+														)}
 
-                  {/* rating */}
-                  <div className="text-warning mb-1">
-                    {Array.from({ length: item.rating || 0 }, (_, i) => (
-                      <i key={i} className="fas fa-star" />
-                    ))}
-                  </div>
+														{normalizedEvaluates.map((item) => (
+															<li className="comment mb-4 border-bottom pb-3" key={item.id}>
+																<div className="d-flex align-items-start">
+																	<img
+																		src={item.avatar}
+																		alt="avatar"
+																		className="rounded-circle me-3"
+																		style={{ width: "45px", height: "45px", objectFit: "cover" }}
+																	/>
+																	<div className="flex-grow-1">
+																		<div className="d-flex justify-content-between align-items-center">
+																			<strong>{item.username}</strong>
+																			{item.createdAt && (
+																				<small className="text-muted">
+																					🕒 {new Date(item.createdAt).toLocaleString("vi-VN")}
+																				</small>
+																			)}
+																		</div>
 
-                  {/* nội dung */}
-                  <p className="mb-2">{item.comment}</p>
+																		{/* rating */}
+																		<div className="text-warning mb-1">
+																			{Array.from({ length: item.rating || 0 }, (_, i) => (
+																				<i key={i} className="fas fa-star" />
+																			))}
+																		</div>
 
-                  {/* ảnh đính kèm */}
-                  {Array.isArray(item.images) && item.images.length > 0 && (
-                    <div className="d-flex flex-wrap gap-2 mt-2">
-                      {item.images.map((url, idx) => (
-                        <img
-                          key={idx}
-                          src={url}
-                          alt="evidence"
-                          style={{
-                            width: 80,
-                            height: 80,
-                            objectFit: "cover",
-                            borderRadius: 6,
-                          }}
-                          loading="lazy"
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+																		{/* nội dung */}
+																		<p className="mb-2">{item.comment}</p>
 
-              {/* Seller reply nếu có → thụt vào như comment */}
-              {item.sellerReply && (
-                <div className="ms-5 mt-3">
-                  <div className="d-flex align-items-start">
-                    <img
-                      src="/assets/user/images/default-avatar.png"
-                      alt="/"
-                      className="rounded-circle me-3"
-                      style={{ width: "35px", height: "35px", objectFit: "cover" }}
-                    />
-                    <div>
-                      <span className="badge bg-secondary mb-1">Cửa hàng</span>
-                      <div className="small text-muted">Phản hồi:</div>
-                      <p className="mb-0">{item.sellerReply}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </li>
-          ))}
-        </ol>
-      </div>
-    </div>
-  </div>
-</div>
+																		{/* ảnh đính kèm */}
+																		{Array.isArray(item.images) && item.images.length > 0 && (
+																			<div className="d-flex flex-wrap gap-2 mt-2">
+																				{item.images.map((url, idx) => (
+																					<img
+																						key={idx}
+																						src={url}
+																						alt="evidence"
+																						style={{
+																							width: 80,
+																							height: 80,
+																							objectFit: "cover",
+																							borderRadius: 6,
+																						}}
+																						loading="lazy"
+																					/>
+																				))}
+																			</div>
+																		)}
+																	</div>
+																</div>
+
+																{/* Seller reply nếu có → thụt vào như comment */}
+																{item.sellerReply && (
+																	<div className="ms-5 mt-3">
+																		<div className="d-flex align-items-start">
+																			<img
+																				src="/assets/user/images/default-avatar.png"
+																				alt="/"
+																				className="rounded-circle me-3"
+																				style={{ width: "35px", height: "35px", objectFit: "cover" }}
+																			/>
+																			<div>
+																				<span className="badge bg-secondary mb-1">Cửa hàng</span>
+																				<div className="small text-muted">Phản hồi:</div>
+																				<p className="mb-0">{item.sellerReply}</p>
+																			</div>
+																		</div>
+																	</div>
+																)}
+															</li>
+														))}
+													</ol>
+												</div>
+											</div>
+										</div>
+									</div>
 
 								</div>
 							</div>
@@ -1253,14 +1339,14 @@ const normalizedEvaluates = useMemo(() => {
 											<div className="swiper-slide">
 												<div className="shop-card style-1">
 													<div className="dz-media">
- <img
-                                        src={
-                                          relateProduct.productThumbnail.startsWith('http')
-                                            ? relateProduct.productThumbnail
-                                            : relateProduct.productThumbnail.endsWith('.jpg')
-                                              ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${relateProduct.productThumbnail}`
-                                              : `/uploads/${relateProduct.productThumbnail}`
-                                        } />																<div className="shop-meta">
+														<img
+															src={
+																relateProduct.productThumbnail.startsWith('http')
+																	? relateProduct.productThumbnail
+																	: relateProduct.productThumbnail.endsWith('.jpg')
+																		? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${relateProduct.productThumbnail}`
+																		: `/uploads/${relateProduct.productThumbnail}`
+															} />																<div className="shop-meta">
 															<a href="javascript:void(0);" className="btn btn-secondary btn-md btn-rounded" data-bs-toggle="modal" data-bs-target="#exampleModal">
 																<i className="fa-solid fa-eye d-md-none d-block"></i>
 																<span className="d-md-block d-none">Xem nhanh</span>

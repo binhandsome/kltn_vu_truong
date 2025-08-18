@@ -1,10 +1,7 @@
 package com.kltnbe.recommendservice.services;
 
 import com.kltnbe.recommendservice.Helpers.UserServiceProxy;
-import com.kltnbe.recommendservice.dtos.req.RecommendNewReq;
-import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
-import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
-import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
+import com.kltnbe.recommendservice.dtos.req.*;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import com.kltnbe.recommendservice.entities.SaveHistoryEvaluate;
 import com.kltnbe.recommendservice.entities.SaveHistorySearchImage;
@@ -14,8 +11,10 @@ import com.kltnbe.recommendservice.repositories.SaveHistorySearchImageRepository
 import com.kltnbe.recommendservice.repositories.SaveHistoryUserEvaluateRepository;
 import com.kltnbe.recommendservice.repositories.UserAsinHistoryRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.objenesis.strategy.BaseInstantiatorStrategy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -135,6 +134,46 @@ public class RecommendServiceImpl implements RecommendService {
         Collections.shuffle(result);
         return result;
     }
+
+    @Override
+    public ExportMetaReponse export_meta() {
+        Mono<ExportMetaReponse> mono = pythonWebClient.get()
+                .uri("/export_meta")
+                .retrieve()
+                .bodyToMono(ExportMetaReponse.class);
+        return mono.block();
+    }
+
+    @Override
+    public String runBuildOffline(RunBuildOfflineRequest runBuildOfflineRequest) {
+        Map<String, Object> response = pythonWebClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/run_build_offline")
+                        .queryParam("meta_path", runBuildOfflineRequest.getMeta_path())
+                        .queryParam("topk", runBuildOfflineRequest.getTopk())
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .block();
+
+        return response.get("status").toString();
+    }
+
+    @Override
+    @Async
+    public void importRecommendations() {
+        ImportRecommend importRecommend = new ImportRecommend();
+        Map<String, Object> response = pythonWebClient.post()
+                .uri("/import_recommendations")
+                .bodyValue(importRecommend)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .block();
+
+        String status = response.get("status").toString();
+        // TODO: update DB step 3 hoặc log lại status
+    }
+
 
     public String[] findRecommendByAsin(String asin) {
         AsinRecommendation recommendations = asinRecommendationRepository.findByAsin(asin);

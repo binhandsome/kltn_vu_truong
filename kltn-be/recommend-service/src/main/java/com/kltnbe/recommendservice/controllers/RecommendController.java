@@ -2,10 +2,7 @@ package com.kltnbe.recommendservice.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.kltnbe.recommendservice.dtos.req.RecommendNewReq;
-import com.kltnbe.recommendservice.dtos.req.RecommendResponse;
-import com.kltnbe.recommendservice.dtos.req.RequestRecommend;
-import com.kltnbe.recommendservice.dtos.req.UserAsinHistoryRequest;
+import com.kltnbe.recommendservice.dtos.req.*;
 import com.kltnbe.recommendservice.entities.AsinRecommendation;
 import com.kltnbe.recommendservice.services.RecommendService;
 import com.kltnbe.security.utils.CustomUserDetails;
@@ -40,7 +37,6 @@ public class RecommendController {
     List<String> getAllRecommendByUserId(@RequestParam Long authId) {
         return recommendService.getAllAsinRecommendHisTory(authId);
     }
-
     @GetMapping("/findRecommendByAsin")
    String[] findRecommendByAsin(String asin) {
         return recommendService.findRecommendByAsin(asin);
@@ -71,7 +67,19 @@ public class RecommendController {
             e.printStackTrace();
         }        return ResponseEntity.ok(resp);
     }
-
+    @GetMapping("/export_meta")
+    public ResponseEntity<ExportMetaReponse> exportMeta() {
+        return ResponseEntity.ok(recommendService.export_meta());
+    }
+    @PostMapping("/run_build_offline")
+    public ResponseEntity<String>  runBuildOffline(@RequestBody RunBuildOfflineRequest runBuildOfflineRequest) {
+        return ResponseEntity.ok(recommendService.runBuildOffline(runBuildOfflineRequest));
+    }
+    @PostMapping("/import_recommendations")
+    public ResponseEntity<String> importRecommendations() {
+        recommendService.importRecommendations();
+        return ResponseEntity.ok("success");
+    }
     @PostMapping("/saveAsinRecommend")
     public ResponseEntity<?>  saveAsinRecommend(@RequestBody RequestRecommend requestRecommend) {
         recommendService.saveAsinRecommendation(requestRecommend);

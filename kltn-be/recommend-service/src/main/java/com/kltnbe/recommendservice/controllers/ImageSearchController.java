@@ -55,7 +55,6 @@ public class ImageSearchController {
             saveHistorySearchImage.setRecommendAsins(asinStr);
             saveHistorySearchImageRepository.save(saveHistorySearchImage);
         }
-
         return ResponseEntity.ok(asins);
     }
 
