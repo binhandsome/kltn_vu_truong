@@ -17,6 +17,9 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long accessTokenExpiration;
 
+    @Value("${jwt.issuer}")
+    private String issuer;
+
     @Value("${jwt.refresh.expiration}")
     private long refreshTokenExpiration;
 
@@ -25,6 +28,7 @@ public class JwtUtil {
     // Tạo access token với username và role (chỉ một role: USER, SELLER, hoặc ADMIN)
     public String generateAccessToken(String username, Long authId, String role) {
         return Jwts.builder()
+                .setIssuer(issuer)
                 .setSubject(username) // ✅ giữ username là subject
                 .claim("auth_id", authId) // ✅ thêm auth_id làm claim riêng
                 .claim("role", "ROLE_" + role) // ROLE_SELLER, ROLE_ADMIN
