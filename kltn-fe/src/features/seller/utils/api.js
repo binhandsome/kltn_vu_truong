@@ -3,7 +3,7 @@ import { getNavigator } from './navigation';
 import { getApiMessage, getApiCode } from './error';
 
 export const api = axios.create({
-  baseURL: 'http://localhost:8089/api/seller', // chỉnh theo BE của bạn
+  baseURL: 'http://localhost:8765/api/seller', // chỉnh theo BE của bạn
 });
 
 // đính kèm token tự động

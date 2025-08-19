@@ -40,7 +40,7 @@ function HomePage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get('http://localhost:8083/api/products/top-discounted', {
+        const res = await axios.get('http://localhost:8765/api/products/top-discounted', {
           params: { size: 5, status: 'active' },
         });
         setTop5Products(Array.isArray(res.data) ? res.data : (res.data?.content ?? []));
@@ -56,7 +56,7 @@ function HomePage() {
   const [productTypeCount, setProductTypeCount] = useState([]);
   const getAllCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
+      const response = await axios.get('http://localhost:8765/api/products/getAllCategories');
       setSalesRankCount(response.data?.salesRankCount || {});
       setProductTypeCount(response.data?.productTypeCount || {});
       setTags(response.data?.tags || {}); // ✅ thêm dòng này
@@ -76,7 +76,7 @@ function HomePage() {
     (async () => {
       try {
         // lấy 1 mẻ lớn, đủ để client lọc 8 sản phẩm/mục
-        const res = await axios.get('http://localhost:8085/api/search/searchAdvance', {
+        const res = await axios.get('http://localhost:8765/api/search/searchAdvance', {
           params: { page: 0, size: 120 },
         });
         const list = res?.data?.content ?? [];
@@ -144,7 +144,7 @@ function HomePage() {
         price: parseFloat(product.productPrice),
         cartId,
       };
-      const response = await axios.post('http://localhost:8084/api/cart/addCart', payload);
+      const response = await axios.post('http://localhost:8765/api/cart/addCart', payload);
       if (response.data.cartId) {
         localStorage.setItem('cartId', response.data.cartId);
       }
@@ -208,7 +208,7 @@ function HomePage() {
   // HomePage.js
   const fetchProductDetail = async (asin) => {
     try {
-      const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+      const res = await axios.get(`http://localhost:8765/api/products/productDetail/${asin}`);
       const raw = res.data || {};
 
       // Lấy bản trong danh sách hiện có để fallback (grid/home feed/top5)
@@ -292,7 +292,7 @@ function HomePage() {
 
     (async () => {
       try {
-        let url = `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}`;
+        let url = `http://localhost:8765/api/product-variants/available-stock?productId=${selectedProduct.productId}`;
         if (selectedSize) url += `&sizeId=${selectedSize.sizeId ?? selectedSize.size_id ?? selectedSize.id}`;
         if (selectedColor) url += `&colorId=${selectedColor.colorId ?? selectedColor.color_id ?? selectedColor.id}`;
 
@@ -344,7 +344,7 @@ function HomePage() {
         colorAsin: selectedProduct.colorAsin || "[]", // backend của bạn đang expect JSON string
       };
 
-      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
       if (response.data.cartId) localStorage.setItem("cartId", response.data.cartId);
 
       window.dispatchEvent(new Event("cartUpdated"));
@@ -363,18 +363,18 @@ function HomePage() {
     const isInWishlist = wishlistItems.some((item) => item.asin === asin);
     try {
       if (isInWishlist) {
-        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+        await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         triggerToast("🗑️ Đã xóa sản phẩm khỏi wishlist");
       } else {
-        await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+        await axios.post(`http://localhost:8765/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
         triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
       }
 
-      const res = await axios.get("http://localhost:8083/api/wishlist", {
+      const res = await axios.get("http://localhost:8765/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
@@ -414,7 +414,7 @@ function HomePage() {
     const formData = new FormData();
     formData.append("file", selectedFile);
     try {
-      const res = await axios.post("http://localhost:8088/api/search/search-image", formData, {
+      const res = await axios.post("http://localhost:8765/api/search/search-image", formData, {
      headers: {
   Authorization: `Bearer ${token}`,
 },

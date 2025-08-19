@@ -42,7 +42,7 @@ const UserDashboard = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await axios.get(
-        `http://localhost:8091/api/admin/sellers/getListCCCDByUser`, {
+        `http://localhost:8765/api/admin/sellers/getListCCCDByUser`, {
         params: {
           userId,
         },
@@ -72,7 +72,7 @@ const UserDashboard = () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
 
-        const res = await axios.get(`http://localhost:8091/api/admin/users/check-email?email=${form.email}`, {
+        const res = await axios.get(`http://localhost:8765/api/admin/users/check-email?email=${form.email}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -89,7 +89,7 @@ const UserDashboard = () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
 
-        const res = await axios.get(`http://localhost:8091/api/admin/users/check-username?username=${form.username}`, {
+        const res = await axios.get(`http://localhost:8765/api/admin/users/check-username?username=${form.username}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -111,7 +111,7 @@ const UserDashboard = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
-      const res = await axios.get('http://localhost:8091/api/admin/users', {
+      const res = await axios.get('http://localhost:8765/api/admin/users', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -129,7 +129,7 @@ const UserDashboard = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
-      const res = await axios.get(`http://localhost:8091/api/admin/users/search?keyword=${keyword}`, {
+      const res = await axios.get(`http://localhost:8765/api/admin/users/search?keyword=${keyword}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -142,7 +142,7 @@ const UserDashboard = () => {
 
   const toggleBan = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
-    await axios.put(`http://localhost:8091/api/admin/users/${id}/toggle-ban`, null, {
+    await axios.put(`http://localhost:8765/api/admin/users/${id}/toggle-ban`, null, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -153,7 +153,7 @@ const UserDashboard = () => {
   const resetPassword = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
 
-    await axios.post(`http://localhost:8091/api/admin/users/${id}/reset-password`, null, {
+    await axios.post(`http://localhost:8765/api/admin/users/${id}/reset-password`, null, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -164,7 +164,7 @@ const UserDashboard = () => {
     const accessToken = localStorage.getItem("accessToken");
     try {
       const res = await axios.put(
-        `http://localhost:8091/api/admin/users/upgradeToSeller/${userId}`,
+        `http://localhost:8765/api/admin/users/upgradeToSeller/${userId}`,
         null,
         {
           headers: {
@@ -199,7 +199,7 @@ const UserDashboard = () => {
     const accessToken = localStorage.getItem("accessToken");
     try {
       const res = await axios.put(
-        `http://localhost:8091/api/admin/users/activeUserById/${userId}`,
+        `http://localhost:8765/api/admin/users/activeUserById/${userId}`,
         null,
         {
           headers: {
@@ -239,7 +239,7 @@ const UserDashboard = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
-      await axios.post('http://localhost:8091/api/admin/users/create', form, {
+      await axios.post('http://localhost:8765/api/admin/users/create', form, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

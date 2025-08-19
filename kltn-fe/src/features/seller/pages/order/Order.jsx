@@ -122,7 +122,7 @@ function Order() {
   const [skipEffect, setSkipEffect] = useState(false);
     const navigate = useNavigate();
   
-  const API_URL = 'http://localhost:8089/api/seller';
+  const API_URL = 'http://localhost:8765/api/seller';
   // ✅ Đặt mapping deliveryOptions TRƯỚC
   const deliveryOptions = {
     pending: { default: "pending", options: ["packed"] },

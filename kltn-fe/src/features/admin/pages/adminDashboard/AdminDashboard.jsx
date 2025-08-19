@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8091/api/admin/orders';
+const API_BASE_URL = 'http://localhost:8765/api/admin/orders';
 function AdminDashboard()  {
   const [weeklyData, setWeeklyData] = useState({ totalSales: 0, totalCustomers: 0, totalIncome: 0 });
   const [monthlyData, setMonthlyData] = useState({ totalSales: 0, totalCustomers: 0, totalIncome: 0 });

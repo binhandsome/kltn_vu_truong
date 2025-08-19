@@ -7,10 +7,10 @@ import { useParams } from 'react-router-dom';
 const AddProduct = () => {
 
   const [message, setMessage] = useState('');
-  const API_URL = 'http://localhost:8089/api/seller';
-  const API_URL_ADMIN_PRODUCT = 'http://localhost:8091/api/admin/products';
+  const API_URL = 'http://localhost:8765/api/seller';
+  const API_URL_ADMIN_PRODUCT = 'http://localhost:8765/api/admin/products';
 
-  const API_URL_PRODUCT = 'http://localhost:8083/api/products';
+  const API_URL_PRODUCT = 'http://localhost:8765/api/products';
   const [availableColors, setAvailableColors] = useState([]);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedColors, setSelectedColors] = useState([]);

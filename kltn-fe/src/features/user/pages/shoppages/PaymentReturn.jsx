@@ -20,7 +20,7 @@ const PaymentReturn = () => {
     try {
       const token = localStorage.getItem("accessToken") || "";
       const cartId = localStorage.getItem("cartId") || "";
-      const res = await axios.get("http://localhost:8084/api/cart/getItemCart", {
+      const res = await axios.get("http://localhost:8765/api/cart/getItemCart", {
         params: { token, cartId },
       });
 
@@ -68,7 +68,7 @@ const PaymentReturn = () => {
     setLoading(true);
 
     try {
-      const response = await axios.get("http://localhost:8086/api/orders/getOrderByIdUser", {
+      const response = await axios.get("http://localhost:8765/api/orders/getOrderByIdUser", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 

@@ -23,7 +23,7 @@ const RegisterSeller = () => {
   const [messageSeller, setMessageSeller] = useState('');
   const [otp, setOtp] = useState('');
   const [messageUsername, setMessegerUsername] = useState();
-  const API_URL = 'http://localhost:8081/api/auth';
+  const API_URL = 'http://localhost:8765/api/auth';
   const [isOtpInputVisible, setIsOtpInputVisible] = useState(false);
   const [isSendingDisabled, setIsSendingDisabled] = useState(false);
     const handleSendVerification = async () => {
@@ -139,7 +139,7 @@ const registerSeller = async (event) => {
       console.log(`[FormData] ${pair[0]}:`, pair[1]);
     }
 
-    const response = await axios.post('http://localhost:8089/api/seller/registerSeller', formData, {
+    const response = await axios.post('http://localhost:8765/api/seller/registerSeller', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

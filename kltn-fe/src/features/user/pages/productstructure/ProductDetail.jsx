@@ -138,7 +138,7 @@ useEffect(() => {
 	useEffect(() => {
 		const getRecommendByAsin = async () => {
 			try {
-				const response = await axios.get("http://localhost:8085/api/search/getRecommendByAsin", {
+				const response = await axios.get("http://localhost:8765/api/search/getRecommendByAsin", {
 					params: { asin }
 				});
 				setRelatedProducts(response.data);
@@ -152,7 +152,7 @@ useEffect(() => {
 	// ✅ Load review
 	useEffect(() => {
 		if (asin) {
-			axios.get(`http://localhost:8083/api/reviews/public/${asin}`)  // ✅ Gọi endpoint public không yêu cầu authId
+			axios.get(`http://localhost:8765/api/reviews/public/${asin}`)  // ✅ Gọi endpoint public không yêu cầu authId
 				.then(res => setReviews(res.data))
 				.catch(err => console.error("Lỗi khi fetch reviews:", err));
 		}
@@ -165,7 +165,7 @@ useEffect(() => {
 
 		setToken(accessToken); // ✅ Gán vào state
 
-		axios.get('http://localhost:8081/api/auth/me', {
+		axios.get('http://localhost:8765/api/auth/me', {
 			headers: { Authorization: `Bearer ${accessToken}` }
 		})
 			.then(res => {
@@ -189,7 +189,7 @@ useEffect(() => {
 
 	const fetchReviews = async () => {
 		try {
-			const res = await axios.get(`http://localhost:8083/api/reviews/public/${asin}`); // ✅ sửa giống trên
+			const res = await axios.get(`http://localhost:8765/api/reviews/public/${asin}`); // ✅ sửa giống trên
 			setReviews(res.data);
 		} catch (err) {
 			console.error("Lỗi khi fetch reviews:", err);
@@ -215,7 +215,7 @@ useEffect(() => {
 		}
 
 		try {
-			const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, {
+			const res = await axios.get(`http://localhost:8765/api/product-variants/available-stock`, {
 				params: {
 					productId: products.productId,
 					...(sizeId && { sizeId }),
@@ -271,7 +271,7 @@ useEffect(() => {
 				: null;
 
 			// 👉 Lấy giỏ hàng hiện tại
-			const cartRes = await axios.get("http://localhost:8084/api/cart/getCart", {
+			const cartRes = await axios.get("http://localhost:8765/api/cart/getCart", {
 				params: { token, cartId },
 			});
 
@@ -289,7 +289,7 @@ useEffect(() => {
 			const totalDesired = currentQuantityInCart + quantity;
 
 			// 🔍 Kiểm tra tồn kho
-			const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, {
+			const res = await axios.get(`http://localhost:8765/api/product-variants/available-stock`, {
 				params: {
 					productId: products.productId,
 					...(sizeId && { sizeId }),
@@ -319,7 +319,7 @@ useEffect(() => {
 				colorAsin: JSON.stringify(colorAsinArray || []),
 			};
 
-			const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+			const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
 
 			if (response.data.cartId) {
 				localStorage.setItem("cartId", response.data.cartId);
@@ -349,7 +349,7 @@ useEffect(() => {
 		}
 
 		try {
-			const res = await axios.post(`http://localhost:8083/api/reviews/create`, {
+			const res = await axios.post(`http://localhost:8765/api/reviews/create`, {
 				productAsin: asin,
 				comment: newReview,
 				rating,
@@ -372,7 +372,7 @@ useEffect(() => {
 		if (!newReply.trim() || !token || !user?.userId) return;
 
 		try {
-			const res = await axios.post(`http://localhost:8083/api/reviews/create`, {
+			const res = await axios.post(`http://localhost:8765/api/reviews/create`, {
 				productAsin: asin,
 				comment: newReply,
 				userId: user.userId,
@@ -399,7 +399,7 @@ useEffect(() => {
 		}
 
 		try {
-			await axios.delete(`http://localhost:8083/api/reviews/${reviewId}/user`, {
+			await axios.delete(`http://localhost:8765/api/reviews/${reviewId}/user`, {
 				params: { authId: user.userId },
 				headers: { Authorization: `Bearer ${token}` },
 			});
@@ -424,7 +424,7 @@ useEffect(() => {
 
 		try {
 			await axios.put(
-				`http://localhost:8083/api/reviews/${reviewId}`,
+				`http://localhost:8765/api/reviews/${reviewId}`,
 				{
 					comment: editText,
 					rating: editRating || 1, // đảm bảo gửi số hợp lệ từ 1-5
@@ -472,7 +472,7 @@ useEffect(() => {
 			return;
 		}
 		try {
-			const response = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+			const response = await axios.get(`http://localhost:8765/api/products/productDetail/${asin}`);
 			setProducts(response.data);
 		} catch (error) {
 			console.error('Lỗi khi gọi API:', error);
@@ -521,7 +521,7 @@ useEffect(() => {
 	useEffect(() => {
 		if (!asin) return;
 		axios
-			.get(`http://localhost:8083/api/products/getAllEvaluateByOrderItemAndStatus/${asin}`)
+			.get(`http://localhost:8765/api/products/getAllEvaluateByOrderItemAndStatus/${asin}`)
 			.then((res) => setEvaluates(res.data || []))
 			.catch((err) => console.error("Lỗi khi fetch evaluates:", err));
 	}, [asin]);

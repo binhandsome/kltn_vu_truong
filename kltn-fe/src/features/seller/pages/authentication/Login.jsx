@@ -32,7 +32,7 @@ const handleChange = (e, index) => {
     }
      const payload = { email, password };
    try {
-  const response = await axios.post("http://localhost:8089/api/seller/checkLoginSeller", payload);
+  const response = await axios.post("http://localhost:8765/api/seller/checkLoginSeller", payload);
   if (response.status === 200) {
     setMessage('' + response.data.message);
     setShowModal(true);
@@ -73,7 +73,7 @@ const verifyLoginSeller = async () => {
   console.log("📦 Payload gửi lên server:", payload);
 
   try {
-    const response = await axios.post("http://localhost:8089/api/seller/verifyLoginSeller", payload);
+    const response = await axios.post("http://localhost:8765/api/seller/verifyLoginSeller", payload);
 
     console.log("📥 Phản hồi từ server:", response.data);
 

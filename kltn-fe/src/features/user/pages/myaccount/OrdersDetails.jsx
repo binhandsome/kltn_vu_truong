@@ -112,7 +112,7 @@ const { state } = useLocation();
 				colorAsin: JSON.stringify(selectedProduct.colors || []),
 			};
 
-			const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+			const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
 			if (response.data.cartId) {
 				localStorage.setItem("cartId", response.data.cartId);
 			}
@@ -192,7 +192,7 @@ const { state } = useLocation();
 	const fetchRecommendations = async (asins) => {
 		setLoading(true);
 		try {
-			const response = await axios.get('http://localhost:8085/api/search/getRecommendByAsins', {
+			const response = await axios.get('http://localhost:8765/api/search/getRecommendByAsins', {
 				params: { asins }, // axios sẽ chuyển thành ?asins=B00AQZHC5K&asins=B00AQZO4J2
 				paramsSerializer: (params) => {
 					// Đảm bảo list được serialize đúng cách
@@ -227,7 +227,7 @@ const { state } = useLocation();
 
 		try {
 			const response = await axios.put(
-				"http://localhost:8086/api/orders/updateMethodOrder",
+				"http://localhost:8765/api/orders/updateMethodOrder",
 				{}, // body rỗng
 				{
 					params: {
@@ -264,7 +264,7 @@ const { state } = useLocation();
 
 		try {
 			const response = await axios.put(
-				"http://localhost:8086/api/orders/updateMethodOrder",
+				"http://localhost:8765/api/orders/updateMethodOrder",
 				payload, // ✅ Body JSON
 				{
 					params: {
@@ -349,7 +349,7 @@ const getMyOrderDetail = async () => {
   try {
     setLoading(true);
     const response = await axios.get(
-      "http://localhost:8086/api/orders/getOrderByIdUserAndMasterOrderId",
+      "http://localhost:8765/api/orders/getOrderByIdUserAndMasterOrderId",
       {
         params: {
           masterOrderId: order.masterOrderId,
@@ -397,7 +397,7 @@ const addEvaluate = async () => {
     }
 
     const response = await axios.post(
-      "http://localhost:8083/api/products/uploadImgToProductEvaluate",
+      "http://localhost:8765/api/products/uploadImgToProductEvaluate",
       formData,
       {
         headers: {
@@ -461,7 +461,7 @@ const handleSubmit = (e) => {
 	// 		const confirmCancel = window.confirm("Bạn có chắc muốn huỷ đơn này?");
 	// 		if (!confirmCancel) return;
 
-	// 		const res = await axios.put(`http://localhost:8086/api/orders/${order.orderId}/cancel`, {}, {
+	// 		const res = await axios.put(`http://localhost:8765/api/orders/${order.orderId}/cancel`, {}, {
 	// 			headers: { Authorization: `Bearer ${token}` }
 	// 		});
 
@@ -483,7 +483,7 @@ const handleSubmit = (e) => {
 
 		try {
 			const token = localStorage.getItem("accessToken");
-			const res = await axios.post(`http://localhost:8086/api/orders/${order.orderId}/return`, {
+			const res = await axios.post(`http://localhost:8765/api/orders/${order.orderId}/return`, {
 				reason
 			}, {
 				headers: { Authorization: `Bearer ${token}` }

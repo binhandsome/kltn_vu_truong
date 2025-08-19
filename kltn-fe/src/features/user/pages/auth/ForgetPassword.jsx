@@ -26,7 +26,6 @@ const showToastMessage = (msg) => {
   setTimeout(() => setShowToast(false), 2000);
 };  
   const handleSendVerification = async () => {
-    // Kiểm tra định dạng email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       showToastMessage("❌ Email không hợp lệ. Vui lòng nhập đúng định dạng email.");

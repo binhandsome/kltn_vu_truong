@@ -75,7 +75,7 @@ useEffect(() => {
         shops.map(async (shop) => {
           try {
             const res = await axios.get(
-              `http://localhost:8089/api/seller/getDiscountToUser?shopId=${shop.storeId}`
+              `http://localhost:8765/api/seller/getDiscountToUser?shopId=${shop.storeId}`
             );
 
             const discounts = res.data || [];
@@ -171,7 +171,7 @@ const fetchAvailableStock = async (productId, sizeId = null, colorId = null) => 
   console.log("🔍 Gửi request fetchAvailableStock:", { productId, sizeId: effectiveSizeId, colorId });
 
   try {
-    const response = await axios.get("http://localhost:8083/api/product-variants/available-stock", {
+    const response = await axios.get("http://localhost:8765/api/product-variants/available-stock", {
       params: {
         productId,
         sizeId: effectiveSizeId, // Chỉ gửi nếu có giá trị
@@ -271,7 +271,7 @@ const groupedByShop = listCartById?.items?.reduce((acc, item) => {
     setEditQuantity(val);
   };
    useEffect(() => {
-    axios.get('http://localhost:8086/api/shippingMethods')
+    axios.get('http://localhost:8765/api/shippingMethods')
       .then(res => {
         setShippingMethods(res.data);
         setSelectedShippingMethod(res.data[0]); // mặc định chọn phương thức đầu tiên
@@ -286,7 +286,7 @@ const refreshWholeCart = async () => {
   const token = localStorage.getItem("accessToken") || "";
   const cartId = localStorage.getItem("cartId") || "";
   try {
-    const res = await axios.get("http://localhost:8084/api/cart/getItemCart", {
+    const res = await axios.get("http://localhost:8765/api/cart/getItemCart", {
       params: {
         token: token || undefined,
         cartId: token ? undefined : cartId,
@@ -377,7 +377,7 @@ const saveOrder = async () => {
         accessToken: tokenAccess,
         addressId: addressMain,
       };
-      endpoint = "http://localhost:8086/api/orders/placeOrder";
+      endpoint = "http://localhost:8765/api/orders/placeOrder";
     } else {
       if (
         !firstName ||
@@ -403,7 +403,7 @@ const saveOrder = async () => {
         totalPages,
         selectedDiscounts,
       };
-      endpoint = "http://localhost:8086/api/orders/placeGuestOrder";
+      endpoint = "http://localhost:8765/api/orders/placeGuestOrder";
     }
 
     // Gọi đặt hàng
@@ -425,7 +425,7 @@ const saveOrder = async () => {
     await Promise.all(
       purchasedAsins.map((asin) =>
         axios
-          .post("http://localhost:8084/api/cart/removeItem", {
+          .post("http://localhost:8765/api/cart/removeItem", {
             token: tokenAccess || "",
             cartId,
             asin,
@@ -496,7 +496,7 @@ const removeItemFromCart = async (asin) => {
   const cartId = localStorage.getItem("cartId") || '';
   const token = localStorage.getItem("accessToken") || '';
   try {
-    await axios.post('http://localhost:8084/api/cart/removeItem', {
+    await axios.post('http://localhost:8765/api/cart/removeItem', {
       token,
       cartId,
       asin,
@@ -629,7 +629,7 @@ const sendInfoAddress = async () => {
       },
     };
 
-    const response = await axios.post("http://localhost:8081/api/user/addAdressWithUser", payload);
+    const response = await axios.post("http://localhost:8765/api/user/addAdressWithUser", payload);
     console.log("✅ Đã thêm địa chỉ:", response.data);
 
     // Reset form
@@ -701,7 +701,7 @@ const sendEditAddress = async () => {
       ? { headers: { Authorization: `Bearer ${accessToken}` } }
       : {};
 
-    await axios.put("http://localhost:8081/api/user/updateAddress", payload, config);
+    await axios.put("http://localhost:8765/api/user/updateAddress", payload, config);
 
     showToastMessage("Sửa địa chỉ thành công!", "success");
 
@@ -836,7 +836,7 @@ useEffect(() => {
 const getAddressWithUser = async () => {
   const token = localStorage.getItem("accessToken");
   try {
-    const response = await axios.get("http://localhost:8081/api/user/addressAllByUser", {
+    const response = await axios.get("http://localhost:8765/api/user/addressAllByUser", {
       params: { accessToken: token }
     });
     const addresses = response.data;
@@ -882,7 +882,7 @@ const cartSelect = token || cartId || '';
     return;
   }
   try {
-    const cartResponse = await axios.get('http://localhost:8084/api/cart/getCartByID', {
+    const cartResponse = await axios.get('http://localhost:8765/api/cart/getCartByID', {
       params: { cartID: cartSelect, asin: selectedItemsCart },
 paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
     });
@@ -890,7 +890,7 @@ paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
     const cartItems = cartResponse.data.items || [];
 
     const asins = cartItems.map(item => item.asin).join(',');
-    const { data: products } = await axios.get('http://localhost:8083/api/products/listByAsin', {
+    const { data: products } = await axios.get('http://localhost:8765/api/products/listByAsin', {
       params: { asins }
     });
     const combined = cartItems
@@ -2073,7 +2073,7 @@ trải nghiệm của bạn trên toàn bộ trang web này và cho các mục �
                           const token = localStorage.getItem("accessToken") || '';
                           const cartId = localStorage.getItem("cartId") || '';
                           const price = editingItem.unitPrice;
-                          await axios.put("http://localhost:8084/api/cart/updateItem", {
+                          await axios.put("http://localhost:8765/api/cart/updateItem", {
                             token,
                             cartId,
                             asin: editingItem.asin,

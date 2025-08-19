@@ -17,7 +17,7 @@ import { refreshToken, isAccessTokenExpired } from '../apiService/authService';
     const [quantityMap, setQuantityMap] = useState({});
     const [wishlistItems, setWishlistItems] = useState([]);
     const [selectedItemsCart, setSelectedItemsCart] = useState([]);
-    const API_URL = 'http://localhost:8081/api/auth';
+    const API_URL = 'http://localhost:8765/api/auth';
     const navigate = useNavigate();
     const [toastMessage, setToastMessage] = useState('');
     const [showToast, setShowToast] = useState(false);
@@ -155,7 +155,7 @@ const getCartProduct = async () => {
   const cartId = token ? null : localStorage.getItem("cartId");
 
   try {
-    const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', {
+    const cartResponse = await axios.get('http://localhost:8765/api/cart/getCart', {
       params: { token, cartId }
     });
 
@@ -171,7 +171,7 @@ const getCartProduct = async () => {
     }
 
     const asins = cartItems.map(item => item.asin).join(',');
-    const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, {
+    const productResponse = await axios.get(`http://localhost:8765/api/products/listByAsin`, {
       params: { asins }
     });
 
@@ -243,7 +243,7 @@ const getCartProduct = async () => {
       nameColor,
     };
 
-    return axios.put('http://localhost:8084/api/cart/updateItem', payload)
+    return axios.put('http://localhost:8765/api/cart/updateItem', payload)
   .then(() => {
     window.dispatchEvent(new Event("cartUpdated"));
   });
@@ -261,7 +261,7 @@ const getCartProduct = async () => {
         const payload = { token, cartId, asin };
         
         // 🔁 Dùng POST thay vì DELETE
-        await axios.post('http://localhost:8084/api/cart/removeItem', payload);
+        await axios.post('http://localhost:8765/api/cart/removeItem', payload);
     
         window.dispatchEvent(new Event("cartUpdated"));
       } catch (err) {
@@ -294,7 +294,7 @@ const getCartProduct = async () => {
       const token = localStorage.getItem("accessToken");
       if (!token) return;
       try {
-        const res = await axios.get("http://localhost:8083/api/wishlist", {
+        const res = await axios.get("http://localhost:8765/api/wishlist", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setWishlistItems(res.data);
@@ -314,7 +314,7 @@ const getCartProduct = async () => {
       const token = localStorage.getItem("accessToken");
       if (!token) return;
       try {
-        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+        await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setWishlistItems(prev => prev.filter(item => item.asin !== asin));
@@ -358,7 +358,7 @@ const getCartProduct = async () => {
           if (item.hasSize && !sizeId) continue;
           if (item.hasColor && !colorId) continue;
         
-          const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, {
+          const res = await axios.get(`http://localhost:8765/api/product-variants/available-stock`, {
             params: {
               productId: item.productId,
               sizeId,
@@ -372,7 +372,7 @@ const getCartProduct = async () => {
             const token = localStorage.getItem("accessToken") || '';
             const cartId = localStorage.getItem("cartId") || '';
         
-            await axios.put("http://localhost:8084/api/cart/updateItem", {
+            await axios.put("http://localhost:8765/api/cart/updateItem", {
               token,
               cartId,
               asin: item.asin,
@@ -420,7 +420,7 @@ const fetchSuggest = useCallback(async (text) => {
     setSuggestions([]); setShowSuggest(false); return;
   }
   try {
-    const res = await axios.get('http://localhost:8083/api/products/suggest', {
+    const res = await axios.get('http://localhost:8765/api/products/suggest', {
       params: { q: text.trim(), limit: 8 },
     });
     setSuggestions(res.data || []);

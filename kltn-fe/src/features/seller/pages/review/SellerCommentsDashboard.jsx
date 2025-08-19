@@ -24,7 +24,7 @@ const toVNProductStatus = (s) => {
 
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:8089/api/seller/products", {
+      const res = await axios.get("http://localhost:8765/api/seller/products", {
         headers: { Authorization: `Bearer ${token}` },
       });
 

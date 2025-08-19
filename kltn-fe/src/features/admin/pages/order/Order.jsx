@@ -156,7 +156,7 @@ function Order() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [skipEffect, setSkipEffect] = useState(false);
-  const API_URL = 'http://localhost:8091/api/admin/orders';
+  const API_URL = 'http://localhost:8765/api/admin/orders';
 
 const deliveryOptions = {
   pending: { default: 'pending', options: ['packed'] },
@@ -215,7 +215,7 @@ const deliveryOptions = {
         ...(startDate && endDate ? { startDate, endDate } : {}),
         ...(selectedStatuses.length > 0 ? { status: selectedStatuses } : {}),
       };
-      const response = await axios.get("http://localhost:8091/api/admin/orders/dashboardAdmin", {
+      const response = await axios.get("http://localhost:8765/api/admin/orders/dashboardAdmin", {
         params,
         paramsSerializer: (params) =>
           new URLSearchParams(

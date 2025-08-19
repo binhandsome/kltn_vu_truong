@@ -110,7 +110,7 @@ const AllProduct = () => {
 	const navigate = useNavigate();
 	const getAllCategories = async () => {
 		try {
-			const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
+			const response = await axios.get('http://localhost:8765/api/products/getAllCategories');
 			setSalesRankCount(response.data.salesRankCount);
 			setProductTypeCount(response.data.productTypeCount);
 		} catch (error) {
@@ -175,7 +175,7 @@ const AllProduct = () => {
 				}
 				if (statuses.length > 0) params.status = statuses.join(','); // chuỗi phân cách dấu phẩy
 
-				const response = await axios.get('http://localhost:8085/api/search/searchAdvanceSeller', {
+				const response = await axios.get('http://localhost:8765/api/search/searchAdvanceSeller', {
 					params,
 					headers: {
 						Authorization: `Bearer ${accessToken}`,

@@ -7,7 +7,7 @@ import {
 import { Link } from 'react-router-dom';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a020f0', '#e6194B'];
-const API_SELLER = process.env.REACT_APP_API_SELLER || 'http://localhost:8089';
+const API_SELLER = process.env.REACT_APP_API_SELLER || 'http://localhost:8765';
 
 const AdminProductDashboard = () => {
   // Stats
@@ -34,7 +34,7 @@ const AdminProductDashboard = () => {
 
   const fetchTotalProducts = async () => {
     const accessToken = localStorage.getItem("accessToken");
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/total', {
+    const res = await axios.get('http://localhost:8765/api/admin/products/stats/total', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     setTotal(res.data);
@@ -42,7 +42,7 @@ const AdminProductDashboard = () => {
 
   const fetchProductByStatus = async () => {
     const accessToken = localStorage.getItem("accessToken");
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-status', {
+    const res = await axios.get('http://localhost:8765/api/admin/products/stats/by-status', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     setStatusStats(res.data || []);
@@ -50,7 +50,7 @@ const AdminProductDashboard = () => {
 
   const fetchProductByType = async () => {
     const accessToken = localStorage.getItem("accessToken");
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-type', {
+    const res = await axios.get('http://localhost:8765/api/admin/products/stats/by-type', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     setTypeStats(res.data || []);
@@ -58,7 +58,7 @@ const AdminProductDashboard = () => {
 
   const fetchProductByStore = async () => {
     const accessToken = localStorage.getItem("accessToken");
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-store', {
+    const res = await axios.get('http://localhost:8765/api/admin/products/stats/by-store', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     setStoreStats(res.data || []);
@@ -67,7 +67,7 @@ const AdminProductDashboard = () => {
 
   const fetchProductByCreatedMonth = async () => {
     const accessToken = localStorage.getItem("accessToken");
-    const res = await axios.get('http://localhost:8091/api/admin/products/stats/by-created-month', {
+    const res = await axios.get('http://localhost:8765/api/admin/products/stats/by-created-month', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     setCreatedStats(res.data || []);

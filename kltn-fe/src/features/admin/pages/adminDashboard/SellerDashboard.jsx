@@ -75,7 +75,7 @@ const handleViewCccd = async (shopId) => {
   try {
     const accessToken = localStorage.getItem("accessToken");
    const response = await axios.get(
-      `http://localhost:8091/api/admin/sellers/log-view-cccd`,{
+      `http://localhost:8765/api/admin/sellers/log-view-cccd`,{
         params: {
           shopId,
         },
@@ -95,7 +95,7 @@ const handleViewCccd = async (shopId) => {
 
   const fetchPendingShops = async () => {
     const accessToken = localStorage.getItem("accessToken");
-    const res = await axios.get('http://localhost:8091/api/admin/sellers/pending-shops', {
+    const res = await axios.get('http://localhost:8765/api/admin/sellers/pending-shops', {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -105,7 +105,7 @@ const handleViewCccd = async (shopId) => {
 
   const fetchShopEdits = async () => {
         const accessToken = localStorage.getItem("accessToken");
-    const res = await axios.get('http://localhost:8091/api/admin/sellers/pending-edits', {
+    const res = await axios.get('http://localhost:8765/api/admin/sellers/pending-edits', {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -120,7 +120,7 @@ const handleViewCccd = async (shopId) => {
       },
     })
 
-    const res = await axios.get('http://localhost:8091/api/admin/sellers/authentications', {
+    const res = await axios.get('http://localhost:8765/api/admin/sellers/authentications', {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -131,7 +131,7 @@ const handleViewCccd = async (shopId) => {
   const approveShop = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-shop/${id}`,null, {
+    await axios.put(`http://localhost:8765/api/admin/sellers/approve-shop/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -141,7 +141,7 @@ const handleViewCccd = async (shopId) => {
 
   const banShop = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
-    await axios.put(`http://localhost:8091/api/admin/sellers/ban-shop/${id}`,null, {
+    await axios.put(`http://localhost:8765/api/admin/sellers/ban-shop/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -152,7 +152,7 @@ const handleViewCccd = async (shopId) => {
   const approveEdit = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-edit/${id}`,null, {
+    await axios.put(`http://localhost:8765/api/admin/sellers/approve-edit/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -163,7 +163,7 @@ const handleViewCccd = async (shopId) => {
   const rejectEdit = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/reject-edit/${id}`,null, {
+    await axios.put(`http://localhost:8765/api/admin/sellers/reject-edit/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -174,7 +174,7 @@ const handleViewCccd = async (shopId) => {
   const approveAuth = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/approve-authentication/${id}`,null, {
+    await axios.put(`http://localhost:8765/api/admin/sellers/approve-authentication/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -185,7 +185,7 @@ const handleViewCccd = async (shopId) => {
   const rejectAuth = async (id) => {
         const accessToken = localStorage.getItem("accessToken");
 
-    await axios.put(`http://localhost:8091/api/admin/sellers/reject-authentication/${id}`,null, {
+    await axios.put(`http://localhost:8765/api/admin/sellers/reject-authentication/${id}`,null, {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },

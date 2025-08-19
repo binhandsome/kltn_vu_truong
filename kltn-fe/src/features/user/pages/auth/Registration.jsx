@@ -8,7 +8,7 @@ import { register,checkEmailExists } from '../../apiService/authService';
 import axios from 'axios';
 
 function Registration() {
-    const API_URL = 'http://localhost:8081/api/auth';
+    const API_URL = 'http://localhost:8765/api/auth';
     const [isOtpInputVisible, setIsOtpInputVisible] = useState(false);
     const [isSendingDisabled, setIsSendingDisabled] = useState(false);
     const [countdown, setCountdown] = useState(60);

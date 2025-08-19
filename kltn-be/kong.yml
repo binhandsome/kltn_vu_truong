@@ -9,6 +9,25 @@ consumers:
       - key: user-service
         secret: "aGtHd1hnM3NlcEh5U3lmaDhoUWVrZ0dZN0RZbGZxVXpKbFlGbFZKZ2JPRzFqcmMybWhVZFN5N0RoT0JreEdhVg=="
         algorithm: HS512
+plugins:
+  - name: cors
+    config:
+      origins:
+        - http://localhost:3000
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      headers:
+        - Authorization 
+        - Content-Type
+        - Cache-Control   # 👈 thêm cái này
+        - X-Requested-With
+        - Accept
+      credentials: true
+      max_age: 3600
 
 # ================== USER-SERVICE ==================
 services:
@@ -31,12 +50,12 @@ services:
           - name: jwt
             config:
               key_claim_name: iss
-              header_names: [ authorization ]
+              header_names: [ Authorization  ]
               uri_param_names: [ jwt ]
               claims_to_verify: [ exp ]
               run_on_preflight: false
               maximum_expiration: 0
-              secret_is_base64: false
+              secret_is_base64: true
 
   # ================== EMAIL (có JWT) ==================
   - name: email
@@ -45,16 +64,7 @@ services:
       - name: email-route
         paths: [ "/api/email" ]
         strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ authorization ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: false
+       
 
   # ================== PRODUCT (public) ==================
   - name: product
@@ -77,17 +87,7 @@ services:
       - name: cart-route
         paths: [ "/api/cart" ]
         strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ authorization ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: false
-
+      
   # ================== SEARCH (public) ==================
   - name: search
     url: http://host.docker.internal:8085
@@ -105,16 +105,7 @@ services:
           - /api/orders
           - /api/shippingMethods
         strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ authorization ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: false
+     
   # ================== PAYMENT (JWT) ==================
   - name: payment
     url: http://host.docker.internal:8087
@@ -122,16 +113,7 @@ services:
       - name: payment-route
         paths: [ "/api/payment" ]
         strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ authorization ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: false
+       
 
   # ================== RECOMMEND (JWT) ==================
   - name: recommend
@@ -142,35 +124,37 @@ services:
           - /api/recommend
           - /api/search
         strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ authorization ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: false
+      
 
 
   # ================== SELLER (JWT) ==================
   - name: seller
     url: http://host.docker.internal:8089
     routes:
-      - name: seller-route
-        paths: [ "/api/seller" ]
-        strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ authorization ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: false
+    # Public routes (không cần JWT)
+    - name: seller-public-route
+      paths:
+        - /api/seller/registerSeller
+        - /api/seller/verifyLoginSeller
+        - /api/seller/checkLoginSeller
+      strip_path: false
+
+    # Protected routes (cần JWT)
+    - name: seller-protected-route
+      paths:
+        - /api/seller
+      strip_path: false
+      plugins:
+        - name: jwt
+          config:
+            key_claim_name: iss
+            header_names: [ Authorization  ]
+            uri_param_names: [ jwt ]
+            claims_to_verify: [ exp ]
+            run_on_preflight: false
+            maximum_expiration: 0
+            secret_is_base64: true
+
 
   # ================== UPLOAD (JWT) ==================
   - name: upload
@@ -183,12 +167,12 @@ services:
           - name: jwt
             config:
               key_claim_name: iss
-              header_names: [ authorization ]
+              header_names: [ Authorization  ]
               uri_param_names: [ jwt ]
               claims_to_verify: [ exp ]
               run_on_preflight: false
               maximum_expiration: 0
-              secret_is_base64: false
+              secret_is_base64: true
 
   # ================== ADMIN (JWT) ==================
   - name: admin
@@ -201,9 +185,9 @@ services:
           - name: jwt
             config:
               key_claim_name: iss
-              header_names: [ authorization ]
+              header_names: [ Authorization  ]
               uri_param_names: [ jwt ]
               claims_to_verify: [ exp ]
               run_on_preflight: false
               maximum_expiration: 0
-              secret_is_base64: false
+              secret_is_base64: true

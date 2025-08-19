@@ -20,7 +20,7 @@ const AddProductVariant = () => {
   useEffect(() => {
     const fetchSizes = async () => {
       try {
-        const res = await axios.get(`http://localhost:8083/api/products/${asin}/sizes`);
+        const res = await axios.get(`http://localhost:8765/api/products/${asin}/sizes`);
         setSizes(res.data);
       } catch (err) {
         console.error("❌ Lỗi khi lấy size:", err);
@@ -29,7 +29,7 @@ const AddProductVariant = () => {
 
     const fetchColors = async () => {
       try {
-        const res = await axios.get("http://localhost:8083/api/products/colors");
+        const res = await axios.get("http://localhost:8765/api/products/colors");
         setColors(res.data);
       } catch (err) {
         console.error("❌ Lỗi khi lấy màu:", err);
@@ -58,7 +58,7 @@ const AddProductVariant = () => {
         }
   
         const res = await axios.get(
-          `http://localhost:8083/api/products/internal/productByAsin/${asin}?authId=${authId}`,
+          `http://localhost:8765/api/products/internal/productByAsin/${asin}?authId=${authId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -104,7 +104,7 @@ const AddProductVariant = () => {
       };
   
       await axios.post(
-        "http://localhost:8089/api/seller/variants",
+        "http://localhost:8765/api/seller/variants",
         payload,
         {
           headers: {
