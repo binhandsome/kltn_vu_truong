@@ -17,7 +17,7 @@ const AdminFeedbackTable = () => {
             const accessToken = localStorage.getItem("accessToken");
 
     try {
-      const res = await axios.get("http://localhost:8091/api/admin/feedback/all", {
+      const res = await axios.get("http://localhost:8765/api/admin/feedback/all", {
          headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -34,7 +34,7 @@ const AdminFeedbackTable = () => {
 
     try {
       await axios.put(
-        `http://localhost:8091/api/admin/feedback/reply/${selectedFeedback.id}`,
+        `http://localhost:8765/api/admin/feedback/reply/${selectedFeedback.id}`,
         reply,
         {
           headers: { "Content-Type": "text/plain" ,        Authorization: `Bearer ${accessToken}`,

@@ -106,7 +106,7 @@ function Dashboard() {
       const token = localStorage.getItem("accessToken");
       if (!token) return;
       try {
-        const res = await fetch(`http://localhost:8086/api/orders/statistics/sales/me?type=${statType}`, {
+        const res = await fetch(`http://localhost:8765/api/orders/statistics/sales/me?type=${statType}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -126,7 +126,7 @@ function Dashboard() {
       const token = localStorage.getItem("accessToken");
       if (!token) return;
       try {
-        const res = await fetch(`http://localhost:8086/api/orders/user?page=0&size=1000`, {
+        const res = await fetch(`http://localhost:8765/api/orders/user?page=0&size=1000`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

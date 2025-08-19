@@ -10,7 +10,7 @@ const CreateShop = () => {
   const [shopPhone, setShopPhone] = useState('');
   const [shopEmail, setShopEmail] = useState('');
   const [message, setMessage] = useState('');
-  const API_URL = 'http://localhost:8089/api/seller';
+  const API_URL = 'http://localhost:8765/api/seller';
   const navigate = useNavigate();
 
   const handleCreateShop = async (event) => {

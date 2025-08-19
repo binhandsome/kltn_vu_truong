@@ -118,7 +118,7 @@ function Orders() {
 		try {
 			setLoading(true);
 			const response = await axios.get(
-				"http://localhost:8086/api/orders/getOrderByIdUser",
+				"http://localhost:8765/api/orders/getOrderByIdUser",
 				{
 					headers: {
 						Authorization: `Bearer ${accessToken}`, // 👈 Thêm Bearer
@@ -155,7 +155,7 @@ function Orders() {
 		const token = localStorage.getItem("accessToken");
 		if (!token) return;
 
-		fetch(`http://localhost:8086/api/orders/user?page=${currentPage}&size=${pageSize}`, {
+		fetch(`http://localhost:8765/api/orders/user?page=${currentPage}&size=${pageSize}`, {
 			headers: {
 				Authorization: `Bearer ${token}`
 			}
@@ -182,7 +182,7 @@ function Orders() {
 
 		try {
 			const response = await axios.put(
-				"http://localhost:8086/api/orders/updateMethodOrder",
+				"http://localhost:8765/api/orders/updateMethodOrder",
 				payload, // ✅ Body là DeliveryAddressDTO
 				{
 					params: {
@@ -219,7 +219,7 @@ function Orders() {
 
 		if (!window.confirm("Bạn có chắc muốn huỷ đơn hàng này?")) return;
 
-		fetch(`http://localhost:8086/api/orders/${orderId}/cancel`, {
+		fetch(`http://localhost:8765/api/orders/${orderId}/cancel`, {
 			method: 'POST',
 			headers: {
 				Authorization: `Bearer ${token}`
@@ -242,7 +242,7 @@ function Orders() {
 		const reason = prompt("Nhập lý do trả hàng:");
 		if (!reason) return;
 
-		fetch(`http://localhost:8086/api/orders/${orderId}/return`, {
+		fetch(`http://localhost:8765/api/orders/${orderId}/return`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

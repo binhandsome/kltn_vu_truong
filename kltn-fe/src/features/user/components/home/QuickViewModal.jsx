@@ -130,7 +130,7 @@ function QuickViewModal({
   };
 // Evaluate
 // dưới các import/const khác
-const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8083";
+const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8765";
 
 // ⭐ vẽ sao theo phần thập phân (giống trang category)
 const StarRating = ({ value = 0 }) => (

@@ -30,11 +30,11 @@ function Review() {
     if (!token) return;
     const fetchUserIdAndFeedbacks = async () => {
       try {
-        const resUser = await axios.get(`http://localhost:8081/api/user/findUserIdByAccessToken?accessToken=${token.replace("Bearer ", "")}`);
+        const resUser = await axios.get(`http://localhost:8765/api/user/findUserIdByAccessToken?accessToken=${token.replace("Bearer ", "")}`);
         const id = resUser.data;
         setUserId(id);
 
-        const resFeedback = await axios.get(`http://localhost:8091/api/admin/feedback/by-user/${id}`);
+        const resFeedback = await axios.get(`http://localhost:8765/api/admin/feedback/by-user/${id}`);
         setFeedbacks(resFeedback.data); // Không lọc
       } catch (err) {
         console.error("Lỗi lấy feedback hoặc userId:", err);
@@ -46,12 +46,12 @@ function Review() {
   const handleSubmit = async () => {
     if (!message.trim()) return alert("Vui lòng nhập nội dung góp ý!");
     try {
-      await axios.post("http://localhost:8081/api/user/sendFeedback", { type, message }, {
+      await axios.post("http://localhost:8765/api/user/sendFeedback", { type, message }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("✅ Gửi góp ý thành công!");
       setMessage("");
-      const res = await axios.get(`http://localhost:8091/api/admin/feedback/by-user/${userId}`);
+      const res = await axios.get(`http://localhost:8765/api/admin/feedback/by-user/${userId}`);
       setFeedbacks(res.data);
     } catch (err) {
       console.error(err);

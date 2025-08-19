@@ -100,7 +100,7 @@ function AdminDashboard() {
   const [shopInfo, setShopInfo] = useState(null);
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
-  const API_URL = 'http://localhost:8089/api/seller';
+  const API_URL = 'http://localhost:8765/api/seller';
   const navigate = useNavigate();
   
   const [nameDiscount, setNameDiscount] = useState('');
@@ -222,6 +222,7 @@ const getPageRange = () => {
       const response = await api.put(`/update-discount-shop`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       setMessage(response.data.message);
@@ -277,7 +278,7 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
       const response = await api.post(`/create-shop-edit`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-
+          Authorization: `Bearer ${accessToken}`,
         }
       });
       setMessage('✅ Cập nhật shop thành công.');
@@ -303,7 +304,9 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
 
     try {
       await api.delete(`/delete-shop`, {
-
+        headers: {
+                    Authorization: `Bearer ${accessToken}`,
+        }
       });
       setShopInfo(null);
       setMessage('✅ Đã xóa shop thành công.');
@@ -363,7 +366,10 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
 
     try {
       const response = await api.post(`/create-discount`, discountData, {
-    
+    headers: {
+                Authorization: `Bearer ${accessToken}`,
+
+    }
       });
       setMessage('✅ Tạo mã giảm giá thành công!');
       console.log('Discount created:', response.data);
@@ -391,6 +397,10 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
 
     try {
       const response = await api.get(`/get-shop-discounts`, {
+        headers: {
+                                Authorization: `Bearer ${accessToken}`,
+
+        }
       });
       setDiscounts(response.data);
       setMessage(response.data.length > 0 ? '✅ Đã tải danh sách mã giảm giá.' : '⚠️ Chưa có mã giảm giá nào.');
@@ -431,7 +441,10 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
 
       try {
         const response = await api.get(`/has-shop`, {
+          headers: {
+                                  Authorization: `Bearer ${accessToken}`,
 
+          }
         });
         setShopStatus(response.data);
         if (response.data.hasShop) {
@@ -476,6 +489,9 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
             page: pageNumber,
             size: pageSize,
           },
+          headers: {
+                      Authorization: `Bearer ${accessToken}`,
+          }
          
         });
         setDashboardSeller(response.data);
@@ -505,7 +521,10 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
 
       try {
         const response = await api.get(`/get-shop-info`, {
-      
+          headers: {
+                                  Authorization: `Bearer ${accessToken}`,
+
+          }
         });
         setShopInfo(response.data);
         setMessage('✅ Đã tải thông tin shop thành công.');

@@ -173,7 +173,7 @@ const handleImageChange = (e) => {
 
     try {
       setUploading(true);
-      const res = await axios.post("http://localhost:8081/api/user/upload-images-profile",
+      const res = await axios.post("http://localhost:8765/api/user/upload-images-profile",
         data,
         {
           headers: {

@@ -1,5 +1,5 @@
-const API_URL = 'http://localhost:8081/api/auth';
-const API_EMAIL_URL = 'http://localhost:8082/api/email';
+const API_URL = 'http://localhost:8765/api/auth';
+const API_EMAIL_URL = 'http://localhost:8765/api/email';
 
 export const register = async (user) => {
   console.log('[register] Attempting to register user:', user);

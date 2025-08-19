@@ -41,7 +41,7 @@ function Customer() {
     }
     const handleOpenChild = () => setOpenChild(true);
     const handleCloseChild = () => setOpenChild(false);
-    const URL_SELLER = "http://localhost:8089/api/seller";
+    const URL_SELLER = "http://localhost:8765/api/seller";
     const getAllOrderItem = async () => {
         const accessToken = localStorage.getItem("accessToken");
         try {

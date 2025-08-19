@@ -46,7 +46,7 @@ const [selectedSizeId, setSelectedSizeId] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success'); // hoặc "error"
   const [availableStock, setAvailableStock] = useState(null);
-const API_SELLER = process.env.REACT_APP_API_SELLER || "http://localhost:8089";
+const API_SELLER = process.env.REACT_APP_API_SELLER || "http://localhost:8765";
 // thêm state
 const [shopHeader, setShopHeader] = useState(null);
 const [shopLoadingShop, setShopLoadingShop] = useState(false);
@@ -122,7 +122,7 @@ useEffect(() => {
     if (tagsFromURL) params.tags = tagsFromURL;  // ✅ Sửa tại đây
   
     try {
-      const response = await axios.get('http://localhost:8083/api/products/filterCategories', { params });
+      const response = await axios.get('http://localhost:8765/api/products/filterCategories', { params });
   
       const productsPage = response.data.products;
       setProducts(productsPage.content);
@@ -179,7 +179,7 @@ try {
         if (salesRank) params.salesRank = salesRank;
         if (productType) params.productType = productType;
 
-        const res = await axios.get('http://localhost:8085/api/search/searchAdvance', { params });
+        const res = await axios.get('http://localhost:8765/api/search/searchAdvance', { params });
 
         setProducts(res.data.content);
         setTotalPages(res.data.totalPages);
@@ -198,7 +198,7 @@ try {
   );
   const getAllCategories = async () => {
     try {
-      const res = await axios.get('http://localhost:8083/api/products/getAllCategories');
+      const res = await axios.get('http://localhost:8765/api/products/getAllCategories');
   
       setSalesRankCount(res.data.salesRankCount || {});
       setProductTypeCount(res.data.productTypeCount || {});
@@ -216,7 +216,7 @@ try {
     const cartId = localStorage.getItem('cartId') || '';
     const token = localStorage.getItem('accessToken') || '';
     try {
-      const res = await axios.get('http://localhost:8084/api/cart/getCart', {
+      const res = await axios.get('http://localhost:8765/api/cart/getCart', {
         params: { cartId, token },
       });
       setListCart(res.data.items || []);
@@ -275,7 +275,7 @@ try {
         colorAsin: selectedProduct.colorAsin || null,
       };
   
-      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
   
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
@@ -300,7 +300,7 @@ try {
         price: parseFloat(product.productPrice),
         cartId,
       };
-      const res = await axios.post('http://localhost:8084/api/cart/addCart', payload);
+      const res = await axios.post('http://localhost:8765/api/cart/addCart', payload);
       if (res.data.cartId) localStorage.setItem('cartId', res.data.cartId);
       window.dispatchEvent(new Event('cartUpdated'));
       triggerToast("✅ Thêm vào giỏ hàng thành công!"); 
@@ -318,7 +318,7 @@ try {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:8083/api/wishlist', {
+      const res = await axios.get('http://localhost:8765/api/wishlist', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
@@ -334,19 +334,19 @@ try {
     const isInWishlist = wishlistItems.some((item) => item.asin === asin);
     try {
       if (isInWishlist) {
-        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+        await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         triggerToast("🗑️ Đã xóa sản phẩm khỏi wishlist");
       } else {
-        await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+        await axios.post(`http://localhost:8765/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
         triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
         // window.location.href = "/user/wishlist";
       }
   
-      const res = await axios.get("http://localhost:8083/api/wishlist", {
+      const res = await axios.get("http://localhost:8765/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
@@ -498,7 +498,7 @@ try {
   // Mở modal
   const handleOpenProductModal = async (asin) => {
     try {
-      const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+      const res = await axios.get(`http://localhost:8765/api/products/productDetail/${asin}`);
       if (res.data) {
         setSelectedProduct(res.data);
         const sum = await fetchEvalSummary([asin]);
@@ -536,7 +536,7 @@ useEffect(() => {
 
       // Gọi API với các tham số tùy chọn
       const res = await fetch(
-        `http://localhost:8083/api/product-variants/available-stock?${queryParams.toString()}`
+        `http://localhost:8765/api/product-variants/available-stock?${queryParams.toString()}`
       );
       if (!res.ok) throw new Error("Lỗi gọi API tồn kho");
       const quantity = await res.json();
@@ -550,7 +550,7 @@ useEffect(() => {
 
   fetchAvailableStock();
 }, [selectedProduct, selectedSizeId, selectedColorId]); // ✅ Giữ dependency array
-const API_SEARCH = process.env.REACT_APP_API_SEARCH || "http://localhost:8085";
+const API_SEARCH = process.env.REACT_APP_API_SEARCH || "http://localhost:8765";
 
 // Lưu số đã bán theo asin
 const [soldMap, setSoldMap] = useState({});
@@ -572,7 +572,7 @@ const modalSoldCount = useMemo(() => {
 }, [selectedProduct?.asin, soldMap]);
 // Evaluate
 // near other const API_*
-const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8083";
+const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8765";
 
 // rating summary
 const [evalMap, setEvalMap] = useState({});      // { [asin]: {avg, count} }

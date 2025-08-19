@@ -68,7 +68,7 @@ function ShopFiltersTopBar() {
         colorAsin: JSON.stringify(selectedProduct.colors || []),
       };
 
-      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }
@@ -88,11 +88,11 @@ function ShopFiltersTopBar() {
     const isInWishlist = wishlistItems.some((item) => item.asin === asin);
     try {
       if (isInWishlist) {
-        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+        await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+        await axios.post(`http://localhost:8765/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -100,7 +100,7 @@ function ShopFiltersTopBar() {
         window.location.href = "/user/shoppages/wishlist";
       }
 
-      const res = await axios.get("http://localhost:8083/api/wishlist", {
+      const res = await axios.get("http://localhost:8765/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
@@ -122,7 +122,7 @@ function ShopFiltersTopBar() {
     const getRecommendationByUser = async () => {
       const accessToken = localStorage.getItem("accessToken");
       try {
-        const response = await axios.get("http://localhost:8085/api/search/getJustForYou", {
+        const response = await axios.get("http://localhost:8765/api/search/getJustForYou", {
           params: {
             accessToken: accessToken,
             size: pageSize,

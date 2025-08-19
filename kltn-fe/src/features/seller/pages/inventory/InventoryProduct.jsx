@@ -26,7 +26,7 @@ const toVNProductStatus = (s) => {
 
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8089/api/seller/products", {
+      const res = await axios.get("http://localhost:8765/api/seller/products", {
         params: {
           page: uiPage - 1, // Spring Data dùng 0-based
           size: PAGE_SIZE,
@@ -81,7 +81,7 @@ const toVNProductStatus = (s) => {
     const newStatus = currentStatus === "active" ? "inactive" : "active";
     try {
       await axios.put(
-        `http://localhost:8089/api/seller/products/${productId}/status`,
+        `http://localhost:8765/api/seller/products/${productId}/status`,
         null,
         {
           params: { status: newStatus },

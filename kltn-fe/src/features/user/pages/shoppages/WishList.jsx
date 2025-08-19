@@ -40,7 +40,7 @@ function WishList() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await axios.get('http://localhost:8083/api/wishlist', {
+      const res = await axios.get('http://localhost:8765/api/wishlist', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -54,7 +54,7 @@ function WishList() {
 
   const handleRemove = async (asin) => {
     try {
-      await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+      await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlist(wishlist.filter((item) => item.asin !== asin));

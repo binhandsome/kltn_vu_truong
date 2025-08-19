@@ -4,9 +4,9 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 /* ====== CONFIG ====== */
-const API_SEARCH  = process.env.REACT_APP_API_SEARCH  || "http://localhost:8085"; // search-service (ES)
-const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8083"; // product-service (detail)
-const API_SELLER  = process.env.REACT_APP_API_SELLER  || "http://localhost:8089"; // seller-service
+const API_SEARCH  = process.env.REACT_APP_API_SEARCH  || "http://localhost:8765"; // search-service (ES)
+const API_PRODUCT = process.env.REACT_APP_API_PRODUCT || "http://localhost:8765"; // product-service (detail)
+const API_SELLER  = process.env.REACT_APP_API_SELLER  || "http://localhost:8765"; // seller-service
 
 /* ====== HELPERS ====== */
 const money = (n) =>
@@ -404,7 +404,7 @@ export default function ShopStore() {
     const cartId = localStorage.getItem("cartId") || "";
     const token  = localStorage.getItem("accessToken") || "";
     try {
-      const res = await axios.get("http://localhost:8084/api/cart/getCart", {
+      const res = await axios.get("http://localhost:8765/api/cart/getCart", {
         params: { cartId, token },
       });
       setListCart(res.data.items || []);
@@ -500,7 +500,7 @@ const addCart = async () => {
       colorName,
     };
 
-    const res = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+    const res = await axios.post("http://localhost:8765/api/cart/addCart", payload);
     if (res.data?.cartId) localStorage.setItem("cartId", res.data.cartId);
 
     window.dispatchEvent(new Event("cartUpdated"));
@@ -529,7 +529,7 @@ const addCart = async () => {
         price: Number(product.price || 0),
         cartId,
       };
-      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }

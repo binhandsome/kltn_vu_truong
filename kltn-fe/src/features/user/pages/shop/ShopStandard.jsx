@@ -38,7 +38,7 @@ function ShopStandard({ products }) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success'); // hoặc "error"
-  const API_SELLER = process.env.REACT_APP_API_SELLER || "http://localhost:8089";
+  const API_SELLER = process.env.REACT_APP_API_SELLER || "http://localhost:8765";
   const [error, setError] = useState(null);
 
   const isProductInCart = (asin) => {
@@ -69,7 +69,7 @@ function ShopStandard({ products }) {
     formData.append("file", selectedFile);
 
     try {
-      const res = await axios.post("http://localhost:8088/api/search/search-image", formData, {
+      const res = await axios.post("http://localhost:8765/api/search/search-image", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -79,7 +79,7 @@ function ShopStandard({ products }) {
       console.error("Lỗi upload:", err);
     }
   };
-  const API_SEARCH = process.env.REACT_APP_API_SEARCH || "http://localhost:8085";
+  const API_SEARCH = process.env.REACT_APP_API_SEARCH || "http://localhost:8765";
 // Cache key cho localStorage (backup cache)
   const CACHE_KEY = 'top20_products_cache';
   const CACHE_TIMESTAMP_KEY = 'top20_products_timestamp';
@@ -148,7 +148,7 @@ function ShopStandard({ products }) {
 
     try {
       const response = await axios.get(
-        "http://localhost:8083/api/products/productListTop20",
+        "http://localhost:8765/api/products/productListTop20",
         {
           timeout: 10000, // 10 giây timeout
           headers: {
@@ -514,7 +514,7 @@ const renderProductCard = (p) => {
         if (tags.length > 0) {
           params.tags = tags.join(',');
         }
-        const response = await axios.get('http://localhost:8085/api/search/searchAdvance', {
+        const response = await axios.get('http://localhost:8765/api/search/searchAdvance', {
           params,
           headers: {
             Authorization: `Bearer ${token}`
@@ -552,7 +552,7 @@ const renderProductCard = (p) => {
   const handleSearchAsin = async (asin) => {
     const accessToken = localStorage.getItem("accessToken");
     try {
-      const response = await axios.post('http://localhost:8091/api/admin/recommend/saveRecommendHistory', {
+      const response = await axios.post('http://localhost:8765/api/admin/recommend/saveRecommendHistory', {
         accessToken: accessToken,
         asin: asin,
       });
@@ -563,7 +563,7 @@ const renderProductCard = (p) => {
 
   const getAllCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:8083/api/products/getAllCategories');
+      const response = await axios.get('http://localhost:8765/api/products/getAllCategories');
       setSalesRankCount(response.data.salesRankCount);
       setProductTypeCount(response.data.productTypeCount);
     } catch (error) {
@@ -625,7 +625,7 @@ const renderProductCard = (p) => {
         colorAsin: JSON.stringify(selectedProduct.colors || []),
       };
 
-      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
 
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
@@ -654,7 +654,7 @@ const renderProductCard = (p) => {
         cartId,
       };
 
-      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
 
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
@@ -671,7 +671,7 @@ const renderProductCard = (p) => {
     const cartId = localStorage.getItem("cartId") || "";
     const token = localStorage.getItem("accessToken") || "";
     try {
-      const res = await axios.get("http://localhost:8084/api/cart/getCart", {
+      const res = await axios.get("http://localhost:8765/api/cart/getCart", {
         params: { cartId, token },
       });
       setListCart(res.data.items || []);
@@ -692,7 +692,7 @@ const renderProductCard = (p) => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
     try {
-      const res = await axios.get("http://localhost:8083/api/wishlist", {
+      const res = await axios.get("http://localhost:8765/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
@@ -791,18 +791,18 @@ const renderProductCard = (p) => {
     const isInWishlist = wishlistItems.some((item) => item.asin === asin);
     try {
       if (isInWishlist) {
-        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+        await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         triggerToast("🗑️ Đã xóa sản phẩm khỏi wishlist");
       } else {
-        await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+        await axios.post(`http://localhost:8765/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
         triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
       }
 
-      const res = await axios.get("http://localhost:8083/api/wishlist", {
+      const res = await axios.get("http://localhost:8765/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
@@ -834,7 +834,7 @@ const renderProductCard = (p) => {
     const fetchAvailableStock = async () => {
       try {
         // Xây dựng URL động dựa trên những gì đã chọn
-        let url = `http://localhost:8083/api/product-variants/available-stock?productId=${selectedProduct.productId}`;
+        let url = `http://localhost:8765/api/product-variants/available-stock?productId=${selectedProduct.productId}`;
         if (selectedSize) {
           url += `&sizeId=${selectedSize.sizeId}`;
         }
@@ -861,7 +861,7 @@ const renderProductCard = (p) => {
   // Xem chi tiết sp
   const fetchProductDetail = async (asin) => {
     try {
-      const res = await axios.get(`http://localhost:8083/api/products/productDetail/${asin}`);
+      const res = await axios.get(`http://localhost:8765/api/products/productDetail/${asin}`);
       setSelectedProduct(res.data);
     } catch (err) {
       console.error("❌ Lỗi lấy chi tiết sản phẩm:", err);

@@ -74,7 +74,7 @@ const location = useLocation();
         colorAsin: JSON.stringify(selectedProduct.colors || []),
       };
 
-      const response = await axios.post("http://localhost:8084/api/cart/addCart", payload);
+      const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
       if (response.data.cartId) {
         localStorage.setItem("cartId", response.data.cartId);
       }
@@ -94,11 +94,11 @@ const location = useLocation();
     const isInWishlist = wishlistItems.some((item) => item.asin === asin);
     try {
       if (isInWishlist) {
-        await axios.delete(`http://localhost:8083/api/wishlist/${asin}`, {
+        await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post(`http://localhost:8083/api/wishlist/${asin}`, null, {
+        await axios.post(`http://localhost:8765/api/wishlist/${asin}`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -106,7 +106,7 @@ const location = useLocation();
         window.location.href = "/user/shoppages/wishlist";
       }
 
-      const res = await axios.get("http://localhost:8083/api/wishlist", {
+      const res = await axios.get("http://localhost:8765/api/wishlist", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setWishlistItems(res.data);
@@ -129,7 +129,7 @@ const location = useLocation();
     try {
       // Tự build query: asins=val1&asins=val2...
       const query = asinList.map(a => `asins=${encodeURIComponent(a)}`).join("&");
-      const url = `http://localhost:8085/api/search/by-list-asin?${query}`;
+      const url = `http://localhost:8765/api/search/by-list-asin?${query}`;
 
       const response = await axios.get(url);
       setProducts(response.data);

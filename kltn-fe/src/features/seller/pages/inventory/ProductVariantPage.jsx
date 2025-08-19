@@ -17,7 +17,7 @@ const ProductVariantPage = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const res = await axios.get(
-        `http://localhost:8089/api/seller/variants/${productId}`,
+        `http://localhost:8765/api/seller/variants/${productId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -33,7 +33,7 @@ const ProductVariantPage = () => {
 
   const fetchColors = async () => {
     try {
-      const res = await axios.get("http://localhost:8083/api/products/colors");
+      const res = await axios.get("http://localhost:8765/api/products/colors");
       setColors(res.data);
     } catch (err) {
       console.error("❌ Lỗi khi lấy danh sách màu:", err);
@@ -52,7 +52,7 @@ const ProductVariantPage = () => {
     try {
       if (!isNaN(newPrice) && newPrice > 0) {
         await axios.put(
-          `http://localhost:8089/api/seller/variants/${variantId}`,
+          `http://localhost:8765/api/seller/variants/${variantId}`,
           null,
           {
             params: { price: newPrice, quantity: newQuantity || 0 },
@@ -63,7 +63,7 @@ const ProductVariantPage = () => {
         );
       } else if (!isNaN(newQuantity) && newQuantity > 0) {
         await axios.put(
-          `http://localhost:8089/api/seller/variants/${variantId}`,
+          `http://localhost:8765/api/seller/variants/${variantId}`,
           null,
           {
             params: { quantity: newQuantity },
@@ -89,7 +89,7 @@ const ProductVariantPage = () => {
     if (!window.confirm("Bạn có chắc muốn xoá biến thể này không?")) return;
   
     try {
-      await axios.delete(`http://localhost:8089/api/seller/variants/${variantId}`, {
+      await axios.delete(`http://localhost:8765/api/seller/variants/${variantId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },

@@ -33,7 +33,7 @@ const triggerToast = (msg, type = "error") => {
   
       if (!sizeId || !colorId || !productId) return;
   
-      const res = await axios.get(`http://localhost:8083/api/product-variants/available-stock`, { params: { productId, sizeId, colorId } });
+      const res = await axios.get(`http://localhost:8765/api/product-variants/available-stock`, { params: { productId, sizeId, colorId } });
   
       setAvailableStockMap(prev => ({ ...prev, [asin]: res.data }));
     } catch (err) {
@@ -76,7 +76,7 @@ const triggerToast = (msg, type = "error") => {
     const cartId = localStorage.getItem("cartId") || '';
     const token = localStorage.getItem("accessToken") || '';
     try {
-      const cartResponse = await axios.get('http://localhost:8084/api/cart/getCart', { params: { cartId, token } });
+      const cartResponse = await axios.get('http://localhost:8765/api/cart/getCart', { params: { cartId, token } });
       const cartItems = cartResponse.data.items || [];
       if (!cartItems.length) {
         setListCart({ items: [], totalPrice: 0 });
@@ -84,7 +84,7 @@ const triggerToast = (msg, type = "error") => {
       }
   
       const asins = cartItems.map(item => item.asin).join(',');
-      const productResponse = await axios.get(`http://localhost:8083/api/products/listByAsin`, { params: { asins } });
+      const productResponse = await axios.get(`http://localhost:8765/api/products/listByAsin`, { params: { asins } });
   
       const mergedItems = cartItems.map(item => {
         const product = productResponse.data.find(p => p.asin === item.asin);
@@ -129,7 +129,7 @@ const triggerToast = (msg, type = "error") => {
   
       const addReorderItem = async (item) => {
         try {
-          await axios.post("http://localhost:8084/api/cart/add", {
+          await axios.post("http://localhost:8765/api/cart/add", {
             token,
             cartId,
             asin: item.asin,
@@ -159,7 +159,7 @@ const triggerToast = (msg, type = "error") => {
     const unitPrice = item.price / item.quantity;
   
     try {
-      await axios.put('http://localhost:8084/api/cart/updateItem', {
+      await axios.put('http://localhost:8765/api/cart/updateItem', {
         token,
         cartId,
         asin: item.asin,
@@ -206,7 +206,7 @@ const triggerToast = (msg, type = "error") => {
     const cartId = localStorage.getItem("cartId") || '';
     const token = localStorage.getItem("accessToken") || '';
     try {
-      await axios.post('http://localhost:8084/api/cart/removeItem', { token, cartId, asin });
+      await axios.post('http://localhost:8765/api/cart/removeItem', { token, cartId, asin });
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
       console.error("❌ Xoá lỗi:", err);
@@ -234,7 +234,7 @@ const triggerToast = (msg, type = "error") => {
     const token = localStorage.getItem("accessToken") || '';
     const cartId = localStorage.getItem("cartId") || '';
     try {
-      await axios.put("http://localhost:8084/api/cart/updateItem", {
+      await axios.put("http://localhost:8765/api/cart/updateItem", {
         token,
         cartId,
         asin,

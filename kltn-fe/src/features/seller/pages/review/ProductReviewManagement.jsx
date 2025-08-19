@@ -21,7 +21,7 @@ const [editReplyText, setEditReplyText] = useState("");
       }
       setLoading(true);
       try {
-        const res = await axios.get(`http://localhost:8089/api/seller/reviews`, {
+        const res = await axios.get(`http://localhost:8765/api/seller/reviews`, {
           params: { asin },
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -57,7 +57,7 @@ const [editReplyText, setEditReplyText] = useState("");
 
     try {
       await axios.post(
-        `http://localhost:8089/api/seller/reviews/${reviewId}/reply`,
+        `http://localhost:8765/api/seller/reviews/${reviewId}/reply`,
         {
           productAsin: asin,
           comment: reply,
@@ -79,7 +79,7 @@ const [editReplyText, setEditReplyText] = useState("");
   
     try {
       await axios.put(
-        `http://localhost:8089/api/seller/reviews/${reviewId}/reply`,
+        `http://localhost:8765/api/seller/reviews/${reviewId}/reply`,
         {
           productAsin: asin,
           comment: editReplyText,
@@ -100,7 +100,7 @@ const [editReplyText, setEditReplyText] = useState("");
     if (!window.confirm("Bạn có chắc chắn muốn xoá bình luận này?")) return;
   
     try {
-      await axios.delete(`http://localhost:8089/api/seller/reviews/${reviewId}`, {
+      await axios.delete(`http://localhost:8765/api/seller/reviews/${reviewId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
