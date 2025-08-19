@@ -1,9 +1,11 @@
 package com.kltnbe.productservice.dtos.res;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.kltnbe.productservice.dtos.ColorDTO;
 import com.kltnbe.productservice.dtos.req.ImageDTO;
 import com.kltnbe.productservice.entities.ProductSize;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +14,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class ProductResponse {
     private Long productId;
     private String asin;
