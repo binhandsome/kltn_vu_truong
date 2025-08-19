@@ -28,7 +28,10 @@ const AppRoutes = () => {
       <Route
         path="/user/*"
         element={
-          <ProtectedRoute allowedRoles={['ROLE_USER', 'ROLE_SELLER']} requireAuth={false}>
+          <ProtectedRoute 
+            allowedRoles={['ROLE_USER', 'ROLE_SELLER', 'ROLE_ADMIN']} 
+            requireAuth={false}
+          >
             <UserRoutes />
           </ProtectedRoute>
         }
@@ -66,25 +69,38 @@ const AppRoutes = () => {
         />
       </Route>
 
-      {/* Admin app */}
+      {/* Admin app - STRICT PROTECTION */}
       <Route
         path="/admin/*"
         element={
-          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+          <ProtectedRoute 
+            allowedRoles={['ROLE_ADMIN']} 
+            requireAuth={true}
+            strictRoleCheck={true}
+            redirectPath="/user"
+          >
             <AdminRoutes />
           </ProtectedRoute>
         }
       />
 
-      {/* Seller app */}
+      {/* Seller app - STRICT PROTECTION */}
       <Route
         path="/seller/*"
         element={
-          <ProtectedRoute allowedRoles={['ROLE_SELLER']}>
+          <ProtectedRoute 
+            allowedRoles={['ROLE_SELLER']} 
+            requireAuth={true}
+            strictRoleCheck={true}
+            redirectPath="/user"
+          >
             <SellerRoutes />
           </ProtectedRoute>
         }
       />
+
+      {/* Catch all route - redirect unauthorized access */}
+      <Route path="*" element={<Navigate to="/user" replace />} />
     </Routes>
   );
 };

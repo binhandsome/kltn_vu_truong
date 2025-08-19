@@ -2,7 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { parseISO } from 'date-fns';
+import ApexCharts from 'apexcharts';
+
 import { api } from '../../utils/api';
+const API_BASE_URL = 'http://localhost:8765/api/seller';
+
 // 💡 null-safe lowercase
 const safeLower = (s) => (s ?? "").toString().toLowerCase();
 
@@ -52,14 +56,14 @@ const toVNDeliveryStatus = (s) => {
 
 // Badge class (order)
 const orderBadge = (s) =>
-  ({
-    pending: "badge-warning",
-    processing: "badge-info",
-    shipped: "badge-primary",
-    completed: "badge-success",
-    cancelled: "badge-danger",
-    canceled: "badge-danger",
-  }[safeLower(s)] || "badge-secondary");
+({
+  pending: "badge-warning",
+  processing: "badge-info",
+  shipped: "badge-primary",
+  completed: "badge-success",
+  cancelled: "badge-danger",
+  canceled: "badge-danger",
+}[safeLower(s)] || "badge-secondary");
 
 // Badge class (shop/product)
 const statusBadgeClass = (s) => {
@@ -73,13 +77,13 @@ const statusBadgeClass = (s) => {
 
 // (tùy chọn) Badge class cho payment
 const paymentBadge = (s) =>
-  ({
-    paid: "badge-success",
-    refunded: "badge-info",
-    failed: "badge-danger",
-    unpaid: "badge-warning",
-    pending: "badge-warning",
-  }[safeLower(s)] || "badge-secondary");
+({
+  paid: "badge-success",
+  refunded: "badge-info",
+  failed: "badge-danger",
+  unpaid: "badge-warning",
+  pending: "badge-warning",
+}[safeLower(s)] || "badge-secondary");
 
 function AdminDashboard() {
   const [hasShop, setHasShop] = useState(null);
@@ -102,7 +106,7 @@ function AdminDashboard() {
   const handleCloseModal = () => setShowModal(false);
   const API_URL = 'http://localhost:8765/api/seller';
   const navigate = useNavigate();
-  
+
   const [nameDiscount, setNameDiscount] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [percentValue, setPercentValue] = useState('');
@@ -124,8 +128,8 @@ function AdminDashboard() {
   const [showConfirmDeleteModalDiscount, setShowConfirmDeleteModalDiscount] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [pageNumber, setPageNumber] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [totalPage, settotalPage]  = useState(1);// quản lý trạng thái modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [totalPage, settotalPage] = useState(1);// quản lý trạng thái modal
   const [selectedDiscount, setSelectedDiscount] = useState({
     discountShopId: '',
     nameDiscount: '',
@@ -135,24 +139,252 @@ function AdminDashboard() {
     dayEnd: '',
     status: ''
   });
-const [showDetailModal, setShowDetailModal] = useState(false);
-const [selectedOrder, setSelectedOrder] = useState(null);
-	const maxPagesToShow = 10;
+      const chartRef = useRef(null); // lưu instance chart
+  
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const maxPagesToShow = 10;
+async function renderRevenueChart(chartType, elementId) {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let revenueData = [];
+    let months = monthNames;
 
-const handleViewDetail = (order) => {
-  setSelectedOrder(order);
-  setShowDetailModal(true);
-};
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await axios.get(`${API_BASE_URL}/getRevenueByStore`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      const apiData = response.data;
+      revenueData = new Array(12).fill(0);
+      apiData.forEach(item => {
+        const monthIndex = item.month - 1;
+        if (monthIndex >= 0 && monthIndex < 12) {
+          revenueData[monthIndex] = item.revenue;
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching revenue data:', error);
+      revenueData = new Array(12).fill(0);
+    }
 
-const handleCloseDetailModal = () => {
-  setShowDetailModal(false);
-  setSelectedOrder(null);
-};
-	const handlePageChange = (pageNumber) => {
-		if (pageNumber >= 0 && pageNumber < totalPage) {
-			setPageNumber(pageNumber);
-		}
-	};
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+    let options = {
+      chart: {
+        height: chartType === 'pie' ? 380 : 360,
+        type: chartType === 'bar-horizontal' ? 'bar' : chartType === 'bar-horizontal-stacked' ? 'bar' : chartType === 'mixed' ? 'line' : chartType,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: true, tools: { download: true, selection: false, zoom: false, zoomin: false, zoomout: false, pan: false } },
+        zoom: { enabled: false },
+        animations: { enabled: true, easing: 'easeinout', speed: 800 },
+        background: '#F8F8F8',
+        dropShadow: {
+          enabled: chartType !== 'pie' && chartType !== 'radialBar',
+          top: 2,
+          left: 2,
+          blur: 5,
+          opacity: 0.1,
+        },
+      },
+      colors: colors,
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: months,
+        labels: {
+          style: { colors: '#1F2937', fontSize: '12px', fontWeight: 500, fontFamily: 'Inter, sans-serif' },
+        },
+        axisBorder: { color: '#E5E7EB' },
+        axisTicks: { color: '#E5E7EB' },
+      },
+      yaxis: {
+        labels: {
+          style: { colors: '#1F2937', fontSize: '12px', fontFamily: 'Inter, sans-serif' },
+          formatter: (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+        },
+        title: {
+          text: 'Revenue',
+          style: { color: '#1F2937', fontSize: '14px', fontWeight: 600 },
+        },
+      },
+      title: {
+        text: `2025 Revenue Overview - Total: ${revenueData.reduce((sum, val) => sum + val, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}`,
+        align: 'left',
+        style: { color: '#1F2937', fontSize: '18px', fontWeight: 700, fontFamily: 'Inter, sans-serif' },
+      },
+      subtitle: {
+        text: 'Monthly Performance',
+        align: 'left',
+        offsetY: 25,
+        style: { color: '#6B7280', fontSize: '14px', fontFamily: 'Inter, sans-serif' },
+      },
+      tooltip: {
+        theme: 'light',
+        y: {
+          formatter: (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+        },
+        style: { fontFamily: 'Inter, sans-serif' },
+      },
+      grid: { borderColor: '#E5E7EB', strokeDashArray: 4 },
+    };
+
+    if (chartType === 'area') {
+      options.series = [{ name: 'Revenue', data: revenueData }];
+      options.stroke = { curve: 'smooth', width: 3 };
+      options.fill = {
+        type: 'gradient',
+        gradient: { shadeIntensity: 0.9, opacityFrom: 0.7, opacityTo: 0.4, stops: [0, 90, 100] },
+      };
+      options.markers = { size: 4, hover: { size: 6 } };
+    } else if (chartType === 'bar') {
+      options.plotOptions = {
+        bar: { horizontal: false, columnWidth: '50%', borderRadius: 4, borderRadiusApplication: 'end' },
+      };
+      options.series = [{ name: 'Revenue', data: revenueData }];
+      options.dataLabels = {
+        enabled: true,
+        formatter: (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+        offsetY: -25,
+        style: { fontSize: '12px', colors: ['#1F2937'], fontWeight: 500 },
+      };
+      if (elementId === 'chartD') {
+        options.xaxis.position = 'top';
+        options.xaxis.labels.offsetY = -20;
+        options.xaxis.axisBorder = { show: false };
+        options.xaxis.axisTicks = { show: false };
+        options.title.offsetY = 340;
+        options.title.align = 'center';
+        options.title.floating = true;
+      }
+    } else if (chartType === 'bar-horizontal') {
+      options.plotOptions = { bar: { horizontal: true, borderRadius: 4 } };
+      options.series = [{ name: 'Revenue', data: revenueData }];
+      options.dataLabels = {
+        enabled: true,
+        formatter: (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+        style: { fontSize: '12px', colors: ['#1F2937'] },
+      };
+    } else if (chartType === 'bar-horizontal-stacked') {
+      options.plotOptions = { bar: { horizontal: true, borderRadius: 4 } };
+      options.series = [{ name: 'Revenue', data: revenueData }];
+      options.stroke = { width: 1, colors: ['#ffffff'] };
+      options.fill = { opacity: 1 };
+    } else if (chartType === 'line') {
+      options.stroke = { curve: 'smooth', width: 3 };
+      options.series = [{ name: 'Revenue', data: revenueData }];
+      options.markers = { size: 5, hover: { size: 7 } };
+      options.grid = { row: { colors: ['#F9FAFB', 'transparent'], opacity: 0.5 } };
+      if (elementId === 'chartH') {
+        options.dataLabels = {
+          enabled: true,
+          formatter: (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+          style: { fontSize: '12px', colors: ['#1F2937'] },
+        };
+        options.yaxis.min = 0;
+        options.yaxis.max = Math.max(...revenueData) * 1.3;
+      }
+    } else if (chartType === 'mixed') {
+      options.series = [
+        { name: 'Revenue', type: 'column', data: revenueData },
+        { name: 'Trend', type: 'line', data: revenueData },
+      ];
+      options.stroke = { width: [0, 3] };
+      options.colors = [colors[0], colors[1]];
+      options.yaxis = [
+        {
+          title: { text: 'Revenue ($)' },
+          labels: {
+            formatter: (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+          },
+        },
+        { opposite: true, title: { text: 'Trend' } },
+      ];
+    } else if (chartType === 'radialBar') {
+      options.plotOptions = {
+        radialBar: {
+          startAngle: -90,
+          endAngle: 90,
+          track: { background: '#F3F4F6', strokeWidth: '97%' },
+          dataLabels: {
+            name: { fontSize: '22px', fontWeight: 600 },
+            value: { fontSize: '16px', color: '#1F2937' },
+            total: {
+              show: true,
+              label: 'Total Revenue',
+              fontSize: '18px',
+              color: '#1F2937',
+              formatter: () => revenueData.reduce((sum, val) => sum + val, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+            },
+          },
+        },
+      };
+      options.series = revenueData.slice(0, 4);
+      options.labels = months.slice(0, 4);
+      options.colors = colors.slice(0, 4);
+    } else if (chartType === 'radar') {
+      options.series = [{ name: 'Revenue', data: revenueData }];
+      options.stroke = { width: 2, color: colors[0] };
+      options.fill = { opacity: 0.3 };
+      options.markers = { size: 4, colors: ['#ffffff'], strokeColors: colors[0], strokeWidth: 2 };
+      options.yaxis = { show: false };
+    } else if (chartType === 'pie') {
+      options.series = revenueData;
+      options.labels = months;
+      options.chart.height = 400;
+      options.dataLabels = {
+        enabled: true,
+        formatter: (val, opts) => opts.w.config.series[opts.seriesIndex].toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+        style: { fontSize: '14px', fontWeight: 500 },
+      };
+      options.legend = {
+        position: 'bottom',
+        fontSize: '14px',
+        fontFamily: 'Inter, sans-serif',
+        fontWeight: 500,
+        labels: { colors: '#1F2937' },
+      };
+      options.responsive = [
+        {
+          breakpoint: 480,
+          options: { chart: { height: 300 }, legend: { position: 'bottom' } },
+        },
+      ];
+      options.colors = colors;
+    }
+
+    const element = document.querySelector(`#${elementId}`);
+    if (element && chartRef.current) {
+      chartRef.current.destroy();
+    }
+    if (element) {
+      chartRef.current = new ApexCharts(element, options);
+      chartRef.current.render();
+    }
+  }
+
+  useEffect(() => {
+    renderRevenueChart('bar', 'chartD');
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, []);
+  const handleViewDetail = (order) => {
+    setSelectedOrder(order);
+    setShowDetailModal(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+    setSelectedOrder(null);
+  };
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 0 && pageNumber < totalPage) {
+      setPageNumber(pageNumber);
+    }
+  };
   const statusColors = {
     pending: "badge-warning",       // vàng
     processing: "badge-info",       // xanh dương nhạt
@@ -160,17 +392,17 @@ const handleCloseDetailModal = () => {
     completed: "badge-success",     // xanh lá
     cancelled: "badge-danger",      // đỏ
   };
-const getPageRange = () => {
-  if (!totalPage || totalPage <= 0) return []; // Không có trang nào
+  const getPageRange = () => {
+    if (!totalPage || totalPage <= 0) return []; // Không có trang nào
 
-  const safeMaxPages = maxPagesToShow || 5; // mặc định nếu maxPagesToShow chưa được set
-  const startPage = Math.floor(pageNumber / safeMaxPages) * safeMaxPages;
-  const endPage = Math.min(startPage + safeMaxPages, totalPage);
+    const safeMaxPages = maxPagesToShow || 5; // mặc định nếu maxPagesToShow chưa được set
+    const startPage = Math.floor(pageNumber / safeMaxPages) * safeMaxPages;
+    const endPage = Math.min(startPage + safeMaxPages, totalPage);
 
-  // ✅ Đảm bảo không bị âm
-  if (endPage <= startPage) return [0]; 
-  return Array.from({ length: endPage - startPage }, (_, i) => startPage + i);
-};
+    // ✅ Đảm bảo không bị âm
+    if (endPage <= startPage) return [0];
+    return Array.from({ length: endPage - startPage }, (_, i) => startPage + i);
+  };
 
   const handleOpenModalDiscount = (discount) => {
     setSelectedDiscount(discount);
@@ -253,7 +485,8 @@ const getPageRange = () => {
       fetchShopDiscounts();
     } catch (error) {
       console.error('Error deleting shop:', error);
-setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá. ');    }
+      setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá. ');
+    }
   };
   const handleEditSubmit = async (event) => {
     event.preventDefault();
@@ -305,7 +538,7 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
     try {
       await api.delete(`/delete-shop`, {
         headers: {
-                    Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         }
       });
       setShopInfo(null);
@@ -366,10 +599,10 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
 
     try {
       const response = await api.post(`/create-discount`, discountData, {
-    headers: {
-                Authorization: `Bearer ${accessToken}`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
 
-    }
+        }
       });
       setMessage('✅ Tạo mã giảm giá thành công!');
       console.log('Discount created:', response.data);
@@ -398,7 +631,7 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
     try {
       const response = await api.get(`/get-shop-discounts`, {
         headers: {
-                                Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
 
         }
       });
@@ -442,7 +675,7 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
       try {
         const response = await api.get(`/has-shop`, {
           headers: {
-                                  Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
 
           }
         });
@@ -490,9 +723,9 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
             size: pageSize,
           },
           headers: {
-                      Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           }
-         
+
         });
         setDashboardSeller(response.data);
         setMessage('✅ Đã tải thông tin dashboard thành công.');
@@ -501,14 +734,14 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
       } catch (error) {
         console.error('Error fetching shop info:', error);
         setMessage(error.response?.data?.message || '❌ Lỗi khi tải thông tin shop.');
-          
+
       } finally {
         setIsLoading(false);
       }
     };
 
     getDashboardSeller();
-}, [pageNumber, pageSize]); // 👈 Thêm pageNumber vào đây
+  }, [pageNumber, pageSize]); // 👈 Thêm pageNumber vào đây
 
   useEffect(() => {
     const fetchShopInfo = async () => {
@@ -522,7 +755,7 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
       try {
         const response = await api.get(`/get-shop-info`, {
           headers: {
-                                  Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
 
           }
         });
@@ -530,7 +763,7 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
         setMessage('✅ Đã tải thông tin shop thành công.');
       } catch (error) {
         console.error('Error fetching shop info:', error);
-       setMessage(error.response?.data?.message || '❌ Lỗi khi tải thông tin shop.');
+        setMessage(error.response?.data?.message || '❌ Lỗi khi tải thông tin shop.');
       } finally {
         setIsLoading(false);
       }
@@ -538,9 +771,9 @@ setMessage(error.response?.data?.message || '❌ Lỗi khi xóa mã giảm giá.
 
     fetchShopInfo();
   }, []);
-useEffect(() => {
-  console.log('fasjbfaskhbfas', totalPage);
-})
+  useEffect(() => {
+    console.log('fasjbfaskhbfas', totalPage);
+  })
   return (
     <>
 
@@ -856,7 +1089,7 @@ useEffect(() => {
                         {/* Total Revanue */}
                         Tổng lợi nhuận{" "}
                         <span>
-                    
+
                         </span>
                       </h4>
                     </div>
@@ -919,12 +1152,12 @@ useEffect(() => {
                                 <td>{shopInfo?.shopPhone}</td>
                                 <td>{shopInfo?.shopEmail}</td>
                                 <td>
-  <label
-    className={`mb-0 badge ${statusBadgeClass(shopInfo?.shopStatus)}`}
-  >
-    {toVNStatus(shopInfo?.shopStatus)}
-  </label>
-</td>
+                                  <label
+                                    className={`mb-0 badge ${statusBadgeClass(shopInfo?.shopStatus)}`}
+                                  >
+                                    {toVNStatus(shopInfo?.shopStatus)}
+                                  </label>
+                                </td>
                                 <td>
                                   <span className="img-thumb">
                                     <span className="ml-2">{shopInfo?.createdAt}</span>
@@ -1506,133 +1739,133 @@ useEffect(() => {
                   </div>
                 </div>
               )}
-         {showDetailModal && selectedOrder && (
-  <div
-    className="modal-backdrop"
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100vw",
-      height: "100vh",
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 1050,
-    }}
-  >
-    <div className="modal-dialog modal-lg" role="document">
-      <div className="modal-content" style={{ borderRadius: "12px" }}>
-        <div className="modal-header">
-          <h5 className="modal-title">
-            🛒 Chi tiết Order #{selectedOrder.orderId}
-          </h5>
-          <button
-            type="button"
-            className="close"
-            onClick={handleCloseDetailModal}
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
+              {showDetailModal && selectedOrder && (
+                <div
+                  className="modal-backdrop"
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 1050,
+                  }}
+                >
+                  <div className="modal-dialog modal-lg" role="document">
+                    <div className="modal-content" style={{ borderRadius: "12px" }}>
+                      <div className="modal-header">
+                        <h5 className="modal-title">
+                          🛒 Chi tiết Order #{selectedOrder.orderId}
+                        </h5>
+                        <button
+                          type="button"
+                          className="close"
+                          onClick={handleCloseDetailModal}
+                          aria-label="Close"
+                        >
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
 
-        <div className="modal-body" style={{ maxHeight: "75vh", overflowY: "auto" }}>
-          {/* Grid layout */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-            
-            {/* 1️⃣ Order Info */}
-            <div className="card p-3 shadow-sm">
-              <h6 className="mb-3">📦 Thông tin đơn hàng</h6>
-              <p><b>Ngày tạo:</b> {selectedOrder.createdAt}</p>
-              <p><b>Tổng tiền:</b> ${selectedOrder.totalPrice}</p>
-              <p><b>Trạng thái:</b> 
-              <span className={`badge ${orderBadge(selectedOrder.status)}`}>
-  {toVNOrderStatus(selectedOrder.status)}
-</span>
-              </p>
-              <p><b>Số sản phẩm:</b> {selectedOrder.itemCount}</p>
-            </div>
- {/* 🛍 Danh sách sản phẩm */}
-<div className="card p-3 shadow-sm mt-3">
-  <h6 className="mb-3">🛍 Danh sách sản phẩm</h6>
-  {selectedOrder?.items && selectedOrder.items.length > 0 ? (
-    selectedOrder.items.map((item, idx) => (
-      <div key={idx} className="border rounded p-3 mb-2">
-        <p><b>ASIN:</b> {item.asin}</p>
-        <p><b>Tên sản phẩm:</b> {item.titleProduct}</p>
-        <p><b>Màu:</b> {item.color || <span className="text-muted">-</span>}</p>
-        <p><b>Size:</b> {item.size || <span className="text-muted">-</span>}</p>
-        <p><b>Số lượng:</b> {item.quantity}</p>
-        <p>
-          <b>Đơn giá:</b> 
-          <span className="text-success fw-bold">
-            ${Number(item.unitPrice).toLocaleString()}
-          </span>
-        </p>
-      </div>
-    ))
-  ) : (
-    <p className="text-muted text-center my-2">Không có sản phẩm trong đơn hàng.</p>
-  )}
-</div>
+                      <div className="modal-body" style={{ maxHeight: "75vh", overflowY: "auto" }}>
+                        {/* Grid layout */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+
+                          {/* 1️⃣ Order Info */}
+                          <div className="card p-3 shadow-sm">
+                            <h6 className="mb-3">📦 Thông tin đơn hàng</h6>
+                            <p><b>Ngày tạo:</b> {selectedOrder.createdAt}</p>
+                            <p><b>Tổng tiền:</b> ${selectedOrder.totalPrice}</p>
+                            <p><b>Trạng thái:</b>
+                              <span className={`badge ${orderBadge(selectedOrder.status)}`}>
+                                {toVNOrderStatus(selectedOrder.status)}
+                              </span>
+                            </p>
+                            <p><b>Số sản phẩm:</b> {selectedOrder.itemCount}</p>
+                          </div>
+                          {/* 🛍 Danh sách sản phẩm */}
+                          <div className="card p-3 shadow-sm mt-3">
+                            <h6 className="mb-3">🛍 Danh sách sản phẩm</h6>
+                            {selectedOrder?.items && selectedOrder.items.length > 0 ? (
+                              selectedOrder.items.map((item, idx) => (
+                                <div key={idx} className="border rounded p-3 mb-2">
+                                  <p><b>ASIN:</b> {item.asin}</p>
+                                  <p><b>Tên sản phẩm:</b> {item.titleProduct}</p>
+                                  <p><b>Màu:</b> {item.color || <span className="text-muted">-</span>}</p>
+                                  <p><b>Size:</b> {item.size || <span className="text-muted">-</span>}</p>
+                                  <p><b>Số lượng:</b> {item.quantity}</p>
+                                  <p>
+                                    <b>Đơn giá:</b>
+                                    <span className="text-success fw-bold">
+                                      ${Number(item.unitPrice).toLocaleString()}
+                                    </span>
+                                  </p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-muted text-center my-2">Không có sản phẩm trong đơn hàng.</p>
+                            )}
+                          </div>
 
 
-            {/* 2️⃣ Recipient Info */}
-            <div className="card p-3 shadow-sm">
-              <h6 className="mb-3">👤 Người nhận</h6>
-              <p><b>Tên:</b> {selectedOrder.recipientName}</p>
-              <p><b>Email:</b> {selectedOrder.recipientEmail}</p>
-              <p><b>SĐT:</b> {selectedOrder.recipientPhone}</p>
-              <p><b>Địa chỉ:</b> {selectedOrder.deliveryAddress}</p>
-              <p><b>Chi tiết:</b> {selectedOrder.addressDetails}</p>
-            </div>
+                          {/* 2️⃣ Recipient Info */}
+                          <div className="card p-3 shadow-sm">
+                            <h6 className="mb-3">👤 Người nhận</h6>
+                            <p><b>Tên:</b> {selectedOrder.recipientName}</p>
+                            <p><b>Email:</b> {selectedOrder.recipientEmail}</p>
+                            <p><b>SĐT:</b> {selectedOrder.recipientPhone}</p>
+                            <p><b>Địa chỉ:</b> {selectedOrder.deliveryAddress}</p>
+                            <p><b>Chi tiết:</b> {selectedOrder.addressDetails}</p>
+                          </div>
 
-            {/* 3️⃣ Delivery Info */}
-            <div className="card p-3 shadow-sm">
-              <h6 className="mb-3">🚚 Giao hàng</h6>
-              <p><b>Trạng thái:</b> {toVNDeliveryStatus(selectedOrder.deliveryStatus) || "Chưa có"}</p>
-              <p><b>Mã tracking:</b> {selectedOrder.trackingNumber || "Chưa có"}</p>
-              <p><b>Phí ship:</b> ${selectedOrder.shippingFee || 0}</p>
-              <p><b>Ngày dự kiến:</b> {selectedOrder.estimatedDeliveryDate || "Chưa có"}</p>
-            </div>
+                          {/* 3️⃣ Delivery Info */}
+                          <div className="card p-3 shadow-sm">
+                            <h6 className="mb-3">🚚 Giao hàng</h6>
+                            <p><b>Trạng thái:</b> {toVNDeliveryStatus(selectedOrder.deliveryStatus) || "Chưa có"}</p>
+                            <p><b>Mã tracking:</b> {selectedOrder.trackingNumber || "Chưa có"}</p>
+                            <p><b>Phí ship:</b> ${selectedOrder.shippingFee || 0}</p>
+                            <p><b>Ngày dự kiến:</b> {selectedOrder.estimatedDeliveryDate || "Chưa có"}</p>
+                          </div>
 
-            {/* 4️⃣ Shipping Method */}
-            <div className="card p-3 shadow-sm">
-              <h6 className="mb-3">🚀 Phương thức vận chuyển</h6>
-              <p><b>Tên:</b> {selectedOrder.shippingMethodName || "Chưa chọn"}</p>
-              <p><b>Mô tả:</b> {selectedOrder.shippingDescription || "N/A"}</p>
-              <p><b>Thời gian dự kiến:</b> {selectedOrder.shippingEstimatedDays || 0} ngày</p>
-            </div>
+                          {/* 4️⃣ Shipping Method */}
+                          <div className="card p-3 shadow-sm">
+                            <h6 className="mb-3">🚀 Phương thức vận chuyển</h6>
+                            <p><b>Tên:</b> {selectedOrder.shippingMethodName || "Chưa chọn"}</p>
+                            <p><b>Mô tả:</b> {selectedOrder.shippingDescription || "N/A"}</p>
+                            <p><b>Thời gian dự kiến:</b> {selectedOrder.shippingEstimatedDays || 0} ngày</p>
+                          </div>
 
-            {/* 5️⃣ Payment Info */}
-            <div className="card p-3 shadow-sm" >
-              <h6 className="mb-3">💳 Thanh toán</h6>
-              <p><b>Phương thức:</b> {selectedOrder.paymentMethod}</p>
-              <p><b>Trạng thái:</b>
-  <span className={`badge ${paymentBadge(selectedOrder?.statusPayment)}`}>
-    {toVNPaymentStatus(selectedOrder?.statusPayment)}
-  </span>
-</p>
-            </div>
+                          {/* 5️⃣ Payment Info */}
+                          <div className="card p-3 shadow-sm" >
+                            <h6 className="mb-3">💳 Thanh toán</h6>
+                            <p><b>Phương thức:</b> {selectedOrder.paymentMethod}</p>
+                            <p><b>Trạng thái:</b>
+                              <span className={`badge ${paymentBadge(selectedOrder?.statusPayment)}`}>
+                                {toVNPaymentStatus(selectedOrder?.statusPayment)}
+                              </span>
+                            </p>
+                          </div>
 
-          </div>
-        </div>
+                        </div>
+                      </div>
 
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={handleCloseDetailModal}
-          >
-            Đóng
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+                      <div className="modal-footer">
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={handleCloseDetailModal}
+                        >
+                          Đóng
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
 
               <div className="row">
@@ -2239,7 +2472,7 @@ useEffect(() => {
                                             <li>
                                               <a onClick={() => handleOpenModalDiscount(discount)}>
                                                 <i className="far fa-edit mr-2 " />
-                                                Sửa 
+                                                Sửa
                                               </a>
                                             </li>
                                             <li>
@@ -2268,11 +2501,11 @@ useEffect(() => {
 
                             </tbody>
                           </table>
-                          
+
                         </div>
-                        
+
                       </div>
-                      
+
                     </div>
 
 
@@ -2280,7 +2513,7 @@ useEffect(() => {
                 </div>
               </div>
               <div className="row">
-                
+
                 <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                   <div className="card chart-card">
                     <div className="card-header">
@@ -2337,9 +2570,9 @@ useEffect(() => {
                                   <td>{order.createdAt}</td>
                                   <td>${order.totalPrice}</td>
                                   <td>
-                                  <label className={`mb-0 badge ${orderBadge(order.status)}`}>
-  {toVNOrderStatus(order.status)}
-</label>
+                                    <label className={`mb-0 badge ${orderBadge(order.status)}`}>
+                                      {toVNOrderStatus(order.status)}
+                                    </label>
                                   </td>
                                   <td>
                                     <span className="img-thumb">
@@ -2348,14 +2581,14 @@ useEffect(() => {
                                     </span>
                                   </td>
 
-                          <td>
-  <button
-    className="mb-0 badge badge-primary"
-    onClick={() => handleViewDetail(order)} // Gọi hàm khi click
-  >
-   Xem chi tiết
-  </button>
-</td>
+                                  <td>
+                                    <button
+                                      className="mb-0 badge badge-primary"
+                                      onClick={() => handleViewDetail(order)} // Gọi hàm khi click
+                                    >
+                                      Xem chi tiết
+                                    </button>
+                                  </td>
 
                                   {/* <td className="relative">
                                     <a
@@ -2948,51 +3181,51 @@ useEffect(() => {
 
                         </div>
                       </div>
-                             <div className="col-md-6">
-							<nav aria-label="Product Pagination">
-								<ul className="pagination style-1">
-									{/* Nút Previous */}
-					<li className="page-item">
-  <a
-    className={`page-link ${pageNumber === 0 ? 'disabled' : ''}`}
-    onClick={() => handlePageChange(pageNumber - 1)}
-  >
-    <i className="fas fa-chevron-left mr-1"></i> 
-  </a>
-</li>
-									{/* Các số trang trong phạm vi */}
-									{getPageRange().map((page) => (
-										<li className="page-item" key={page}>
-											<a
-												className={`page-link ${page === pageNumber ? 'active' : ''}`}
-												onClick={() => handlePageChange(page)}
-											>
-												{page + 1}
-											</a>
-										</li>
-									))}
-									{/* Nút Next */}
-									<li className="page-item">
-  <a
-    className={`page-link next ${pageNumber >= totalPage - 1 ? 'disabled' : ''}`}
-    onClick={() => handlePageChange(pageNumber + 1)}
-  >
-     <i className="fas fa-chevron-right ml-1"></i>
-  </a>
-</li>
-								</ul>
-							</nav>
-						</div>
+                      <div className="col-md-6">
+                        <nav aria-label="Product Pagination">
+                          <ul className="pagination style-1">
+                            {/* Nút Previous */}
+                            <li className="page-item">
+                              <a
+                                className={`page-link ${pageNumber === 0 ? 'disabled' : ''}`}
+                                onClick={() => handlePageChange(pageNumber - 1)}
+                              >
+                                <i className="fas fa-chevron-left mr-1"></i>
+                              </a>
+                            </li>
+                            {/* Các số trang trong phạm vi */}
+                            {getPageRange().map((page) => (
+                              <li className="page-item" key={page}>
+                                <a
+                                  className={`page-link ${page === pageNumber ? 'active' : ''}`}
+                                  onClick={() => handlePageChange(page)}
+                                >
+                                  {page + 1}
+                                </a>
+                              </li>
+                            ))}
+                            {/* Nút Next */}
+                            <li className="page-item">
+                              <a
+                                className={`page-link next ${pageNumber >= totalPage - 1 ? 'disabled' : ''}`}
+                                onClick={() => handlePageChange(pageNumber + 1)}
+                              >
+                                <i className="fas fa-chevron-right ml-1"></i>
+                              </a>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
                     </div>
-               
+
                   </div>
-                  
+
                 </div>
-              
+
               </div>
             </>
           )}
-       
+
 
           <div className="ad-footer-btm">
             <p>Copyright 2022 © SplashDash All Rights Reserved.</p>

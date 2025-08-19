@@ -29,7 +29,7 @@ async function renderRevenueChart(chartType, elementId) {
     try {
     const accessToken = localStorage.getItem('accessToken'); // Lấy token từ localStorage
 
-    const response = await fetch('http://localhost:8089/api/seller/getRevenueByStore', {
+    const response = await fetch('http://localhost:8765/api/seller/getRevenueByStore', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

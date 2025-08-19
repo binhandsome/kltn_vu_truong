@@ -17,3 +17,18 @@ services:
       - "9200:9200"
       - "9300:9300"
     restart: unless-stopped
+
+  kong:
+    image: kong:3.4
+    container_name: kong
+    environment:
+      - KONG_DATABASE=off
+      - KONG_DECLARATIVE_CONFIG=/usr/local/kong/declarative/kong.yml
+      - KONG_PROXY_LISTEN=0.0.0.0:8765
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+    ports:
+      - "8765:8765"
+      - "8001:8001"
+    volumes:
+      - ./kong.yml:/usr/local/kong/declarative/kong.yml
+    restart: unless-stopped

@@ -1168,6 +1168,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
     @Override
     @Transactional
     public String updateStatusBySeller(Long orderId, Long shopId, String status) {
+        DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(orderId);
         Optional<Order> order = orderRepository.findById(orderId);
         if (!order.get().getStoreId().equals(shopId)) {
             return "Bạn không có quyền để update";
@@ -1179,6 +1180,8 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         }
         order.get().setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         orderRepository.save(order.get());
+        deliveryInfo.setDeliveryStatus(DeliveryStatus.valueOf(status));
+        deliveryInfoRepository.save(deliveryInfo);
         MasterOrder master = order.get().getMasterOrder();
         Long masterId = master.getMasterOrderId();
         List<Order> children = orderRepository.findAllByMasterOrder_MasterOrderId(masterId);
@@ -1199,6 +1202,7 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
     }
     @Transactional
     public String updateStatusByAdmin(Long orderId, String status) {
+        DeliveryInfo deliveryInfo =  deliveryInfoRepository.findByOrderId(orderId);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
 
@@ -1212,7 +1216,8 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
         MasterOrder master = order.getMasterOrder(); // LAZY nhưng đang trong @Transactional nên OK
         Long masterId = master.getMasterOrderId();
         List<Order> children = orderRepository.findAllByMasterOrder_MasterOrderId(masterId);
-
+        deliveryInfo.setDeliveryStatus(DeliveryStatus.valueOf(status));
+        deliveryInfoRepository.save(deliveryInfo);
         // ---- QUY TẮC ROLLUP ----
         // 1) Tất cả delivered/completed -> master = completed
         boolean allDelivered =
