@@ -23,6 +23,9 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -61,6 +64,8 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductVariantRepository productVariantRepository;
     private final AsyncUploadService asyncUploadService;
+    @Autowired
+    private CacheManager cacheManager;
     @Autowired
     private SearchServiceProxy searchServiceProxy;
     private EvaluateProductRepository evaluateProductRepository;
@@ -986,25 +991,51 @@ validateShopOwnership(product.getStoreId(), authId);
     }
 
     @Override
+    @Cacheable(value = "top20Products", key = "'bestSellers'", unless = "#result == null || #result.isEmpty()")
     public List<ResponseProduct> listProductTop20() {
-        return productRepository.findTop20ByOrderByQuantitySoldDesc()
-                .stream()
-                .map(p -> ResponseProduct.builder()
-                        .asin(p.getAsin())
-                        .percentDiscount(p.getPercentDiscount())
-                        .productId(p.getProductId())
-                        .productPrice(p.getProductPrice())
-                        .productStatus(p.getProductStatus().name())
-                        .productThumbnail(p.getProductThumbnail())
-                        .productTitle(p.getProductTitle())
-                        .productType(p.getProductType())
-                        .salesRank(p.getSalesRank())
-                        .soldCount(p.getQuantitySold())
-                        .stockQuantity(p.getStockQuantity())
-                        .storeId(p.getStoreId())
-                        .tags(p.getTags())
-                        .build())
-                .toList();
+        try {
+            List<Product> products = productRepository.findTop20ByOrderByQuantitySoldDesc();
+
+            return products.stream()
+                    .map(p -> ResponseProduct.builder()
+                            .asin(p.getAsin())
+                            .percentDiscount(p.getPercentDiscount())
+                            .productId(p.getProductId())
+                            .productPrice(p.getProductPrice())
+                            .productStatus(p.getProductStatus().name())
+                            .productThumbnail(p.getProductThumbnail())
+                            .productTitle(p.getProductTitle())
+                            .productType(p.getProductType())
+                            .salesRank(p.getSalesRank())
+                            .soldCount(p.getQuantitySold())
+                            .stockQuantity(p.getStockQuantity())
+                            .storeId(p.getStoreId())
+                            .tags(p.getTags())
+                            .build())
+                    .collect(Collectors.toList()); // Sử dụng collect thay vì toList()
+
+        } catch (Exception e) {
+            log.error("Error fetching top 20 products: ", e); // Sử dụng logger thay vì System.err
+            return Collections.emptyList(); // Sử dụng Collections.emptyList()
+        }
+    }
+
+    @Override
+    @CacheEvict(value = "top20Products", key = "'bestSellers'")
+    public void clearTop20Cache() {
+        log.info("Top 20 products cache cleared");
+    }
+
+    // Xóa tất cả cache entries
+    @CacheEvict(value = "top20Products", allEntries = true)
+    public void evictAllProductCache() {
+        log.info("All product cache cleared");
+    }
+
+    // Refresh cache
+    public void refreshTop20Cache() {
+        clearTop20Cache();
+        listProductTop20(); // Sẽ tự động cache lại
     }
 
 

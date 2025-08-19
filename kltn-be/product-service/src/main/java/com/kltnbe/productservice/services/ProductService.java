@@ -80,4 +80,5 @@ Page<ProductResponse> searchProductsByStore(Long storeId, StoreProductFilter fil
     List<EvaluateResponse> getEvaluatesPublicByAsin(String asin);
     Map<String, EvaluateSummaryDTO> getEvaluateSummary(List<String> asins);
     List<ResponseProduct> listProductTop20();
+    void clearTop20Cache();
 }

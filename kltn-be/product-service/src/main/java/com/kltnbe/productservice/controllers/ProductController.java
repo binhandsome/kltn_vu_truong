@@ -18,6 +18,7 @@ import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -542,8 +543,13 @@ public class ProductController {
         return ResponseEntity.ok(productService.getEvaluateSummary(asins));
     }
     @GetMapping("/productListTop20")
-    public ResponseEntity<?> getProductListTop20() {
+    public ResponseEntity<List<ResponseProduct>> getProductListTop20() {
         return ResponseEntity.ok(productService.listProductTop20());
+    }
+    @DeleteMapping("/cache/top20")
+    public ResponseEntity<?> clearTop20Cache() {
+        productService.clearTop20Cache();
+        return ResponseEntity.ok("Cache cleared successfully");
     }
 
 }

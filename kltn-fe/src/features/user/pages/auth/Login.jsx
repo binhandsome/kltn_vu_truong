@@ -56,7 +56,7 @@ function Login() {
           localStorage.setItem('username', response.username);
           localStorage.setItem('user', JSON.stringify({ email }));
       
-          const meRes = await fetch("http://localhost:8765/api/auth/me", {
+          const meRes = await fetch("http://localhost:8081/api/auth/me", {
             headers: {
               Authorization: `Bearer ${response.accessToken}`
             }

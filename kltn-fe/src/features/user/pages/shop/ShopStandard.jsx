@@ -39,8 +39,12 @@ function ShopStandard({ products }) {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success'); // hoặc "error"
   const API_SELLER = process.env.REACT_APP_API_SELLER || "http://localhost:8089";
-  // Them state shop
-  // thêm state
+  const [error, setError] = useState(null);
+
+  const isProductInCart = (asin) => {
+    return listCart.some((item) => item.asin === asin);
+  };
+
   const [shopHeader, setShopHeader] = useState(null);
   const [shopLoadingShop, setShopLoadingShop] = useState(false);
   // format số lượng đã bán
@@ -49,7 +53,8 @@ function ShopStandard({ products }) {
   const [bestSellers, setBestSellers] = useState([]);
   const [bestIndex, setBestIndex] = useState(0);
   const [selectedFile, setSelectedFile] = useState(null);
-
+  const BEST_CARD_W = 260;
+  const BEST_GAP = 16;
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -75,87 +80,304 @@ function ShopStandard({ products }) {
     }
   };
   const API_SEARCH = process.env.REACT_APP_API_SEARCH || "http://localhost:8085";
+// Cache key cho localStorage (backup cache)
+  const CACHE_KEY = 'top20_products_cache';
+  const CACHE_TIMESTAMP_KEY = 'top20_products_timestamp';
+  const CACHE_DURATION = 10 * 60 * 1000; // 10 phút
+  const bestContainerRef = useRef(null);
+  const [bestVisible, setBestVisible] = useState(4);
+   const isProductInWishlist = (asin) => wishlistItems.some((item) => item.asin === asin);
 
+  // Kiểm tra cache còn hợp lệ không
+  const isCacheValid = useCallback(() => {
+    const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+    if (!timestamp) return false;
+    
+    const now = Date.now();
+    const cacheTime = parseInt(timestamp);
+    return (now - cacheTime) < CACHE_DURATION;
+  }, []);
 
-useEffect(() => {
-  const getListTop20Product = async () => {
+  // Lưu data vào cache
+  const saveToCache = useCallback((data) => {
     try {
-      const reponse = await axios.get("http://localhost:8083/api/products/productListTop20" , {
-      })
-      setBestSellers(reponse.data);
-    }catch(error) {
-      console.log(error);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+    } catch (error) {
+      console.warn('Cannot save to localStorage:', error);
     }
-  }
-  getListTop20Product();
-},[])
+  }, []);
 
-  // ===== Card tái dùng
-  const renderProductCard = (p) => {
-    const price = Number(p.productPrice || 0);
-    const discount = Number(p.percentDiscount || 0);
-    const finalPrice = (price - (price * discount) / 100).toFixed(2);
+  // Lấy data từ cache
+  const getFromCache = useCallback(() => {
+    try {
+      if (isCacheValid()) {
+        const cached = localStorage.getItem(CACHE_KEY);
+        return cached ? JSON.parse(cached) : null;
+      }
+      return null;
+    } catch (error) {
+      console.warn('Cannot read from localStorage:', error);
+      return null;
+    }
+  }, [isCacheValid]);
 
-    return (
-      <div className="shop-card style-1" key={p.asin}>
-        <div className="dz-media">
-          <img
-            src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.productThumbnail}`}
-            alt={p.productTitle}
-            style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-          />
-          <div className="shop-meta">
-            <div
-              className="btn btn-secondary btn-md btn-rounded"
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                fetchProductDetail(p.asin);
-                handleSearchAsin(p.asin);
-                setTimeout(() => {
-                  const modal = new window.bootstrap.Modal(document.getElementById('exampleModal'));
-                  modal.show();
-                }, 100);
-              }}
-            >
-              <i className="fa-solid fa-eye d-md-none d-block" />
-              <span className="d-md-block d-none">Xem nhanh</span>
+  // Xóa cache
+  const clearCache = useCallback(() => {
+    try {
+      localStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+    } catch (error) {
+      console.warn('Cannot clear localStorage:', error);
+    }
+  }, []);
+
+  // Fetch data từ API
+  const fetchTop20Products = useCallback(async (useCache = true) => {
+    // Kiểm tra cache trước nếu useCache = true
+    if (useCache) {
+      const cachedData = getFromCache();
+      if (cachedData && cachedData.length > 0) {
+        setBestSellers(cachedData);
+        return cachedData;
+      }
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get(
+        "http://localhost:8083/api/products/productListTop20",
+        {
+          timeout: 10000, // 10 giây timeout
+          headers: {
+            'Cache-Control': useCache ? 'max-age=600' : 'no-cache' // 10 phút cache
+          }
+        }
+      );
+
+      const data = response.data || [];
+      setBestSellers(data);
+      
+      // Lưu vào cache nếu có data
+      if (data.length > 0) {
+        saveToCache(data);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching top 20 products:', error);
+      setError('Không thể tải danh sách sản phẩm bán chạy');
+
+      // Thử lấy từ cache nếu API lỗi
+      const cachedData = getFromCache();
+      if (cachedData && cachedData.length > 0) {
+        setBestSellers(cachedData);
+        setError('Đang hiển thị dữ liệu từ bộ nhớ đệm');
+        return cachedData;
+      }
+
+      setBestSellers([]);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [getFromCache, saveToCache]);
+
+  // Refresh data (bỏ qua cache)
+  const refreshData = useCallback(async () => {
+    clearCache();
+    await fetchTop20Products(false);
+  }, [fetchTop20Products, clearCache]);
+
+  // Load data khi component mount
+  useEffect(() => {
+    fetchTop20Products(true);
+  }, [fetchTop20Products]);
+
+  // Tính toán responsive cho carousel
+  useEffect(() => {
+    const handleResize = () => {
+      if (bestContainerRef.current) {
+        const containerWidth = bestContainerRef.current.offsetWidth - 96; // trừ padding và button
+        const newVisible = Math.floor(containerWidth / (BEST_CARD_W + BEST_GAP));
+        setBestVisible(Math.max(1, newVisible));
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Reset index khi thay đổi bestVisible
+  useEffect(() => {
+    setBestIndex(0);
+  }, [bestVisible]);
+
+
+// ===== Card tái dùng - GIỮ NGUYÊN =====
+const renderProductCard = (p) => {
+  const price = Number(p.productPrice || 0);
+  const discount = Number(p.percentDiscount || 0);
+  const finalPrice = (price - (price * discount) / 100).toFixed(2);
+
+  return (
+    <div className="shop-card style-1" key={p.asin}>
+      <div className="dz-media">
+        <img
+          src={`https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.productThumbnail}`}
+          alt={p.productTitle}
+          style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+        />
+        <div className="shop-meta">
+          <div
+            className="btn btn-secondary btn-md btn-rounded"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              fetchProductDetail(p.asin);
+              handleSearchAsin(p.asin);
+              setTimeout(() => {
+                const modal = new window.bootstrap.Modal(document.getElementById('exampleModal'));
+                modal.show();
+              }, 100);
+            }}
+          >
+            <i className="fa-solid fa-eye d-md-none d-block" />
+            <span className="d-md-block d-none">Xem nhanh</span>
+          </div>
+
+          <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', flexDirection: 'column', gap: 10, zIndex: 2 }}>
+            <div onClick={() => handleToggleWishlist(p.asin)}
+              style={{ width: 40, height: 40, background: 'rgba(0,0,0,.4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <i className={`icon feather ${isProductInWishlist(p.asin) ? 'icon-heart-on' : 'icon-heart'}`}
+                style={{ fontSize: 20, color: isProductInWishlist(p.asin) ? 'red' : '#fff' }} />
             </div>
-
-            <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', flexDirection: 'column', gap: 10, zIndex: 2 }}>
-              <div onClick={() => handleToggleWishlist(p.asin)}
-                style={{ width: 40, height: 40, background: 'rgba(0,0,0,.4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <i className={`icon feather ${isProductInWishlist(p.asin) ? 'icon-heart-on' : 'icon-heart'}`}
-                  style={{ fontSize: 20, color: isProductInWishlist(p.asin) ? 'red' : '#fff' }} />
-              </div>
-              <div onClick={() => addCartWithQuantity(1, p)}
-                style={{ width: 40, height: 40, background: 'rgba(0,0,0,.4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <i className="icon feather icon-shopping-cart"
-                  style={{ fontSize: 20, color: isProductInCart(p.asin) ? 'red' : '#fff' }} />
-              </div>
+            <div onClick={() => addCartWithQuantity(1, p)}
+              style={{ width: 40, height: 40, background: 'rgba(0,0,0,.4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <i className="icon feather icon-shopping-cart"
+                style={{ fontSize: 20, color: isProductInCart(p.asin) ? 'red' : '#fff' }} />
             </div>
           </div>
         </div>
-
-        <div className="dz-content">
-          <h5 className="title">
-            <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{p.productTitle}</a>
-          </h5>
-          <h5 className="price">${finalPrice}</h5>
-          {/* <div className="small text-muted mt-1">Đã bán: {formatSold(p.soldCount)}</div> */}
-        </div>
-
-        <div className="product-tag">
-          <span className="badge">Giảm {discount}%</span>
-        </div>
       </div>
-    );
-  };
 
+      <div className="dz-content">
+        <h5 className="title">
+          <a href={`/user/productstructure/ProductDetail?asin=${p.asin}`}>{p.productTitle}</a>
+        </h5>
+        <h5 className="price">${finalPrice}</h5>
+      </div>
+
+      <div className="product-tag">
+        <span className="badge">Giảm {discount}%</span>
+      </div>
+    </div>
+  );
+};
+
+// ===== JSX render trong component - GIỮ NGUYÊN =====
+{/* ===== BEST SELLERS (carousel nhiều sản phẩm) ===== */}
+<div className="mb-4">
+  <div className="d-flex align-items-center justify-content-between mb-2">
+    <h4 className="mb-0">🔥 Bán chạy nhất</h4>
+    {bestSellers.length > 0 && (
+      <div className="text-muted small">
+        {(() => {
+          const start = bestIndex + 1;
+          const end = Math.min(bestIndex + bestVisible, bestSellers.length);
+          return `${start}–${end} / ${bestSellers.length}`;
+        })()}
+      </div>
+    )}
+  </div>
+
+  <div
+    ref={bestContainerRef}
+    className="position-relative"
+    style={{
+      border: '1px solid #eee',
+      borderRadius: '12px',
+      padding: '16px 48px',
+      overflow: 'hidden',
+      minHeight: 380
+    }}
+  >
+    {/* Prev */}
+    {bestSellers.length > bestVisible && (
+      <button
+        type="button"
+        className="btn btn-light shadow-sm position-absolute"
+        style={{ 
+          backgroundColor: 'gray',
+          left: 8, 
+          top: '50%', 
+          transform: 'translateY(-50%)', 
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
+          padding: 0 
+        }}
+        onClick={() => setBestIndex(i => Math.max(0, i - 1))}
+        disabled={bestIndex <= 0}
+        aria-label="Prev"
+      >
+        ‹
+      </button>
+    )}
+
+    {/* Next */}
+    {bestSellers.length > bestVisible && (
+      <button
+        type="button"
+        className="btn btn-light shadow-sm position-absolute"
+        style={{
+          backgroundColor: 'gray', 
+          right: 8, 
+          top: '50%', 
+          transform: 'translateY(-50%)', 
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
+          padding: 0 
+        }}
+        onClick={() => setBestIndex(i =>
+          Math.min(i + 1, Math.max(0, bestSellers.length - bestVisible))
+        )}
+        disabled={bestIndex >= Math.max(0, bestSellers.length - bestVisible)}
+        aria-label="Next"
+      >
+        ›
+      </button>
+    )}
+
+    {/* Track */}
+    <div
+      style={{
+        display: 'flex',
+        gap: BEST_GAP,
+        transform: `translateX(-${bestIndex * (BEST_CARD_W + BEST_GAP)}px)`,
+        transition: 'transform .35s ease',
+        width: bestSellers.length
+          ? (bestSellers.length * BEST_CARD_W) + ((bestSellers.length - 1) * BEST_GAP)
+          : '100%'
+      }}
+    >
+      {bestSellers.length ? (
+        bestSellers.map((p) => (
+          <div key={p.asin} style={{ width: BEST_CARD_W, flex: '0 0 auto' }}>
+            {renderProductCard(p)}
+          </div>
+        ))
+      ) : (
+        <div className="text-muted p-3">Chưa có dữ liệu bán chạy</div>
+      )}
+    </div>
+  </div>
+</div>
   // ===== Carousel layout (giữ nguyên)
-  const BEST_CARD_W = 260;
-  const BEST_GAP = 16;
-  const bestContainerRef = useRef(null);
-  const [bestVisible, setBestVisible] = useState(4);
+
 
   useEffect(() => {
     const calc = () => {
@@ -466,10 +688,6 @@ useEffect(() => {
     return () => window.removeEventListener("cartUpdated", handleCartUpdate);
   }, []);
 
-  const isProductInCart = (asin) => {
-    return listCart.some((item) => item.asin === asin);
-  };
-
   const fetchWishlist = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
@@ -593,7 +811,6 @@ useEffect(() => {
       console.error("❌ Lỗi cập nhật wishlist:", error);
     }
   };
-  const isProductInWishlist = (asin) => wishlistItems.some((item) => item.asin === asin);
 
   const imageWrapperStyle = { width: "600px", height: "450px" };
   // Api gọi số lượng dựa vào màu và size
