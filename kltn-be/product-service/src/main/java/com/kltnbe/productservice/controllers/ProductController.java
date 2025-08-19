@@ -216,7 +216,6 @@ public class ProductController {
         public ResponseEntity<?> addProduct(@RequestBody ProductRequestDTO productRequestDTO, @RequestParam Long authId) {
             return ResponseEntity.ok(productService.createProduct(productRequestDTO, authId));
         }
-    @InternalApi
     @GetMapping("/internal/productByAsin/{asin}")
     public ResponseEntity<?> findProductByAsin(@PathVariable String asin,@RequestParam Long  authId) {
         return productService.getProductDetail(asin, authId)

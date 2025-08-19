@@ -1,10 +1,13 @@
 package com.kltnbe.adminservice.controllers;
 
 import com.kltnbe.adminservice.dtos.RunBuildOfflineRequest;
+import com.kltnbe.adminservice.entities.SaveHistoryActionRecommend;
 import com.kltnbe.adminservice.services.AdminSaveHistoryActionRecommendService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/historyActionRecommend")
@@ -22,6 +25,10 @@ public class AdminSaveHistoryActionRecommendController {
     @GetMapping("/importRecommend")
     public ResponseEntity<String> importRecommendations(@RequestParam String fileSave) {
         return ResponseEntity.ok(adminSaveHistoryActionRecommendService.importRecommendations(fileSave));
+    }
+    @GetMapping("/findAllHistoryRecommend")
+    public ResponseEntity<List<SaveHistoryActionRecommend>> findAllHistoryRecommend() {
+        return ResponseEntity.ok(adminSaveHistoryActionRecommendService.findAllByOrderByCreatedAtDesc());
     }
 
 

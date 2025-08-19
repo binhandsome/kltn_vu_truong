@@ -50,6 +50,7 @@ import SellerDashboard from '../pages/adminDashboard/SellerDashboard';
 import AdminProductDashboard from '../pages/product/AdminProductDashboard';
 import AdminFeedbackTable from '../pages/customer/AdminFeedbackTable';
 import ActionProduct from '../pages/product/ActionProduct';
+import AdminActionRecommend from '../pages/recommend/AdminActionRecommend';
 
 const AdminRoutes = () => {
   return (
@@ -104,6 +105,7 @@ const AdminRoutes = () => {
         <Route path="chart/chart" element={<Chart />} />
         <Route path="product/adminProductDashboard" element={<AdminProductDashboard />} />
         <Route path="/product/ActionProduct/:asin" element={<ActionProduct />} />
+        <Route path="/recommend/adminActionRecommend" element={<AdminActionRecommend />}></Route>
 
       </Route>
     </Routes>

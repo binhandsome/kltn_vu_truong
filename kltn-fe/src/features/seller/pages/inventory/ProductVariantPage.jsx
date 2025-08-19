@@ -11,7 +11,8 @@ const ProductVariantPage = () => {
   const [variants, setVariants] = useState([]);
   const [colors, setColors] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-
+  console.log('variant', variants);
+  console.log('productId', productId);
   const fetchVariants = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -137,7 +138,7 @@ const ProductVariantPage = () => {
     if (asin) {
       navigate(`/seller/inventory/product/${asin}/variants/add`);
     } else {
-      alert("Không tìm thấy asin để thêm biến thể!");
+      alert("Vui Lòng Thêm Size Vào Để Thêm Nhé");
     }
   }}
 >

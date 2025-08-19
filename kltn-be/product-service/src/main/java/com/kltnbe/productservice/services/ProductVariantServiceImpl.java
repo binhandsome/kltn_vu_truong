@@ -12,6 +12,7 @@ import com.kltnbe.productservice.repositories.ProductSizeRepository;
 import com.kltnbe.productservice.repositories.ProductVariantRepository;
 import com.kltnbe.productservice.clients.SellerServiceProxy;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.ws.rs.core.Variant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -96,15 +97,37 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
     @Override
     public List<ProductVariantDTO> getVariantsByProduct(Long productId, Long authId) {
+        // Tìm storeId và check quyền
         Long storeId = productRepository.findStoreIdByProductId(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy store của sản phẩm"));
+        validateShopOwnership(storeId, authId);
 
-        validateShopOwnership(storeId, authId); // Kiểm tra quyền sở hữu
+        // Lấy danh sách variant
+        List<ProductVariant> variants = variantRepository.findByProduct_ProductId(productId);
 
-        return variantRepository.findByProduct_ProductId(productId)
-                .stream()
-                .map(this::mapToDTO)
-                .toList();
+        if (variants.isEmpty()) {
+            // Nếu chưa có variant thì trả về 1 DTO mặc định chỉ chứa asin + productId
+            String asin = productRepository.findById(productId)
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy product: " + productId))
+                    .getAsin();
+            ProductVariantDTO dto = new ProductVariantDTO();
+            dto.setAsin(asin);
+            dto.setProductId(productId);
+            return List.of(dto);
+        }
+        return variants.stream().map(variant -> {
+            ProductVariantDTO dto = new ProductVariantDTO();
+            dto.setVariantId(variant.getVariantId());
+            dto.setProductId(variant.getProduct().getProductId());
+            dto.setSizeId(variant.getSize() != null ? variant.getSize().getSizeId() : null);
+            dto.setColorId(variant.getColor() != null ? variant.getColor().getColorId() : null);
+            dto.setPrice(variant.getPrice());
+            dto.setQuantityInStock(variant.getQuantityInStock());
+            dto.setQuantitySold(variant.getQuantitySold());
+            dto.setStatus(variant.getStatus().name());
+            dto.setAsin(variant.getProduct().getAsin());
+            return dto;
+        }).toList();
     }
 
 
