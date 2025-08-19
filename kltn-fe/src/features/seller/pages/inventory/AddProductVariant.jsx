@@ -56,7 +56,7 @@ const AddProductVariant = () => {
           console.error("❌ Không tìm thấy authId trong token!");
           return;
         }
-    
+  
         const res = await axios.get(
           `http://localhost:8083/api/products/internal/productByAsin/${asin}?authId=${authId}`,
           {

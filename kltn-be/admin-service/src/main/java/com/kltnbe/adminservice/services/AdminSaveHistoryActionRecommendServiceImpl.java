@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class AdminSaveHistoryActionRecommendServiceImpl implements AdminSaveHistoryActionRecommendService{
@@ -65,4 +67,10 @@ public class AdminSaveHistoryActionRecommendServiceImpl implements AdminSaveHist
         }
         return "Thất Bại";
     }
+
+    @Override
+    public List<SaveHistoryActionRecommend> findAllByOrderByCreatedAtDesc() {
+        return adminSaveHistoryActionRecommendRepository.findAllByOrderByCreatedAtDesc();
+    }
+
 }

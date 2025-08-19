@@ -42,7 +42,8 @@ public class ProductVariantController {
     public ResponseEntity<List<ProductVariantDTO>> getVariantsByProduct(
             @PathVariable Long productId,
             @RequestParam Long authId
-    ) {
+    )
+    {
         return ResponseEntity.ok(productVariantService.getVariantsByProduct(productId, authId));
     }
     @GetMapping("/available-stock")

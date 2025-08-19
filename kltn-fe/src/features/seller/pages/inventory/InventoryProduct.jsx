@@ -169,18 +169,20 @@ const toVNProductStatus = (s) => {
                             </div>
                           </td>
                           <td>
-                            <img
-                              src={
-                                p.thumbnail
-                                  ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_120,h_120/imgProduct/IMG/${p.thumbnail}`
-                                  : "/placeholder.jpg"
-                              }
-                              alt={p.nameProduct}
+                            
+                              	<img
+src={
+															p.thumbnail?.startsWith('http')
+																? p.thumbnail
+																: p.thumbnail?.endsWith('.jpg')
+																	? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${p.thumbnail}`
+																	: `/uploads/${p.thumbnail}`
+														}  
+                             alt={p.nameProduct}
                               width={60}
                               height={60}
                               style={{ objectFit: "cover" }}
-                              loading="lazy"
-                            />
+                              loading="lazy"/>	
                           </td>
                           <td>{p.nameProduct}</td>
                           <td>${p.price}</td>
