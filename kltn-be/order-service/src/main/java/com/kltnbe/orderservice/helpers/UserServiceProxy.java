@@ -1,8 +1,10 @@
 package com.kltnbe.orderservice.helpers;
 
 import com.kltnbe.orderservice.dtos.DeliveryAddressDTO;
+import com.kltnbe.orderservice.dtos.UserDTO;
 import com.kltnbe.orderservice.dtos.req.GuestAddressRequest;
 import com.kltnbe.orderservice.dtos.res.AddressInfo;
+import com.kltnbe.orderservice.dtos.res.UserProfileResponse;
 import com.kltnbe.security.utils.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -34,4 +36,8 @@ public interface UserServiceProxy {
             @RequestBody DeliveryAddressDTO dto,
             @RequestHeader("Authorization") String accessToken
     );
+    @GetMapping("api/auth/me")
+    ResponseEntity<UserProfileResponse> getUserInfo(@RequestHeader("Authorization") String authHeader);
+    @GetMapping("/api/users/find")
+    UserDTO findUserByUsername(@RequestParam("username") String username);
 }

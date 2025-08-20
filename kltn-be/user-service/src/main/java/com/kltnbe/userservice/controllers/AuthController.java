@@ -1,5 +1,6 @@
 package com.kltnbe.userservice.controllers;
 
+import com.kltnbe.security.utils.CustomUserDetails;
 import com.kltnbe.security.utils.InternalApi;
 import com.kltnbe.security.utils.JwtUtil;
 import com.kltnbe.userservice.dtos.UserDTO;
@@ -171,9 +172,9 @@ public class AuthController {
     @PutMapping("/change-password")
     public ResponseEntity<String> changePassword(
             @RequestBody ChangePasswordRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        return ResponseEntity.ok(authService.changePassword(userDetails.getUsername(), request));
+        return ResponseEntity.ok(authService.changePassword(customUserDetails.getUsername(), request));
     }
 
     @PutMapping("/profile")

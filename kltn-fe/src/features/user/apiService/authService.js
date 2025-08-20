@@ -260,7 +260,7 @@ export const changePassword = async (currentPassword, newPassword) => {
   const accessToken = localStorage.getItem('accessToken');
 
   const res = await fetch(`${API_URL}/change-password`, {
-    method: 'POST',
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken}`,

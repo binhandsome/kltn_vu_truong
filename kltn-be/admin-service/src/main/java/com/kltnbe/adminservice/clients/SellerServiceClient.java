@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "seller-service", url = "http://localhost:8089", configuration = FeignInternalAuthConfig.class)
+@FeignClient(name = "seller-service", configuration = FeignInternalAuthConfig.class)
 public interface SellerServiceClient {
 
     // ✅ 1. Lấy danh sách shop đang chờ duyệt
