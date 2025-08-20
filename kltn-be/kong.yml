@@ -21,7 +21,7 @@ plugins:
         - DELETE
         - OPTIONS
       headers:
-        - Authorization 
+        - Authorization
         - Content-Type
         - Cache-Control   # 👈 thêm cái này
         - X-Requested-With
@@ -62,7 +62,7 @@ services:
       - name: email-route
         paths: [ "/api/email" ]
         strip_path: false
-       
+
 
   # ================== PRODUCT (public) ==================
   - name: product
@@ -70,11 +70,16 @@ services:
     routes:
       - name: product-route
         paths:
-          - /api/product
           - /api/products
+          - /api/products/
           - /api/product-variants
-          - /api/wishlist
+          - /api/product-variants/
           - /api/reviews
+          - /api/reviews/
+          - /api/seller
+          - /api/seller/
+          - /api/wishlist
+          - /api/wishlist/
         strip_path: false
 
 
@@ -85,7 +90,7 @@ services:
       - name: cart-route
         paths: [ "/api/cart" ]
         strip_path: false
-      
+
   # ================== SEARCH (public) ==================
   - name: search
     url: http://host.docker.internal:8085
@@ -103,7 +108,7 @@ services:
           - /api/orders
           - /api/shippingMethods
         strip_path: false
-     
+
   # ================== PAYMENT (JWT) ==================
   - name: payment
     url: http://host.docker.internal:8087
@@ -111,7 +116,7 @@ services:
       - name: payment-route
         paths: [ "/api/payment" ]
         strip_path: false
-       
+
 
   # ================== RECOMMEND (JWT) ==================
   - name: recommend
@@ -122,36 +127,40 @@ services:
           - /api/recommend
           - /api/search
         strip_path: false
-      
+
 
 
   # ================== SELLER (JWT) ==================
   - name: seller
     url: http://host.docker.internal:8089
     routes:
-    # Public routes (không cần JWT)
-    - name: seller-public-route
-      paths:
-        - /api/seller/registerSeller
-        - /api/seller/verifyLoginSeller
-        - /api/seller/checkLoginSeller
-      strip_path: false
+      # Public routes (không cần JWT)
+      - name: seller-public-route
+        paths:
+          - /api/seller/registerSeller
+          - /api/seller/verifyLoginSeller
+          - /api/seller/checkLoginSeller
+          - /api/seller/getDiscountToUser
+          - /api/seller/internal
+          - /api/seller/public/
+        strip_path: false
 
-    # Protected routes (cần JWT)
-    - name: seller-protected-route
-      paths:
-        - /api/seller
-      strip_path: false
-      plugins:
-        - name: jwt
-          config:
-            key_claim_name: iss
-            header_names: [ Authorization  ]
-            uri_param_names: [ jwt ]
-            claims_to_verify: [ exp ]
-            run_on_preflight: false
-            maximum_expiration: 0
-            secret_is_base64: true
+      # Protected routes (cần JWT)
+      - name: seller-protected-route
+        paths:
+          - /api/seller
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: iss
+              header_names: [ Authorization ]
+              uri_param_names: [ jwt ]
+              claims_to_verify: [ exp ]
+              run_on_preflight: false
+              maximum_expiration: 0
+              secret_is_base64: true
+
 
 
   # ================== UPLOAD (JWT) ==================
@@ -176,16 +185,26 @@ services:
   - name: admin
     url: http://host.docker.internal:8091
     routes:
-      - name: admin-route
-        paths: [ "/api/admin" ]
+      # Public routes (không cần JWT)
+      - name: admin-public-route
+        paths:
+          - /api/admin/recommend
+          - /api/admin/feedback/receive
+        strip_path: false
+
+      # Protected routes (cần JWT)
+      - name: admin-protected-route
+        paths:
+          - /api/admin
         strip_path: false
         plugins:
           - name: jwt
             config:
               key_claim_name: iss
-              header_names: [ Authorization  ]
+              header_names: [ Authorization ]
               uri_param_names: [ jwt ]
               claims_to_verify: [ exp ]
               run_on_preflight: false
               maximum_expiration: 0
               secret_is_base64: true
+
