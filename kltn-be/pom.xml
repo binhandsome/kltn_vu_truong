@@ -19,7 +19,6 @@
         <module>cart-service</module>
         <module>email-service</module>
         <module>eureka-server</module>
-        <module>gateway-service</module>
         <module>order-service</module>
         <module>payment-service</module>
         <module>product-service</module>
@@ -47,5 +46,17 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Khai báo plugin Spring Boot để các module con có thể dùng -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>3.5.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

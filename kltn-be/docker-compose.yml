@@ -1,34 +1,300 @@
-version: '3.8'
+version: '3.7'
 
 services:
-  redis:
-    image: redis:7.2
+#  mysql:
+#    image: mysql:8.0
+#    container_name: mysql-db
+#    restart: unless-stopped
+#    environment:
+#      MYSQL_ROOT_PASSWORD: 123456789
+#    ports:
+#      - "3306:3306"
+#    networks:
+#      - thanhvuchig-network
+  cbf_api:
+      image: fastapi-cbf_api
+      container_name: cbf_api
+      restart: unless-stopped
+      ports:
+        - "8000:8000"
+      networks:
+        - thanhvuchig-network  # ← THÊM NETWORK
+      environment:
+        OUT_DIR: "/app/deploy_data"  # ← Đổi thành đường dẫn container
+        DATA_RAW_DIR: "/app/data_raw"  # ← Đổi thành đường dẫn container
+        DB_URL: "mysql+pymysql://root:123456789@host.docker.internal:3306/productservice?charset=utf8mb4"
+        RECOMMEND_DB_URL: "mysql+pymysql://root:123456789@host.docker.internal:3306/recommendservice?charset=utf8mb4"
+      volumes:
+        - "C:/Users/Admin/Downloads/Data/deploy_data:/app/deploy_data"
+        - "C:/Users/Admin/Downloads/Data/data_raw:/app/data_raw"
+      deploy:
+            resources:
+              limits:
+                memory: 4G  # Tăng memory limit
+              reservations:
+                memory: 2G
+  user-service:
+    image: thanhvu011/thanhvu-chitruong-user-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
     ports:
-      - "6379:6379"
-    restart: unless-stopped
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.4
+      - "8081:8081"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms2g -Xmx2g   # heap ES chỉ 2GB
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/userservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  order-service:
+    image: thanhvu011/thanhvu-chitruong-order-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
     ports:
-      - "9200:9200"
-      - "9300:9300"
-    restart: unless-stopped
-
-  kong:
-    image: kong:3.4
-    container_name: kong
+      - "8086:8086"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
     environment:
-      - KONG_DATABASE=off
-      - KONG_DECLARATIVE_CONFIG=/usr/local/kong/declarative/kong.yml
-      - KONG_PROXY_LISTEN=0.0.0.0:8765
-      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/orderservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  admin-service:
+    image: thanhvu011/thanhvu-chitruong-admin-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
     ports:
-      - "8765:8765"
-      - "8001:8001"
-    volumes:
-      - ./kong.yml:/usr/local/kong/declarative/kong.yml
-    restart: unless-stopped
+      - "8091:8091"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/adminservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  cart-service:
+    image: thanhvu011/thanhvu-chitruong-cart-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8084:8084"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  email-service:
+    image: thanhvu011/thanhvu-chitruong-email-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8082:8082"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/emailservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  payment-service:
+    image: thanhvu011/thanhvu-chitruong-payment-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8087:8087"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/paymentservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  product-service:
+    image: thanhvu011/thanhvu-chitruong-product-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8083:8083"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/productservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  recommend-service:
+    image: thanhvu011/thanhvu-chitruong-recommend-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8088:8088"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/recommendservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+      FASTAPI_URL: http://host.docker.internal:8000
+  search-service:
+    image: thanhvu011/thanhvu-chitruong-search-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8085:8085"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_ELASTICSEARCH_URIS: http://host.docker.internal:9200
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  seller-service:
+    image: thanhvu011/thanhvu-chitruong-seller-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8089:8089"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/sellerservice?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  upload-service:
+    image: thanhvu011/thanhvu-chitruong-upload-service:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8090:8090"
+    networks:
+      - thanhvuchig-network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+
+  eureka-server:
+    image: thanhvu011/thanhvu-chitruong-eureka-server:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    ports:
+      - "8761:8761"
+    networks:
+      - thanhvuchig-network
+
+  zipkin-server:
+    image: openzipkin/zipkin:2.23
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+    ports:
+      - "9411:9411"
+    networks:
+      - thanhvuchig-network
+
+networks:
+  thanhvuchig-network:
+    driver: bridge
