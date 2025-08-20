@@ -43,7 +43,6 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentServiceProxy paymentServiceProxy;
     private final OrderItemRepository orderItemRepository;
     private final ProductServiceProxy productServiceProxy;
-    private final AuthServiceProxy authServiceProxy;
     private final SellerServiceProxy sellerServiceProxy;
     private final MasterOrderRepository masterOrderRepository;
     private final Logger log =  LoggerFactory.getLogger(OrderServiceImpl.class);
@@ -83,7 +82,7 @@ public class OrderServiceImpl implements OrderService {
             if (!isGuest) {
                 userId = userServiceProxy.findUserIdByAccessToken(orderRequest.getAccessToken());
                 ResponseEntity<UserProfileResponse> meRes =
-                        authServiceProxy.getUserInfo("Bearer " + orderRequest.getAccessToken());
+                        userServiceProxy.getUserInfo("Bearer " + orderRequest.getAccessToken());
                 if (meRes.getStatusCode().is2xxSuccessful() && meRes.getBody() != null) {
                     paypalEmail = meRes.getBody().getEmail();
                 }

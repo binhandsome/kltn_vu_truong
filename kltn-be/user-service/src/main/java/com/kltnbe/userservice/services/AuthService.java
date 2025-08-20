@@ -11,7 +11,7 @@ public interface AuthService {
     LoginResponse login(LoginRequest loginRequest);
     Auth getUserByUsername(String username);
     String resetPassword(ResetPasswordRequest request);
-    String changePassword(String email, ChangePasswordRequest request);
+    String changePassword(String username, ChangePasswordRequest request);
     boolean emailExists(String email);
     Long findIdByUsername(String username);
     Long findIdByEmail(String email);

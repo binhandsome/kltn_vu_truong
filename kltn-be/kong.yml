@@ -38,11 +38,9 @@ services:
       - name: user-auth-public
         paths: [ "/api/auth" ]
         strip_path: false
-      # public: /api/user/** (nếu có)
       - name: user-user-public
         paths: [ "/api/user" ]
         strip_path: false
-      # protected: các URL còn lại dưới /api/**
       - name: user-protected
         paths: [ "/api" ]
         strip_path: false

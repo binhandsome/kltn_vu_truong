@@ -115,7 +115,8 @@ services:
     depends_on:
       - eureka-server
     environment:
-
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin-server:9411/api/v2/spans
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"

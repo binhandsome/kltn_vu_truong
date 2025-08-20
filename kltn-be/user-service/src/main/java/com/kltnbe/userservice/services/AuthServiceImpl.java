@@ -299,30 +299,23 @@ public class AuthServiceImpl implements AuthService {
         }
     }
     @Override
-    public String changePassword(String email, ChangePasswordRequest request) {
-        Auth auth = authRepository.findByEmail(email)
+    public String changePassword(String username, ChangePasswordRequest request) {
+        Auth auth = authRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
         if (!passwordEncoder.matches(request.getCurrentPassword(), auth.getPasswordHash())) {
             return "Mật khẩu hiện tại không chính xác";
-        }
-
-        // Kiểm tra confirmPassword
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            return "Mật khẩu xác nhận không khớp với mật khẩu mới";
         }
 
         // Kiểm tra mật khẩu mới khác mật khẩu hiện tại
         if (passwordEncoder.matches(request.getNewPassword(), auth.getPasswordHash())) {
             return "Mật khẩu mới phải khác mật khẩu hiện tại";
         }
-
         // Kiểm tra độ mạnh mật khẩu
         String password = request.getNewPassword();
         String pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
         if (!password.matches(pattern)) {
             return "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt";
         }
-
         auth.setPasswordHash(passwordEncoder.encode(password));
         authRepository.save(auth);
         return "Đổi mật khẩu thành công";
