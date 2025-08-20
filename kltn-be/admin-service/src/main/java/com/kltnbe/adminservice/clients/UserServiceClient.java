@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "user-service",  configuration = FeignInternalAuthConfig.class)
+@FeignClient(name = "user-service", url = "http://localhost:8081",  configuration = FeignInternalAuthConfig.class)
 public interface UserServiceClient {
 
     @GetMapping("/api/user/allUsers")

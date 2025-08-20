@@ -1,0 +1,66 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20250819162514
+Username: PC\lephu
+RunAs User: PC\lephu
+Configuration Name: 
+Machine: PC (Microsoft Windows NT 10.0.26100.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -NoExit -ExecutionPolicy Bypass -File .\build-all.ps1
+Process ID: 20452
+PSVersion: 5.1.26100.4768
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.4768
+BuildVersion: 10.0.26100.4768
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+
+=== Building user-service -> user-service:latest ===
+
+Build OK: user-service
+
+=== Building email-service -> email-service:latest ===
+
+Build OK: email-service
+
+=== Building product-service -> product-service:latest ===
+
+Build OK: product-service
+
+=== Building cart-service -> cart-service:latest ===
+
+Build OK: cart-service
+
+=== Building search-service -> search-service:latest ===
+
+Build FAILED for search-service
+
+=== Building order-service -> order-service:latest ===
+
+Build OK: order-service
+
+=== Building payment-service -> payment-service:latest ===
+
+Build OK: payment-service
+
+=== Building recommend-service -> recommend-service:latest ===
+
+Build FAILED for recommend-service
+
+=== Building seller-service -> seller-service:latest ===
+
+Build OK: seller-service
+
+=== Building upload-service -> upload-service:latest ===
+
+Build OK: upload-service
+
+=== Building admin-service -> admin-service:latest ===
+
+Build OK: admin-service
+**********************
+Windows PowerShell transcript end
+End time: 20250819163227
+**********************
