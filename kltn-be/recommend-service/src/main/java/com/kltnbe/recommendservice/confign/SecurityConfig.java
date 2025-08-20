@@ -2,6 +2,7 @@ package com.kltnbe.recommendservice.confign;
 
 import com.kltnbe.security.utils.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,7 +21,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+    @Value("${fastapi.url}")
+    private String fastApiUrl;
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     @Bean
@@ -57,7 +59,7 @@ public class SecurityConfig {
     @Bean
     public WebClient fastApiClient() {
         return WebClient.builder()
-                .baseUrl("http://localhost:8000") // đổi theo nơi bạn deploy FastAPI
+                .baseUrl(fastApiUrl) // đổi theo nơi bạn deploy FastAPI
                 .build();
     }
     @Bean
