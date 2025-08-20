@@ -31,6 +31,15 @@ function ShopFiltersTopBar() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [searchAsin, setSearchAsin] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success'); 
+  const triggerToast = (msg, type = "success") => {
+		setToastMessage(msg);
+		setToastType(type);
+		setShowToast(true);
+		setTimeout(() => setShowToast(false), 1500);
+	  };
 
   useEffect(() => {
     if (selectedProduct) {
@@ -50,65 +59,141 @@ function ShopFiltersTopBar() {
     const parsed = parseInt(value);
     setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed);
   };
+  // === Helpers: kiểm tra trong cart/wishlist ===
+const isProductInCart = React.useCallback(
+  (asin) => listCart?.some(i => String(i.asin).trim() === String(asin).trim()),
+  [listCart]
+);
+const isProductInWishlist = React.useCallback(
+  (asin) => wishlistItems?.some(i => String(i.asin).trim() === String(asin).trim()),
+  [wishlistItems]
+);
+
+// === API: thêm nhanh vào giỏ từ card (khác với nút Add To Cart trong modal) ===
+const addCartWithQuantity = async (quantity, product) => {
+  const cartId = localStorage.getItem("cartId") || "";
+  const token  = localStorage.getItem("accessToken") || "";
+  try {
+    const payload = {
+      token,
+      asin: product.asin,
+      quantity,
+      price: parseFloat(product.productPrice),
+      cartId,
+    };
+    const res = await axios.post("http://localhost:8765/api/cart/addCart", payload);
+    if (res.data?.cartId) localStorage.setItem("cartId", res.data.cartId);
+
+    window.dispatchEvent(new Event("cartUpdated"));
+    triggerToast("✅ Đã thêm vào giỏ hàng!");
+  } catch (e) {
+    console.error("❌ Không thể thêm giỏ:", e.response?.data || e.message);
+    triggerToast("❌ Thêm giỏ hàng thất bại", "error");
+  }
+};
 
 
-  const addCart = async () => {
-    const cartId = localStorage.getItem("cartId") || "";
-    const token = localStorage.getItem("accessToken") || "";
+// === API: lấy giỏ và wishlist để render đúng màu icon ===
+const getCartProduct = async () => {
+  const cartId = localStorage.getItem("cartId") || "";
+  const token  = localStorage.getItem("accessToken") || "";
+  try {
+    const res = await axios.get("http://localhost:8765/api/cart/getCart", {
+      params: { cartId, token },
+    });
+    setListCart(res.data?.items || []);
+  } catch (error) {
+    console.error("❌ Lỗi lấy giỏ hàng:", error);
+    setListCart([]);
+  }
+};
 
-    try {
-      const payload = {
-        token,
-        asin: selectedProduct.asin,
-        quantity,
-        price: parseFloat(priceDiscount),
-        cartId,
-        size: selectedSize,
-        nameColor: selectedColor?.name_color,
-        colorAsin: JSON.stringify(selectedProduct.colors || []),
-      };
+const fetchWishlist = async () => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return; // không đổi flow hiện tại nếu chưa đăng nhập
+  try {
+    const res = await axios.get("http://localhost:8765/api/wishlist", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setWishlistItems(res.data || []);
+  } catch (error) {
+    console.error("❌ Lỗi lấy wishlist:", error);
+  }
+};
+useEffect(() => {
+  getCartProduct();
+  fetchWishlist();
 
-      const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
-      if (response.data.cartId) {
-        localStorage.setItem("cartId", response.data.cartId);
-      }
+  const onCart = () => getCartProduct();
+  const onWish = () => fetchWishlist();
 
-      window.dispatchEvent(new Event("cartUpdated"));
+  window.addEventListener("cartUpdated", onCart);
+  window.addEventListener("wishlistUpdated", onWish);
 
-      // 👉 Chuyển sang trang Cart
-      window.location.href = "/user/shoppages/cart";
-    } catch (error) {
-      console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
-    }
+  return () => {
+    window.removeEventListener("cartUpdated", onCart);
+    window.removeEventListener("wishlistUpdated", onWish);
   };
-  const handleToggleWishlist = async (asin) => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
+}, []);
+const addCart = async () => {
+  const cartId = localStorage.getItem("cartId") || "";
+  const token  = localStorage.getItem("accessToken") || "";
 
-    const isInWishlist = wishlistItems.some((item) => item.asin === asin);
-    try {
-      if (isInWishlist) {
-        await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } else {
-        await axios.post(`http://localhost:8765/api/wishlist/${asin}`, null, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  try {
+    const payload = {
+      token,
+      asin: selectedProduct.asin,
+      quantity,
+      price: parseFloat(priceDiscount),
+      cartId,
+      size: selectedSize,
+      nameColor: selectedColor?.name_color,
+      colorAsin: JSON.stringify(selectedProduct.colors || []),
+    };
 
-        // 👉 Nếu thêm thành công thì đẩy sang trang wishlist
-        window.location.href = "/user/shoppages/wishlist";
-      }
+    const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
+    if (response.data.cartId) localStorage.setItem("cartId", response.data.cartId);
 
-      const res = await axios.get("http://localhost:8765/api/wishlist", {
+    window.dispatchEvent(new Event("cartUpdated"));
+    triggerToast("✅ Thêm vào giỏ hàng thành công!");
+    // chuyển trang như cũ
+    window.location.href = "/user/shoppages/cart";
+  } catch (error) {
+    console.error("❌ Không thể thêm giỏ hàng:", error.response?.data || error.message);
+    triggerToast("❌ Thêm giỏ hàng thất bại", "error");
+  }
+};
+
+const handleToggleWishlist = async (asin) => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) {
+    triggerToast("⚠️ Vui lòng đăng nhập để dùng wishlist", "info");
+    return;
+  }
+
+  const isIn = wishlistItems.some(item => item.asin === asin);
+  try {
+    if (isIn) {
+      await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setWishlistItems(res.data);
-      window.dispatchEvent(new Event("wishlistUpdated"));
-    } catch (error) {
-      console.error("❌ Lỗi cập nhật wishlist:", error);
+      setWishlistItems(prev => prev.filter(i => i.asin !== asin)); // optimistic
+      triggerToast("🗑️ Đã bỏ khỏi yêu thích");
+    } else {
+      await axios.post(`http://localhost:8765/api/wishlist/${asin}`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setWishlistItems(prev => [...prev, { asin }]); // optimistic
+      triggerToast("❤️ Đã thêm vào yêu thích!");
     }
-  };
+    window.dispatchEvent(new Event("wishlistUpdated"));
+  } catch (error) {
+    console.error("❌ Lỗi cập nhật wishlist:", error);
+    triggerToast("❌ Cập nhật wishlist thất bại", "error");
+  }
+};
+
+  
   const handlePageChangeProduct = (event) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
@@ -732,14 +817,30 @@ function ShopFiltersTopBar() {
                                       <span className="d-md-block d-none" >Quick View</span>
                                     </div>
 
-                                    <div className="btn btn-primary meta-icon dz-wishicon">
-                                      <i className="icon feather icon-heart dz-heart" />
-                                      <i className="icon feather icon-heart-on dz-heart-fill" />
-                                    </div>
-                                    <div className="btn btn-primary meta-icon dz-carticon">
-                                      <i className="flaticon flaticon-basket" />
-                                      <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                                    </div>
+                                    <div
+    className="btn btn-primary meta-icon dz-wishicon"
+    onClick={() => handleToggleWishlist(product.asin)}
+    title={isProductInWishlist(product.asin) ? "Bỏ yêu thích" : "Thêm yêu thích"}
+    style={{ cursor: 'pointer' }}
+  >
+    <i
+      className={`icon feather ${isProductInWishlist(product.asin) ? 'icon-heart-on dz-heart-fill' : 'icon-heart dz-heart'}`}
+      style={{ color: isProductInWishlist(product.asin) ? 'red' : '#fff' }}
+    />
+  </div>
+
+  {/* ADD TO CART */}
+  <div
+    className="btn btn-primary meta-icon dz-carticon"
+    onClick={() => addCartWithQuantity(1, product)}
+    title={isProductInCart(product.asin) ? "Đã có trong giỏ" : "Thêm vào giỏ"}
+    style={{ cursor: 'pointer' }}
+  >
+    <i
+      className="flaticon flaticon-basket"
+      style={{ color: isProductInCart(product.asin) ? 'red' : '#fff' }}
+    />
+  </div>
                                   </div>
                                 </div>
                                 <div className="dz-content">
@@ -1163,6 +1264,22 @@ function ShopFiltersTopBar() {
 
         {/* Footer (đã được xử lý trong App.js) */}
         <ScrollTopButton />
+        {showToast && (
+					<div style={{
+						position: 'fixed',
+						top: '20px',
+						right: '20px',
+						zIndex: 9999,
+						padding: '12px 20px',
+						backgroundColor: '#28a745',
+						color: 'white',
+						borderRadius: '8px',
+						boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+						transition: 'opacity 0.5s ease-in-out'
+					}}>
+						{toastMessage}
+					</div>
+				)}
       </div>
     </>
   );

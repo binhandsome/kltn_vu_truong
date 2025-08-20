@@ -61,6 +61,13 @@ function OrdersDetails() {
 	const [comment, setComment] = useState("");
 	const [rating, setRating] = useState(0);
 	  const { pathname } = useLocation();
+	  const [toastType, setToastType] = useState('success'); 
+	  const [wishlistItems, setWishlistItems] = useState([]);
+	  const [listCart, setListCart] = useState([]);
+	  const isProductInWishlist = (asin) => wishlistItems.some((item) => item.asin === asin);
+	  const isProductInCart = (asin) => {
+		return listCart.some((item) => item.asin === asin);
+	  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -96,6 +103,84 @@ const { state } = useLocation();
 			setShowToast(false);
 		}, 1500);
 	};
+	const triggerToast = (msg, type = "success") => {
+		setToastMessage(msg);
+		setToastType(type);
+		setShowToast(true);
+		setTimeout(() => setShowToast(false), 1500);
+	  };
+	const handleToggleWishlist = async (asin) => {
+		const token = localStorage.getItem("accessToken");
+		if (!token) return;
+	
+		const isInWishlist = wishlistItems.some((item) => item.asin === asin);
+		try {
+		  if (isInWishlist) {
+			await axios.delete(`http://localhost:8765/api/wishlist/${asin}`, {
+			  headers: { Authorization: `Bearer ${token}` },
+			});
+			triggerToast("🗑️ Đã xóa sản phẩm khỏi wishlist");
+		  } else {
+			await axios.post(`http://localhost:8765/api/wishlist/${asin}`, null, {
+			  headers: { Authorization: `Bearer ${token}` },
+			});
+			triggerToast("🗑️ Đã thêm sản phẩm vào wishlist");
+		  }
+	
+		  const res = await axios.get("http://localhost:8765/api/wishlist", {
+			headers: { Authorization: `Bearer ${token}` },
+		  });
+		  setWishlistItems(res.data);
+		  window.dispatchEvent(new Event("wishlistUpdated"));
+		} catch (error) {
+		  console.error("❌ Lỗi cập nhật wishlist:", error);
+		}
+	  };
+	  const getCartProduct = async () => {
+		const cartId = localStorage.getItem("cartId") || "";
+		const token  = localStorage.getItem("accessToken") || "";
+		try {
+		  const res = await axios.get("http://localhost:8765/api/cart/getCart", {
+			params: { cartId, token },
+		  });
+		  setListCart(res.data?.items || []);
+		} catch (error) {
+		  console.error("❌ Lỗi lấy giỏ hàng:", error);
+		  setListCart([]);
+		}
+	  };
+	  useEffect(() => {
+		getCartProduct(); // lấy lần đầu khi mở trang
+		const handleCartUpdate = () => getCartProduct();
+		window.addEventListener("cartUpdated", handleCartUpdate);
+		return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+	  }, []);
+	  const addCartWithQuantity = async (quantity, product) => {
+		const cartId = localStorage.getItem("cartId") || "";
+		const token = localStorage.getItem("accessToken") || "";
+	
+		try {
+		  const payload = {
+			token,
+			asin: product.asin,
+			quantity,
+			price: parseFloat(product.productPrice),
+			cartId,
+		  };
+	
+		  const response = await axios.post("http://localhost:8765/api/cart/addCart", payload);
+	
+		  if (response.data.cartId) {
+			localStorage.setItem("cartId", response.data.cartId);
+		  }
+	
+		  window.dispatchEvent(new Event("cartUpdated"));
+		  triggerToast("✅ Thêm vào giỏ hàng thành công!");
+		} catch (error) {
+		  console.error("❌ Không thể thêm giỏ hàng (from outside):", error.response?.data || error.message);
+		  triggerToast("❌ Thêm giỏ hàng thất bại!", "error");
+		}
+	  };
 	const addCart = async () => {
 		const cartId = localStorage.getItem("cartId") || "";
 		const token = localStorage.getItem("accessToken") || "";
@@ -1186,14 +1271,48 @@ const CHILD_STATUS_LABELS = {
                       <i className="fa-solid fa-eye d-md-none d-block" />
                       <span className="d-md-block d-none">Quick View</span>
                     </div>
-                    <div className="btn btn-primary meta-icon dz-wishicon">
-                      <i className="icon feather icon-heart dz-heart" />
-                      <i className="icon feather icon-heart-on dz-heart-fill" />
-                    </div>
-                    <div className="btn btn-primary meta-icon dz-carticon">
-                      <i className="flaticon flaticon-basket" />
-                      <i className="flaticon flaticon-shopping-basket-on dz-heart-fill" />
-                    </div>
+                     {/* Wishlist Icon */}
+					 <div
+                                              onClick={() => handleToggleWishlist(product.asin)}
+                                              style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer'
+                                              }}
+                                            >
+                                              <i
+                                                className={`icon feather ${isProductInWishlist(product.asin) ? 'icon-heart-on' : 'icon-heart'}`}
+                                                style={{ fontSize: '20px', color: isProductInWishlist(product.asin) ? 'red' : '#fff' }}
+                                              />
+                                            </div>
+
+                                            {/* Cart Icon */}
+                                            <div
+                                              onClick={() => addCartWithQuantity(1, product)}
+                                              style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer'
+                                              }}
+                                            >
+                                              <i
+                                                className="icon feather icon-shopping-cart"
+                                                style={{
+                                                  fontSize: '20px',
+                                                  color: isProductInCart(product.asin) ? 'red' : '#fff'
+                                                }}
+                                              />
+                                            </div>
                   </div>
                 </div>
                 <div className="dz-content">
