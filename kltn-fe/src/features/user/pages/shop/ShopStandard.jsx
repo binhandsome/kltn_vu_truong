@@ -1678,9 +1678,9 @@ const renderProductCard = (p) => {
                                   <div className="dz-media">
                                     <img
                                       src={
-                                        product.productThumbnail.startsWith('http')
+                                        product.productThumbnail?.startsWith('http')
                                           ? product.productThumbnail
-                                          : product.productThumbnail.endsWith('.jpg')
+                                          : product.productThumbnail?.endsWith('.jpg')
                                             ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${product.productThumbnail}`
                                             : `/uploads/${product.productThumbnail}`
                                       } />
@@ -1898,7 +1898,7 @@ const renderProductCard = (p) => {
                                         src={
                                           selectedProduct.productThumbnail.startsWith('http')
                                             ? selectedProduct.productThumbnail
-                                            : selectedProduct.productThumbnail.endsWith('.jpg')
+                                            : selectedProduct.productThumbnail?.endsWith('.jpg')
                                               ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`
                                               : `/uploads/${selectedProduct.productThumbnail}`
                                         } />				                                    </div>
@@ -1912,9 +1912,9 @@ const renderProductCard = (p) => {
                                   <div className="swiper-slide">
                                      <img
                                         src={
-                                          selectedProduct.productThumbnail.startsWith('http')
+                                          selectedProduct.productThumbnail?.startsWith('http')
                                             ? selectedProduct.productThumbnail
-                                            : selectedProduct.productThumbnail.endsWith('.jpg')
+                                            : selectedProduct.productThumbnail?.endsWith('.jpg')
                                               ? `https://res.cloudinary.com/dj3tvavmp/image/upload/w_300,h_300/imgProduct/IMG/${selectedProduct.productThumbnail}`
                                               : `/uploads/${selectedProduct.productThumbnail}`
                                         } />				 

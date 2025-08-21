@@ -1268,12 +1268,30 @@ public String updateOrderAddress(Long orderId, Long authId, DeliveryAddressDTO d
     }
     @Override
     public String cancelBySeller(Long orderId, Long shopId) {
+        DeliveryInfo deliveryInfo = deliveryInfoRepository.findByOrderId(orderId);
         Optional<Order> order = orderRepository.findById(orderId);
         if (!order.get().getStoreId().equals(shopId)) {
             return "Bạn không có quyền để update";
         }
         order.get().setStatus(OrderStatus.cancelledSeller.name());
         orderRepository.save(order.get());
+        deliveryInfo.setDeliveryStatus(DeliveryStatus.failed);
+        deliveryInfoRepository.save(deliveryInfo);
+        MasterOrder master = order.get().getMasterOrder();
+        Long masterId = master.getMasterOrderId();
+        List<Order> children = orderRepository.findAllByMasterOrder_MasterOrderId(masterId);
+        boolean allDelivered =
+                children.stream().allMatch(o -> equalsAnyIgnoreCase(o.getStatus(), "delivered", "completed"));
+        if (allDelivered) {
+            setMasterStatusIfChanged(master, "completed");
+            return "Cập nhật trạng thái Order & MasterOrder (completed) thành công";
+        }
+        String first = children.get(0).getStatus();
+        boolean allSame = children.stream().allMatch(o -> first.equalsIgnoreCase(o.getStatus()));
+        if (allSame) {
+            setMasterStatusIfChanged(master, first);
+            return "Cập Hủy đơn hàng cả ở Masterorder thành công";
+        }
         return "Hủy đơn hàng thành công";
     }
 
