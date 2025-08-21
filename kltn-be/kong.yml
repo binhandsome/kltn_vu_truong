@@ -1,61 +1,43 @@
 _format_version: "3.0"
 _transform: true
 
-# ==== Consumer + secret cho JWT (HS512) ====
-consumers:
-  - username: user-auth-issuer
-    custom_id: user-auth-issuer
-    jwt_secrets:
-      - key: user-service
-        secret: "aGtHd1hnM3NlcEh5U3lmaDhoUWVrZ0dZN0RZbGZxVXpKbFlGbFZKZ2JPRzFqcmMybWhVZFN5N0RoT0JreEdhVg=="
-        algorithm: HS512
+# ==== CORS Plugin (Global) ====
 plugins:
   - name: cors
     config:
       origins:
         - http://localhost:3000
+        - "*"  # Allow all origins for development
       methods:
         - GET
         - POST
         - PUT
         - DELETE
         - OPTIONS
+        - PATCH
       headers:
         - Authorization
         - Content-Type
-        - Cache-Control   # 👈 thêm cái này
+        - Cache-Control
         - X-Requested-With
         - Accept
       credentials: true
       max_age: 3600
 
-# ================== USER-SERVICE ==================
+# ================== SERVICES & ROUTES ==================
 services:
+  # ================== USER-SERVICE ==================
   - name: user
     url: http://host.docker.internal:8081
     routes:
-      # public: /api/auth/**
-      - name: user-auth-public
+      - name: user-auth-route
         paths: [ "/api/auth" ]
         strip_path: false
-      - name: user-user-public
+      - name: user-user-route
         paths: [ "/api/user" ]
         strip_path: false
-      - name: user-protected
-        paths: [ "/api" ]
-        strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ Authorization  ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: true
 
-  # ================== EMAIL (có JWT) ==================
+  # ================== EMAIL SERVICE ==================
   - name: email
     url: http://host.docker.internal:8082
     routes:
@@ -63,27 +45,20 @@ services:
         paths: [ "/api/email" ]
         strip_path: false
 
-
-  # ================== PRODUCT (public) ==================
+  # ================== PRODUCT SERVICE ==================
   - name: product
     url: http://host.docker.internal:8083
     routes:
       - name: product-route
         paths:
+          - /api/product
           - /api/products
-          - /api/products/
           - /api/product-variants
-          - /api/product-variants/
-          - /api/reviews
-          - /api/reviews/
-          - /api/seller
-          - /api/seller/
           - /api/wishlist
-          - /api/wishlist/
+          - /api/reviews
         strip_path: false
 
-
-  # ================== CART (JWT) ==================
+  # ================== CART SERVICE ==================
   - name: cart
     url: http://host.docker.internal:8084
     routes:
@@ -91,7 +66,7 @@ services:
         paths: [ "/api/cart" ]
         strip_path: false
 
-  # ================== SEARCH (public) ==================
+  # ================== SEARCH SERVICE ==================
   - name: search
     url: http://host.docker.internal:8085
     routes:
@@ -99,7 +74,7 @@ services:
         paths: [ "/api/search" ]
         strip_path: false
 
-  # ================== ORDER (JWT) ==================
+  # ================== ORDER SERVICE ==================
   - name: order
     url: http://host.docker.internal:8086
     routes:
@@ -109,7 +84,7 @@ services:
           - /api/shippingMethods
         strip_path: false
 
-  # ================== PAYMENT (JWT) ==================
+  # ================== PAYMENT SERVICE ==================
   - name: payment
     url: http://host.docker.internal:8087
     routes:
@@ -117,94 +92,34 @@ services:
         paths: [ "/api/payment" ]
         strip_path: false
 
-
-  # ================== RECOMMEND (JWT) ==================
+  # ================== RECOMMEND SERVICE ==================
   - name: recommend
     url: http://host.docker.internal:8088
     routes:
       - name: recommend-route
-        paths:
-          - /api/recommend
-          - /api/search
+        paths: [ "/api/recommend" ]
         strip_path: false
 
-
-
-  # ================== SELLER (JWT) ==================
+  # ================== SELLER SERVICE ==================
   - name: seller
     url: http://host.docker.internal:8089
     routes:
-      # Public routes (không cần JWT)
-      - name: seller-public-route
-        paths:
-          - /api/seller/registerSeller
-          - /api/seller/verifyLoginSeller
-          - /api/seller/checkLoginSeller
-          - /api/seller/getDiscountToUser
-          - /api/seller/internal
-          - /api/seller/public/
+      - name: seller-route
+        paths: [ "/api/seller" ]
         strip_path: false
 
-      # Protected routes (cần JWT)
-      - name: seller-protected-route
-        paths:
-          - /api/seller
-        strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ Authorization ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: true
-
-
-
-  # ================== UPLOAD (JWT) ==================
+  # ================== UPLOAD SERVICE ==================
   - name: upload
     url: http://host.docker.internal:8090
     routes:
       - name: upload-route
         paths: [ "/api/upload" ]
         strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ Authorization  ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: true
 
-  # ================== ADMIN (JWT) ==================
+  # ================== ADMIN SERVICE ==================
   - name: admin
     url: http://host.docker.internal:8091
     routes:
-      # Public routes (không cần JWT)
-      - name: admin-public-route
-        paths:
-          - /api/admin/recommend
-          - /api/admin/feedback/receive
+      - name: admin-route
+        paths: [ "/api/admin" ]
         strip_path: false
-
-      # Protected routes (cần JWT)
-      - name: admin-protected-route
-        paths:
-          - /api/admin
-        strip_path: false
-        plugins:
-          - name: jwt
-            config:
-              key_claim_name: iss
-              header_names: [ Authorization ]
-              uri_param_names: [ jwt ]
-              claims_to_verify: [ exp ]
-              run_on_preflight: false
-              maximum_expiration: 0
-              secret_is_base64: true
-
