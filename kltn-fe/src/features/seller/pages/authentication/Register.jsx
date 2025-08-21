@@ -22,7 +22,7 @@ const RegisterSeller = () => {
   const [message, setMessage] = useState('');
   const [messageSeller, setMessageSeller] = useState('');
   const [otp, setOtp] = useState('');
-  const [messageUsername, setMessegerUsername] = useState();
+  const [messageUsername, setMessegerUsername] = useState('');
   const API_URL = 'http://localhost:8765/api/auth';
   const [isOtpInputVisible, setIsOtpInputVisible] = useState(false);
   const [isSendingDisabled, setIsSendingDisabled] = useState(false);
@@ -79,29 +79,27 @@ const RegisterSeller = () => {
         throw new Error(error.message || 'Lỗi mạng khi kiểm tra email');
       }
     };
-   const checkUsernameExist = async () => {
-  if (!username) {
-    setMessegerUsername(""); // reset khi rỗng
-    return;
-  }
-
-  try {
-    const response = await axios.get(`${API_URL}/checkUsernameExists`, {
-      params: { username },
-    });
-
-    if (response.data === true) {
-      setMessegerUsername("❌ Tên đăng nhập đã tồn tại");
-    } else if (response.data === false) {
-      setMessegerUsername("✅ Tên đăng nhập hợp lệ");
-    } else {
-      setMessegerUsername("⚠️ Phản hồi không xác định từ server");
-    }
-  } catch (error) {
-    console.error("❌ Lỗi khi kiểm tra username:", error);
-    setMessegerUsername("🚫 Không thể kiểm tra tên đăng nhập");
-  }
-};
+     const checkUsernameExist = async () => {
+         const name = (username || '').trim();
+         if (!name) {
+           setMessegerUsername('');
+           return;
+         }
+         try {
+           // ✅ Gọi endpoint PUBLIC (không yêu cầu X-Internal-Secret)
+           const { data } = await axios.get(`${API_URL}/check-username`, {
+             params: { username: name },
+           });
+           // BE trả { exists: boolean } — fallback nếu trả boolean trần
+           const exists = typeof data === 'boolean' ? data : !!data?.exists;
+           setMessegerUsername(
+             exists ? '❌ Tên người dùng đã tồn tại' : '✅ Tên người dùng hợp lệ'
+           );
+         } catch (error) {
+           console.error('❌ Lỗi khi kiểm tra username:', error);
+           setMessegerUsername('🚫 Không thể kiểm tra tên đăng nhập');
+         }
+       };
 
 useEffect(() => {
   const delayDebounce = setTimeout(() => {
