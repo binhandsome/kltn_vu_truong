@@ -12,7 +12,7 @@ services:
 #    networks:
 #      - thanhvuchig-network
   cbf_api:
-      image: fastapi-cbf_api
+      image: thanhvu011/cbf-fastapi:1.1
       container_name: cbf_api
       restart: unless-stopped
       ports:
@@ -25,8 +25,8 @@ services:
         DB_URL: "mysql+pymysql://root:123456789@host.docker.internal:3306/productservice?charset=utf8mb4"
         RECOMMEND_DB_URL: "mysql+pymysql://root:123456789@host.docker.internal:3306/recommendservice?charset=utf8mb4"
       volumes:
-        - "C:/Users/Admin/Downloads/Data/deploy_data:/app/deploy_data"
-        - "C:/Users/Admin/Downloads/Data/data_raw:/app/data_raw"
+        - "/Users/thanhvu/Downloads/Data/deploy_data:/app/deploy_data"
+        - "/Users/thanhvu/Downloads/Data/data_raw:/app/data_raw"
       deploy:
             resources:
               limits:
