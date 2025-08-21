@@ -520,7 +520,7 @@ public class SearchServiceImpl implements SearchService {
             log.error("Error executing Elasticsearch query", e);
 
             // Fallback: chỉ trả về recommend nếu có lỗi ES
-            if (!filteredRecommend.isEmpty() && offset < filteredRecommend.size()) {
+            if (!   filteredRecommend.isEmpty() && offset < filteredRecommend.size()) {
                 int start = (int) Math.max(0, offset);
                 int end = (int) Math.min(offset + size, filteredRecommend.size());
                 List<ProductDocument> fallbackContent = filteredRecommend.subList(start, end);
