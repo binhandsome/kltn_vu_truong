@@ -646,7 +646,6 @@ const addCart = async () => {
                   src={shopInfo.avatar || FALLBACK_AVATAR}
                   alt={`shop avatar ${shopInfo.name || ""}`}
                   style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
-                  onError={(e)=>{ e.currentTarget.src = FALLBACK_AVATAR; }}
                 />
               </div>
 

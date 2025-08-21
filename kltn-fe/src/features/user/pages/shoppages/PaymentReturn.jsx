@@ -20,7 +20,7 @@ const PaymentReturn = () => {
     try {
       const token = localStorage.getItem("accessToken") || "";
       const cartId = localStorage.getItem("cartId") || "";
-      const res = await axios.get("http://localhost:8765/api/cart/getItemCart", {
+      const res = await axios.get("http://localhost:8765/api/cart/getCart", {
         params: { token, cartId },
       });
 
