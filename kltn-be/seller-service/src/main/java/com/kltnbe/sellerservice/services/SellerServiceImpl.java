@@ -1000,10 +1000,10 @@ public class SellerServiceImpl implements SellerService {
         return shopFollowRepository.existsByUserIdAndShopId(userId, shopId);
     }
 
-    @Override
     public String checkStatusByShop(Long authId) {
-       String status = String.valueOf(shopRepository.findByAuthId(authId).get().getShopStatus());
-       return status;
+        return shopRepository.findByAuthId(authId)
+                .map(shop -> shop.getShopStatus().toString())
+                .orElse(null);
     }
 
 

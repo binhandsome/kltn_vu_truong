@@ -16,16 +16,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+
 @AllArgsConstructor
 public class ShopLockFilter extends OncePerRequestFilter {
-
 
     private final SellerService sellerService;
     private final AntPathMatcher matcher = new AntPathMatcher();
 
-    // Những endpoint vẫn cho phép truy cập khi shop bị khóa (dashboard lock, public info, appeal, internal…)
+    // Những endpoint vẫn cho phép truy cập khi shop bị khóa hoặc chưa tạo shop
     private static final List<String> ALLOW_WHEN_LOCKED = List.of(
             "/api/seller/dashboard/locked/**",
+            "/api/seller/dashboard/create/**", // Cho phép tạo shop
             "/api/seller/public/**",
             "/api/seller/internal/**"
     );
@@ -41,6 +42,7 @@ public class ShopLockFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
             return;
         }
+
         for (String pattern : ALLOW_WHEN_LOCKED) {
             if (matcher.match(pattern, uri)) {
                 chain.doFilter(req, res);
@@ -67,8 +69,15 @@ public class ShopLockFilter extends OncePerRequestFilter {
 
         Long authId = user.getAuthId();
 
-        var restrictedOpt = sellerService.checkStatusByShop(authId);
-        if (restrictedOpt.equalsIgnoreCase(String.valueOf(Shop.ShopStatus.pending))) {
+        String shopStatus = sellerService.checkStatusByShop(authId);
+
+        // Nếu chưa tạo shop (status null), frontend sẽ tự handle
+        if (shopStatus == null || shopStatus.isEmpty()) {
+            chain.doFilter(req, res);
+            return;
+        }
+
+        if (shopStatus.equalsIgnoreCase(String.valueOf(Shop.ShopStatus.pending))) {
             res.setStatus(423);
             res.setContentType("application/json;charset=UTF-8");
             res.getWriter().write("""
@@ -76,7 +85,7 @@ public class ShopLockFilter extends OncePerRequestFilter {
     """);
             return;
         }
-        else if (restrictedOpt.equalsIgnoreCase(String.valueOf(Shop.ShopStatus.suspended))) {
+        else if (shopStatus.equalsIgnoreCase(String.valueOf(Shop.ShopStatus.suspended))) {
             res.setStatus(423);
             res.setContentType("application/json;charset=UTF-8");
             res.getWriter().write("""

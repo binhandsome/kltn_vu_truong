@@ -36,7 +36,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/seller/getDiscountToUser").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/seller/public/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/seller/has-shop").authenticated()
                         .requestMatchers(HttpMethod.POST,   "/api/seller/public/*/follow").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/seller/public/*/follow").authenticated()
                         .requestMatchers(HttpMethod.GET,    "/api/seller/public/*/follow-status").authenticated()

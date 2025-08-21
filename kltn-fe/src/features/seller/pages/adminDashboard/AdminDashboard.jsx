@@ -632,7 +632,6 @@ async function renderRevenueChart(chartType, elementId) {
       const response = await api.get(`/get-shop-discounts`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-
         }
       });
       setDiscounts(response.data);
