@@ -294,43 +294,7 @@ const handleViewCccd = async (shopId) => {
       </div>
 
       {/* Nút hiển thị CCCD */}
-<button
-  onClick={() => handleViewCccd(selectedShop.shopId)}
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    width: "100%",
-    padding: "14px 0",
-    marginTop: "20px",
-    fontWeight: "600",
-    fontSize: "16px",
-    color: "#fff",
-    background: "linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)",
-    border: "none",
-    borderRadius: "14px",
-    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.6), 0 0 20px rgba(139, 92, 246, 0.4)",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-  }}
-  onMouseOver={(e) => {
-    e.currentTarget.style.transform = "scale(1.05)";
-    e.currentTarget.style.boxShadow =
-      "0 6px 25px rgba(6, 182, 212, 0.7), 0 0 25px rgba(139, 92, 246, 0.6)";
-    e.currentTarget.style.background =
-      "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)";
-  }}
-  onMouseOut={(e) => {
-    e.currentTarget.style.transform = "scale(1)";
-    e.currentTarget.style.boxShadow =
-      "0 4px 15px rgba(59, 130, 246, 0.6), 0 0 20px rgba(139, 92, 246, 0.4)";
-    e.currentTarget.style.background =
-      "linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)";
-  }}
->
-  🪪 Xem ảnh CCCD
-</button>
+
 
 
       {/* Danh sách giảm giá */}

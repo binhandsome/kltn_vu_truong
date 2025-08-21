@@ -33,7 +33,6 @@ class ImageUploadService {
         this.storeAuthenticRepository = storeAuthenticRepository;
     }
 
-    @Async
     @Transactional
     public void processImageUploadAndStore(Long authId, SellerDTO sellerDTO) {
         try {
