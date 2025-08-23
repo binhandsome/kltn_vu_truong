@@ -1,0 +1,253 @@
+# =========================
+# 1) KONG DECLARATIVE CONFIG (DB-less) - ConfigMap
+# =========================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: default
+data:
+  kong.yaml: |
+    _format_version: "3.0"
+    _transform: true
+
+    plugins:
+    - name: cors
+      config:
+        # Cho phép tất cả origins tạm thời để test
+        origins: ["*"]
+
+        # Hoặc chỉ định cụ thể:
+        # origins:
+        #   - "http://35.247.162.8"
+        #   - "http://35.247.162.8:80"
+        #   - "https://35.247.162.8"
+        #   - "https://35.247.162.8:443"
+        #   - "http://localhost:3000"
+        #   - "http://127.0.0.1:3000"
+        
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+          - PATCH
+          - HEAD
+        
+        headers:
+          - Accept
+          - Accept-Language
+          - Authorization
+          - Cache-Control
+          - Content-Language
+          - Content-Type
+          - Origin
+          - X-Requested-With
+          - X-Custom-Header
+        
+        exposed_headers:
+          - X-Custom-Header
+          - X-Kong-Upstream-Latency
+          - X-Kong-Proxy-Latency
+        
+        credentials: true
+        max_age: 86400
+        preflight_continue: false
+
+    services:
+      # USER-SERVICE
+      - name: user
+        url: http://user-service:8081
+        routes:
+          - name: user-auth-route
+            paths: ["/api/auth"]
+            strip_path: false
+          - name: user-user-route
+            paths: ["/api/user"]
+            strip_path: false
+
+      # EMAIL SERVICE
+      - name: email
+        url: http://email-service:8082
+        routes:
+          - name: email-route
+            paths: ["/api/email"]
+            strip_path: false
+
+      # PRODUCT SERVICE
+      - name: product
+        url: http://product-service:8083
+        routes:
+          - name: product-route
+            paths:
+              - /api/product
+              - /api/products
+              - /api/product-variants
+              - /api/wishlist
+              - /api/reviews
+            strip_path: false
+
+      # CART SERVICE
+      - name: cart
+        url: http://cart-service:8084
+        routes:
+          - name: cart-route
+            paths: ["/api/cart"]
+            strip_path: false
+
+      # SEARCH SERVICE
+      - name: search
+        url: http://search-service:8085
+        routes:
+          - name: search-route
+            paths: ["/api/search"]
+            strip_path: false
+
+      # ORDER SERVICE
+      - name: order
+        url: http://order-service:8086
+        routes:
+          - name: order-route
+            paths:
+              - /api/orders
+              - /api/shippingMethods
+            strip_path: false
+
+      # PAYMENT SERVICE
+      - name: payment
+        url: http://payment-service:8087
+        routes:
+          - name: payment-route
+            paths: ["/api/payment"]
+            strip_path: false
+
+      # RECOMMEND SERVICE
+      - name: recommend
+        url: http://recommend-service:8088
+        routes:
+          - name: recommend-route
+            paths: ["/api/recommend"]
+            strip_path: false
+
+      # SELLER SERVICE
+      - name: seller
+        url: http://seller-service:8089
+        routes:
+          - name: seller-route
+            paths: ["/api/seller"]
+            strip_path: false
+
+      # UPLOAD SERVICE
+      - name: upload
+        url: http://upload-service:8090
+        routes:
+          - name: upload-route
+            paths: ["/api/upload"]
+            strip_path: false
+            
+      - name: admin
+        url: http://admin-service:8091
+        routes:
+          - name: admin-route
+            paths: ["/api/admin"]
+            strip_path: false
+
+---
+# =========================
+# 2) KONG DEPLOYMENT (DB-less)
+# =========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: default
+  labels: { app: kong }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: kong }
+  template:
+    metadata:
+      labels: { app: kong }
+    spec:
+      containers:
+        - name: kong
+          image: kong:3.4
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KONG_DATABASE
+              value: "off"                        # DB-less
+            - name: KONG_DECLARATIVE_CONFIG
+              value: "/opt/kong/kong.yaml"
+            - name: KONG_PROXY_LISTEN
+              value: "0.0.0.0:8765"               # public port bạn đang dùng
+            - name: KONG_ADMIN_LISTEN
+              value: "0.0.0.0:8001"               # Admin API (để nội bộ)
+            - name: KONG_LOG_LEVEL
+              value: "info"
+            # Cors plugin là bundled, không cần KONG_PLUGINS
+          ports:
+            - containerPort: 8765                 # proxy
+            - containerPort: 8001                 # admin
+          volumeMounts:
+            - name: kong-config-volume
+              mountPath: /opt/kong
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "200m", memory: "256Mi" }
+            limits:   { cpu: "1",    memory: "512Mi" }
+      volumes:
+        - name: kong-config-volume
+          configMap:
+            name: kong-config
+            items:
+              - key: kong.yaml
+                path: kong.yaml
+
+---
+# =========================
+# 3) SERVICES: PROXY (LB) + ADMIN (internal)
+# =========================
+
+# Public cho client gọi (proxy 8765)
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-proxy
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector: { app: kong }
+  ports:
+    - name: proxy
+      port: 8765
+      targetPort: 8765
+      protocol: TCP
+
+---
+# Admin API để nội bộ dùng (không public)
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: kong }
+  ports:
+    - name: admin
+      port: 8001
+      targetPort: 8001
+      protocol: TCP

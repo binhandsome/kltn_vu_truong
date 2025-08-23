@@ -1,0 +1,47 @@
+# ---- recommend-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommend-service
+  namespace: default
+  labels: { app: recommend-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: recommend-service } }
+  template:
+    metadata: { labels: { app: recommend-service } }
+    spec:
+      containers:
+        - name: recommend-service
+          image: thanhvu011/thanhvu-chitruong-recommend-service:0.0.7
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8088 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/recommendservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+            - { name: FASTAPI_URL, value: "http://cbf-api:8000" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommend-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: recommend-service }
+  ports:
+    - port: 8088
+      targetPort: 8088
+      protocol: TCP

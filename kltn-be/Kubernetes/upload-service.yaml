@@ -1,0 +1,41 @@
+# ---- upload-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload-service
+  namespace: default
+  labels: { app: upload-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: upload-service } }
+  template:
+    metadata: { labels: { app: upload-service } }
+    spec:
+      containers:
+        - name: upload-service
+          image: thanhvu011/thanhvu-chitruong-upload-service:0.0.7
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8090 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: upload-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: upload-service }
+  ports:
+    - port: 8090
+      targetPort: 8090
+      protocol: TCP

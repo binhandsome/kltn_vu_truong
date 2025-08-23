@@ -1,0 +1,41 @@
+# ---- cart-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-service
+  namespace: default
+  labels: { app: cart-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: cart-service } }
+  template:
+    metadata: { labels: { app: cart-service } }
+    spec:
+      containers:
+        - name: cart-service
+          image: thanhvu011/thanhvu-chitruong-cart-service:0.0.7
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8084 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: cart-service }
+  ports:
+    - port: 8084
+      targetPort: 8084
+      protocol: TCP

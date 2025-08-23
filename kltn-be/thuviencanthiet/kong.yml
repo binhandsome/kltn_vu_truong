@@ -1,0 +1,125 @@
+_format_version: "3.0"
+_transform: true
+
+# ==== CORS Plugin (Global) ====
+plugins:
+  - name: cors
+    config:
+      origins:
+        - http://localhost:3000
+        - "*"  # Allow all origins for development
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+        - PATCH
+      headers:
+        - Authorization
+        - Content-Type
+        - Cache-Control
+        - X-Requested-With
+        - Accept
+      credentials: true
+      max_age: 3600
+
+# ================== SERVICES & ROUTES ==================
+services:
+  # ================== USER-SERVICE ==================
+  - name: user
+    url: http://host.docker.internal:8081
+    routes:
+      - name: user-auth-route
+        paths: [ "/api/auth" ]
+        strip_path: false
+      - name: user-user-route
+        paths: [ "/api/user" ]
+        strip_path: false
+
+  # ================== EMAIL SERVICE ==================
+  - name: email
+    url: http://host.docker.internal:8082
+    routes:
+      - name: email-route
+        paths: [ "/api/email" ]
+        strip_path: false
+
+  # ================== PRODUCT SERVICE ==================
+  - name: product
+    url: http://host.docker.internal:8083
+    routes:
+      - name: product-route
+        paths:
+          - /api/product
+          - /api/products
+          - /api/product-variants
+          - /api/wishlist
+          - /api/reviews
+        strip_path: false
+
+  # ================== CART SERVICE ==================
+  - name: cart
+    url: http://host.docker.internal:8084
+    routes:
+      - name: cart-route
+        paths: [ "/api/cart" ]
+        strip_path: false
+
+  # ================== SEARCH SERVICE ==================
+  - name: search
+    url: http://host.docker.internal:8085
+    routes:
+      - name: search-route
+        paths: [ "/api/search" ]
+        strip_path: false
+
+  # ================== ORDER SERVICE ==================
+  - name: order
+    url: http://host.docker.internal:8086
+    routes:
+      - name: order-route
+        paths:
+          - /api/orders
+          - /api/shippingMethods
+        strip_path: false
+
+  # ================== PAYMENT SERVICE ==================
+  - name: payment
+    url: http://host.docker.internal:8087
+    routes:
+      - name: payment-route
+        paths: [ "/api/payment" ]
+        strip_path: false
+
+  # ================== RECOMMEND SERVICE ==================
+  - name: recommend
+    url: http://host.docker.internal:8088
+    routes:
+      - name: recommend-route
+        paths: [ "/api/recommend" ]
+        strip_path: false
+
+  # ================== SELLER SERVICE ==================
+  - name: seller
+    url: http://host.docker.internal:8089
+    routes:
+      - name: seller-route
+        paths: [ "/api/seller" ]
+        strip_path: false
+
+  # ================== UPLOAD SERVICE ==================
+  - name: upload
+    url: http://host.docker.internal:8090
+    routes:
+      - name: upload-route
+        paths: [ "/api/upload" ]
+        strip_path: false
+
+  # ================== ADMIN SERVICE ==================
+  - name: admin
+    url: http://host.docker.internal:8091
+    routes:
+      - name: admin-route
+        paths: [ "/api/admin" ]
+        strip_path: false

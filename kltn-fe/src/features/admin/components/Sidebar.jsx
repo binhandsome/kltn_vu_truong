@@ -21,8 +21,8 @@ const Sidebar = () => {
  <aside className="sidebar-wrapper">
   <div className="logo-wrapper">
     <a href="/admin" className="admin-logo">
-      <img src="../../assets/admin/images/logo.png" alt="" className="sp_logo" />
-      <img src="../../assets/admin/images/mini_logo.png" alt="" className="sp_mini_logo" />
+      <img src="https://res.cloudinary.com/dj3tvavmp/image/upload/w_100,h_100/v1755920555/Thie%CC%82%CC%81t_ke%CC%82%CC%81_chu%CC%9Ba_co%CC%81_te%CC%82n_3_oyy2ff.png" alt="" className="sp_logo" />
+      <img src="https://res.cloudinary.com/dj3tvavmp/image/upload/w_100,h_100/v1755920555/Thie%CC%82%CC%81t_ke%CC%82%CC%81_chu%CC%9Ba_co%CC%81_te%CC%82n_3_oyy2ff.png" alt="" className="sp_mini_logo" />
     </a>
   </div>
   <div className="side-menu-wrap">
@@ -141,7 +141,29 @@ const Sidebar = () => {
         </a>
       </li>
    
- 
+   <li>
+        <a href="/admin/recommend/AdminActionRecommend">
+          <span className="icon-menu feather-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="feather feather-users"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx={9} cy={7} r={4} />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </span>
+          {/* Customers */}
+          <span className="menu-text">Gợi Ý Sản Phẩm</span>
+        </a>
+      </li>
     </ul>
   </div>
 </aside>

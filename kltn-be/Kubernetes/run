@@ -1,0 +1,61 @@
+kubectl apply -f mysql.yaml
+kubectl get pvc
+kubectl get svc mysql
+kubectl get pods -l app=mysql
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 -e "CREATE DATABASE IF NOT EXISTS adminservice;"
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 -e "CREATE DATABASE IF NOT EXISTS userservice;"
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 -e "CREATE DATABASE IF NOT EXISTS recommendservice;"
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 -e "CREATE DATABASE IF NOT EXISTS productservice;"
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 -e "CREATE DATABASE IF NOT EXISTS paymentservice;"
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 -e "CREATE DATABASE IF NOT EXISTS orderservice;"
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 -e "CREATE DATABASE IF NOT EXISTS emailservice;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 -e "SHOW DATABASES;"
+
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 adminservice < /Users/thanhvu/Downloads/emailservice/adminservice.sql
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 userservice < /Users/thanhvu/Downloads/emailservice/userservice.sql
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 recommendservice < /Users/thanhvu/Downloads/emailservice/recommendservice.sql
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 productservice < /Users/thanhvu/Downloads/emailservice/productservice.sql
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 paymentservice < /Users/thanhvu/Downloads/emailservice/paymentservice.sql
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 orderservice < /Users/thanhvu/Downloads/emailservice/orderservice.sql
+kubectl exec -i mysql-0 -- mysql -uroot -p123456789 emailservice < /Users/thanhvu/Downloads/emailservice/emailservice.sql
+
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM categories;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM color;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM more_product_info;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM product_evalute;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM product_images;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM product_reviews;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM product_sizes;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM product_variants;"
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice -e "SELECT COUNT(*) FROM products;"
+
+kubectl exec -it mysql-0 -- mysql -uroot -p123456789 recommendservice -e "SELECT COUNT(*) FROM recommends;"
+
+
+kubectl cp /Users/thanhvu/Downloads/emailservice/productservice.sql mysql-0:/tmp/productservice.sql
+ $ kubectl cp /Users/thanhvu/Downloads/emailservice/productservice.sql.gz mysql-0:/tmp/productservice.sql.gz --request-timeout=0
+ $ kubectl exec -it mysql-0 -- bash -c "gunzip -c /tmp/productservice.sql.gz | mysql -uroot -p123456789 productservice"
+ kubectl exec -it mysql-0 -- mysql -uroot -p123456789 adminservice    -e "SHOW TABLES;"
+ kubectl exec -it mysql-0 -- mysql -uroot -p123456789 userservice     -e "SHOW TABLES;"
+ kubectl exec -it mysql-0 -- mysql -uroot -p123456789 recommendservice -e "SHOW TABLES;"
+ kubectl exec -it mysql-0 -- mysql -uroot -p123456789 productservice  -e "SHOW TABLES;"
+ kubectl exec -it mysql-0 -- mysql -uroot -p123456789 paymentservice  -e "SHOW TABLES;"
+ kubectl exec -it mysql-0 -- mysql -uroot -p123456789 orderservice    -e "SHOW TABLES;"
+ kubectl exec -it mysql-0 -- mysql -uroot -p123456789 emailservice    -e "SHOW TABLES;"
+------
+
+gcloud compute instances detach-disk gke-my-cluster-default-pool-bd44d106-5vtp \
+  --disk=pvc-4624105f-994b-4797-9a4d-ac74f20bdb2c \
+  --zone=asia-southeast1-a
+
+kubectl cp /Users/thanhvu/Downloads/Data/data_raw pvc-loader:/mnt/
+kubectl cp /Users/thanhvu/Downloads/Data/deploy_data pvc-loader:/mnt/
+
+ $ kubectl exec -it pvc-loader -- bash
+root@pvc-loader:/# ls -lh /mnt/deploy_data
+
+kubectl port-forward svc/mysql 13306:3306
+
+docker buildx build --platform linux/amd64 -t thanhvu011/frontend:0.0.5 --push .
+
+kubectl rollout restart deployment fontend

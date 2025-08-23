@@ -1,0 +1,257 @@
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+namespace/ingress-nginx created
+serviceaccount/ingress-nginx created
+serviceaccount/ingress-nginx-admission created
+role.rbac.authorization.k8s.io/ingress-nginx created
+role.rbac.authorization.k8s.io/ingress-nginx-admission created
+clusterrole.rbac.authorization.k8s.io/ingress-nginx created
+clusterrole.rbac.authorization.k8s.io/ingress-nginx-admission created
+rolebinding.rbac.authorization.k8s.io/ingress-nginx created
+rolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx created
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
+configmap/ingress-nginx-controller created
+service/ingress-nginx-controller created
+service/ingress-nginx-controller-admission created
+deployment.apps/ingress-nginx-controller created
+job.batch/ingress-nginx-admission-create created
+job.batch/ingress-nginx-admission-patch created
+ingressclass.networking.k8s.io/nginx created
+validatingwebhookconfiguration.admissionregistration.k8s.io/ingress-nginx-admission created
+ $ kubectl get svc -n ingress-nginx
+NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             LoadBalancer   34.118.229.226   <pending>     80:30370/TCP,443:32353/TCP   22s
+ingress-nginx-controller-admission   ClusterIP      34.118.233.55    <none>        443/TCP                      22s
+ $ kubectl get svc -n ingress-nginx
+NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             LoadBalancer   34.118.229.226   <pending>     80:30370/TCP,443:32353/TCP   44s
+ingress-nginx-controller-admission   ClusterIP      34.118.233.55    <none>        443/TCP                      44s
+ $ kubectl get svc -n ingress-nginx
+NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                      AGE
+ingress-nginx-controller             LoadBalancer   34.118.229.226   35.240.135.238   80:30370/TCP,443:32353/TCP   74s
+ingress-nginx-controller-admission   ClusterIP      34.118.233.55    <none>           443/TCP                      74s
+ $ 35.240.135.238
+zsh: command not found: 35.240.135.238
+ $ kubectl get svc
+NAME                 TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)             AGE
+admin-service        ClusterIP      34.118.231.32    <none>           8091/TCP            23h
+cart-service         ClusterIP      34.118.233.20    <none>           8084/TCP            23h
+cbf-api              ClusterIP      34.118.238.55    <none>           8000/TCP            28h
+elasticsearch        ClusterIP      34.118.230.10    <none>           9200/TCP,9300/TCP   28h
+email-service        ClusterIP      34.118.234.253   <none>           8082/TCP            23h
+eureka-server        ClusterIP      34.118.227.186   <none>           8761/TCP            26h
+eureka-server-test   ClusterIP      34.118.236.19    <none>           8762/TCP            25h
+frontend             LoadBalancer   34.118.225.79    35.247.162.8     80:32540/TCP        3h27m
+kong-admin           ClusterIP      34.118.232.241   <none>           8001/TCP            22h
+kong-proxy           LoadBalancer   34.118.227.9     35.198.255.89    8765:31021/TCP      22h
+kubernetes           ClusterIP      34.118.224.1     <none>           443/TCP             31h
+mysql                ClusterIP      34.118.230.254   <none>           3306/TCP            31h
+order-service        ClusterIP      34.118.231.86    <none>           8086/TCP            23h
+payment-service      ClusterIP      34.118.225.84    <none>           8087/TCP            23h
+product-service      ClusterIP      34.118.237.23    <none>           8083/TCP            23h
+recommend-service    ClusterIP      34.118.229.25    <none>           8088/TCP            23h
+redis                ClusterIP      34.118.238.2     <none>           6379/TCP            30h
+search-service       LoadBalancer   34.118.237.96    34.142.193.158   8085:31897/TCP      23h
+seller-service       ClusterIP      34.118.229.24    <none>           8089/TCP            23h
+upload-service       ClusterIP      34.118.232.160   <none>           8090/TCP            23h
+user-service         ClusterIP      34.118.238.244   <none>           8081/TCP            24h
+zipkin-server        ClusterIP      34.118.236.94    <none>           9411/TCP            30h
+ $  kubectl get svc -n ingress-nginx
+NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                      AGE
+ingress-nginx-controller             LoadBalancer   34.118.229.226   35.240.135.238   80:30370/TCP,443:32353/TCP   2m39s
+ingress-nginx-controller-admission   ClusterIP      34.118.233.55    <none>           443/TCP                      2m39s
+ $ kubectl apply -f cluster-issuer.yaml
+error: resource mapping not found for name: "letsencrypt-prod" namespace: "" from "cluster-issuer.yaml": no matches for kind "ClusterIssuer" in version "cert-manager.io/v1"
+ensure CRDs are installed first
+ $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.crds.yaml
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io created
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io created
+ $ kubectl get pods -n cert-manager
+No resources found in cert-manager namespace.
+ $ kubectl get pods
+NAME                                 READY   STATUS      RESTARTS      AGE
+admin-service-d6f5bb98d-pphvd        1/1     Running     0             20h
+cart-service-645fdf8569-dff2n        1/1     Running     0             20h
+cbf-api-b75b474dc-ftd7f              1/1     Running     0             28h
+dns-test                             1/1     Running     0             22h
+elasticsearch-0                      1/1     Running     0             28h
+email-service-5797798864-hjbzn       1/1     Running     0             20h
+eureka-server-86db797f59-xpzcj       1/1     Running     0             24h
+frontend-76dc78787d-466jm            1/1     Running     0             3h25m
+kong-6ff7f98974-bvdbq                1/1     Running     0             150m
+mysql-0                              1/1     Running     0             20h
+order-service-9b4f6cdfb-lkjlj        1/1     Running     0             20h
+payment-service-54f6998747-lkmwf     1/1     Running     0             20h
+product-service-6bfd76477f-q5xpw     1/1     Running     0             20h
+pvc-loader                           0/1     Completed   0             28h
+recommend-service-8599dc46cf-zz8w9   1/1     Running     0             20h
+redis-7b986b9f57-z4xhs               1/1     Running     0             30h
+search-service-695d586b66-bgln9      1/1     Running     0             20h
+seller-service-7cfc7d998f-92f7p      1/1     Running     0             20h
+upload-service-84778c7dc5-7xkjm      1/1     Running     0             23h
+user-service-86bfc8b7d5-5mbwj        1/1     Running     0             4h24m
+zipkin-server-5c998cd5c7-qxlzm       1/1     Running     3 (36m ago)   30h
+ $ kubectl get svc
+NAME                 TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)             AGE
+admin-service        ClusterIP      34.118.231.32    <none>           8091/TCP            23h
+cart-service         ClusterIP      34.118.233.20    <none>           8084/TCP            23h
+cbf-api              ClusterIP      34.118.238.55    <none>           8000/TCP            28h
+elasticsearch        ClusterIP      34.118.230.10    <none>           9200/TCP,9300/TCP   28h
+email-service        ClusterIP      34.118.234.253   <none>           8082/TCP            23h
+eureka-server        ClusterIP      34.118.227.186   <none>           8761/TCP            26h
+eureka-server-test   ClusterIP      34.118.236.19    <none>           8762/TCP            25h
+frontend             LoadBalancer   34.118.225.79    35.247.162.8     80:32540/TCP        3h34m
+kong-admin           ClusterIP      34.118.232.241   <none>           8001/TCP            22h
+kong-proxy           LoadBalancer   34.118.227.9     35.198.255.89    8765:31021/TCP      22h
+kubernetes           ClusterIP      34.118.224.1     <none>           443/TCP             31h
+mysql                ClusterIP      34.118.230.254   <none>           3306/TCP            31h
+order-service        ClusterIP      34.118.231.86    <none>           8086/TCP            23h
+payment-service      ClusterIP      34.118.225.84    <none>           8087/TCP            23h
+product-service      ClusterIP      34.118.237.23    <none>           8083/TCP            23h
+recommend-service    ClusterIP      34.118.229.25    <none>           8088/TCP            23h
+redis                ClusterIP      34.118.238.2     <none>           6379/TCP            30h
+search-service       LoadBalancer   34.118.237.96    34.142.193.158   8085:31897/TCP      23h
+seller-service       ClusterIP      34.118.229.24    <none>           8089/TCP            23h
+upload-service       ClusterIP      34.118.232.160   <none>           8090/TCP            23h
+user-service         ClusterIP      34.118.238.244   <none>           8081/TCP            24h
+zipkin-server        ClusterIP      34.118.236.94    <none>           9411/TCP            30h
+ $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.yaml
+namespace/cert-manager created
+customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io unchanged
+customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io unchanged
+customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io unchanged
+customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io unchanged
+customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io unchanged
+customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io unchanged
+serviceaccount/cert-manager-cainjector created
+serviceaccount/cert-manager created
+serviceaccount/cert-manager-webhook created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrole.rbac.authorization.k8s.io/cert-manager-cluster-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-view created
+clusterrole.rbac.authorization.k8s.io/cert-manager-edit created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-approve:cert-manager-io created
+clusterrole.rbac.authorization.k8s.io/cert-manager-controller-certificatesigningrequests created
+clusterrole.rbac.authorization.k8s.io/cert-manager-webhook:subjectaccessreviews created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-cainjector created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-issuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-clusterissuers created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificates created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-orders created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-challenges created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-ingress-shim created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-approve:cert-manager-io created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-controller-certificatesigningrequests created
+clusterrolebinding.rbac.authorization.k8s.io/cert-manager-webhook:subjectaccessreviews created
+role.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+role.rbac.authorization.k8s.io/cert-manager:leaderelection created
+role.rbac.authorization.k8s.io/cert-manager-webhook:dynamic-serving created
+rolebinding.rbac.authorization.k8s.io/cert-manager-cainjector:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager:leaderelection created
+rolebinding.rbac.authorization.k8s.io/cert-manager-webhook:dynamic-serving created
+service/cert-manager created
+service/cert-manager-webhook created
+deployment.apps/cert-manager-cainjector created
+deployment.apps/cert-manager created
+deployment.apps/cert-manager-webhook created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook created
+ $ kubectl get pods -n cert-manager
+NAME                                       READY   STATUS              RESTARTS   AGE
+cert-manager-564487bfff-n6rdl              0/1     ContainerCreating   0          5s
+cert-manager-cainjector-776bb77bb4-mhzcn   0/1     ContainerCreating   0          5s
+cert-manager-webhook-85b4b48798-fzz9n      0/1     ContainerCreating   0          4s
+ $ kubectl  get pods
+NAME                                 READY   STATUS      RESTARTS      AGE
+admin-service-d6f5bb98d-pphvd        1/1     Running     0             20h
+cart-service-645fdf8569-dff2n        1/1     Running     0             20h
+cbf-api-b75b474dc-ftd7f              1/1     Running     0             28h
+dns-test                             1/1     Running     0             22h
+elasticsearch-0                      1/1     Running     0             28h
+email-service-5797798864-hjbzn       1/1     Running     0             20h
+eureka-server-86db797f59-xpzcj       1/1     Running     0             24h
+frontend-76dc78787d-466jm            1/1     Running     0             3h26m
+kong-6ff7f98974-bvdbq                1/1     Running     0             150m
+mysql-0                              1/1     Running     0             20h
+order-service-9b4f6cdfb-lkjlj        1/1     Running     0             20h
+payment-service-54f6998747-lkmwf     1/1     Running     0             20h
+product-service-6bfd76477f-q5xpw     1/1     Running     0             20h
+pvc-loader                           0/1     Completed   0             28h
+recommend-service-8599dc46cf-zz8w9   1/1     Running     0             20h
+redis-7b986b9f57-z4xhs               1/1     Running     0             30h
+search-service-695d586b66-bgln9      1/1     Running     0             20h
+seller-service-7cfc7d998f-92f7p      1/1     Running     0             20h
+upload-service-84778c7dc5-7xkjm      1/1     Running     0             23h
+user-service-86bfc8b7d5-5mbwj        1/1     Running     0             4h25m
+zipkin-server-5c998cd5c7-qxlzm       1/1     Running     3 (37m ago)   30h
+ $ kubectl get pods -n cert-manager
+NAME                                       READY   STATUS    RESTARTS   AGE
+cert-manager-564487bfff-n6rdl              1/1     Running   0          24s
+cert-manager-cainjector-776bb77bb4-mhzcn   1/1     Running   0          24s
+cert-manager-webhook-85b4b48798-fzz9n      1/1     Running   0          23s
+ $ kubectl apply -f cluster-issuer.yaml
+clusterissuer.cert-manager.io/letsencrypt-prod created
+ $ kubectl apply -f ingress.yaml
+Warning: annotation "kubernetes.io/ingress.class" is deprecated, please use 'spec.ingressClassName' instead
+ingress.networking.k8s.io/shop-ingress created
+ $ kubectl describe certificate shop-tls
+
+Name:         shop-tls
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+API Version:  cert-manager.io/v1
+Kind:         Certificate
+Metadata:
+  Creation Timestamp:  2025-08-23T08:47:29Z
+  Generation:          1
+  Owner References:
+    API Version:           networking.k8s.io/v1
+    Block Owner Deletion:  true
+    Controller:            true
+    Kind:                  Ingress
+    Name:                  shop-ingress
+    UID:                   f26ed48c-e9d9-47d2-93d2-ab96cd4ac015
+  Resource Version:        1755938877819327002
+  UID:                     b70983b0-17a5-403b-b628-af6fbdc1ea6b
+Spec:
+  Dns Names:
+    nhom7kltn.online
+    www.nhom7kltn.online
+  Issuer Ref:
+    Group:      cert-manager.io
+    Kind:       ClusterIssuer
+    Name:       letsencrypt-prod
+  Secret Name:  shop-tls
+  Usages:
+    digital signature
+    key encipherment
+Status:
+  Conditions:
+    Last Transition Time:  2025-08-23T08:47:57Z
+    Message:               Certificate is up to date and has not expired
+    Observed Generation:   1
+    Reason:                Ready
+    Status:                True
+    Type:                  Ready
+  Not After:               2025-11-21T07:49:25Z
+  Not Before:              2025-08-23T07:49:26Z
+  Renewal Time:            2025-10-22T07:49:25Z
+  Revision:                1
+Events:
+  Type    Reason     Age   From                                       Message
+  ----    ------     ----  ----                                       -------
+  Normal  Issuing    41s   cert-manager-certificates-trigger          Issuing certificate as Secret does not exist
+  Normal  Generated  40s   cert-manager-certificates-key-manager      Stored new private key in temporary Secret resource "shop-tls-n4pmg"
+  Normal  Requested  40s   cert-manager-certificates-request-manager  Created new CertificateRequest resource "shop-tls-1"
+  Normal  Issuing    13s   cert-manager-certificates-issuing          The certificate has been successfully issued
