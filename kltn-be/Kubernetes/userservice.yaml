@@ -1,0 +1,53 @@
+
+
+# =========================
+# TEMPLATE CHUNG CHO CÁC SPRING SERVICES
+# (mình viết đầy đủ từng cái phía dưới)
+# =========================
+
+# ---- user-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: default
+  labels: { app: user-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: user-service } }
+  template:
+    metadata: { labels: { app: user-service } }
+    spec:
+      containers:
+        - name: user-service
+          image: thanhvu011/thanhvu-chitruong-user-service:0.0.7
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8081 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/userservice?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: user-service }
+  ports:
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP

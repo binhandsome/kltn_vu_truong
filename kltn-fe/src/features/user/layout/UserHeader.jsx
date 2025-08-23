@@ -511,7 +511,7 @@ useEffect(() => {
         {/* Website Logo */}
         <div className="logo-header logo-dark me-md-5">
           <a href="/user">
-            <img src="../../assets/user/images/logo.svg" alt="logo" />
+            <img src="https://res.cloudinary.com/dj3tvavmp/image/upload/v1755913307/logonlu_zi1ary.png" alt="logo" />
           </a>
         </div>
         {/* Nav Toggle Button */}
@@ -808,7 +808,7 @@ useEffect(() => {
               </div>
             </li>
             <li className="sub-menu-down">
-                                    <a href="#" onClick={() => window.location.href = '/user/myaccount/dashboard'}><span>
+                                    <a href="#" onClick={() => window.location.href = '/user/myaccount/profile'}><span>
                                       Tài khoản của tôi
                                       {/* My Account */}
                                       </span> <div className="badge badge-sm rounded badge-animated">Mới</div><i className="fas fa-chevron-down tabindex"></i></a>

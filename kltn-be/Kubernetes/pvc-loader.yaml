@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cbf-deploy-data-pvc
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cbf-data-raw-pvc
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-loader
+spec:
+  restartPolicy: Never
+  containers:
+    - name: loader
+      image: ubuntu:22.04
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: deploy-data
+          mountPath: /mnt/deploy_data
+        - name: data-raw
+          mountPath: /mnt/data_raw
+  volumes:
+    - name: deploy-data
+      persistentVolumeClaim:
+        claimName: cbf-deploy-data-pvc
+    - name: data-raw
+      persistentVolumeClaim:
+        claimName: cbf-data-raw-pvc

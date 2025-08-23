@@ -20,9 +20,9 @@ const Sidebar = () => {
   return(
  <aside className="sidebar-wrapper">
   <div className="logo-wrapper">
-    <a href="index.html" className="seller-logo">
-      <img src="../../assets/seller/images/logo.png" alt="" className="sp_logo" />
-      <img src="../../assets/seller/images/mini_logo.png" alt="" className="sp_mini_logo" />
+    <a href="/seller" className="seller-logo">
+      <img  src="https://res.cloudinary.com/dj3tvavmp/image/upload/w_100,h_100/v1755920555/Thie%CC%82%CC%81t_ke%CC%82%CC%81_chu%CC%9Ba_co%CC%81_te%CC%82n_3_oyy2ff.png" alt="" className="sp_logo" />
+      <img src="https://res.cloudinary.com/dj3tvavmp/image/upload/w_100,h_100/v1755920555/Thie%CC%82%CC%81t_ke%CC%82%CC%81_chu%CC%9Ba_co%CC%81_te%CC%82n_3_oyy2ff.png" alt="" className="sp_mini_logo" />
     </a>
   </div>
   <div className="side-menu-wrap">

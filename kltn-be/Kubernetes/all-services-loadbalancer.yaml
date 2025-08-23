@@ -1,0 +1,510 @@
+
+
+# =========================
+# TEMPLATE CHUNG CHO CÁC SPRING SERVICES
+# (mình viết đầy đủ từng cái phía dưới)
+# =========================
+
+# ---- user-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: default
+  labels: { app: user-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: user-service } }
+  template:
+    metadata: { labels: { app: user-service } }
+    spec:
+      containers:
+        - name: user-service
+          image: thanhvu011/thanhvu-chitruong-user-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8081 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/userservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: user-service }
+  ports:
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP
+
+# ---- order-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: default
+  labels: { app: order-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: order-service } }
+  template:
+    metadata: { labels: { app: order-service } }
+    spec:
+      containers:
+        - name: order-service
+          image: thanhvu011/thanhvu-chitruong-order-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8086 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/orderservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: order-service }
+  ports:
+    - port: 8086
+      targetPort: 8086
+      protocol: TCP
+
+# ---- admin-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-service
+  namespace: default
+  labels: { app: admin-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: admin-service } }
+  template:
+    metadata: { labels: { app: admin-service } }
+    spec:
+      containers:
+        - name: admin-service
+          image: thanhvu011/thanhvu-chitruong-admin-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8091 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/adminservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: admin-service }
+  ports:
+    - port: 8091
+      targetPort: 8091
+      protocol: TCP
+
+# ---- cart-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-service
+  namespace: default
+  labels: { app: cart-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: cart-service } }
+  template:
+    metadata: { labels: { app: cart-service } }
+    spec:
+      containers:
+        - name: cart-service
+          image: thanhvu011/thanhvu-chitruong-cart-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8084 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: cart-service }
+  ports:
+    - port: 8084
+      targetPort: 8084
+      protocol: TCP
+
+# ---- email-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-service
+  namespace: default
+  labels: { app: email-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: email-service } }
+  template:
+    metadata: { labels: { app: email-service } }
+    spec:
+      containers:
+        - name: email-service
+          image: thanhvu011/thanhvu-chitruong-email-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8082 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/emailservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: email-service }
+  ports:
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP
+
+# ---- payment-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: default
+  labels: { app: payment-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: payment-service } }
+  template:
+    metadata: { labels: { app: payment-service } }
+    spec:
+      containers:
+        - name: payment-service
+          image: thanhvu011/thanhvu-chitruong-payment-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8087 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/paymentservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: payment-service }
+  ports:
+    - port: 8087
+      targetPort: 8087
+      protocol: TCP
+
+# ---- product-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: default
+  labels: { app: product-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: product-service } }
+  template:
+    metadata: { labels: { app: product-service } }
+    spec:
+      containers:
+        - name: product-service
+          image: thanhvu011/thanhvu-chitruong-product-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8083 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/productservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: product-service }
+  ports:
+    - port: 8083
+      targetPort: 8083
+      protocol: TCP
+
+# ---- recommend-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommend-service
+  namespace: default
+  labels: { app: recommend-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: recommend-service } }
+  template:
+    metadata: { labels: { app: recommend-service } }
+    spec:
+      containers:
+        - name: recommend-service
+          image: thanhvu011/thanhvu-chitruong-recommend-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8088 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/recommendservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+            - { name: FASTAPI_URL, value: "http://cbf-api:8000" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommend-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: recommend-service }
+  ports:
+    - port: 8088
+      targetPort: 8088
+      protocol: TCP
+
+# ---- search-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-service
+  namespace: default
+  labels: { app: search-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: search-service } }
+  template:
+    metadata: { labels: { app: search-service } }
+    spec:
+      containers:
+        - name: search-service
+          image: thanhvu011/thanhvu-chitruong-search-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8085 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_ELASTICSEARCH_URIS, value: "http://elasticsearch:9200" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: search-service }
+  ports:
+    - port: 8085
+      targetPort: 8085
+      protocol: TCP
+
+# ---- seller-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seller-service
+  namespace: default
+  labels: { app: seller-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: seller-service } }
+  template:
+    metadata: { labels: { app: seller-service } }
+    spec:
+      containers:
+        - name: seller-service
+          image: thanhvu011/thanhvu-chitruong-seller-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8089 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/sellerservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seller-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: seller-service }
+  ports:
+    - port: 8089
+      targetPort: 8089
+      protocol: TCP
+
+# ---- upload-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload-service
+  namespace: default
+  labels: { app: upload-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: upload-service } }
+  template:
+    metadata: { labels: { app: upload-service } }
+    spec:
+      containers:
+        - name: upload-service
+          image: thanhvu011/thanhvu-chitruong-upload-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8090 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: upload-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: upload-service }
+  ports:
+    - port: 8090
+      targetPort: 8090
+      protocol: TCP

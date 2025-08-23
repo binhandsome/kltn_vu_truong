@@ -1,0 +1,46 @@
+# ---- admin-service ----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-service
+  namespace: default
+  labels: { app: admin-service }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: admin-service } }
+  template:
+    metadata: { labels: { app: admin-service } }
+    spec:
+      containers:
+        - name: admin-service
+          image: thanhvu011/thanhvu-chitruong-admin-service:0.0.8
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8091 } ]
+          env:
+            - { name: SPRING_DATA_REDIS_HOST, value: "redis" }
+            - { name: SPRING_DATA_REDIS_PORT, value: "6379" }
+            - { name: SPRING_DATASOURCE_URL, value: "jdbc:mysql://mysql:3306/adminservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh" }
+            - { name: SPRING_DATASOURCE_USERNAME, value: "root" }
+            - { name: SPRING_DATASOURCE_PASSWORD, value: "123456789" }
+            - { name: SPRING_JPA_HIBERNATE_DDL_AUTO, value: "update" }
+            - { name: SPRING_JPA_SHOW_SQL, value: "true" }
+            - { name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE, value: "http://eureka-server:8761/eureka" }
+            - { name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT, value: "http://zipkin-server:9411/api/v2/spans" }
+            - { name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY, value: "1.0" }
+          resources:
+            requests: { memory: "512Mi", cpu: "250m" }
+            limits:   { memory: "1Gi",   cpu: "500m" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector: { app: admin-service }
+  ports:
+    - port: 8091
+      targetPort: 8091
+      protocol: TCP

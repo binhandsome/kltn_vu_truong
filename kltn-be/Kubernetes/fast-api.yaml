@@ -1,0 +1,50 @@
+# =========================
+# CBF API (FastAPI) + PVC
+# =========================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cbf-api
+  namespace: default
+  labels: { app: cbf-api }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: cbf-api } }
+  template:
+    metadata: { labels: { app: cbf-api } }
+    spec:
+      containers:
+        - name: cbf-api
+          image: thanhvu011/cbf-fastapi:1.2
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8000 } ]
+          env:
+            - { name: OUT_DIR, value: "/app/deploy_data" }
+            - { name: DATA_RAW_DIR, value: "/app/data_raw" }
+            - { name: DB_URL, value: "mysql+pymysql://root:123456789@mysql:3306/productservice?charset=utf8mb4" }
+            - { name: RECOMMEND_DB_URL, value: "mysql+pymysql://root:123456789@mysql:3306/recommendservice?charset=utf8mb4" }
+          volumeMounts:
+            - { name: deploy-data, mountPath: /app/deploy_data }
+            - { name: data-raw,   mountPath: /app/data_raw }
+          resources:
+            requests: { memory: "2Gi", cpu: "500m" }
+            limits:   { memory: "4Gi", cpu: "1" }
+      volumes:
+        - name: deploy-data
+          persistentVolumeClaim: { claimName: cbf-deploy-data-pvc }
+        - name: data-raw
+          persistentVolumeClaim: { claimName: cbf-data-raw-pvc }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbf-api
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector: { app: cbf-api }
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

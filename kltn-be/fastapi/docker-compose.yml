@@ -1,0 +1,22 @@
+cbf_api:
+  image: thanhvu011/cbf-fastapi:1.2
+  container_name: cbf_api
+  restart: unless-stopped
+  ports:
+    - "8000:8000"
+  networks:
+    - thanhvuchig-network
+  environment:
+    OUT_DIR: "/app/deploy_data"
+    DATA_RAW_DIR: "/app/data_raw"
+    DB_URL: "mysql+pymysql://root:123456789@host.docker.internal:3306/productservice?charset=utf8mb4"
+    RECOMMEND_DB_URL: "mysql+pymysql://root:123456789@host.docker.internal:3306/recommendservice?charset=utf8mb4"
+  volumes:
+    - "/Users/thanhvu/Downloads/Data/deploy_data:/app/deploy_data"
+    - "/Users/thanhvu/Downloads/Data/data_raw:/app/data_raw"
+  deploy:
+    resources:
+      limits:
+        memory: 4G
+      reservations:
+        memory: 2G
